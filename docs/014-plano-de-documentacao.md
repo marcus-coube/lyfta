@@ -24,6 +24,7 @@ onde densidade vale mais que volume.
 | [ADR-009](adr/ADR-009-infra-vps.md) | VPS único + Docker Compose; backups externos obrigatórios |
 | [ADR-010](adr/ADR-010-biblioteca-exercicios.md) | Base aberta + curadoria própria; biblioteca global + do tenant |
 | [ADR-011](adr/ADR-011-i18n.md) | pt-BR, pt-PT, en desde o lançamento |
+| [ADR-012](adr/ADR-012-escopo-mvp-packs.md) | MVP re-escopado em pacotes centrados no aluno (1.0 = loop diário) |
 
 Novas decisões estruturais → novo ADR, nunca edição silenciosa de docs.
 
@@ -40,12 +41,22 @@ Novas decisões estruturais → novo ADR, nunca edição silenciosa de docs.
 Docs 001/004 são absorvidos pelos ADRs (001→ADR-006/009; 004→doc de permissões, pois
 plano/entitlement e feature flag são coisas distintas e serão especificados no 003).
 
-## Marcos de implementação (MVP completo, sem cortes — decisão de produto)
+## Marcos de implementação
 
-Estimativa honesta para dev solo full-time: **8–12 meses** até o MVP do doc 000.
-Cada marco entrega algo usável de verdade; o doc de especificação do módulo
-(regras de negócio + critérios de aceitação, 5–10 páginas) é escrito **no início do
-marco correspondente**, não antes.
+> **Re-escopo (ADR-012):** o MVP deixou de ser "completo, sem cortes" e passou a ser
+> entregue em pacotes centrados no aluno (doc 000). Os marcos abaixo continuam válidos
+> como **unidades de implementação**, mas são reagrupados e reordenados pelos pacotes:
+>
+> | Pacote (doc 000) | Marcos que o compõem |
+> |---|---|
+> | **MVP 1.0** — loop diário do aluno | M0 + fatia mínima de M2 (builder mínimo) + M3 (execução/offline) + parte de M4 (histórico de carga) + avaliação física (subia do V1) + fatia de M5 (chat texto+imagem) |
+> | **MVP 2.0** — coach monta e gerencia | M1 (alunos) + M2 completo (builder) + M6 (financeiro + dashboard) |
+> | **MVP 3.0** — engajamento e análise | resto de M4 (muscle map, PRs/1RM) + resto de M5 (mídia rica) + agenda/gamificação/relatórios |
+
+Estimativa honesta para dev solo full-time: **8–12 meses** até fechar os pacotes que
+equivalem ao MVP do doc 000. Cada marco entrega algo usável de verdade; o doc de
+especificação do módulo (regras de negócio + critérios de aceitação, 5–10 páginas) é
+escrito **no início do marco correspondente**, não antes.
 
 | Marco | Entrega | Docs escritos no marco |
 |---|---|---|

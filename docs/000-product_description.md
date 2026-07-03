@@ -39,106 +39,85 @@ Android - iOS - Web (desktop-first experience for gyms)
 The Web version should optimize: - Student management - Workout
 builder - Financial dashboard - Reports - Administrative tasks
 
-## MVP
+## Delivery packs
 
-### Authentication
+Scope is shipped as numbered packs, prioritized by the client's brief
+(athlete-first). The rationale for this ordering is recorded in
+[ADR-012](adr/ADR-012-escopo-mvp-packs.md); the milestone breakdown that
+implements each pack lives in [doc 014](014-plano-de-documentacao.md).
 
--   Login
--   Password recovery
--   Multi-tenant
--   Role permissions
+Guiding principle: **MVP 1.0 is the athlete's daily loop** — train today's
+workout, track evolution, talk to the coach, offline. Everything else is
+sequenced into later packs so the first release is a thin end-to-end slice,
+not a broad-but-hollow one.
 
-### Student Management
+## MVP 1.0 --- The athlete trains, evolves and talks to the coach
 
--   Registration
--   Status
--   Goals
--   Injuries
--   Coach assignment
+The four blocks the client prioritized, plus the invisible enablers required
+to make them real.
 
-### Workout Module
+### Today's workout (execution)
 
--   Workout builder
--   Exercise library
--   Video/GIF support
--   Automatic workout rotation (A → B → C...)
--   Manual override
--   Workout execution
--   Rest timer
--   Previous load visualization
--   Load history
+-   Clean "today" screen, minimal navigation
+-   Video/GIF demonstration per exercise
+-   Log done load, sets and reps
+-   Rest timer between sets (sound + vibration alert)
+-   Works offline (execution only --- see ADR-003)
 
-### Muscle Map
+### Evolution tracking
 
--   Human body visualization
--   Muscle effort percentage
--   Weekly and monthly muscle distribution
+-   Load history per exercise (progression chart)
+-   Before/after progress photos
+-   Body measurements + bioimpedance --- **manual entry** (device/wearable
+    integration is out of scope until 3.0+)
 
-### Workout History
+### Communication with the coach
 
--   Previous workouts
--   Volume
--   Progression
+-   Direct chat, student ↔ coach --- **text + image only** (rich media in 3.0)
+-   Workout rating / typed check-in (feedback, difficulty, pain)
+-   Push notifications: pending workout, new message
 
-### Chat
+### Daily practicality
 
--   Student ↔ Coach
--   Push notifications
+-   Simple, light login + password recovery
+-   Weekly visual calendar (athlete's agenda)
+-   Fast startup, no jank
 
-### Finance
+### Required enablers (not in the client's list, but 1.0 cannot ship without them)
 
--   Students
--   Monthly fee
--   Payment history
--   Active / Delinquent / Inactive
--   Manual payment reconciliation
+-   Authentication over the multi-tenant base (login + recovery + roles)
+-   **Minimal coach workout builder** + exercise library with media --- someone
+    has to author "today's workout" (full builder is 2.0)
+-   Backend + sync queue (the former M0 infra)
+-   **Structured prescription from day one:** `prescribed_sets` is structured
+    (reps, target load, rest, RPE/RIR --- ADR-004) even with the minimal
+    builder, otherwise the 1.0 load chart cannot exist
 
-### Dashboard
+## MVP 2.0 --- The coach builds and manages (makes the business viable)
 
--   Active students
--   Delinquent students
--   Monthly revenue
--   Today's workouts
+-   Full workout builder: versioning, blocks (superset/circuit), automatic
+    A→B→C rotation, manual override
+-   Student management: registration, status, goals, injuries, coach
+    assignment, LGPD consent
+-   Finance (PIX / manual reconciliation first): monthly fee, payment history,
+    active / delinquent / inactive --- the coach-adoption lever
+-   Coach dashboard: active students, delinquents, monthly revenue, today's
+    workouts
 
-## V1
+## MVP 3.0 --- Engagement and analysis
 
-### Physical Assessment
+-   **Muscle map**: body visualization, muscle effort %, weekly/monthly
+    distribution (our differentiator vs HubFit/Trainerize; kept here by a
+    conscious client decision --- ADR-012)
+-   Advanced history: PRs, estimated 1RM, best volume
+-   Rich chat media (audio, video, PDF, receipts) + expanded notifications
+-   Coach scheduling: appointments, assessment sessions
+-   Gamification (streaks, achievements, milestones), habits, reports
 
--   Weight
--   Body fat
--   Circumferences
--   Progress photos
--   Charts
+## MVP 4.0 --- Running module
 
-### Scheduling
-
--   Appointments
--   Assessments
--   Training sessions
-
-### Notifications
-
--   Workout reminders
--   Payment reminders
--   Workout updates
-
-### Gamification
-
--   Streaks
--   Achievements
--   Workout milestones
-
-### Reports
-
--   Student evolution
--   Attendance
--   Financial reports
-
-## Running Module (V1)
-
-Inspired by the best ideas found across modern running platforms (such
-as Nike Run Club, Strava, Runna and TrainingPeaks), while keeping the
-experience integrated with strength training.
+Full vertical, inspired by Nike Run Club, Strava, Runna and TrainingPeaks
+while staying integrated with strength training.
 
 Features: - Running plans - Coach-created running workouts - Interval
 sessions - Pace targets - Heart-rate zones - Distance goals - Weekly
@@ -153,7 +132,10 @@ Coros - Polar - Strava import/export
 Coach tools: - Weekly planning - Workout prescription - Pace
 calculator - Training zones - Athlete comments - Compliance tracking
 
-## V2 (AI)
+GPS in background + wearable integrations is the single most expensive item
+of the roadmap; scope is trimmed on arrival at this pack.
+
+## V2 --- AI layer
 
 All AI features are intentionally postponed to V2.
 
