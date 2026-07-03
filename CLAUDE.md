@@ -35,12 +35,27 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 - `docs/guidelines/` — convenções de código (ex.: `flutter.md`).
 
 ## Estado atual (2026-07-03)
-Bootstrap Flutter (DS + login visual) + **plano de execução do MVP 1.0 pronto**
-([docs/plan/mvp1/](docs/plan/mvp1/)). Backend ainda não implementado (começa em P0).
-**Foco: executar o plano na ordem P0→P4** via agente `mvp-dev` (uma tarefa por vez).
-Escopo do MVP em [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de
-serviços em [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md).
-Aluno e professor funcionam em **todas** as plataformas (mobile e web).
+**Executando o plano do MVP 1.0** ([docs/plan/mvp1/](docs/plan/mvp1/)) na ordem
+P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P0.X").
+**Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
+saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
+P0.1 (compose Redis+MinIO) concluída. Escopo do MVP em
+[ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
+[ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor
+funcionam em **todas** as plataformas (mobile e web).
+
+## Retomar numa máquina nova (checklist Mac/Windows)
+1. `git pull` — plano, agente `mvp-dev` e este brief chegam juntos.
+2. Bancos: `psql -U postgres -f backend/scripts/create-dbs.sql` (idempotente);
+   marcar a coluna da máquina na tabela de bancos do STATUS.md.
+3. Docker Desktop instalado? `cd backend && docker compose up -d` (Redis+MinIO) e
+   executar a verificação pendente das Notas de execução do P0 (no Windows o
+   Docker ainda não está instalado — verificação do compose está pendente lá).
+4. `cd app && flutter pub get`; plataformas geradas com `flutter create .`
+   (ver [app/README.md](app/README.md)).
+5. Segredos são locais por máquina (`.env` de cada serviço, nunca no git);
+   `backend/.env.example` documenta as variáveis.
+6. Continuar: dizer "implemente <próxima tarefa do STATUS.md>".
 
 ## Convenções inegociáveis
 - **Decisão estrutural nova → novo ADR**, nunca edição silenciosa de doc.
