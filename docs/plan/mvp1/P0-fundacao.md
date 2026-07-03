@@ -8,7 +8,7 @@ Refs normativas: ADR-001, ADR-002, ADR-011, ADR-013, `backend/README.md`.
 
 ---
 
-## - [ ] P0.1 Infra local e compose
+## - [x] P0.1 Infra local e compose
 
 **Objetivo:** ambiente de dev reprodutível nas duas máquinas (Windows/Mac).
 **Entregáveis:**
@@ -134,3 +134,28 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
 ## Notas de execução
 
 (o agente anota aqui descobertas, dívidas e desvios aprovados)
+
+### P0.1 (2026-07-03)
+
+- Docker/Docker Desktop **não está instalado** nesta máquina (Windows) — `docker`
+  não é reconhecido no PowerShell nem no Git Bash, e não há
+  `C:\Program Files\Docker\Docker\Docker Desktop.exe`. Não foi possível rodar
+  `docker compose config` nem `docker compose up -d`.
+- Validação feita sem Docker: `backend/docker-compose.yml` parseado com
+  `python -c "import yaml; yaml.safe_load(...)"` — YAML sintaticamente válido,
+  chaves top-level `services`/`volumes` presentes. Revisão manual do arquivo
+  confirma Redis 7 (6379), MinIO (9000/9001) e job `minio-init` (baseado em
+  `minio/mc`) que roda `mc alias set` + `mc mb` (idempotente, ignora erro se o
+  bucket já existir) + `mc anonymous set none` no bucket `lyfta-media`.
+- **Pendência:** rodar, na primeira vez em que o Docker estiver disponível nesta
+  máquina (ou já está disponível no Mac):
+  `cd backend && docker compose config` (sintaxe) e `docker compose up -d`
+  (sobe). Depois conferir: `docker exec -it lyfta-redis-1 redis-cli ping` →
+  `PONG`; console MinIO em `http://localhost:9001` (login `minioadmin`/
+  `minioadmin` por padrão) com o bucket `lyfta-media` listado.
+- `redis-cli` também não está disponível localmente nesta máquina (fora do
+  container) — não é bloqueante, a verificação do Redis é via
+  `docker exec ... redis-cli ping` conforme acima.
+- Bancos Postgres (`lyfta_identity`, `lyfta_workout`, `lyfta_assessment`,
+  `lyfta_comms`) já confirmados existentes nesta máquina em sessão anterior —
+  não re-verificado aqui (fora do escopo restante desta tarefa).

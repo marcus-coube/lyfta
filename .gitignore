@@ -16,6 +16,11 @@ bin/
 *.test
 coverage.out
 
+# Segredos de ambiente (backend/README.md) — .env.example fica versionado
+backend/**/.env
+backend/**/.env.*
+!backend/**/.env.example
+
 # Flutter (app/)
 app/.dart_tool/
 app/.flutter-plugins*
