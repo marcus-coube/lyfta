@@ -6,31 +6,41 @@ com assistência de IA**. Este arquivo é o contexto compartilhado entre máquin
 (Windows + Mac) — versionado no git; a pasta `~/.claude` **não** sincroniza.
 
 ## Stack
-Flutter (front) · Go (back) · PostgreSQL · Redis · S3-compatible · WebSockets ·
-Auth JWT+refresh. Idiomas pt-BR / pt-PT / en desde o lançamento (ADR-011).
+Flutter (front) · Go em **microserviços com banco Postgres por serviço** (ADR-013) ·
+Redis · S3-compatible (MinIO no dev) · WebSockets · Auth JWT EdDSA + refresh ·
+E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamento (ADR-011).
 
 ## Mapa do repositório
 - `app/` — app Flutter. Só `lib/`, `pubspec.yaml` e configs são versionados; gerar
   plataformas com `flutter create .` (ver [app/README.md](app/README.md)).
   - `lib/core/design_system/` — tokens, tema e componentes `Ly*` (fonte de verdade do DS).
   - `lib/features/` — features por domínio (`auth/` = login visual, único hoje).
+- `backend/` — microserviços Go: `identity` (8081) · `workout` (8082) ·
+  `assessment` (8083) · `comms` (8084). Stack pinada, portas e bancos em
+  [backend/README.md](backend/README.md). Futuro: cada serviço em repo próprio —
+  **nunca** importar código entre serviços.
 - `docs/` — documentação. **Fonte de verdade de produto e arquitetura.**
-- Backend Go: ainda não existe no repo.
+- `.claude/agents/mvp-dev.md` — agente (Sonnet) que executa o plano do MVP, uma
+  tarefa por invocação.
 
 ## Onde está a verdade (ler antes de propor mudanças)
 - **[docs/000-product_description.md](docs/000-product_description.md)** — roadmap em
   **pacotes** (MVP 1.0 → 2.0 → 3.0 → 4.0 running → V2 IA → Futuro).
 - **[docs/014-plano-de-documentacao.md](docs/014-plano-de-documentacao.md)** — plano de
   docs + marcos de implementação e de-para marco→pacote.
-- **[docs/adr/](docs/adr/)** — decisões estruturais (ADR-001..012). São normativas.
+- **[docs/adr/](docs/adr/)** — decisões estruturais (ADR-001..013). São normativas.
+- **[docs/plan/mvp1/](docs/plan/mvp1/)** — plano de execução do MVP 1.0 (P0–P4,
+  29 tarefas, protocolo do agente). Progresso em `STATUS.md`.
 - **[docs/benchmarking/](docs/benchmarking/)** — auditoria HubFit × Trainerize × Lyfta.
 - `docs/guidelines/` — convenções de código (ex.: `flutter.md`).
 
 ## Estado atual (2026-07-03)
-Bootstrap: design system Flutter (tokens/tema/componentes) + tela de login (visual).
-Sem backend, sem persistência, sem auth real ainda. Docs de fundação escritos.
-**Foco atual: MVP 1.0** — o loop diário do aluno (treinar / evoluir / falar com o
-coach, offline). Escopo e ordenação em [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md).
+Bootstrap Flutter (DS + login visual) + **plano de execução do MVP 1.0 pronto**
+([docs/plan/mvp1/](docs/plan/mvp1/)). Backend ainda não implementado (começa em P0).
+**Foco: executar o plano na ordem P0→P4** via agente `mvp-dev` (uma tarefa por vez).
+Escopo do MVP em [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de
+serviços em [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md).
+Aluno e professor funcionam em **todas** as plataformas (mobile e web).
 
 ## Convenções inegociáveis
 - **Decisão estrutural nova → novo ADR**, nunca edição silenciosa de doc.
@@ -52,10 +62,16 @@ por legado). Commits descritivos, escopo coeso por commit.
 
 ## Comandos de dev
 ```bash
+# Flutter
 cd app && flutter pub get      # deps
 flutter run -d chrome          # rodar (ou -d <device>)
-flutter analyze                # lint
-flutter test                   # testes
+flutter analyze && flutter test
+
+# Backend (por serviço, ex. identity)
+cd backend && docker compose up -d          # Redis + MinIO (Postgres é o local)
+psql -U postgres -f backend/scripts/create-dbs.sql   # bancos (1ª vez na máquina)
+cd backend/identity && go run ./cmd/api     # subir serviço
+go vet ./... && go test ./...               # verificação
 ```
 
 ## Manter este arquivo atualizado
