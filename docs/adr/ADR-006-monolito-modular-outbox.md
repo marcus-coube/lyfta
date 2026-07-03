@@ -1,6 +1,6 @@
 # ADR-006 — Backend: monolito modular em Go com eventos via outbox
 
-**Status:** Aceito
+**Status:** Superado por [ADR-013](ADR-013-microservicos-db-por-servico.md) (2026-07-03)
 **Data:** 2026-07-02
 
 ## Contexto
