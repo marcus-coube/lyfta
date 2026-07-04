@@ -22,7 +22,7 @@ Refs normativas: ADR-001, ADR-002, ADR-011, ADR-013, `backend/README.md`.
 **Aceite:** `docker compose up -d` sobe Redis+MinIO; `psql -l` lista os 4 bancos;
 console MinIO acessível com o bucket criado.
 
-## - [ ] P0.2 Serviço identity — esqueleto + migrations
+## - [x] P0.2 Serviço identity — esqueleto + migrations
 
 **Objetivo:** projeto Go do identity de pé com schema inicial.
 **Passos:**
@@ -159,3 +159,51 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
 - Bancos Postgres (`lyfta_identity`, `lyfta_workout`, `lyfta_assessment`,
   `lyfta_comms`) já confirmados existentes nesta máquina em sessão anterior —
   não re-verificado aqui (fora do escopo restante desta tarefa).
+
+### P0.2 (2026-07-03, Mac)
+
+- **Go e golang-migrate não estavam instalados nesta máquina (Mac)** — instalados
+  via Homebrew nesta sessão (`brew install go` → 1.26.4; `brew install
+  golang-migrate` → 4.19.1) para poder implementar e verificar a tarefa. Registrar
+  o mesmo passo se o Windows retomar o trabalho de backend sem Go/migrate.
+- **RLS e superusuário:** o Postgres local (`postgres`, `marcus`) é superusuário e
+  **sempre ignora RLS**, mesmo com `FORCE ROW LEVEL SECURITY` (isso só afeta o
+  dono da tabela, não superusuários). Por isso a migration `0007_app_role` cria a
+  role `lyfta_app` (`LOGIN`, `NOBYPASSRLS`) e o serviço/testes devem conectar com
+  ela (`DATABASE_URL` em `backend/identity/.env.example` já aponta para
+  `lyfta_app`) — conectar como `postgres` faz o teste de isolamento passar
+  silenciosamente mesmo com RLS quebrada (foi o que aconteceu na primeira
+  tentativa desta tarefa, corrigido antes do commit).
+- **Ordem das migrations:** a criação da role/grants (`app_role`) foi colocada
+  **por último** (`0007`, depois de todas as tabelas), não junto com `tenants`
+  como o plano sugeria em ordem — `GRANT ... ON ALL TABLES IN SCHEMA public`
+  precisa que as tabelas já existam; `ALTER DEFAULT PRIVILEGES` sozinho só cobre
+  tabelas criadas depois dele pela mesma role, não as anteriores.
+- **UUID v7:** Postgres 17 local não tem `uuidv7()` nativo (chega só na v18); os
+  ids são gerados na aplicação via `github.com/google/uuid` (`uuid.NewV7()`) e
+  passados explicitamente nos `INSERT` — colunas `id UUID PRIMARY KEY` sem
+  `DEFAULT`.
+- **tenant_id em tabelas sem tenant_id explícito no plano:** o plano listava
+  `user_roles (user_id, role)`, `refresh_tokens (id, user_id, token_hash,
+  expires_at, revoked_at)` e `password_resets (id, user_id, token_hash,
+  expires_at, used_at)` sem `tenant_id`. ADR-001 §1/§3 exige `tenant_id` +
+  índice iniciando nele em toda tabela de domínio; adicionei `tenant_id`
+  denormalizado de `users` nessas três tabelas (com FK para `tenants` e RLS
+  própria) para poder aplicar a policy diretamente, sem subquery a `users` a
+  cada acesso. Desvio de detalhe, não de arquitetura — sinalizado aqui em vez
+  de decidido silenciosamente.
+- Role de app usa senha fixa de dev (`lyfta_app_dev`) via `CREATE ROLE ...
+  PASSWORD`, documentada só em `.env.example` (não é segredo real, é dev local).
+  Em produção a criação da role/senha deve ser parametrizada — ver quando o
+  deploy real for desenhado (fora do escopo do MVP local).
+- Verificado localmente (Mac): `migrate up` limpo (7 migrations), `migrate down
+  -all` e `up` novamente limpo (reversibilidade confirmada), `go vet ./...`,
+  `go build ./...`, `go test ./...` (teste de isolamento cross-tenant em
+  `internal/repo/repo_test.go`, conectando como `lyfta_app`) e `go run ./cmd/api`
+  respondendo `GET /healthz` com `200 {"status":"ok"}` — tudo verde.
+- **Pendência para o Windows:** repetir `brew`-equivalente lá (instalar Go 1.22+
+  e golang-migrate), rodar `psql -U postgres -f backend/scripts/create-dbs.sql`
+  se ainda não tiver os bancos, e então `cd backend/identity && migrate -path
+  migrations -database "$DATABASE_URL" up` (com `DATABASE_URL` apontando para
+  `postgres` na primeira vez, para criar a role `lyfta_app`; depois trocar para
+  `lyfta_app` no `.env`).
