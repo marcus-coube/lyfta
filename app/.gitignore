@@ -43,3 +43,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Pastas de plataforma — geradas com `flutter create .`, não versionadas
+# (só lib/, pubspec.yaml e configs entram no git — ver app/README.md).
+/android/
+/ios/
+/web/
+/linux/
+/macos/
+/windows/
