@@ -11,7 +11,7 @@ import (
 
 // NewRouter monta o roteador chi do serviço identity com os middlewares base
 // (request-id, logging estruturado, recover, CORS) e as rotas disponíveis.
-func NewRouter(logger *slog.Logger, corsOrigins []string) http.Handler {
+func NewRouter(logger *slog.Logger, corsOrigins []string, auth *AuthHandler) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(RequestID)
@@ -26,6 +26,15 @@ func NewRouter(logger *slog.Logger, corsOrigins []string) http.Handler {
 	}))
 
 	r.Get("/healthz", healthzHandler)
+
+	r.Route("/v1", func(r chi.Router) {
+		r.Post("/tenants", auth.Signup)
+		r.Route("/auth", func(r chi.Router) {
+			r.Post("/login", auth.Login)
+			r.Post("/refresh", auth.Refresh)
+			r.Post("/logout", auth.Logout)
+		})
+	})
 
 	return r
 }

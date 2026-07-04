@@ -45,3 +45,23 @@ type User struct {
 	Roles        []Role
 	CreatedAt    time.Time
 }
+
+// TenantMatch identifica um tenant onde um e-mail tem conta ativa — usado na
+// resolução de login entre tenants (ADR-002 §2b/2c).
+type TenantMatch struct {
+	UserID     string
+	TenantID   string
+	TenantName string
+}
+
+// RefreshToken representa um refresh token emitido (hash em banco, nunca o
+// valor em claro — P0.3).
+type RefreshToken struct {
+	ID        string
+	UserID    string
+	TenantID  string
+	TokenHash string
+	ExpiresAt time.Time
+	RevokedAt *time.Time
+	CreatedAt time.Time
+}

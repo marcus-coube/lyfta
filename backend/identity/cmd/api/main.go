@@ -15,6 +15,7 @@ import (
 	"github.com/marcus-coube/lyfta/identity/internal/config"
 	ihttp "github.com/marcus-coube/lyfta/identity/internal/http"
 	"github.com/marcus-coube/lyfta/identity/internal/repo"
+	"github.com/marcus-coube/lyfta/identity/internal/security"
 )
 
 func main() {
@@ -42,7 +43,17 @@ func run(logger *slog.Logger) error {
 	}
 	defer pool.Close()
 
-	router := ihttp.NewRouter(logger, cfg.CORSOrigins)
+	jwtSigner, err := security.NewJWTSigner(cfg.JWTPrivateKey, cfg.JWTPublicKey)
+	if err != nil {
+		return err
+	}
+
+	tenants := repo.NewTenantRepo(pool)
+	users := repo.NewUserRepo(pool)
+	authRepo := repo.NewAuthRepo(pool)
+	authHandler := ihttp.NewAuthHandler(logger, tenants, users, authRepo, jwtSigner)
+
+	router := ihttp.NewRouter(logger, cfg.CORSOrigins, authHandler)
 
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,

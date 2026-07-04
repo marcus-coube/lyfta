@@ -28,8 +28,8 @@ func Load() (Config, error) {
 	cfg := Config{
 		Port:          getEnv("PORT", "8081"),
 		DatabaseURL:   os.Getenv("DATABASE_URL"),
-		JWTPublicKey:  os.Getenv("JWT_PUBLIC_KEY"),
-		JWTPrivateKey: os.Getenv("JWT_PRIVATE_KEY"),
+		JWTPublicKey:  unescapeNewlines(os.Getenv("JWT_PUBLIC_KEY")),
+		JWTPrivateKey: unescapeNewlines(os.Getenv("JWT_PRIVATE_KEY")),
 		InternalToken: os.Getenv("INTERNAL_TOKEN"),
 		ResendAPIKey:  os.Getenv("RESEND_API_KEY"),
 		MailFrom:      getEnv("MAIL_FROM", "Lyfta <no-reply@lyfta.app>"),
@@ -42,6 +42,15 @@ func Load() (Config, error) {
 	}
 
 	return cfg, nil
+}
+
+// unescapeNewlines troca `\n` literal (duas runas) por quebra de linha real.
+// PEMs de chave JWT (backend/scripts/gen-keys.sh) são distribuídos como uma
+// única linha com `\n` escapado — formato comum em painéis de env var que não
+// suportam multi-linha (Heroku/Render/etc.) — e precisam ser desescapados
+// antes do parse (crypto/x509 espera quebras de linha reais no PEM).
+func unescapeNewlines(v string) string {
+	return strings.ReplaceAll(v, `\n`, "\n")
 }
 
 func getEnv(key, fallback string) string {

@@ -45,7 +45,7 @@ console MinIO acessível com o bucket criado.
 **Aceite:** `migrate up` roda limpo nos 4 ambientes de tabela; `go run ./cmd/api`
 responde `/healthz`; teste de repo cria tenant+user respeitando RLS.
 
-## - [ ] P0.3 identity — signup, login, refresh, JWT
+## - [x] P0.3 identity — signup, login, refresh, JWT
 
 **Objetivo:** autenticação real conforme ADR-002.
 **Endpoints:**
@@ -207,3 +207,69 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
   migrations -database "$DATABASE_URL" up` (com `DATABASE_URL` apontando para
   `postgres` na primeira vez, para criar a role `lyfta_app`; depois trocar para
   `lyfta_app` no `.env`).
+
+### P0.3 (2026-07-03, Mac)
+
+- **RLS vs. lookup de e-mail entre tenants (ADR-002 §2b/2c):** o login precisa
+  achar em quais tenants um e-mail existe **antes** de saber qual
+  `app.tenant_id` setar. Validado manualmente que, sem esse `SET`, a policy
+  `tenant_isolation` de `users` compara `tenant_id` a `current_setting(...)`
+  que é `NULL`, e `lyfta_app` vê **0 linhas** mesmo havendo dados — ou seja,
+  RLS bloqueia por padrão o próprio caso de uso que o login precisa resolver.
+  Solução adotada: migration `0008_email_lookup` cria a função SQL
+  `find_tenants_by_email(email)`, `SECURITY DEFINER` (de propriedade do dono
+  das tabelas, não de `lyfta_app`), com superfície mínima — devolve só
+  `(user_id, tenant_id, tenant_name)`, nunca `password_hash` ou qualquer outra
+  coluna. `lyfta_app` só recebe `EXECUTE` nela, não `SELECT` direto fora do
+  tenant setado. É a única exceção documentada ao modelo de RLS; todo o resto
+  do acesso a dados continua via `WithTenant` (ADR-001 §4: RLS é rede de
+  segurança, filtro explícito continua obrigatório em todo o resto).
+- **Signup transacional (tenant + owner):** o plano pedia "cria tenant + user
+  owner numa transação". `TenantRepo.CreateWithOwner` abre uma única
+  transação: insere `tenants` (tabela global, sem RLS), seta
+  `app.tenant_id` nessa mesma tx e insere `users`+`user_roles` (com RLS) antes
+  do commit — testado em `internal/repo/repo_test.go`
+  (`TestCreateTenantWithOwnerTransactional`) que um papel inválido reverte
+  tudo, sem deixar tenant órfão.
+- **Senha:** argon2id via `golang.org/x/crypto/argon2` (extensão oficial do
+  Go, não é dependência de terceiros fora do ecossistema padrão), hash
+  autodescritivo (`$argon2id$v=...$m=...,t=...,p=...$salt$hash`), comparação
+  em tempo constante (`crypto/subtle`). Parâmetros: OWASP recomendado (64 MiB,
+  1 iteração, 4 threads) para uso interativo.
+- **JWT:** `golang-jwt/jwt/v5` (pinado no backend/README.md), EdDSA/ed25519,
+  claims `sub`, `tenant_id`, `roles`, `locale`, `exp`/`iat`. TTL do access
+  15 min (`security.AccessTokenTTL`). Chaves via PEM em env
+  (`JWT_PRIVATE_KEY`/`JWT_PUBLIC_KEY`), geradas por `backend/scripts/gen-keys.sh`
+  (novo, usa `openssl genpkey -algorithm ed25519`).
+- **Refresh token:** opaco (32 bytes aleatórios, base64url), hash SHA-256 em
+  banco (nunca o valor em claro), TTL **30 dias** — não especificado no plano,
+  adotado como padrão razoável; revisar se o produto pedir "lembrar de mim"
+  com TTL diferenciado. Rotação: `POST /v1/auth/refresh` sempre revoga o token
+  usado e emite um par novo (access+refresh); reuso do token antigo depois da
+  rotação (ou depois de `logout`) responde `401 invalid_token`.
+- **Envelope de erro:** `internal/http/apierror.go` centraliza os `code`s
+  usados nesta tarefa: `invalid_body`, `validation_error` (com `params.field`),
+  `invalid_credentials`, `multiple_tenants` (com `params.tenants[]`),
+  `invalid_token`, `slug_taken`, `internal_error`. Login nunca diferencia
+  "e-mail não existe" de "senha errada" (sempre `invalid_credentials`) — evita
+  vazar quais e-mails têm conta.
+- **`.env.example` do identity já tinha os placeholders de `JWT_PUBLIC_KEY`/
+  `JWT_PRIVATE_KEY`** (deixados pelo P0.2 apontando para esta tarefa) — nada a
+  mudar ali além de gerar o par local com o novo `gen-keys.sh`. PEMs são
+  distribuídos como uma linha só com `\n` escapado (formato comum em painéis
+  de env tipo Heroku/Render); `config.Load()` desescapa antes do parse
+  (`unescapeNewlines`).
+- Verificado (Mac): `go build`/`go vet`/`gofmt -l` limpos; `migrate up`
+  (8 migrations), `down -all` e `up` de novo limpos (reversibilidade total,
+  incluindo a função nova); `go test ./...` verde — cobre signup→login→
+  refresh→logout, múltiplos tenants (409), senha errada e e-mail inexistente
+  (ambos `401 invalid_credentials`), token expirado rejeitado, e o teste de
+  isolamento cross-tenant do P0.2 continua passando. Smoke test manual via
+  `curl` do fluxo completo antes de escrever os testes automatizados.
+- **Pendência:** nenhum endpoint autenticado existe ainda para exercitar
+  `security.JWTSigner.Parse` num middleware real (isso chega em tarefas
+  seguintes, quando houver rota protegida por Bearer token). Não há proteção
+  de rate limit no lookup de e-mail entre tenants nem no login — ADR-002 §2c
+  menciona rate limit como requisito da resolução de e-mail; avaliar onde
+  encaixar (provavelmente P0.7/infra ou um ADR de rate limiting, fora do
+  escopo desta tarefa).

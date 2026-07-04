@@ -103,3 +103,52 @@ func TestTenantAndUserIsolation(t *testing.T) {
 func uniqueSlug(prefix string) string {
 	return prefix + "-" + uuid.NewString()[:8]
 }
+
+// TestCreateTenantWithOwnerTransactional cobre o Aceite de P0.3: signup cria
+// tenant + user owner "numa transação" — se a inserção do usuário falhar, o
+// tenant não deve ficar órfão no banco (rollback completo).
+func TestCreateTenantWithOwnerTransactional(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	tenants := repo.NewTenantRepo(pool)
+
+	t.Run("caminho feliz cria tenant e owner juntos", func(t *testing.T) {
+		slug := uniqueSlug("signup-ok")
+		tenant, user, err := tenants.CreateWithOwner(ctx,
+			domain.Tenant{Name: "Academia Signup", Slug: slug, Locale: "pt-BR"},
+			domain.User{
+				Email: "owner@signup-ok.com", PasswordHash: "hash",
+				Name: "Owner Signup", Locale: "pt-BR", Status: domain.UserStatusActive,
+				Roles: []domain.Role{domain.RoleOwner, domain.RoleCoach},
+			},
+		)
+		if err != nil {
+			t.Fatalf("CreateWithOwner: %v", err)
+		}
+		if tenant.ID == "" || user.ID == "" {
+			t.Fatalf("esperava ids gerados, obtive tenant=%+v user=%+v", tenant, user)
+		}
+		if user.TenantID != tenant.ID {
+			t.Fatalf("esperava user.TenantID == tenant.ID, obtive %s != %s", user.TenantID, tenant.ID)
+		}
+	})
+
+	t.Run("papel inválido reverte a criação do tenant (sem órfão)", func(t *testing.T) {
+		slug := uniqueSlug("signup-fail")
+		_, _, err := tenants.CreateWithOwner(ctx,
+			domain.Tenant{Name: "Academia Falha", Slug: slug, Locale: "pt-BR"},
+			domain.User{
+				Email: "owner@signup-fail.com", PasswordHash: "hash",
+				Name: "Owner Falha", Locale: "pt-BR", Status: domain.UserStatusActive,
+				Roles: []domain.Role{"papel-invalido"}, // viola CHECK de user_roles.role
+			},
+		)
+		if err == nil {
+			t.Fatal("esperava erro ao inserir papel inválido")
+		}
+
+		if _, err := tenants.FindBySlug(ctx, slug); err != repo.ErrNotFound {
+			t.Fatalf("esperava tenant revertido (ErrNotFound), obtive: %v", err)
+		}
+	})
+}
