@@ -63,7 +63,7 @@ responde `/healthz`; teste de repo cria tenant+user respeitando RLS.
 tenants; senha errada retorna `401 code:invalid_credentials`; access token expirado
 rejeitado.
 
-## - [ ] P0.4 identity — convites (Resend) e recuperação de senha
+## - [x] P0.4 identity — convites (Resend) e recuperação de senha
 
 **Objetivo:** o professor convida o aluno por e-mail; aluno ativa a conta.
 **Passos:**
@@ -273,3 +273,58 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
   menciona rate limit como requisito da resolução de e-mail; avaliar onde
   encaixar (provavelmente P0.7/infra ou um ADR de rate limiting, fora do
   escopo desta tarefa).
+
+### P0.4 (2026-07-04, Mac)
+
+- **Mailer:** interface `mail.Mailer` com `resendMailer` (produção, API do
+  Resend) e `logMailer` (dev/teste). Seleção em `main.go` pela presença de
+  `RESEND_API_KEY`: sem chave, loga o link no stdout e segue — dev/teste não
+  dependem de e-mail real (Aceite). Templates HTML inline pt-BR (convite e
+  reset) em `internal/mail/templates.go`; e-mail transacional é texto de
+  servidor, não string de UI (ADR-011 trata i18n de UI, não isto).
+- **Primeiro endpoint autenticado (fecha a pendência do P0.3):** middleware
+  `RequireAuth` (valida Bearer via `JWTSigner.Parse`, injeta claims no
+  contexto) + `RequireRole(owner,coach)`. Decisão de RLS: o middleware **não**
+  seta `app.tenant_id`; cada repo continua abrindo sua tx via `WithTenant` a
+  partir do `tenant_id` **da claim** (nunca de body/query), pra não confiar em
+  input do cliente na hora de aplicar RLS. `POST /v1/invitations` e
+  `/{id}/resend` exigem sessão owner|coach; `/accept` é público.
+- **Endpoints públicos por token (accept/reset) e RLS:** mesmo problema do
+  login no P0.3 — o cliente só tem o token, ainda não sabe o `tenant_id`.
+  Migration `0009_public_token_lookup` cria `find_invitation_by_token` e
+  `find_password_reset_by_token`, `SECURITY DEFINER`, de superfície mínima
+  (só a linha do convite/reset pelo hash exato, nunca por listagem; essas
+  tabelas não têm coluna sensível como `password_hash`), `EXECUTE` só pra
+  `lyfta_app`. Segue o mesmo padrão documentado em `0008` — exceção contida,
+  o resto do acesso continua via `WithTenant`.
+- **forgot-password sempre 200:** não distingue e-mail existente de
+  inexistente (não vaza quais e-mails têm conta). Se o e-mail existir em N
+  tenants (ADR-002: conta por tenant), cria um pedido de reset e envia um
+  e-mail **por conta ativa**, reusando `find_tenants_by_email` (0008).
+- **Tokens:** convite e reset são opacos (32 bytes, base64url), hash SHA-256
+  em banco (`repo.HashToken`, mesmo do refresh), uso único, expiram — convite
+  7d (`repo.InvitationTTL`), reset 1h (`repo.PasswordResetTTL`). Reenvio de
+  convite invalida o token anterior (`invitations.Invalidate`) antes de gerar
+  o novo. `accept` faz auto-login (reusa `issueTokens`); `reset-password`
+  responde 204 (sem auto-login, o usuário loga com a senha nova).
+- **Refactor de `issueTokens`:** virou função livre em `auth.go`
+  (`issueTokens(ctx, jwt, auth, logger, user)`) pra ser reusada pelo
+  auto-login do `accept` sem um `AuthHandler`; `generateOpaqueToken`
+  ficou única (removida a duplicata que havia em `invitations.go`).
+- **Novos `code`s de erro:** `email_taken`, `unauthenticated`, `forbidden`
+  (além dos do P0.3) em `apierror.go`.
+- Verificado (Mac): `go vet`/`go build` limpos; `migrate up` (9 migrations)
+  aplicada; `go test ./...` verde — 5 testes novos de handler cobrindo o
+  fluxo completo com mailer de captura: convite→accept(auto-login)→login do
+  aluno + reuso do convite falha; `POST /v1/invitations` sem Bearer → 401
+  `unauthenticated` e com papel só `student` → 403 `forbidden`; reenvio
+  invalida o token anterior e o novo funciona; forgot→reset→login com senha
+  nova (antiga falha) + reuso do token de reset falha; forgot de e-mail
+  inexistente responde 200 sem enviar e-mail. Smoke test do binário real
+  (`go run ./cmd/api`): `/healthz` 200, `forgot-password` 200,
+  `/v1/invitations` sem auth 401.
+- **Pendência (herdada, ainda aberta):** rate limit no lookup de e-mail entre
+  tenants e nos endpoints públicos por token (força-bruta de token é mitigada
+  por 256 bits de entropia + expiração curta, mas rate limit ainda cabe) —
+  ADR-002 §2c; avaliar em P0.7/infra ou ADR dedicado. **Windows:** aplicar a
+  migration `0009` (`migrate ... up`) ao retomar o backend.

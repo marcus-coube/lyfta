@@ -17,6 +17,7 @@ type Config struct {
 	InternalToken string
 	ResendAPIKey  string
 	MailFrom      string
+	AppURL        string
 	CORSOrigins   []string
 	AppEnv        string
 }
@@ -33,6 +34,7 @@ func Load() (Config, error) {
 		InternalToken: os.Getenv("INTERNAL_TOKEN"),
 		ResendAPIKey:  os.Getenv("RESEND_API_KEY"),
 		MailFrom:      getEnv("MAIL_FROM", "Lyfta <no-reply@lyfta.app>"),
+		AppURL:        getEnv("APP_URL", "http://localhost:5173"),
 		CORSOrigins:   splitAndTrim(getEnv("CORS_ORIGINS", "http://localhost:*")),
 		AppEnv:        getEnv("APP_ENV", "development"),
 	}

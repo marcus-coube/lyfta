@@ -65,6 +65,12 @@ var (
 	errEmailTaken = func() APIError {
 		return newAPIError(http.StatusConflict, "email_taken")
 	}
+	errUnauthenticated = func() APIError {
+		return newAPIError(http.StatusUnauthorized, "unauthenticated")
+	}
+	errForbidden = func() APIError {
+		return newAPIError(http.StatusForbidden, "forbidden")
+	}
 	errInternal = func() APIError {
 		return newAPIError(http.StatusInternalServerError, "internal_error")
 	}

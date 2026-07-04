@@ -7,11 +7,21 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+
+	"github.com/marcus-coube/lyfta/identity/internal/domain"
+	"github.com/marcus-coube/lyfta/identity/internal/security"
 )
 
 // NewRouter monta o roteador chi do serviço identity com os middlewares base
 // (request-id, logging estruturado, recover, CORS) e as rotas disponíveis.
-func NewRouter(logger *slog.Logger, corsOrigins []string, auth *AuthHandler) http.Handler {
+func NewRouter(
+	logger *slog.Logger,
+	corsOrigins []string,
+	signer *security.JWTSigner,
+	auth *AuthHandler,
+	invitations *InvitationHandler,
+	passwordReset *PasswordResetHandler,
+) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(RequestID)
@@ -33,6 +43,20 @@ func NewRouter(logger *slog.Logger, corsOrigins []string, auth *AuthHandler) htt
 			r.Post("/login", auth.Login)
 			r.Post("/refresh", auth.Refresh)
 			r.Post("/logout", auth.Logout)
+			r.Post("/forgot-password", passwordReset.ForgotPassword)
+			r.Post("/reset-password", passwordReset.ResetPassword)
+		})
+		r.Route("/invitations", func(r chi.Router) {
+			// Aceite é público: o convidado só tem o token, ainda não tem sessão.
+			r.Post("/accept", invitations.Accept)
+
+			// Criar e reenviar convite exigem sessão de owner|coach.
+			r.Group(func(r chi.Router) {
+				r.Use(RequireAuth(signer))
+				r.Use(RequireRole(string(domain.RoleOwner), string(domain.RoleCoach)))
+				r.Post("/", invitations.Create)
+				r.Post("/{id}/resend", invitations.Resend)
+			})
 		})
 	})
 

@@ -128,7 +128,7 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, apiErr := h.issueTokens(ctx, user)
+	resp, apiErr := issueTokens(ctx, h.jwt, h.auth, h.logger, user)
 	if apiErr != nil {
 		writeError(w, *apiErr)
 		return
@@ -212,7 +212,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, apiErr := h.issueTokens(ctx, user)
+	resp, apiErr := issueTokens(ctx, h.jwt, h.auth, h.logger, user)
 	if apiErr != nil {
 		writeError(w, *apiErr)
 		return
@@ -271,7 +271,7 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, apiErr := h.issueTokens(ctx, user)
+	resp, apiErr := issueTokens(ctx, h.jwt, h.auth, h.logger, user)
 	if apiErr != nil {
 		writeError(w, *apiErr)
 		return
@@ -326,28 +326,31 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 // issueTokens assina um novo access token e cria um novo refresh token para
 // o usuário informado, devolvendo o envelope de resposta comum aos três
 // endpoints que emitem sessão (signup, login, refresh).
-func (h *AuthHandler) issueTokens(ctx context.Context, user domain.User) (tokenResponse, *APIError) {
+//
+// É uma função livre (não método) porque também é usada pelo fluxo de aceite
+// de convite (invitations.go), que faz auto-login sem um AuthHandler.
+func issueTokens(ctx context.Context, jwt *security.JWTSigner, auth *repo.AuthRepo, logger *slog.Logger, user domain.User) (tokenResponse, *APIError) {
 	roles := make([]string, 0, len(user.Roles))
 	for _, role := range user.Roles {
 		roles = append(roles, string(role))
 	}
 
-	access, expiresAt, err := h.jwt.Sign(user.ID, user.TenantID, roles, user.Locale)
+	access, expiresAt, err := jwt.Sign(user.ID, user.TenantID, roles, user.Locale)
 	if err != nil {
-		h.logger.Error("issue_tokens_sign_failed", slog.Any("error", err))
+		logger.Error("issue_tokens_sign_failed", slog.Any("error", err))
 		errAPI := errInternal()
 		return tokenResponse{}, &errAPI
 	}
 
 	refreshPlain, err := generateOpaqueToken()
 	if err != nil {
-		h.logger.Error("issue_tokens_refresh_gen_failed", slog.Any("error", err))
+		logger.Error("issue_tokens_refresh_gen_failed", slog.Any("error", err))
 		errAPI := errInternal()
 		return tokenResponse{}, &errAPI
 	}
 
-	if _, err := h.auth.CreateRefreshToken(ctx, user.TenantID, user.ID, repo.HashToken(refreshPlain), time.Now().Add(repo.RefreshTokenTTL)); err != nil {
-		h.logger.Error("issue_tokens_create_refresh_failed", slog.Any("error", err))
+	if _, err := auth.CreateRefreshToken(ctx, user.TenantID, user.ID, repo.HashToken(refreshPlain), time.Now().Add(repo.RefreshTokenTTL)); err != nil {
+		logger.Error("issue_tokens_create_refresh_failed", slog.Any("error", err))
 		errAPI := errInternal()
 		return tokenResponse{}, &errAPI
 	}

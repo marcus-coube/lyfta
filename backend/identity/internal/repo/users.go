@@ -95,6 +95,35 @@ func (r *UserRepo) FindByEmailInTenant(ctx context.Context, tenantID, email stri
 	return u, nil
 }
 
+// ActivateWithPassword define a senha (já com hash) de um usuário convidado e
+// o ativa (status=active) — usado no accept de convite (P0.4).
+func (r *UserRepo) ActivateWithPassword(ctx context.Context, tenantID, userID, passwordHash string) error {
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		const q = `
+			UPDATE users SET password_hash = $1, status = $2
+			WHERE id = $3`
+		_, err := tx.Exec(ctx, q, passwordHash, string(domain.UserStatusActive), userID)
+		return err
+	})
+	if err != nil {
+		return fmt.Errorf("repo: ativar usuário com senha: %w", err)
+	}
+	return nil
+}
+
+// UpdatePassword troca o hash de senha de um usuário (usado no reset).
+func (r *UserRepo) UpdatePassword(ctx context.Context, tenantID, userID, passwordHash string) error {
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		const q = `UPDATE users SET password_hash = $1 WHERE id = $2`
+		_, err := tx.Exec(ctx, q, passwordHash, userID)
+		return err
+	})
+	if err != nil {
+		return fmt.Errorf("repo: atualizar senha: %w", err)
+	}
+	return nil
+}
+
 // ListByTenant lista todos os usuários visíveis sob o tenant_id setado —
 // usado nos testes de isolamento de RLS.
 func (r *UserRepo) ListByTenant(ctx context.Context, tenantID string) ([]domain.User, error) {

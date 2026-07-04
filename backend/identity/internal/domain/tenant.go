@@ -65,3 +65,29 @@ type RefreshToken struct {
 	RevokedAt *time.Time
 	CreatedAt time.Time
 }
+
+// Invitation representa o convite de um coach/owner para um e-mail entrar no
+// tenant (P0.4). Token opaco, hash em banco, uso único (accepted_at).
+type Invitation struct {
+	ID         string
+	TenantID   string
+	Email      string
+	Role       Role
+	TokenHash  string
+	InvitedBy  string
+	ExpiresAt  time.Time
+	AcceptedAt *time.Time
+	CreatedAt  time.Time
+}
+
+// PasswordReset representa um pedido de recuperação de senha (P0.4). Token
+// opaco, hash em banco, uso único (used_at).
+type PasswordReset struct {
+	ID        string
+	UserID    string
+	TenantID  string
+	TokenHash string
+	ExpiresAt time.Time
+	UsedAt    *time.Time
+	CreatedAt time.Time
+}

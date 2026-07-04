@@ -69,23 +69,27 @@ func testSigner(t *testing.T) *security.JWTSigner {
 	return signer
 }
 
-func newTestServer(t *testing.T) (*httptest.Server, *security.JWTSigner) {
+func newTestServer(t *testing.T) (*httptest.Server, *security.JWTSigner, *captureMailer) {
 	t.Helper()
 	pool := testPool(t)
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelError}))
 	signer := testSigner(t)
+	mailer := &captureMailer{}
 
-	handler := ihttp.NewAuthHandler(
-		logger,
-		repo.NewTenantRepo(pool),
-		repo.NewUserRepo(pool),
-		repo.NewAuthRepo(pool),
-		signer,
-	)
-	router := ihttp.NewRouter(logger, []string{"*"}, handler)
+	tenants := repo.NewTenantRepo(pool)
+	users := repo.NewUserRepo(pool)
+	authRepo := repo.NewAuthRepo(pool)
+	invitationRepo := repo.NewInvitationRepo(pool)
+	passwordResetRepo := repo.NewPasswordResetRepo(pool)
+
+	authHandler := ihttp.NewAuthHandler(logger, tenants, users, authRepo, signer)
+	invitationHandler := ihttp.NewInvitationHandler(logger, invitationRepo, users, authRepo, signer, mailer, "http://localhost:5173")
+	passwordResetHandler := ihttp.NewPasswordResetHandler(logger, authRepo, users, passwordResetRepo, mailer, "http://localhost:5173")
+
+	router := ihttp.NewRouter(logger, []string{"*"}, signer, authHandler, invitationHandler, passwordResetHandler)
 	server := httptest.NewServer(router)
 	t.Cleanup(server.Close)
-	return server, signer
+	return server, signer, mailer
 }
 
 func uniqueSlug(prefix string) string {
@@ -124,7 +128,7 @@ func doPost(t *testing.T, client *http.Client, url string, payload any) jsonResp
 // --- Aceite: signup -> login -> refresh -> logout -------------------------
 
 func TestSignupLoginRefreshLogout(t *testing.T) {
-	server, _ := newTestServer(t)
+	server, _, _ := newTestServer(t)
 	client := server.Client()
 
 	email := uniqueEmail("owner")
@@ -204,7 +208,7 @@ func TestSignupLoginRefreshLogout(t *testing.T) {
 // --- Aceite: login com múltiplos tenants -----------------------------------
 
 func TestLoginMultipleTenants(t *testing.T) {
-	server, _ := newTestServer(t)
+	server, _, _ := newTestServer(t)
 	client := server.Client()
 
 	email := uniqueEmail("multi")
@@ -259,7 +263,7 @@ func TestLoginMultipleTenants(t *testing.T) {
 // --- Aceite: senha errada ---------------------------------------------------
 
 func TestLoginInvalidCredentials(t *testing.T) {
-	server, _ := newTestServer(t)
+	server, _, _ := newTestServer(t)
 	client := server.Client()
 
 	email := uniqueEmail("wrongpass")
@@ -296,7 +300,7 @@ func TestLoginInvalidCredentials(t *testing.T) {
 // --- Aceite: access token expirado é rejeitado ------------------------------
 
 func TestExpiredAccessTokenRejected(t *testing.T) {
-	_, signer := newTestServer(t)
+	_, signer, _ := newTestServer(t)
 
 	token, expiresAt, err := signer.SignWithExpiry("user-id", "tenant-id", []string{"owner"}, "pt-BR", time.Now().Add(-1*time.Minute))
 	if err != nil {
