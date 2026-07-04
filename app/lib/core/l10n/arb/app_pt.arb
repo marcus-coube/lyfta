@@ -1,0 +1,60 @@
+{
+  "@@locale": "pt",
+  "appTitle": "Lyfta",
+  "@appTitle": {
+    "description": "Nome do app, exibido no título da janela/aba."
+  },
+  "appVersion": "v0.1.0",
+  "@appVersion": {
+    "description": "Rótulo de versão exibido na tela de login."
+  },
+  "loginWelcomeBack": "Bem-vindo de volta",
+  "loginSubtitle": "Entre para acompanhar seus treinos e sua evolução.",
+  "loginEmailLabel": "E-mail",
+  "loginEmailHint": "voce@exemplo.com",
+  "loginPasswordLabel": "Senha",
+  "loginPasswordHint": "••••••••",
+  "loginForgotPassword": "Esqueci minha senha",
+  "loginSubmit": "Entrar",
+  "loginOrDivider": "ou",
+  "loginContinueWithGoogle": "Continuar com Google",
+  "loginNewHerePrefix": "Novo por aqui? ",
+  "loginNewHereSuffix": "Seu coach ou academia envia o convite.",
+  "forgotPasswordTitle": "Recuperar senha",
+  "forgotPasswordSubtitle": "Informe seu e-mail para receber o link de redefinição.",
+  "forgotPasswordSubmit": "Enviar link",
+  "forgotPasswordBackToLogin": "Voltar para o login",
+  "inviteTitle": "Aceitar convite",
+  "inviteSubtitle": "Defina sua senha para ativar sua conta.",
+  "inviteNewPasswordLabel": "Nova senha",
+  "inviteSubmit": "Ativar conta",
+  "homeStudentTitle": "Hoje",
+  "homeStudentTabToday": "Hoje",
+  "homeStudentTabEvolution": "Evolução",
+  "homeStudentTabChat": "Chat",
+  "homeStudentTabAgenda": "Agenda",
+  "homeCoachTitle": "Alunos",
+  "homeCoachTabStudents": "Alunos",
+  "homeCoachTabWorkouts": "Treinos",
+  "homeCoachTabChat": "Chat",
+  "homePlaceholderBody": "Em construção.",
+  "roleSwitcherCoach": "Professor",
+  "roleSwitcherStudent": "Aluno",
+  "errorInvalidCredentials": "E-mail ou senha inválidos.",
+  "errorMultipleTenants": "Este e-mail está em mais de uma conta. Escolha uma para continuar.",
+  "errorValidation": "Verifique o campo \"{field}\".",
+  "@errorValidation": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "errorEmailTaken": "Este e-mail já está em uso.",
+  "errorInvalidToken": "Link inválido ou expirado.",
+  "errorUnauthenticated": "Sua sessão expirou. Entre novamente.",
+  "errorForbidden": "Você não tem permissão para essa ação.",
+  "errorSlugTaken": "Este identificador já está em uso.",
+  "errorInternal": "Algo deu errado. Tente novamente.",
+  "errorNetwork": "Sem conexão com o servidor. Verifique sua internet."
+}

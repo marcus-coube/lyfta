@@ -81,7 +81,7 @@ rejeitado.
 **Aceite:** fluxo completo com `logMailer` nos testes; tokens têm hash em banco,
 expiram (convite 7d, reset 1h) e são de uso único.
 
-## - [ ] P0.5 Flutter — núcleo de app: config, HTTP, i18n, roteamento
+## - [x] P0.5 Flutter — núcleo de app: config, HTTP, i18n, roteamento
 
 **Objetivo:** fundação do cliente antes de qualquer tela nova.
 **Passos:**
@@ -328,3 +328,94 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
   por 256 bits de entropia + expiração curta, mas rate limit ainda cabe) —
   ADR-002 §2c; avaliar em P0.7/infra ou ADR dedicado. **Windows:** aplicar a
   migration `0009` (`migrate ... up`) ao retomar o backend.
+
+### P0.5 (2026-07-04, Mac)
+
+- **Flutter instalado via Homebrew nesta sessão** (`brew install flutter` →
+  3.44.4 stable, Dart 3.12.2) — repetir no Windows ao retomar o app (instalar
+  Flutter SDK e rodar `flutter doctor`). Android SDK e Xcode **não** estão
+  configurados nesta máquina: `flutter analyze`/`flutter test` não exigem
+  plataforma nenhuma, e Chrome (web) funciona; **rodar em Android fica
+  pendente** até o SDK ser instalado — não tentado aqui.
+- **Dependências pinadas:** `flutter_riverpod ^2.6.1`, `go_router ^14.8.1`,
+  `dio ^5.7.0` (resolvido `5.10.0`), `flutter_secure_storage ^9.2.2`,
+  `intl` teve que ser fixado em `^0.20.2` (não `^0.19.0` como o plano
+  sugeria) porque `flutter_localizations` do Flutter 3.44.4 já pina
+  `intl 0.20.2` — usar `^0.19.0` quebra a resolução de dependências.
+- **i18n (ADR-011):** `l10n.yaml` na raiz de `app/`, ARBs em
+  `lib/core/l10n/arb/` (`app_pt.arb` fonte, `app_pt_PT.arb`, `app_en.arb`),
+  saída gerada em `lib/core/l10n/gen/` (`flutter gen-l10n`, rodado
+  automaticamente por `flutter pub get`/`flutter test` via `generate: true`
+  no pubspec). **Fallback pt-PT→pt-BR é automático**: o gen-l10n gera
+  `AppLocalizationsPtPt extends AppLocalizationsPt`, então qualquer chave
+  ausente do `app_pt_PT.arb` herda o valor de `app_pt.arb` sem código
+  manual — só populei em `app_pt_PT.arb` as poucas strings com variação real
+  (tratamento "tu" vs "você", "palavra-passe" vs "senha"). Os arquivos
+  gerados (`lib/core/l10n/gen/*.dart`) foram commitados junto (repo já
+  versiona tudo dentro de `lib/`; evita exigir passo de build extra).
+  Migrei todas as strings literais da `login_screen.dart` existente para
+  ARB.
+- **Guard de strings hardcoded:** `tool/check_hardcoded_strings.sh` (+
+  `.ps1` para Windows) — grep por `Text('`/`Text("` fora de
+  `core/design_system/` e `core/l10n/gen/` (arquivos gerados têm
+  strings literais nos doc-comments/exemplos, não são UI). Testado
+  manualmente inserindo um `Text('literal')` num arquivo temporário: script
+  falha com exit 1 e aponta o arquivo/linha; removido antes do commit.
+- **HTTP core:** `ApiClient` (Dio por serviço) com dois interceptors:
+  `AuthInterceptor` (injeta `Authorization: Bearer`, refresh automático em
+  401 com deduplicação — um único `Future<AuthTokens?>` compartilhado entre
+  requisições concorrentes, testado em
+  `test/core/http/auth_interceptor_test.dart`) e `ErrorMappingInterceptor`
+  (converte o envelope `{code, params}` do backend em `ApiException`).
+  Tradução do `code` para mensagem i18n fica em `ApiExceptionL10n`
+  (`lib/core/http/api_exception_l10n.dart`), cobrindo todos os `code`s
+  hoje emitidos pelo `identity` (`apierror.go`): `invalid_credentials`,
+  `multiple_tenants`, `validation_error` (com `params.field`),
+  `email_taken`, `invalid_token`, `unauthenticated`, `forbidden`,
+  `slug_taken`, `internal_error`, mais `network_error` para falha de
+  conexão. `TokenStorage` usa `flutter_secure_storage`; documentado no
+  código o tradeoff do fallback web (localStorage) — decisão final de
+  persistência web fica para P0.6.
+- **Roteamento:** `go_router` com `redirect` central em
+  `lib/core/router/app_router.dart`, ligado a um `authControllerProvider`
+  (Riverpod) que por ora é **stub em memória** (`AuthState.unauthenticated`
+  no boot, sem ler storage/backend — isso é o que o plano pediu
+  explicitamente para esta tarefa; P0.6 liga de verdade mantendo a mesma
+  interface pública do controller). Rotas públicas: `/login`, `/invite`
+  (lê `token` da query string), `/forgot`; `/home` decide entre
+  `CoachShellScreen`/`StudentShellScreen` pelo `ActiveContext` do estado de
+  auth. Usuário com os dois papéis (`hasBothRoles`) vê
+  `RoleContextSwitcher` (`lib/shared/widgets/`) no app bar de ambos os
+  shells — extraído para `shared/` por ser idêntico nos dois (guideline:
+  "comum sobe para shared/").
+- **Testes:** `test/core/router/app_router_test.dart` (4 casos: sem sessão
+  bloqueia rota protegida; autenticado como coach/student cai no shell
+  certo; autenticado tentando `/login` volta pra `/home`) e
+  `test/core/http/auth_interceptor_test.dart` (2 casos: refresh reenvia a
+  requisição original; N requisições concorrentes com 401 compartilham um
+  único refresh — via `HttpClientAdapter` fake, sem pacote novo de mock).
+  Removido `test/widget_test.dart` (boilerplate gerado por
+  `flutter create .`, referenciava uma classe `MyApp` inexistente).
+  **Achado:** o locale padrão do ambiente `flutter test` é `en`, não
+  `pt` — os testes de widget fixam `locale: const Locale('pt')`
+  explicitamente no `MaterialApp.router` para serem determinísticos.
+- **Verificado (Mac):** `flutter pub get` limpo; `flutter analyze` sem
+  issues; `flutter test` verde (6 testes); `tool/check_hardcoded_strings.sh`
+  passa limpo e falha corretamente com literal inserido propositalmente;
+  app rodado de fato no Chrome via `flutter run -d chrome` (tela de login
+  renderizada com textos em inglês, pois o Chrome do ambiente de preview
+  reporta `navigator.language = en-US`— confirma que a resolução de
+  locale por idioma do dispositivo funciona; troca para pt-BR/pt-PT não
+  foi verificada visualmente no navegador real por não haver controle
+  simples de alterar o idioma do Chrome em runtime nesta sessão, mas está
+  coberta pelos testes de widget com locale fixo e é 100% delegada ao
+  `MaterialApp`/`flutter_localizations`, não a código nosso).
+- **Pendência:** rodar em Android (sem SDK nesta máquina — instalar Android
+  Studio/SDK ao retomar, se for continuar no Mac; ou verificar no Windows
+  se lá já há Android Studio configurado). `app/web/` (gerado por
+  `flutter create .`) não foi commitado, conforme `app/README.md` ("só
+  lib/, pubspec.yaml e configs são versionados") — gerar de novo com
+  `flutter create . --platforms=web` (ou os demais) ao configurar uma nova
+  máquina. Criado `.claude/launch.json` (config do preview tool desta
+  sessão) para rodar `flutter run -d chrome` via MCP — não é parte do plano,
+  mas é útil para verificação visual em tarefas futuras.

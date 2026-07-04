@@ -1,0 +1,15 @@
+{
+  "@@locale": "pt_PT",
+  "loginSubtitle": "Entra para acompanhares os teus treinos e a tua evolução.",
+  "loginNewHerePrefix": "Novo por aqui? ",
+  "loginNewHereSuffix": "O teu treinador ou ginásio envia o convite.",
+  "forgotPasswordSubtitle": "Indica o teu e-mail para receberes o link de redefinição.",
+  "inviteSubtitle": "Define a tua senha para ativares a tua conta.",
+  "errorInvalidCredentials": "E-mail ou palavra-passe inválidos.",
+  "errorMultipleTenants": "Este e-mail está em mais do que uma conta. Escolhe uma para continuar.",
+  "errorValidation": "Verifica o campo \"{field}\".",
+  "errorEmailTaken": "Este e-mail já está a ser utilizado.",
+  "errorUnauthenticated": "A tua sessão expirou. Entra novamente.",
+  "errorForbidden": "Não tens permissão para essa ação.",
+  "errorNetwork": "Sem ligação ao servidor. Verifica a tua internet."
+}
