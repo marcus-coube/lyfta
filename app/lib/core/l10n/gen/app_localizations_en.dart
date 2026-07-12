@@ -48,7 +48,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginNewHerePrefix => 'New here? ';
 
   @override
-  String get loginNewHereSuffix => 'Your coach or gym sends the invite.';
+  String get loginNewHereSuffix => 'Create your gym\'s account.';
+
+  @override
+  String get loginTenantSheetTitle => 'Choose an account';
+
+  @override
+  String get loginTenantSheetSubtitle =>
+      'This email belongs to more than one account. Pick which one to sign in to.';
 
   @override
   String get forgotPasswordTitle => 'Reset password';
@@ -64,6 +71,61 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forgotPasswordBackToLogin => 'Back to login';
 
   @override
+  String get forgotPasswordSuccess =>
+      'If this email has an account, we sent a reset link.';
+
+  @override
+  String get resetPasswordTitle => 'Set new password';
+
+  @override
+  String get resetPasswordSubtitle => 'Choose a new password for your account.';
+
+  @override
+  String get resetPasswordNewLabel => 'New password';
+
+  @override
+  String get resetPasswordSubmit => 'Save new password';
+
+  @override
+  String get resetPasswordSuccess =>
+      'Password reset. Sign in with your new password.';
+
+  @override
+  String get resetPasswordInvalidLink =>
+      'Invalid link. Request a new password reset.';
+
+  @override
+  String get signupTitle => 'Create your gym\'s account';
+
+  @override
+  String get signupSubtitle =>
+      'Register your business to start managing students and workouts.';
+
+  @override
+  String get signupBusinessNameLabel => 'Business name';
+
+  @override
+  String get signupBusinessNameHint => 'Example Gym';
+
+  @override
+  String get signupSlugLabel => 'Identifier';
+
+  @override
+  String get signupSlugHint => 'example-gym';
+
+  @override
+  String get signupNameLabel => 'Your name';
+
+  @override
+  String get signupNameHint => 'What should we call you';
+
+  @override
+  String get signupSubmit => 'Create account';
+
+  @override
+  String get signupBackToLogin => 'I already have an account';
+
+  @override
   String get inviteTitle => 'Accept invite';
 
   @override
@@ -74,6 +136,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inviteSubmit => 'Activate account';
+
+  @override
+  String get inviteInvalidLink => 'Invalid or expired invite link.';
 
   @override
   String get homeStudentTitle => 'Today';

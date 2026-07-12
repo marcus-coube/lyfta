@@ -5,10 +5,13 @@ import '../../../core/auth/auth_controller.dart';
 import '../../../core/auth/auth_state.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
+import '../../../shared/widgets/ly_shell_scaffold.dart';
 import '../../../shared/widgets/role_context_switcher.dart';
 
 /// Shell do professor — navegação por destinos placeholder (Alunos, Treinos,
-/// Chat). Telas reais chegam nas fases seguintes do plano.
+/// Chat). Lateral em telas largas (web/desktop), barra inferior em mobile
+/// (`LyShellScaffold`, breakpoint ~840px). Telas reais chegam nas fases
+/// seguintes do plano.
 class CoachShellScreen extends ConsumerStatefulWidget {
   const CoachShellScreen({super.key});
 
@@ -26,29 +29,22 @@ class _CoachShellScreenState extends ConsumerState<CoachShellScreen> {
     final authState = ref.watch(authControllerProvider);
 
     final destinations = [
-      (icon: Icons.groups_outlined, label: l10n.homeCoachTabStudents),
-      (icon: Icons.fitness_center_outlined, label: l10n.homeCoachTabWorkouts),
-      (icon: Icons.chat_bubble_outline, label: l10n.homeCoachTabChat),
+      LyShellDestination(icon: Icons.groups_outlined, label: l10n.homeCoachTabStudents),
+      LyShellDestination(icon: Icons.fitness_center_outlined, label: l10n.homeCoachTabWorkouts),
+      LyShellDestination(icon: Icons.chat_bubble_outline, label: l10n.homeCoachTabChat),
     ];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.homeCoachTitle),
-        actions: [
-          if (authState.hasBothRoles)
-            const RoleContextSwitcher(current: ActiveContext.coach),
-        ],
-      ),
+    return LyShellScaffold(
+      title: l10n.homeCoachTitle,
+      destinations: destinations,
+      selectedIndex: _index,
+      onDestinationSelected: (i) => setState(() => _index = i),
+      actions: [
+        if (authState.hasBothRoles)
+          const RoleContextSwitcher(current: ActiveContext.coach),
+      ],
       body: Center(
         child: Text(l10n.homePlaceholderBody, style: LyType.body(c.textSecondary)),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: [
-          for (final d in destinations)
-            NavigationDestination(icon: Icon(d.icon), label: d.label),
-        ],
       ),
     );
   }

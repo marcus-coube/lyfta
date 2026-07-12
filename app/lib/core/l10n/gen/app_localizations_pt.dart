@@ -49,7 +49,14 @@ class AppLocalizationsPt extends AppLocalizations {
   String get loginNewHerePrefix => 'Novo por aqui? ';
 
   @override
-  String get loginNewHereSuffix => 'Seu coach ou academia envia o convite.';
+  String get loginNewHereSuffix => 'Crie a conta da sua academia.';
+
+  @override
+  String get loginTenantSheetTitle => 'Escolha uma conta';
+
+  @override
+  String get loginTenantSheetSubtitle =>
+      'Este e-mail está em mais de uma conta. Selecione com qual entrar.';
 
   @override
   String get forgotPasswordTitle => 'Recuperar senha';
@@ -65,6 +72,61 @@ class AppLocalizationsPt extends AppLocalizations {
   String get forgotPasswordBackToLogin => 'Voltar para o login';
 
   @override
+  String get forgotPasswordSuccess =>
+      'Se este e-mail tiver conta, enviamos um link de redefinição.';
+
+  @override
+  String get resetPasswordTitle => 'Definir nova senha';
+
+  @override
+  String get resetPasswordSubtitle => 'Escolha uma nova senha para sua conta.';
+
+  @override
+  String get resetPasswordNewLabel => 'Nova senha';
+
+  @override
+  String get resetPasswordSubmit => 'Salvar nova senha';
+
+  @override
+  String get resetPasswordSuccess =>
+      'Senha redefinida. Entre com a nova senha.';
+
+  @override
+  String get resetPasswordInvalidLink =>
+      'Link inválido. Solicite uma nova recuperação de senha.';
+
+  @override
+  String get signupTitle => 'Crie a conta da sua academia';
+
+  @override
+  String get signupSubtitle =>
+      'Cadastre seu negócio para começar a gerenciar alunos e treinos.';
+
+  @override
+  String get signupBusinessNameLabel => 'Nome do negócio';
+
+  @override
+  String get signupBusinessNameHint => 'Academia Exemplo';
+
+  @override
+  String get signupSlugLabel => 'Identificador';
+
+  @override
+  String get signupSlugHint => 'academia-exemplo';
+
+  @override
+  String get signupNameLabel => 'Seu nome';
+
+  @override
+  String get signupNameHint => 'Como você se chama';
+
+  @override
+  String get signupSubmit => 'Criar conta';
+
+  @override
+  String get signupBackToLogin => 'Já tenho conta';
+
+  @override
   String get inviteTitle => 'Aceitar convite';
 
   @override
@@ -75,6 +137,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get inviteSubmit => 'Ativar conta';
+
+  @override
+  String get inviteInvalidLink => 'Link de convite inválido ou expirado.';
 
   @override
   String get homeStudentTitle => 'Hoje';
@@ -159,15 +224,46 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   String get loginNewHerePrefix => 'Novo por aqui? ';
 
   @override
-  String get loginNewHereSuffix =>
-      'O teu treinador ou ginásio envia o convite.';
+  String get loginNewHereSuffix => 'Cria a conta do teu ginásio.';
+
+  @override
+  String get loginTenantSheetSubtitle =>
+      'Este e-mail está em mais do que uma conta. Escolhe com qual entrar.';
 
   @override
   String get forgotPasswordSubtitle =>
       'Indica o teu e-mail para receberes o link de redefinição.';
 
   @override
+  String get resetPasswordSubtitle =>
+      'Escolhe uma nova palavra-passe para a tua conta.';
+
+  @override
+  String get resetPasswordNewLabel => 'Nova palavra-passe';
+
+  @override
+  String get resetPasswordSuccess =>
+      'Palavra-passe redefinida. Entra com a nova palavra-passe.';
+
+  @override
+  String get resetPasswordInvalidLink =>
+      'Link inválido. Pede uma nova recuperação de palavra-passe.';
+
+  @override
+  String get signupSubtitle =>
+      'Regista o teu negócio para começares a gerir alunos e treinos.';
+
+  @override
+  String get signupNameHint => 'Como te chamas';
+
+  @override
+  String get signupBackToLogin => 'Já tenho conta';
+
+  @override
   String get inviteSubtitle => 'Define a tua senha para ativares a tua conta.';
+
+  @override
+  String get inviteInvalidLink => 'Link de convite inválido ou expirado.';
 
   @override
   String get errorInvalidCredentials => 'E-mail ou palavra-passe inválidos.';

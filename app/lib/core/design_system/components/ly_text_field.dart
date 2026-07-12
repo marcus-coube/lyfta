@@ -16,6 +16,8 @@ class LyTextField extends StatefulWidget {
     this.prefixIcon,
     this.errorText,
     this.textInputAction,
+    this.onSubmitted,
+    this.onChanged,
   });
 
   final String label;
@@ -26,6 +28,8 @@ class LyTextField extends StatefulWidget {
   final IconData? prefixIcon;
   final String? errorText;
   final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
+  final ValueChanged<String>? onChanged;
 
   @override
   State<LyTextField> createState() => _LyTextFieldState();
@@ -48,6 +52,8 @@ class _LyTextFieldState extends State<LyTextField> {
           obscureText: _obscured,
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,
+          onSubmitted: widget.onSubmitted,
+          onChanged: widget.onChanged,
           style: LyType.body(c.textPrimary),
           decoration: InputDecoration(
             hintText: widget.hint,

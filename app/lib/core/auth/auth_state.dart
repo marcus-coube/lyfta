@@ -7,17 +7,15 @@ enum UserRole { coach, student }
 /// papéis simultaneamente, ex.: dono de estúdio que também treina).
 enum ActiveContext { coach, student }
 
-/// Estado de autenticação usado pelo `go_router` para decidir redirect.
-///
-/// Esta é uma modelagem **stub**: reflete só o necessário para roteamento
-/// (autenticado? qual(is) papel(is)? contexto ativo?). P0.6 substitui a
-/// origem dos dados por sessão real vinda do `identity`, sem mudar este
-/// contrato de estado.
+/// Estado de autenticação usado pelo `go_router` para decidir redirect e
+/// pelos repositórios para saber o tenant/usuário da sessão atual.
 class AuthState {
   const AuthState({
     required this.status,
     this.roles = const {},
     this.activeContext,
+    this.tenantId,
+    this.userId,
   });
 
   const AuthState.unknown() : this(status: AuthStatus.unknown);
@@ -25,6 +23,8 @@ class AuthState {
 
   factory AuthState.authenticated({
     required Set<UserRole> roles,
+    required String tenantId,
+    required String userId,
     ActiveContext? activeContext,
   }) {
     final resolvedContext = activeContext ??
@@ -35,12 +35,16 @@ class AuthState {
       status: AuthStatus.authenticated,
       roles: roles,
       activeContext: resolvedContext,
+      tenantId: tenantId,
+      userId: userId,
     );
   }
 
   final AuthStatus status;
   final Set<UserRole> roles;
   final ActiveContext? activeContext;
+  final String? tenantId;
+  final String? userId;
 
   bool get isAuthenticated => status == AuthStatus.authenticated;
   bool get hasBothRoles =>
@@ -51,6 +55,8 @@ class AuthState {
       status: status,
       roles: roles,
       activeContext: activeContext ?? this.activeContext,
+      tenantId: tenantId,
+      userId: userId,
     );
   }
 }

@@ -5,13 +5,15 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/invite_accept_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/reset_password_screen.dart';
+import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/coach_shell/presentation/coach_shell_screen.dart';
 import '../../features/student_shell/presentation/student_shell_screen.dart';
 import '../auth/auth_controller.dart';
 import '../auth/auth_state.dart';
 
 /// Rotas públicas — acessíveis mesmo sem sessão.
-const _publicPaths = {'/login', '/invite', '/forgot'};
+const _publicPaths = {'/login', '/signup', '/invite', '/forgot', '/reset'};
 
 /// Router único do app. Redirect central decide:
 /// - sem sessão (ou status ainda desconhecido) fora de rota pública → `/login`;
@@ -40,11 +42,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
+        path: '/signup',
+        builder: (context, state) => const SignupScreen(),
+      ),
+      GoRoute(
         path: '/forgot',
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
       GoRoute(
+        path: '/reset',
+        builder: (context, state) => ResetPasswordScreen(
+          token: state.uri.queryParameters['token'],
+        ),
+      ),
+      GoRoute(
         path: '/invite',
+        // Web: token chega como query string (`/invite?token=...`), lido
+        // acima. Mobile: deep link `lyfta://invite?token=...` é registrado
+        // nas plataformas nativas (AndroidManifest/Info.plist, geradas por
+        // `flutter create .` — fora do que este repo versiona, ver
+        // app/README.md) e o go_router resolve o mesmo `state.uri` a partir
+        // do link recebido pelo SO, então nenhuma lógica extra é necessária
+        // aqui além de configurar o esquema nas plataformas.
         builder: (context, state) => InviteAcceptScreen(
           token: state.uri.queryParameters['token'],
         ),

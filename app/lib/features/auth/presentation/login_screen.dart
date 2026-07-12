@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/auth/auth_controller.dart';
 import '../../../core/design_system/design_system.dart';
+import '../../../core/http/api_exception.dart';
+import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
+import '../data/auth_repository.dart';
+import '../data/auth_session.dart';
 
-/// Tela de login — apenas visual (sem autenticação real).
+/// Tela de login — ligada ao `identity` (P0.6).
 ///
 /// Mobile: formulário em tela cheia. Desktop/web (>= 900px): card
 /// centralizado sobre o fundo com glow da marca.
@@ -67,8 +74,101 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
-class _LoginForm extends StatelessWidget {
+class _LoginForm extends ConsumerStatefulWidget {
   const _LoginForm();
+
+  @override
+  ConsumerState<_LoginForm> createState() => _LoginFormState();
+}
+
+class _LoginFormState extends ConsumerState<_LoginForm> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  bool _loading = false;
+  String? _errorMessage;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit({String? tenantId}) async {
+    final l10n = AppLocalizations.of(context);
+    setState(() {
+      _loading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await ref.read(authControllerProvider.notifier).signIn(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+            tenantId: tenantId,
+          );
+      // Sucesso: o redirect do go_router leva a /home ao ver
+      // AuthStatus.authenticated — nada a fazer aqui.
+    } on ApiException catch (e) {
+      if (e.code == 'multiple_tenants') {
+        if (!mounted) return;
+        final chosen = await _showTenantPicker(context, e.tenantOptions);
+        if (chosen != null) {
+          await _submit(tenantId: chosen);
+          return;
+        }
+      } else if (mounted) {
+        setState(() => _errorMessage = e.message(l10n));
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _errorMessage = const ApiException.network().message(l10n));
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<String?> _showTenantPicker(
+    BuildContext context,
+    List<TenantOption> options,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    final c = context.ly;
+
+    return showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: c.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: LyRadius.lg.topLeft),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(LySpace.x6),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.loginTenantSheetTitle, style: LyType.title(c.textPrimary)),
+                const SizedBox(height: LySpace.x2),
+                Text(l10n.loginTenantSheetSubtitle, style: LyType.body(c.textSecondary)),
+                const SizedBox(height: LySpace.x5),
+                for (final option in options)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(option.tenantName, style: LyType.body(c.textPrimary)),
+                    trailing: Icon(Icons.chevron_right, color: c.textSecondary),
+                    onTap: () => Navigator.of(sheetContext).pop(option.tenantId),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +192,7 @@ class _LoginForm extends StatelessWidget {
           label: l10n.loginEmailLabel,
           hint: l10n.loginEmailHint,
           prefixIcon: Icons.mail_outline,
+          controller: _emailController,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
         ),
@@ -100,14 +201,17 @@ class _LoginForm extends StatelessWidget {
           label: l10n.loginPasswordLabel,
           hint: l10n.loginPasswordHint,
           prefixIcon: Icons.lock_outline,
+          controller: _passwordController,
           obscure: true,
           textInputAction: TextInputAction.done,
+          errorText: _errorMessage,
+          onSubmitted: (_) => _loading ? null : _submit(),
         ),
         const SizedBox(height: LySpace.x3),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
-            onPressed: () {},
+            onPressed: () => context.go('/forgot'),
             child: Text(
               l10n.loginForgotPassword,
               style: LyType.bodySm(c.accent).copyWith(
@@ -117,7 +221,11 @@ class _LoginForm extends StatelessWidget {
           ),
         ),
         const SizedBox(height: LySpace.x5),
-        LyButton(label: l10n.loginSubmit, onPressed: () {}),
+        LyButton(
+          label: l10n.loginSubmit,
+          loading: _loading,
+          onPressed: _loading ? null : () => _submit(),
+        ),
         const SizedBox(height: LySpace.x6),
         Row(
           children: [
@@ -134,24 +242,27 @@ class _LoginForm extends StatelessWidget {
           label: l10n.loginContinueWithGoogle,
           variant: LyButtonVariant.secondary,
           icon: const Icon(Icons.g_mobiledata_rounded),
-          onPressed: () {},
+          onPressed: null,
         ),
         const SizedBox(height: LySpace.x8),
         Center(
-          child: Text.rich(
-            TextSpan(
-              text: l10n.loginNewHerePrefix,
-              style: LyType.bodySm(c.textSecondary),
-              children: [
-                TextSpan(
-                  text: l10n.loginNewHereSuffix,
-                  style: LyType.bodySm(c.textPrimary).copyWith(
-                    fontWeight: FontWeight.w700,
+          child: GestureDetector(
+            onTap: () => context.go('/signup'),
+            child: Text.rich(
+              TextSpan(
+                text: l10n.loginNewHerePrefix,
+                style: LyType.bodySm(c.textSecondary),
+                children: [
+                  TextSpan(
+                    text: l10n.loginNewHereSuffix,
+                    style: LyType.bodySm(c.textPrimary).copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
         ),
       ],

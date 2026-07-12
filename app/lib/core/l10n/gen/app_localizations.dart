@@ -180,8 +180,20 @@ abstract class AppLocalizations {
   /// No description provided for @loginNewHereSuffix.
   ///
   /// In pt, this message translates to:
-  /// **'Seu coach ou academia envia o convite.'**
+  /// **'Crie a conta da sua academia.'**
   String get loginNewHereSuffix;
+
+  /// No description provided for @loginTenantSheetTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolha uma conta'**
+  String get loginTenantSheetTitle;
+
+  /// No description provided for @loginTenantSheetSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este e-mail está em mais de uma conta. Selecione com qual entrar.'**
+  String get loginTenantSheetSubtitle;
 
   /// No description provided for @forgotPasswordTitle.
   ///
@@ -207,6 +219,108 @@ abstract class AppLocalizations {
   /// **'Voltar para o login'**
   String get forgotPasswordBackToLogin;
 
+  /// No description provided for @forgotPasswordSuccess.
+  ///
+  /// In pt, this message translates to:
+  /// **'Se este e-mail tiver conta, enviamos um link de redefinição.'**
+  String get forgotPasswordSuccess;
+
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Definir nova senha'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @resetPasswordSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolha uma nova senha para sua conta.'**
+  String get resetPasswordSubtitle;
+
+  /// No description provided for @resetPasswordNewLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova senha'**
+  String get resetPasswordNewLabel;
+
+  /// No description provided for @resetPasswordSubmit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Salvar nova senha'**
+  String get resetPasswordSubmit;
+
+  /// No description provided for @resetPasswordSuccess.
+  ///
+  /// In pt, this message translates to:
+  /// **'Senha redefinida. Entre com a nova senha.'**
+  String get resetPasswordSuccess;
+
+  /// No description provided for @resetPasswordInvalidLink.
+  ///
+  /// In pt, this message translates to:
+  /// **'Link inválido. Solicite uma nova recuperação de senha.'**
+  String get resetPasswordInvalidLink;
+
+  /// No description provided for @signupTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Crie a conta da sua academia'**
+  String get signupTitle;
+
+  /// No description provided for @signupSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cadastre seu negócio para começar a gerenciar alunos e treinos.'**
+  String get signupSubtitle;
+
+  /// No description provided for @signupBusinessNameLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome do negócio'**
+  String get signupBusinessNameLabel;
+
+  /// No description provided for @signupBusinessNameHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Academia Exemplo'**
+  String get signupBusinessNameHint;
+
+  /// No description provided for @signupSlugLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Identificador'**
+  String get signupSlugLabel;
+
+  /// No description provided for @signupSlugHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'academia-exemplo'**
+  String get signupSlugHint;
+
+  /// No description provided for @signupNameLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Seu nome'**
+  String get signupNameLabel;
+
+  /// No description provided for @signupNameHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Como você se chama'**
+  String get signupNameHint;
+
+  /// No description provided for @signupSubmit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Criar conta'**
+  String get signupSubmit;
+
+  /// No description provided for @signupBackToLogin.
+  ///
+  /// In pt, this message translates to:
+  /// **'Já tenho conta'**
+  String get signupBackToLogin;
+
   /// No description provided for @inviteTitle.
   ///
   /// In pt, this message translates to:
@@ -230,6 +344,12 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Ativar conta'**
   String get inviteSubmit;
+
+  /// No description provided for @inviteInvalidLink.
+  ///
+  /// In pt, this message translates to:
+  /// **'Link de convite inválido ou expirado.'**
+  String get inviteInvalidLink;
 
   /// No description provided for @homeStudentTitle.
   ///

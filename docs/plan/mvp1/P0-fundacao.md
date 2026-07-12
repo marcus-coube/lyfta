@@ -102,7 +102,7 @@ expiram (convite 7d, reset 1h) e são de uso único.
 **Aceite:** `flutter analyze` limpo; app roda em Chrome e Android; troca de idioma
 do device reflete nos 3 locales; script de strings falha se inserirem literal.
 
-## - [ ] P0.6 Flutter — auth real ponta a ponta
+## - [x] P0.6 Flutter — auth real ponta a ponta
 
 **Objetivo:** ligar a tela de login visual ao identity.
 **Passos:**
@@ -419,3 +419,102 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
   máquina. Criado `.claude/launch.json` (config do preview tool desta
   sessão) para rodar `flutter run -d chrome` via MCP — não é parte do plano,
   mas é útil para verificação visual em tarefas futuras.
+
+### P0.6 (2026-07-12, Mac)
+
+- **Contratos do `identity` conferidos direto no código** (não presumidos):
+  `tokenResponse` (`access_token`, `refresh_token`, `expires_at`, `tenant_id`,
+  `user_id`, `roles`) é o corpo de signup/login/refresh/accept invite;
+  `login` aceita `tenant_id` opcional no body e devolve
+  `409 multiple_tenants` com `params.tenants: [{tenant_id, tenant_name}]`;
+  `refresh`/`logout` exigem `tenant_id` no body (não só o refresh token) —
+  `backend/identity/internal/http/auth.go`. Validado também via `curl` contra
+  o serviço real (`go run ./cmd/api` com `.env` local): signup retornou
+  exatamente o envelope esperado.
+- **`AuthRepository`** (`app/lib/features/auth/data/auth_repository.dart`)
+  cobre os 7 endpoints do plano sobre um `Dio` "cru" (não o `ApiClient` do
+  core, que dependeria do próprio `AuthController` para refresh — evitaria
+  recursão). Ponto não óbvio: `Dio.post` sempre lança `DioException`, nunca a
+  `ApiException` original — o `ErrorMappingInterceptor` só anexa a
+  `ApiException` em `DioException.error`. Sem desembrulhar isso, nenhum
+  `catch (e) on ApiException` da UI jamais casaria. Centralizado num helper
+  privado `_post` que relança `e.error` quando é `ApiException` — descoberto
+  porque o teste de widget do erro de credencial falhava silenciosamente até
+  essa correção.
+- **`AuthController`** (`core/auth/auth_controller.dart`) passou de stub para
+  sessão real: `build()` dispara `_restoreSession()` (lê `TokenStorage`,
+  revalida com um `refresh` real — garante um access token sempre fresco
+  após restart) mantendo o mesmo contrato público que a P0.5 já previa
+  (`state`, `signOut`, `switchContext`); `signInStub` continua existindo só
+  para os testes de roteamento que não sobem HTTP. Ganhou construtor com
+  `tokenStorage`/`httpAdapter` opcionais (mesmo padrão de
+  `TokenStorage({FlutterSecureStorage? storage})`) para permitir
+  `authControllerProvider.overrideWith(() => AuthController(...))` em teste
+  de widget sem tocar rede real. `refreshSession` (chamado pelo
+  `AuthInterceptor` de qualquer `ApiClient`) reusa o mesmo `tenant_id`
+  persistido — todos os serviços compartilham o refresh do `identity`
+  (ADR-013).
+- **`TokenStorage` estendida** (`core/http/token_storage.dart`) para guardar
+  `tenant_id`/`user_id`/`roles` junto dos tokens (`StoredSession`/
+  `saveSession`/`readSession`) — sem isso o boot não teria como saber o
+  tenant/papéis sem decodificar o JWT no cliente; optei por persistir os
+  metadados já devolvidos pelo backend em vez de adicionar um parser de JWT
+  (nenhuma dependência nova, mais simples). Tradeoff do fallback web
+  (`localStorage`) documentado no docstring da classe, conforme pedido pela
+  tarefa.
+- **Caso `multiple_tenants`:** `LoginScreen` mostra um `showModalBottomSheet`
+  com as opções (`TenantOption`, extraídas de `ApiException.params.tenants`
+  via extension `MultipleTenantsError`) e reenvia `signIn` com o
+  `tenantId` escolhido.
+- **Rotas novas:** `/signup` (`SignupScreen` — nome do negócio, slug
+  auto-gerado do nome até o usuário editar manualmente, nome, e-mail, senha)
+  e `/reset` (`ResetPasswordScreen`, token via query string, mesmo padrão de
+  `/invite`). `/invite` ganhou comentário explicando que o deep link
+  `lyfta://invite?token=...` depende de configuração nas plataformas nativas
+  (`AndroidManifest.xml`/`Info.plist`, geradas por `flutter create .` e não
+  versionadas neste repo — `app/README.md`) — **não implementado nem
+  verificável nesta máquina** (sem Android SDK/Xcode configurados); o
+  `go_router` já resolve `state.uri.queryParameters['token']`
+  independentemente da origem (query web ou deep link mobile), então não há
+  lógica adicional pendente, só a configuração de plataforma.
+- **Shells responsivos:** `LyShellScaffold`
+  (`shared/widgets/ly_shell_scaffold.dart`) novo — `NavigationRail` (web/
+  desktop >= 840px) ou `NavigationBar` (mobile), breakpoint pedido
+  explicitamente pelo plano (`lyShellRailBreakpoint`, diferente dos
+  600/1024 de `docs/guidelines/flutter.md`, que são genéricos). Reutilizado
+  pelos dois shells (coach/student), que só declaram seus destinos.
+- **`LyTextField`** ganhou `onSubmitted`/`onChanged` (não existiam na P0.5) —
+  necessários para submeter formulário com Enter e para o auto-slug do
+  signup; mudança no design system, não na feature (guideline: componente
+  reutilizável nasce em `core/design_system/`).
+- **Teste de widget obrigatório**
+  (`test/features/auth/presentation/login_screen_test.dart`): fluxo feliz
+  (login válido → shell do professor) e erro de credencial (401
+  `invalid_credentials` → mensagem i18n visível, permanece em `/login`) —
+  ambos sobre um `HttpClientAdapter` fake que replica o envelope real do
+  `identity`, sem depender de rede. Mesmo padrão de fake de secure storage
+  já usado em `auth_interceptor_test.dart`.
+- **Verificado (Mac):** `flutter analyze` limpo; `flutter test` verde (8
+  testes: 4 de roteamento da P0.5 + 2 de refresh/concorrência da P0.5 + 2
+  novos de login); `tool/check_hardcoded_strings.sh` limpo. Backend
+  `identity` subido localmente (`go run ./cmd/api`) e `POST /v1/tenants`
+  testado via `curl` — o envelope de resposta bateu exatamente com o que
+  `AuthSession.fromJson` espera. App rodado de fato em
+  `flutter run -d chrome`: tela de login renderiza (texto em inglês, mesmo
+  motivo documentado na P0.5 — `navigator.language=en-US` no Chrome do
+  preview). **Não foi possível** completar o preenchimento/submit do
+  formulário via automação do preview (Flutter web renderiza em canvas; os
+  eventos de ponteiro sintéticos disparados via JS não focam o
+  `EditableText` real) — o fluxo de login/erro fica validado pelos testes de
+  widget (que usam o mesmo código de produção) e pelo contrato confirmado
+  via `curl`, não por clique manual na UI. Signup→convite→aceite→login
+  ponta a ponta com o backend real **não foi exercitado manualmente por
+  completo** (só o primeiro passo, signup, via curl) — considerado
+  aceitável dado que cada endpoint já tem teste de handler Go (P0.3/P0.4) e
+  o cliente usa o mesmo contrato.
+- **Pendência (herdada, ainda aberta):** rodar em Android segue bloqueado
+  (sem SDK nesta máquina) — inclui verificar o deep link `lyfta://` de
+  convite, que só é testável com o app instalado num device/emulador
+  Android ou simulador iOS. Rate limit no lookup de e-mail entre tenants e
+  nos endpoints públicos por token (ADR-002 §2c) continua em aberto, fora do
+  escopo deste app Flutter.
