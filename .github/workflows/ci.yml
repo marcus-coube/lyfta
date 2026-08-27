@@ -1,0 +1,127 @@
+# Portão mínimo de qualidade (plano MVP 1.0, P0.7): backend Go e app Flutter.
+# Qualquer job vermelho reprova o push/PR.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Versão do golang-migrate usada no dev (backend/README.md).
+  MIGRATE_VERSION: v4.19.1
+
+jobs:
+  # Descobre os serviços existentes em backend/<svc>/go.mod. Evita ter de
+  # editar a matrix a cada serviço novo (workout, assessment, comms).
+  discover:
+    name: Descobrir serviços
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.list.outputs.services }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        run: |
+          services=$(find backend -mindepth 2 -maxdepth 2 -name go.mod -print0 \
+            | xargs -0 -r -n1 dirname \
+            | xargs -r -n1 basename \
+            | sort \
+            | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "serviços encontrados: $services"
+          echo "services=$services" >> "$GITHUB_OUTPUT"
+
+  backend:
+    name: backend (${{ matrix.service }})
+    needs: discover
+    if: needs.discover.outputs.services != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJSON(needs.discover.outputs.services) }}
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      DB_NAME: lyfta_${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/${{ matrix.service }}/go.mod
+          cache-dependency-path: backend/${{ matrix.service }}/go.sum
+
+      # Banco do serviço (ADR-013: um por serviço), com o mesmo nome do dev
+      # local — a migration de role do identity referencia lyfta_identity.
+      - name: Criar banco
+        run: psql -v ON_ERROR_STOP=1 -c "CREATE DATABASE ${DB_NAME}"
+
+      - name: Instalar golang-migrate
+        run: |
+          curl -fsSL "https://github.com/golang-migrate/migrate/releases/download/${MIGRATE_VERSION}/migrate.linux-amd64.tar.gz" \
+            | tar xz -C /usr/local/bin migrate
+          migrate -version
+
+      - name: Aplicar migrations
+        run: |
+          migrate -path "backend/${{ matrix.service }}/migrations" \
+            -database "postgres://postgres:postgres@localhost:5432/${DB_NAME}?sslmode=disable" up
+
+      - name: go vet
+        working-directory: backend/${{ matrix.service }}
+        run: go vet ./...
+
+      # Conecta como lyfta_app (sem BYPASSRLS, criada pelas migrations): é o
+      # que faz as policies de RLS valerem nos testes de isolamento (ADR-001).
+      - name: go test
+        working-directory: backend/${{ matrix.service }}
+        env:
+          DATABASE_URL: postgres://lyfta_app:lyfta_app_dev@localhost:5432/lyfta_${{ matrix.service }}?sslmode=disable
+        run: go test ./...
+
+  app:
+    name: app (Flutter)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.4
+          channel: stable
+          cache: true
+
+      - name: flutter pub get
+        run: flutter pub get
+
+      - name: flutter analyze
+        run: flutter analyze
+
+      - name: flutter test
+        run: flutter test
+
+      # Guard do ADR-011 §5: nenhuma string literal de UI fora do design system.
+      - name: Strings hardcoded
+        run: tool/check_hardcoded_strings.sh

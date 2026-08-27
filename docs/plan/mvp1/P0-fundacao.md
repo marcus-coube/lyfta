@@ -120,7 +120,7 @@ do device reflete nos 3 locales; script de strings falha se inserirem literal.
 senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
 (refresh automático). Teste de widget: login feliz + erro de credencial.
 
-## - [ ] P0.7 CI
+## - [x] P0.7 CI
 
 **Objetivo:** portão mínimo de qualidade nas duas frentes.
 **Entregáveis:** `.github/workflows/ci.yml` com jobs:
@@ -518,3 +518,55 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
   Android ou simulador iOS. Rate limit no lookup de e-mail entre tenants e
   nos endpoints públicos por token (ADR-002 §2c) continua em aberto, fora do
   escopo deste app Flutter.
+
+### P0.7 (2026-08-27, Mac)
+
+- **`.github/workflows/ci.yml`** com 3 jobs: `discover` (lista os serviços em
+  `backend/<svc>/go.mod` e emite a matrix via `fromJSON`), `backend` (matrix
+  por serviço) e `app`. A descoberta dinâmica evita ter de editar a matrix
+  quando `workout`/`assessment`/`comms` nascerem — hoje resolve para
+  `["identity"]`. Dispara em push na `main` e em qualquer PR, com
+  `concurrency` cancelando runs antigas do mesmo ref.
+- **Job `backend`:** Postgres 17 como service container (mesma major do dev),
+  `CREATE DATABASE lyfta_<svc>` (nome derivado do serviço — a migration 0007
+  do identity referencia `lyfta_identity` explicitamente no `GRANT CONNECT`),
+  `golang-migrate` **v4.19.1** (mesma versão do dev) baixado do release
+  `migrate.linux-amd64.tar.gz`, migrations aplicadas como `postgres`, e então
+  `go vet ./...` + `go test ./...` conectando como **`lyfta_app`** — a role
+  sem BYPASSRLS criada pelas próprias migrations. Conectar como superusuário
+  aqui tornaria os testes de isolamento cross-tenant (ADR-001 §6) vazios.
+  `go-version-file` aponta para o `go.mod` do serviço: a versão do Go nunca
+  duplica no workflow.
+- **Portão real, não decorativo:** `testPool` (em `internal/repo/repo_test.go`
+  e `internal/http/auth_test.go`) fazia `t.Skipf` quando o banco não subia —
+  correto no dev, mas no CI deixaria o pipeline **verde sem ter testado
+  nada**. Passou a dar `t.Fatalf` quando `CI` está setada no ambiente
+  (o GitHub Actions define `CI=true`); fora do CI o skip continua igual.
+  Sem essa mudança, um service container quebrado passaria despercebido.
+- **Job `app`:** `subosito/flutter-action@v2` com Flutter **3.44.4** pinado
+  (versão em uso no Mac) e cache; `flutter pub get`, `flutter analyze`,
+  `flutter test` e `tool/check_hardcoded_strings.sh` (guard do ADR-011 §5 —
+  já versionado com bit de execução, `100755`). Não roda `flutter create .`:
+  os testes de widget não precisam das pastas de plataforma (não versionadas,
+  ver `app/README.md`), e portanto o CI **não** cobre build de Android/iOS/web.
+- **Verificado localmente (Mac), reproduzindo o job passo a passo:** Postgres
+  17 limpo em container (`docker run postgres:17`, porta 5433), banco criado
+  do zero, as 9 migrations aplicadas em sequência pelo `migrate` e
+  `go test ./...` verde contra esse banco novo com a DSN de `lyfta_app` — ou
+  seja, o caminho do CI (banco vazio → migrations → testes) foi executado de
+  fato, não presumido. O portão novo também foi exercitado nos dois sentidos:
+  com `CI=true` e DSN inacessível o teste **falha** (`banco indisponível no
+  CI`), e sem `CI` ele pula como antes. Lado app: `flutter analyze` sem
+  issues, `flutter test` 8/8 verdes, guard de strings limpo. YAML validado
+  (parse) e a URL do release do `golang-migrate` conferida (HTTP 200).
+- **Pendente:** o pipeline só fica comprovadamente verde no primeiro push —
+  não há remote GitHub configurado nesta máquina para disparar o run (o
+  Aceite "pipeline verde no push" fica confirmado quando o repo for
+  publicado). Nada no workflow depende de segredo: Resend/JWT não são
+  exercitados pelos testes (os handlers usam `logMailer` e par de chaves
+  efêmero), então não há `secrets` a configurar.
+- **Dívida herdada do P0 (continua aberta, fora do escopo desta tarefa):**
+  Android/iOS não configurados nesta máquina (deep link `lyfta://invite`
+  nunca testado); verificação do `docker compose` (Redis+MinIO) pendente no
+  Windows; rate limit no lookup de e-mail entre tenants (ADR-002 §2c) ainda
+  sem ADR nem implementação.

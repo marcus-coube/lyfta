@@ -14,8 +14,9 @@ import (
 
 // testPool abre um pool contra o Postgres de dev (lyfta_identity, migrations
 // já aplicadas). Sem DATABASE_URL configurada explicitamente, usa o mesmo
-// default documentado em backend/identity/.env.example. Pula o teste se o
-// banco não estiver acessível — mantém `go test ./...` rodável sem Postgres.
+// default documentado em backend/identity/.env.example. Fora do CI, pula o
+// teste se o banco não estiver acessível — mantém `go test ./...` rodável
+// sem Postgres.
 func testPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	dsn := os.Getenv("DATABASE_URL")
@@ -27,6 +28,11 @@ func testPool(t *testing.T) *pgxpool.Pool {
 	ctx := context.Background()
 	pool, err := repo.NewPool(ctx, dsn)
 	if err != nil {
+		// No CI (P0.7) o Postgres é service container obrigatório: pular aqui
+		// deixaria o pipeline verde sem ter testado nada.
+		if os.Getenv("CI") != "" {
+			t.Fatalf("banco indisponível no CI: %v", err)
+		}
 		t.Skipf("banco indisponível para teste de integração: %v", err)
 	}
 	t.Cleanup(pool.Close)

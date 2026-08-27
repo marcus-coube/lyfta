@@ -34,12 +34,16 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 - **[docs/benchmarking/](docs/benchmarking/)** — auditoria HubFit × Trainerize × Lyfta.
 - `docs/guidelines/` — convenções de código (ex.: `flutter.md`).
 
-## Estado atual (2026-07-03)
+## Estado atual (2026-08-27)
 **Executando o plano do MVP 1.0** ([docs/plan/mvp1/](docs/plan/mvp1/)) na ordem
-P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P0.X").
+P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P1.X").
 **Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
 saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
-P0.1 (compose Redis+MinIO) concluída. Escopo do MVP em
+**P0 (Fundação) concluída, 7/29:** `identity` completo (auth, convites, reset),
+núcleo do app Flutter com auth real ponta a ponta e CI no GitHub Actions
+(`.github/workflows/ci.yml` — `go vet`/`go test` com Postgres em service
+container + `flutter analyze`/`test` + guard de strings). Próxima: **P1.1**
+(serviço `workout`). Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor
 funcionam em **todas** as plataformas (mobile e web).

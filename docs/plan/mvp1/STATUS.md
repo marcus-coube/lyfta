@@ -3,16 +3,16 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** `P0.7` (CI)
+**Próxima tarefa:** `P1.1` (serviço workout — esqueleto + schema completo)
 
 | Fase | Progresso | Situação |
 |---|---|---|
-| P0 — Fundação | 6/7 | em andamento |
+| P0 — Fundação | 7/7 | concluída |
 | P1 — Treino | 0/8 | não iniciada |
 | P2 — Evolução | 0/5 | não iniciada |
 | P3 — Comunicação | 0/5 | não iniciada |
 | P4 — Praticidade | 0/4 | não iniciada |
-| **Total** | **6/29** | |
+| **Total** | **7/29** | |
 
 ## Bancos locais
 
@@ -38,3 +38,4 @@ Criar em cada máquina: `psql -U postgres -f backend/scripts/create-dbs.sql`
 | 2026-07-04 | P0.4 concluída (Mac): identity — convites (Resend/`logMailer`) e recuperação de senha; primeiro endpoint autenticado (middleware `RequireAuth`+`RequireRole`), migration 0009 (`find_invitation_by_token`/`find_password_reset_by_token`, SECURITY DEFINER). 5 testes de handler novos cobrindo o Aceite. Agente `mvp-dev` travou 2× no meio da tarefa; finalizada manualmente na sessão principal (ver Notas de execução em P0-fundacao.md) |
 | 2026-07-04 | P0.5 concluída (Mac): app — núcleo Flutter (Riverpod, go_router, Dio com interceptors de auth/refresh e mapeamento de erro, i18n ADR-011 com fallback pt-PT→pt-BR automático, guard `check_hardcoded_strings`), telas placeholder (forgot/invite/shells coach+student) e login migrado para ARB. Flutter instalado via brew nesta sessão (Mac); Android SDK/Xcode não configurados — rodar em Android fica pendente (ver Notas de execução em P0-fundacao.md) |
 | 2026-07-12 | P0.6 concluída (Mac): app — auth real ponta a ponta ligada ao `identity` (`AuthRepository`, `AuthController` com sessão persistida e refresh automático no boot), telas de signup/login/aceitar convite/esqueci-redefinir senha funcionais com erro i18n, bottom sheet de `multiple_tenants`, shells responsivos (`NavigationRail` web/desktop >= 840px, `NavigationBar` mobile). Teste de widget de login (feliz + erro de credencial) sobre HTTP fake; contrato validado também via `curl` contra o `identity` real. `flutter analyze`/`flutter test`/guard de strings limpos. Android e o deep link `lyfta://` de convite seguem pendentes (sem SDK nesta máquina); fluxo completo signup→convite→aceite→login não exercitado manualmente ponta a ponta na UI (ver Notas de execução em P0-fundacao.md) |
+| 2026-08-27 | P0.7 concluída (Mac): CI no GitHub Actions — job `backend` (matrix descoberta a partir de `backend/<svc>/go.mod`, Postgres 17 em service container, migrations via golang-migrate v4.19.1, `go vet`+`go test` conectando como `lyfta_app`) e job `app` (`flutter analyze`/`test` + guard de strings, Flutter 3.44.4 pinado). `testPool` passou a falhar em vez de pular quando `CI` está setada — sem isso o pipeline ficaria verde sem banco. Fluxo do job reproduzido localmente com Postgres 17 limpo em Docker; **P0 fechada** (ver Notas de execução em P0-fundacao.md) |
