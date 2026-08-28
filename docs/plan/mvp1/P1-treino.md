@@ -10,7 +10,7 @@ Refs normativas: ADR-003 (offline), ADR-004 (template vs execução), ADR-010
 
 ---
 
-## - [ ] P1.1 Serviço workout — esqueleto + schema completo
+## - [x] P1.1 Serviço workout — esqueleto + schema completo
 
 **Objetivo:** projeto Go do workout com o modelo do ADR-004 inteiro (o schema nasce
 certo; é o coração do sistema).
@@ -163,3 +163,82 @@ mínimo); bugs achados viram tarefas na seção Notas.
 ## Notas de execução
 
 (o agente anota aqui descobertas, dívidas e desvios aprovados)
+
+### P1.1 (2026-08-27, Mac)
+
+- **Serviço `workout`** (`backend/workout`, porta 8082, banco `lyfta_workout`)
+  com o mesmo bootstrap do identity: chi + pgxpool + slog, `/healthz`,
+  middlewares (request-id, logging estruturado, recover, CORS) e 13 migrations.
+  `go.mod` próprio com a stack pinada do `backend/README.md` — nada importado
+  do identity (ADR-013 §2); `internal/security` é irmão duplicado de propósito
+  e ficou **só com validação** (`JWTVerifier`): a chave privada que assina é
+  exclusividade do identity (ADR-013 §4), então `config` exige
+  `JWT_PUBLIC_KEY` e nem lê `JWT_PRIVATE_KEY`.
+- **Sem FK cruzando banco:** `student_id`, `coach_id` e `created_by` apontam
+  para `users.id` do identity e por isso são UUID solto, sem `REFERENCES`
+  (ADR-013 §2). Só as FKs intra-banco existem (versão→plano, dia→versão,
+  bloco→dia, `block_exercises`→`exercises`). Este banco **não tem tabela
+  `tenants`** — nos testes o tenant é um UUID qualquer, exatamente como
+  chegaria numa claim.
+- **`tenant_id` em toda tabela, inclusive nas filhas** (`workout_days`,
+  `workout_blocks`, `block_exercises`, `prescribed_sets`), embora o plano só
+  liste as colunas de negócio: ADR-001 §1/§3 é normativo e uma policy direta
+  por `tenant_id` é mais barata que um `EXISTS` subindo a árvore a cada linha.
+- **Policy dupla dos exercícios (ADR-010 §3):** `SELECT` enxerga o global
+  (`tenant_id NULL`) e o do próprio tenant; `INSERT/UPDATE/DELETE` só aceitam
+  linhas do próprio tenant. Consequência deliberada: **a aplicação não
+  consegue criar exercício global** — a biblioteca global entra por seed
+  administrativo (superusuário), e há teste garantindo essa recusa.
+  `exercise_translations` carrega `tenant_id` espelhado do exercício para a
+  policy decidir sem join.
+- **Imutabilidade garantida no banco, não só na aplicação** (migration 0012,
+  o desvio mais relevante desta tarefa): triggers recusam (a) escrita em
+  versão publicada e em toda a sua árvore — publicar é o último `UPDATE` que
+  a versão aceita (ADR-004 §1) — e (b) `UPDATE`/`DELETE` em
+  `workout_set_logs`, que é append-only (ADR-003 §2); corrigir é inserir
+  outro log com `revises`. Sem isso, "o histórico do aluno é imutável" seria
+  só uma convenção de handler. Efeito colateral aceito: apagar um plano
+  publicado passa a ser impossível via cascade — arquiva-se
+  (`status='archived'`).
+- **Prescrição estruturada (ADR-012 §4)** com ponteiros no domínio para
+  separar "não prescrito" de zero: 0 kg é carga válida (peso corporal), NULL
+  é ausência de prescrição. `CHECK` garante `reps_max >= reps_min` e alvo
+  relativo (%1RM/RPE/RIR) sempre com valor.
+- **`client_id` é único por tenant** (`UNIQUE (tenant_id, client_id)`), não
+  global: o índice começa por `tenant_id` como manda o ADR-001 §3, e a
+  idempotência do push offline (ADR-003 §4) continua valendo dentro do
+  escopo em que o device opera.
+- **Tenant vem da claim, sempre.** O plano pedia "middleware `tenant_id` →
+  `SET LOCAL app.tenant_id`"; implementado como no identity: `RequireAuth`
+  injeta as claims e `repo.WithTenant` seta `app.tenant_id` na transação.
+  `SET LOCAL` só vale dentro de transação — um middleware HTTP teria de
+  segurar uma conexão do pool pela requisição inteira para o mesmo efeito.
+  `RequireAuth` também recusa token válido **sem** `tenant_id`: sem tenant não
+  há escopo de RLS. `GET /v1/whoami` existe como sonda autenticada até as
+  rotas de negócio chegarem (P1.2–P1.5).
+- **Verificado (Mac):** `migrate up` → `down -all` → `up` limpos (schema volta
+  a ter só `schema_migrations`, nenhuma função órfã) — o `down` do
+  `0013_app_role` revoga privilégios mas **não** dropa a role, diferente do
+  identity, porque `lyfta_app` é compartilhada entre os bancos e dropá-la
+  quebraria o identity. `go vet` limpo e 8 testes verdes (5 de repo: árvore
+  plano→versão→dia→bloco→exercício→sets com round-trip campo a campo,
+  isolamento cross-tenant nos dois sentidos, recusa de exercício global,
+  imutabilidade da versão publicada, append-only dos logs; 3 de handler:
+  `/healthz` público, `/v1/whoami` feliz e 5 casos de token inválido). O
+  fluxo do CI foi reproduzido em Postgres 17 limpo em Docker (banco novo,
+  role criada pela migration, testes verdes). **Integração real entre
+  serviços confirmada:** `identity` e `workout` subidos juntos, signup no
+  identity via `curl` e o `access_token` resultante aceito pelo
+  `/v1/whoami` do workout só com a chave pública — devolveu o mesmo
+  `tenant_id`/`roles` da claim.
+- **Anotações para as próximas tarefas (não implementadas aqui):**
+  `workout_set_logs` não tem `student_id` desnormalizado — o plano lista as
+  colunas sem ele, então a consulta de "carga anterior" (P2, gráfico de
+  carga) vai precisar de join com `workout_sessions`; se doer, é uma
+  migration de desnormalização. A taxonomia do ADR-010 §4 entrou parcial
+  (músculo primário, equipamento, nível): `movement_pattern` e a tabela
+  `exercise_muscles` com `effort_pct` são insumo do muscle map, que não está
+  no MVP 1.0. `student_plan_state` tem uma linha por aluno
+  (`PRIMARY KEY (tenant_id, student_id)`): trocar de plano sobrescreve o
+  estado, sem histórico de planos anteriores — suficiente para a rotação do
+  ADR-004 §3.

@@ -15,10 +15,11 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
   plataformas com `flutter create .` (ver [app/README.md](app/README.md)).
   - `lib/core/design_system/` — tokens, tema e componentes `Ly*` (fonte de verdade do DS).
   - `lib/features/` — features por domínio (`auth/` = login visual, único hoje).
-- `backend/` — microserviços Go: `identity` (8081) · `workout` (8082) ·
-  `assessment` (8083) · `comms` (8084). Stack pinada, portas e bancos em
+- `backend/` — microserviços Go: `identity` (8081) e `workout` (8082) existem;
+  `assessment` (8083) e `comms` (8084) ainda não. Stack pinada, portas e bancos em
   [backend/README.md](backend/README.md). Futuro: cada serviço em repo próprio —
-  **nunca** importar código entre serviços.
+  **nunca** importar código entre serviços (duplicar é o certo: ver o
+  `internal/security` de cada um).
 - `docs/` — documentação. **Fonte de verdade de produto e arquitetura.**
 - `.claude/agents/mvp-dev.md` — agente (Sonnet) que executa o plano do MVP, uma
   tarefa por invocação.
@@ -39,11 +40,12 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P1.X").
 **Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
 saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
-**P0 (Fundação) concluída, 7/29:** `identity` completo (auth, convites, reset),
-núcleo do app Flutter com auth real ponta a ponta e CI no GitHub Actions
-(`.github/workflows/ci.yml` — `go vet`/`go test` com Postgres em service
-container + `flutter analyze`/`test` + guard de strings). Próxima: **P1.1**
-(serviço `workout`). Escopo do MVP em
+**P0 (Fundação) concluída; P1 em andamento, 8/29:** `identity` completo (auth,
+convites, reset), núcleo do app Flutter com auth real ponta a ponta, CI no
+GitHub Actions (`.github/workflows/ci.yml` — `go vet`/`go test` com Postgres em
+service container + `flutter analyze`/`test` + guard de strings) e o serviço
+`workout` com o schema completo do ADR-004 (P1.1). Próxima: **P1.2** (mídia de
+exercício via presigned upload). Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor
 funcionam em **todas** as plataformas (mobile e web).
