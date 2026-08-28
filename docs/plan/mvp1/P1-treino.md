@@ -64,7 +64,7 @@ musculação (3 locales) para dev/demo — suficiente para montar treinos reais.
 **Aceite:** busca em pt-BR encontra exercício global seedado; coach cria exercício
 custom que só o próprio tenant vê.
 
-## - [ ] P1.4 workout — API do builder e atribuição
+## - [x] P1.4 workout — API do builder e atribuição
 
 **Objetivo:** professor cria/edita plano estruturado e publica para o aluno.
 **Endpoints:**
@@ -372,3 +372,87 @@ mínimo); bugs achados viram tarefas na seção Notas.
   irrelevante em 300 linhas, resolvível com `pg_trgm` quando doer. Continua sem
   coleta de lixo de mídia órfã (anotado no P1.2): agora dá para cruzar objetos
   do bucket com `exercises.media_url`.
+
+### P1.4 (2026-08-28, Mac)
+
+- **O rascunho é que gera a versão, não o publish.** O plano dizia
+  "`publish` congela a versão (version_no++)"; implementado com o `++`
+  acontecendo antes: `PUT /draft` abre a versão seguinte quando a última já
+  está publicada, e `publish` só carimba `published_at`. Vale a pena porque a
+  tela do coach passa a mostrar "rascunho da v2" enquanto edita, e porque a
+  imutabilidade continua vindo do banco (trigger da 0012): a v1 é intocável
+  desde o instante em que foi publicada, sem depender de o handler lembrar
+  disso. `POST /v1/plans` **não** cria versão nenhuma — plano recém-criado
+  volta com `version: null` e ganha a v1 no primeiro salvamento.
+- **`PUT /draft` substitui a árvore inteira** (DELETE dos dias, que cascateia
+  até os sets, + INSERT), como o plano previa. Position de dia/bloco/exercício
+  e `set_no` saem da **ordem do array** enviado, não de índices do cliente:
+  reordenar é mover item na lista, e não há como chegar buraco ou posição
+  duplicada. `FOR UPDATE` no plano serializa dois coaches salvando junto.
+- **`exercise_id` é validado sob RLS, e isso não é preciosismo:** a verificação
+  de FK do Postgres roda com os privilégios do dono da tabela e **ignora RLS**,
+  então `block_exercises.exercise_id` sozinho aceitaria o UUID de um exercício
+  de outro tenant. `assertExercisesVisible` faz o `SELECT` dentro da transação
+  com `app.tenant_id` setado e devolve `422 unknown_exercise` com o id
+  recusado. Tem teste nos dois níveis (repo e handler).
+- **Erros novos:** `422 plan_incomplete` com `reason`
+  (`no_days` | `day_without_block` | `block_without_exercise` |
+  `exercise_without_set`) e `day_id` — o coach precisa saber *qual* dia ficou
+  vazio, não só que o plano não publica; `409 no_draft_to_publish` ao publicar
+  duas vezes seguidas (publicar sem rascunho não gera versão nova);
+  `422 unknown_exercise`. Validação de payload devolve
+  `validation_error` com o caminho do campo
+  (`days[0].blocks[1].exercises[0].sets[2].reps_max`).
+- **"Só coach do aluno edita" virou "coach dono do plano ou owner".** O vínculo
+  coach↔aluno vive no `identity` e este serviço não tem como consultá-lo (não
+  existe endpoint service-to-service para isso ainda, e `X-Internal-Token`
+  sozinho não resolve). O proxy disponível é a autoria: `workout_plans.coach_id`
+  contra o `sub` da claim, com o owner sempre podendo. **Ler** é do tenant
+  inteiro — um professor cobrindo férias do outro tem de abrir o plano.
+  Dívida anotada para quando o identity expuser o vínculo.
+- **`student_id` não é verificado contra o identity:** criar plano para um UUID
+  que não existe é aceito. Consequência conhecida da separação de bancos
+  (ADR-013 §2); o P1.6 vai listar os alunos pelo identity, então na prática o
+  id chega de uma lista real. Validar de verdade exige chamada síncrona entre
+  serviços — fica para quando doer.
+- **Rotação (ADR-004 §3):** primeiro publish aponta `next_day_id` para o
+  primeiro dia; republicar o **mesmo** plano preserva o dia pelo **rótulo** —
+  quem estava no B continua no B depois de o coach corrigir uma carga. Se o
+  rótulo sumir na versão nova, cai no primeiro dia. Publicar um plano
+  **diferente** para o aluno arquiva o anterior (`status='archived'`):
+  `student_plan_state` tem uma linha por aluno (PK do P1.1), então "dois planos
+  publicados" não é um estado representável.
+- **Bug do P1.1 achado pelo smoke, não pelos testes:** `GetVersionTree`
+  remontava a árvore guardando **ponteiro** para elemento de slice
+  (`&day.Blocks[len-1]`); o `append` do irmão seguinte realocava o array e o
+  ponteiro antigo passava a apontar para a cópia velha — resultado: bloco com
+  dois exercícios perdia os sets do primeiro. Os testes do P1.1/P1.4 não
+  pegaram porque usavam um exercício por bloco. Corrigido com índices em vez de
+  ponteiros, e `TestVersionTreeWithSiblings` cobre o caso (2 blocos, 3
+  exercícios, sets diferentes em cada).
+- **A árvore volta com o exercício resolvido** (`exercise`: nome no locale,
+  mídia re-assinada, músculo/equipamento, `is_global`) — sem isso o builder e a
+  tela do aluno precisariam de uma segunda chamada à biblioteca por exercício.
+  É uma consulta só para a árvore inteira (`ExerciseRepo.ByIDs`), com a mesma
+  cascata de locale do P1.3 e **sem** filtro de status: exercício arquivado
+  depois de entrar no plano continua aparecendo no plano.
+- **Verificado (Mac):** `go vet` limpo, **37 testes verdes** (11 novos: 6 de
+  repo — publicar/editar gerando v2 com a v1 intacta, rotação preservada por
+  rótulo, os 4 níveis de `plan_incomplete` + publish sem rascunho, recusa de
+  exercício de outro tenant, isolamento de plano/estado/lista entre tenants e a
+  regressão da árvore; 5 de handler cobrindo o Aceite inteiro pela API,
+  republicação, `plan_incomplete`/`no_draft_to_publish`, controle de acesso
+  (outro tenant 404, outro coach 403, aluno 403, aluno sem plano 404) e 9 casos
+  de validação de payload). **Smoke manual ponta a ponta** com os dois serviços
+  no ar: signup do coach → convite → aceite do aluno → `POST /v1/plans` →
+  `PUT /draft` A/B (superset com 2 exercícios, alvos em kg, RPE e %1RM) →
+  `publish` → aluno lendo `GET /v1/me/plan` com o token dele e locale pt-PT →
+  edição virando v2 com dia C → `GET ?version=1` mostrando a v1 congelada com a
+  carga antiga → segundo `publish` recusado com `no_draft_to_publish`.
+- **Anotações para as próximas tarefas:** não há `DELETE /v1/plans/{id}` nem
+  como descartar um rascunho — arquivar é o caminho, e "descartar rascunho"
+  vira `PUT /draft` com `days: []`. `GET /v1/plans/{id}` faz várias consultas
+  curtas (plano, versões, estado, árvore, exercícios) em transações separadas;
+  irrelevante no tamanho de um plano, mas é o endpoint que o P1.5 vai
+  reaproveitar para o `GET /v1/me/today`, onde entra também a carga anterior. A
+  lista de alunos do coach continua no identity (P1.6 precisa dela).

@@ -111,3 +111,36 @@ type PrescribedSet struct {
 	RestSeconds     *int
 	Tempo           string
 }
+
+// PlanSummary é a linha da lista de planos de um aluno: o plano com o resumo
+// do versionamento, para o coach escolher o que abrir sem carregar a árvore.
+type PlanSummary struct {
+	Plan
+	// LatestVersionNo é o maior version_no existente (rascunho incluído);
+	// PublishedVersionNo é o maior já publicado — 0 quando nunca publicou.
+	LatestVersionNo    int
+	PublishedVersionNo int
+	HasDraft           bool
+	// IsActive diz se este é o plano que o student_plan_state aponta.
+	IsActive bool
+}
+
+// IsValidBlockType diz se o tipo de bloco pertence ao CHECK da tabela.
+func IsValidBlockType(v BlockType) bool {
+	switch v {
+	case BlockTypeStraight, BlockTypeSuperset, BlockTypeDropset, BlockTypeRestPause, BlockTypeCircuit:
+		return true
+	default:
+		return false
+	}
+}
+
+// IsValidTargetUnit diz se a unidade do alvo pertence ao CHECK da tabela.
+func IsValidTargetUnit(v TargetUnit) bool {
+	switch v {
+	case TargetUnitKg, TargetUnitPercent1RM, TargetUnitRPE, TargetUnitRIR:
+		return true
+	default:
+		return false
+	}
+}

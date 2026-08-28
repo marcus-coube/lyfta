@@ -43,9 +43,16 @@ func newTestKeys(t *testing.T) (publicPEM string, private ed25519.PrivateKey) {
 // signToken emite um access token com as mesmas claims do identity (ADR-002).
 func signToken(t *testing.T, priv ed25519.PrivateKey, tenantID string, roles []string, expiresAt time.Time) string {
 	t.Helper()
+	return signTokenAs(t, priv, tenantID, "11111111-1111-1111-1111-111111111111", roles, expiresAt)
+}
+
+// signTokenAs é signToken com o `sub` escolhido: o builder (P1.4) distingue o
+// coach dono do plano dos demais, e o aluno lê o plano pelo próprio subject.
+func signTokenAs(t *testing.T, priv ed25519.PrivateKey, tenantID, subject string, roles []string, expiresAt time.Time) string {
+	t.Helper()
 	claims := security.Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   "11111111-1111-1111-1111-111111111111",
+			Subject:   subject,
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(expiresAt),
 		},
@@ -83,9 +90,11 @@ func newTestRouterWithPool(t *testing.T, publicPEM string, pool *pgxpool.Pool) h
 		t.Fatalf("criar presigner: %v", err)
 	}
 	logger := slog.New(slog.DiscardHandler)
+	exercises := repo.NewExerciseRepo(pool)
 	return whttp.NewRouter(logger, []string{"*"}, verifier,
 		whttp.NewMediaHandler(logger, presigner),
-		whttp.NewExerciseHandler(logger, repo.NewExerciseRepo(pool), presigner),
+		whttp.NewExerciseHandler(logger, exercises, presigner),
+		whttp.NewPlanHandler(logger, repo.NewPlanRepo(pool), exercises, presigner),
 	)
 }
 

@@ -14,15 +14,15 @@ import (
 // NewRouter monta o roteador chi do serviço workout com os middlewares base
 // (request-id, logging estruturado, recover, CORS).
 //
-// As demais rotas de negócio chegam nas tarefas seguintes:
-// builder/atribuição (P1.4) e execução/sync (P1.5) — todas dentro do grupo
-// autenticado.
+// As rotas de execução e sync offline (P1.5) chegam depois, dentro do mesmo
+// grupo autenticado.
 func NewRouter(
 	logger *slog.Logger,
 	corsOrigins []string,
 	verifier *security.JWTVerifier,
 	mediaHandler *MediaHandler,
 	exerciseHandler *ExerciseHandler,
+	planHandler *PlanHandler,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -45,6 +45,10 @@ func NewRouter(
 		// devolve o tenant que o RLS vai aplicar nas rotas de negócio.
 		r.Get("/whoami", whoamiHandler)
 
+		// O plano ativo do aluno: resolvido pelo `sub` da claim, sem
+		// parâmetro de aluno — nenhum token lê o plano de outra pessoa.
+		r.Get("/me/plan", planHandler.MyPlan)
+
 		// Biblioteca de exercícios: ler é de qualquer usuário autenticado (o
 		// aluno vê nome e mídia no treino dele); escrever é do professor.
 		r.Get("/exercises", exerciseHandler.List)
@@ -57,6 +61,15 @@ func NewRouter(
 			r.Post("/media/presign", mediaHandler.Presign)
 			r.Post("/exercises", exerciseHandler.Create)
 			r.Put("/exercises/{id}", exerciseHandler.Update)
+
+			// Builder e atribuição (P1.4). Ler o plano é de qualquer
+			// professor do tenant; escrever, só do coach dono ou do owner
+			// (authorizeWrite).
+			r.Post("/plans", planHandler.Create)
+			r.Get("/plans/{id}", planHandler.Get)
+			r.Put("/plans/{id}/draft", planHandler.UpdateDraft)
+			r.Post("/plans/{id}/publish", planHandler.Publish)
+			r.Get("/students/{id}/plans", planHandler.ListByStudent)
 		})
 	})
 

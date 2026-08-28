@@ -64,9 +64,11 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 
+	exercises := repo.NewExerciseRepo(pool)
 	router := whttp.NewRouter(logger, cfg.CORSOrigins, verifier,
 		whttp.NewMediaHandler(logger, presigner),
-		whttp.NewExerciseHandler(logger, repo.NewExerciseRepo(pool), presigner),
+		whttp.NewExerciseHandler(logger, exercises, presigner),
+		whttp.NewPlanHandler(logger, repo.NewPlanRepo(pool), exercises, presigner),
 	)
 
 	server := &http.Server{

@@ -62,6 +62,21 @@ var (
 	errExerciseIsGlobal = func() APIError {
 		return newAPIError(http.StatusForbidden, "exercise_is_global")
 	}
+	// Publicar congela a versão (ADR-004 §1): congelar plano vazio em algum
+	// nível não serve para nada. `reason` diz qual nível ficou vazio.
+	errPlanIncomplete = func(reason, dayID string) APIError {
+		return newAPIError(http.StatusUnprocessableEntity, "plan_incomplete", "reason", reason, "day_id", dayID)
+	}
+	// Publicar duas vezes seguidas não gera versão nova: sem rascunho aberto,
+	// não há o que congelar.
+	errNoDraft = func() APIError {
+		return newAPIError(http.StatusConflict, "no_draft_to_publish")
+	}
+	// A árvore aponta para exercício que este tenant não enxerga (id de outro
+	// tenant ou inexistente).
+	errUnknownExercise = func(exerciseID string) APIError {
+		return newAPIError(http.StatusUnprocessableEntity, "unknown_exercise", "exercise_id", exerciseID)
+	}
 	errInvalidCursor = func() APIError {
 		return newAPIError(http.StatusBadRequest, "invalid_cursor")
 	}

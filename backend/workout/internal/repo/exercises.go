@@ -279,3 +279,63 @@ func nullString(v string) any {
 	}
 	return v
 }
+
+// ByIDs devolve os exercícios pedidos, indexados por id e já resolvidos no
+// locale (mesma cascata da listagem, ADR-011 §2). É o que enche o nome e a
+// mídia da árvore do plano — sem isso o builder e o treino do aluno voltariam
+// só com UUIDs.
+//
+// Diferente de List, não filtra por status: um exercício arquivado depois de
+// entrar num plano continua tendo de aparecer no plano.
+func (r *ExerciseRepo) ByIDs(ctx context.Context, tenantID string, ids []string, locale domain.Locale) (map[string]domain.ExerciseListItem, error) {
+	out := make(map[string]domain.ExerciseListItem, len(ids))
+	if len(ids) == 0 {
+		return out, nil
+	}
+	if locale == "" {
+		locale = domain.LocaleSource
+	}
+	chain := make([]string, 0, 3)
+	for _, l := range domain.LocaleChain(locale) {
+		chain = append(chain, string(l))
+	}
+
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		q := `
+			SELECT ` + exerciseColumns + `,
+			       COALESCE(tr.name, e.name) AS display_name,
+			       COALESCE(tr.instructions, '') AS instructions,
+			       COALESCE(tr.locale, $3) AS name_locale
+			FROM exercises e
+			LEFT JOIN LATERAL (
+				SELECT t.locale, t.name, t.instructions
+				FROM exercise_translations t
+				WHERE t.exercise_id = e.id AND t.locale = ANY($2::text[])
+				ORDER BY array_position($2::text[], t.locale)
+				LIMIT 1
+			) tr ON TRUE
+			WHERE e.id = ANY($1::uuid[])`
+		rows, err := tx.Query(ctx, q, ids, chain, string(domain.LocaleSource))
+		if err != nil {
+			return err
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var it domain.ExerciseListItem
+			if err := rows.Scan(
+				&it.ID, &it.TenantID, &it.Exercise.Name, &it.PrimaryMuscle, &it.Equipment,
+				&it.Level, &it.MediaURL, &it.MediaType, &it.CreatedBy, &it.Status,
+				&it.CreatedAt, &it.UpdatedAt,
+				&it.DisplayName, &it.Instructions, &it.NameLocale,
+			); err != nil {
+				return err
+			}
+			out[it.ID] = it
+		}
+		return rows.Err()
+	})
+	if err != nil {
+		return nil, fmt.Errorf("repo: buscar exercícios por id: %w", err)
+	}
+	return out, nil
+}
