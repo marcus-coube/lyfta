@@ -65,6 +65,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # MinIO só é necessário para os testes de mídia do workout (P1.2). Como
+      # `services:` não aceita condicional nem comando customizado, sobe como
+      # step — o bucket é criado pelo próprio teste.
+      - name: Subir MinIO
+        if: matrix.service == 'workout'
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
+            minio/minio:latest server /data
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:9000/minio/health/live && break
+            sleep 2
+          done
+
       - uses: actions/setup-go@v5
         with:
           go-version-file: backend/${{ matrix.service }}/go.mod
@@ -96,6 +110,10 @@ jobs:
         working-directory: backend/${{ matrix.service }}
         env:
           DATABASE_URL: postgres://lyfta_app:lyfta_app_dev@localhost:5432/lyfta_${{ matrix.service }}?sslmode=disable
+          # Storage da mídia (workout). Ignorado pelos serviços que não usam S3.
+          S3_ENDPOINT: http://localhost:9000
+          S3_ACCESS_KEY: minioadmin
+          S3_SECRET_KEY: minioadmin
         run: go test ./...
 
   app:

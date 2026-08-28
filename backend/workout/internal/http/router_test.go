@@ -9,12 +9,15 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 
 	whttp "github.com/marcus-coube/lyfta/workout/internal/http"
+	"github.com/marcus-coube/lyfta/workout/internal/media"
 	"github.com/marcus-coube/lyfta/workout/internal/security"
 )
 
@@ -61,7 +64,17 @@ func newTestRouter(t *testing.T, publicPEM string) http.Handler {
 	if err != nil {
 		t.Fatalf("criar verifier: %v", err)
 	}
-	return whttp.NewRouter(slog.New(slog.DiscardHandler), []string{"*"}, verifier)
+	// Assinar é operação offline: o presigner monta a URL sem falar com o
+	// storage, então estes testes de handler não precisam de MinIO no ar.
+	presigner, err := media.NewPresigner(media.Config{
+		Endpoint: "http://localhost:9000", Region: "us-east-1", Bucket: "lyfta-media",
+		AccessKey: "minioadmin", SecretKey: "minioadmin", UsePathStyle: true,
+	})
+	if err != nil {
+		t.Fatalf("criar presigner: %v", err)
+	}
+	logger := slog.New(slog.DiscardHandler)
+	return whttp.NewRouter(logger, []string{"*"}, verifier, whttp.NewMediaHandler(logger, presigner))
 }
 
 func TestHealthzIsPublic(t *testing.T) {
@@ -144,5 +157,113 @@ func TestWhoamiRejectsBadTokens(t *testing.T) {
 				t.Fatalf("esperava code unauthenticated, veio %q", payload.Code)
 			}
 		})
+	}
+}
+
+// presign chama POST /v1/media/presign com o token informado.
+func presign(t *testing.T, router http.Handler, token, body string) *httptest.ResponseRecorder {
+	t.Helper()
+	req := httptest.NewRequest(http.MethodPost, "/v1/media/presign", strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+	return rec
+}
+
+// TestPresignHappyPath é o fluxo feliz do P1.2: o coach pede a URL de upload e
+// recebe PUT assinado, headers obrigatórios e a URL de exibição. A chave fica
+// sob a pasta do tenant da claim.
+func TestPresignHappyPath(t *testing.T) {
+	publicPEM, priv := newTestKeys(t)
+	const tenantID = "22222222-2222-2222-2222-222222222222"
+	token := signToken(t, priv, tenantID, []string{"coach"}, time.Now().Add(time.Minute))
+
+	rec := presign(t, newTestRouter(t, publicPEM), token, `{"content_type":"image/gif","size_bytes":1024}`)
+	if rec.Code != http.StatusOK {
+		body, _ := io.ReadAll(rec.Body)
+		t.Fatalf("esperava 200, veio %d: %s", rec.Code, body)
+	}
+
+	var payload struct {
+		UploadURL string            `json:"upload_url"`
+		Method    string            `json:"upload_method"`
+		Headers   map[string]string `json:"required_headers"`
+		Key       string            `json:"key"`
+		MediaURL  string            `json:"media_url"`
+		MediaType string            `json:"media_type"`
+	}
+	if err := json.NewDecoder(rec.Body).Decode(&payload); err != nil {
+		t.Fatalf("decodificar resposta: %v", err)
+	}
+	if payload.Method != http.MethodPut {
+		t.Fatalf("esperava upload por PUT, veio %q", payload.Method)
+	}
+	if !strings.HasPrefix(payload.Key, "tenants/"+tenantID+"/exercises/") || !strings.HasSuffix(payload.Key, ".gif") {
+		t.Fatalf("chave fora do layout do P1.2: %q", payload.Key)
+	}
+	if payload.MediaType != "gif" {
+		t.Fatalf("esperava media_type gif, veio %q", payload.MediaType)
+	}
+	if !strings.Contains(payload.UploadURL, "X-Amz-Signature") {
+		t.Fatalf("upload_url não veio assinada: %q", payload.UploadURL)
+	}
+	if payload.Headers["Content-Type"] != "image/gif" || payload.Headers["Content-Length"] != "1024" {
+		t.Fatalf("headers obrigatórios vieram errados: %+v", payload.Headers)
+	}
+	if payload.MediaURL == "" {
+		t.Fatalf("media_url vazia")
+	}
+}
+
+// TestPresignRejects cobre os casos de erro do endpoint: tipo fora da
+// whitelist, arquivo acima de 50 MB, tamanho ausente e corpo inválido.
+func TestPresignRejects(t *testing.T) {
+	publicPEM, priv := newTestKeys(t)
+	token := signToken(t, priv, "22222222-2222-2222-2222-222222222222", []string{"coach"}, time.Now().Add(time.Minute))
+	router := newTestRouter(t, publicPEM)
+
+	cases := []struct {
+		name     string
+		body     string
+		status   int
+		wantCode string
+	}{
+		{"tipo não permitido", `{"content_type":"application/pdf","size_bytes":1024}`, http.StatusUnsupportedMediaType, "unsupported_media_type"},
+		{"acima do limite", `{"content_type":"video/mp4","size_bytes":` + strconv.FormatInt(media.MaxUploadBytes+1, 10) + `}`, http.StatusRequestEntityTooLarge, "file_too_large"},
+		{"sem tamanho", `{"content_type":"video/mp4"}`, http.StatusBadRequest, "validation_error"},
+		{"corpo inválido", `não é json`, http.StatusBadRequest, "invalid_body"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			rec := presign(t, router, token, tc.body)
+			if rec.Code != tc.status {
+				t.Fatalf("esperava %d, veio %d", tc.status, rec.Code)
+			}
+			var payload struct {
+				Code string `json:"code"`
+			}
+			if err := json.NewDecoder(rec.Body).Decode(&payload); err != nil {
+				t.Fatalf("decodificar erro: %v", err)
+			}
+			if payload.Code != tc.wantCode {
+				t.Fatalf("esperava code %q, veio %q", tc.wantCode, payload.Code)
+			}
+		})
+	}
+}
+
+// TestPresignIsCoachOnly: quem sobe mídia de exercício é o professor
+// (ADR-010 §3) — o aluno recebe 403 mesmo com token válido.
+func TestPresignIsCoachOnly(t *testing.T) {
+	publicPEM, priv := newTestKeys(t)
+	token := signToken(t, priv, "22222222-2222-2222-2222-222222222222", []string{"student"}, time.Now().Add(time.Minute))
+
+	rec := presign(t, newTestRouter(t, publicPEM), token, `{"content_type":"image/gif","size_bytes":1024}`)
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("esperava 403 para aluno, veio %d", rec.Code)
 	}
 }

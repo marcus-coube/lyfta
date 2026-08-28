@@ -5,6 +5,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -12,22 +13,22 @@ import (
 // Não há JWT_PRIVATE_KEY aqui: quem assina token é o identity; o workout só
 // valida com a chave pública (ADR-013 §4).
 type Config struct {
-	Port          string
-	DatabaseURL   string
-	JWTPublicKey  string
-	InternalToken string
-	S3Endpoint    string
-	S3Region      string
-	S3Bucket      string
-	S3AccessKey   string
-	S3SecretKey   string
-	CORSOrigins   []string
-	AppEnv        string
+	Port            string
+	DatabaseURL     string
+	JWTPublicKey    string
+	InternalToken   string
+	S3Endpoint      string
+	S3Region        string
+	S3Bucket        string
+	S3AccessKey     string
+	S3SecretKey     string
+	S3UsePathStyle  bool
+	S3PublicBaseURL string
+	CORSOrigins     []string
+	AppEnv          string
 }
 
 // Load lê as variáveis de ambiente do processo e valida as obrigatórias.
-// As variáveis de S3 só passam a ser exigidas na tarefa que usa mídia (P1.2);
-// aqui apenas carregamos o que existir.
 func Load() (Config, error) {
 	cfg := Config{
 		Port:          getEnv("PORT", "8082"),
@@ -39,8 +40,15 @@ func Load() (Config, error) {
 		S3Bucket:      getEnv("S3_BUCKET", "lyfta-media"),
 		S3AccessKey:   os.Getenv("S3_ACCESS_KEY"),
 		S3SecretKey:   os.Getenv("S3_SECRET_KEY"),
-		CORSOrigins:   splitAndTrim(getEnv("CORS_ORIGINS", "http://localhost:*")),
-		AppEnv:        getEnv("APP_ENV", "development"),
+		// MinIO e o endpoint de conta do R2 servem bucket por caminho; um S3
+		// "de verdade" usa subdomínio (S3_USE_PATH_STYLE=false).
+		S3UsePathStyle: getEnvBool("S3_USE_PATH_STYLE", true),
+		// Vazia: a mídia é servida por GET assinado (bucket privado, o caso do
+		// MinIO de dev). Preenchida: bucket público atrás de CDN/domínio
+		// próprio, e a media_url passa a ser direta e permanente.
+		S3PublicBaseURL: os.Getenv("S3_PUBLIC_BASE_URL"),
+		CORSOrigins:     splitAndTrim(getEnv("CORS_ORIGINS", "http://localhost:*")),
+		AppEnv:          getEnv("APP_ENV", "development"),
 	}
 
 	if cfg.DatabaseURL == "" {
@@ -50,6 +58,18 @@ func Load() (Config, error) {
 	// só rotas públicas e falhando em todo endpoint autenticado.
 	if cfg.JWTPublicKey == "" {
 		return Config{}, fmt.Errorf("config: JWT_PUBLIC_KEY é obrigatória (emitida pelo identity)")
+	}
+	// Mídia de exercício (P1.2) é parte do serviço: sem storage configurado o
+	// upload falharia só na hora do uso, com o professor na frente da tela.
+	for _, v := range []struct{ name, value string }{
+		{"S3_ENDPOINT", cfg.S3Endpoint},
+		{"S3_BUCKET", cfg.S3Bucket},
+		{"S3_ACCESS_KEY", cfg.S3AccessKey},
+		{"S3_SECRET_KEY", cfg.S3SecretKey},
+	} {
+		if v.value == "" {
+			return Config{}, fmt.Errorf("config: %s é obrigatória (storage da mídia de exercício)", v.name)
+		}
 	}
 
 	return cfg, nil
@@ -67,6 +87,20 @@ func getEnv(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+// getEnvBool aceita os valores que strconv.ParseBool entende ("1", "true",
+// "false"…); qualquer outra coisa cai no fallback.
+func getEnvBool(key string, fallback bool) bool {
+	v, ok := os.LookupEnv(key)
+	if !ok || v == "" {
+		return fallback
+	}
+	parsed, err := strconv.ParseBool(v)
+	if err != nil {
+		return fallback
+	}
+	return parsed
 }
 
 func splitAndTrim(v string) []string {

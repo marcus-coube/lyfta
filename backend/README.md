@@ -27,7 +27,10 @@ de código entre serviços — só HTTP).
 - Erros de API: envelope `{ "code": "...", "params": {...} }` — código estável,
   tradução no cliente (ADR-011). Paginação por cursor. IDs: UUID v7.
 - E-mail: **Resend** (só no `identity`).
-- Mídia: S3-compatible via presigned URLs (MinIO no dev).
+- Mídia: S3-compatible via presigned URLs (MinIO no dev), cliente
+  **aws-sdk-go-v2** (`service/s3` + `credentials`) — é o SDK que a Cloudflare
+  documenta para R2, então trocar MinIO por S3/R2 é configuração
+  (`S3_ENDPOINT`, `S3_USE_PATH_STYLE`, `S3_PUBLIC_BASE_URL`), não código (ADR-009).
 
 ## Layout padrão de cada serviço
 

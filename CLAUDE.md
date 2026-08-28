@@ -44,8 +44,9 @@ saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fas
 convites, reset), núcleo do app Flutter com auth real ponta a ponta, CI no
 GitHub Actions (`.github/workflows/ci.yml` — `go vet`/`go test` com Postgres em
 service container + `flutter analyze`/`test` + guard de strings) e o serviço
-`workout` com o schema completo do ADR-004 (P1.1). Próxima: **P1.2** (mídia de
-exercício via presigned upload). Escopo do MVP em
+`workout` com o schema completo do ADR-004 e upload de mídia por URL
+presignada (P1.1–P1.2). Próxima: **P1.3** (API da biblioteca de exercícios +
+seed). Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor
 funcionam em **todas** as plataformas (mobile e web).

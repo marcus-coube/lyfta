@@ -43,7 +43,7 @@ certo; é o coração do sistema).
 **Aceite:** migrations sobem/descem limpas; teste de repo grava plano→versão→dia→
 bloco→sets e lê de volta; RLS impede leitura cross-tenant em teste.
 
-## - [ ] P1.2 workout — mídia (presigned upload)
+## - [x] P1.2 workout — mídia (presigned upload)
 
 **Objetivo:** upload de GIF/vídeo de exercício sem passar bytes pelo serviço.
 **Passos:** endpoint `POST /v1/media/presign` (auth coach) → URL presigned PUT no
@@ -242,3 +242,59 @@ mínimo); bugs achados viram tarefas na seção Notas.
   (`PRIMARY KEY (tenant_id, student_id)`): trocar de plano sobrescreve o
   estado, sem histórico de planos anteriores — suficiente para a rotação do
   ADR-004 §3.
+
+### P1.2 (2026-08-27, Mac)
+
+- **Dependência nova aprovada pelo fundador nesta sessão: `aws-sdk-go-v2`**
+  (`service/s3` + `credentials`), registrada na stack pinada do
+  `backend/README.md`. Contexto da escolha: a intenção declarada é usar
+  **Cloudflare R2** em produção, e o SDK que a própria Cloudflare documenta
+  para R2 é este — "aws-sdk" aqui é o nome da biblioteca, não o fornecedor.
+  Alternativas descartadas: `minio-go` (uma dependência a menos, mas amarra a
+  mídia a uma lib mantida pela MinIO) e SigV4 escrito à mão (assinatura
+  própria para manter, com falha típica em 403 opaco).
+- **Nada de código muda ao sair do MinIO** (ADR-009 já previa): a troca é
+  `S3_ENDPOINT`, `S3_USE_PATH_STYLE` (path-style no MinIO e no endpoint de
+  conta do R2; `false` para S3 por subdomínio) e `S3_PUBLIC_BASE_URL`. Esta
+  última é a que decide a `media_url`: **vazia** → GET assinado que expira
+  (bucket privado, o caso do MinIO de dev); **preenchida** com o domínio
+  público/CDN → URL direta e permanente, que é como o R2 costuma servir mídia
+  atrás do CDN. Sem esse par de chaves, a migração exigiria mexer no handler.
+- **O limite de 50 MB é garantia do storage, não promessa do cliente:**
+  `PresignPut` assina `Content-Type` **e** `Content-Length`, então a URL só
+  aceita exatamente aquele arquivo. Verificado: subir 4096 bytes numa URL
+  assinada para 1024 dá **403**, e trocar o content-type também. Se o tamanho
+  não entrasse na assinatura, a URL seria um upload livre de qualquer coisa
+  até expirar. Custo: o app precisa saber o tamanho antes de pedir a URL —
+  aceitável, o arquivo já está no device.
+- **Chave `tenants/{tenant_id}/exercises/{uuid}.{ext}`** com o tenant vindo da
+  **claim**, nunca do body: token do tenant A não assina upload na pasta do
+  tenant B. O particionamento por tenant também torna trivial exportar ou
+  apagar a mídia de um cliente (ADR-008/LGPD).
+- **Endpoint restrito a `owner|coach`** (ADR-010 §3: quem sobe mídia é o
+  professor). TTL das URLs: 15 min — curto para um link vazado não virar
+  upload livre, longo para 50 MB numa conexão ruim.
+- **CI:** o job `backend` ganhou um step que sobe MinIO via `docker run`,
+  condicional a `matrix.service == 'workout'` (`services:` do Actions não
+  aceita condicional nem comando customizado, e a imagem do MinIO precisa de
+  `server /data`). O bucket é criado pelo próprio teste, então o CI não
+  depende do `minio-init` do compose. Os testes de mídia pulam sem MinIO fora
+  do CI e **falham** dentro dele, mesmo padrão do banco no P0.7.
+- **Verificado (Mac):** `go vet` limpo, 12 testes verdes no workout (4 novos de
+  mídia + 4 de handler de presign + os do P1.1). Aceite exercitado de duas
+  formas: teste de integração subindo um GIF real no MinIO pela URL assinada e
+  lendo os mesmos bytes de volta (com content-type preservado), **e**
+  manualmente ponta a ponta com os dois serviços no ar — signup no `identity`
+  via `curl`, `POST /v1/media/presign` no `workout` com o token do coach,
+  `PUT` do arquivo (200), download pela `media_url` (200, bytes idênticos) e
+  `PUT` com tamanho diferente do assinado (403). O `docker compose up -d`
+  (Redis + MinIO) foi executado e ficou **healthy nesta máquina** — resolve no
+  Mac a verificação que estava pendente desde o P0.1; no Windows continua em
+  aberto (sem Docker lá).
+- **Anotações para as próximas tarefas:** `media.KeyFromURL` já existe para o
+  P1.3, quando o coach devolver a `media_url` no cadastro do exercício e o
+  serviço precisar saber qual objeto ela aponta. Não há **coleta de lixo** de
+  objetos órfãos: presign que nunca vira exercício deixa arquivo no bucket —
+  vale um job de limpeza (ou verificação de existência no P1.3) antes de
+  produção. `S3_PUBLIC_BASE_URL` não valida se o bucket é mesmo público: se
+  for preenchida com bucket privado, a mídia quebra silenciosamente na UI.

@@ -14,6 +14,7 @@ import (
 
 	"github.com/marcus-coube/lyfta/workout/internal/config"
 	whttp "github.com/marcus-coube/lyfta/workout/internal/http"
+	"github.com/marcus-coube/lyfta/workout/internal/media"
 	"github.com/marcus-coube/lyfta/workout/internal/repo"
 	"github.com/marcus-coube/lyfta/workout/internal/security"
 )
@@ -50,7 +51,20 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 
-	router := whttp.NewRouter(logger, cfg.CORSOrigins, verifier)
+	presigner, err := media.NewPresigner(media.Config{
+		Endpoint:      cfg.S3Endpoint,
+		Region:        cfg.S3Region,
+		Bucket:        cfg.S3Bucket,
+		AccessKey:     cfg.S3AccessKey,
+		SecretKey:     cfg.S3SecretKey,
+		UsePathStyle:  cfg.S3UsePathStyle,
+		PublicBaseURL: cfg.S3PublicBaseURL,
+	})
+	if err != nil {
+		return err
+	}
+
+	router := whttp.NewRouter(logger, cfg.CORSOrigins, verifier, whttp.NewMediaHandler(logger, presigner))
 
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,

@@ -3,16 +3,16 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** `P1.2` (workout — mídia via presigned upload)
+**Próxima tarefa:** `P1.3` (workout — API da biblioteca de exercícios + seed)
 
 | Fase | Progresso | Situação |
 |---|---|---|
 | P0 — Fundação | 7/7 | concluída |
-| P1 — Treino | 1/8 | em andamento |
+| P1 — Treino | 2/8 | em andamento |
 | P2 — Evolução | 0/5 | não iniciada |
 | P3 — Comunicação | 0/5 | não iniciada |
 | P4 — Praticidade | 0/4 | não iniciada |
-| **Total** | **8/29** | |
+| **Total** | **9/29** | |
 
 ## Bancos locais
 
@@ -40,3 +40,4 @@ Criar em cada máquina: `psql -U postgres -f backend/scripts/create-dbs.sql`
 | 2026-07-12 | P0.6 concluída (Mac): app — auth real ponta a ponta ligada ao `identity` (`AuthRepository`, `AuthController` com sessão persistida e refresh automático no boot), telas de signup/login/aceitar convite/esqueci-redefinir senha funcionais com erro i18n, bottom sheet de `multiple_tenants`, shells responsivos (`NavigationRail` web/desktop >= 840px, `NavigationBar` mobile). Teste de widget de login (feliz + erro de credencial) sobre HTTP fake; contrato validado também via `curl` contra o `identity` real. `flutter analyze`/`flutter test`/guard de strings limpos. Android e o deep link `lyfta://` de convite seguem pendentes (sem SDK nesta máquina); fluxo completo signup→convite→aceite→login não exercitado manualmente ponta a ponta na UI (ver Notas de execução em P0-fundacao.md) |
 | 2026-08-27 | P0.7 concluída (Mac): CI no GitHub Actions — job `backend` (matrix descoberta a partir de `backend/<svc>/go.mod`, Postgres 17 em service container, migrations via golang-migrate v4.19.1, `go vet`+`go test` conectando como `lyfta_app`) e job `app` (`flutter analyze`/`test` + guard de strings, Flutter 3.44.4 pinado). `testPool` passou a falhar em vez de pular quando `CI` está setada — sem isso o pipeline ficaria verde sem banco. Fluxo do job reproduzido localmente com Postgres 17 limpo em Docker; **P0 fechada** (ver Notas de execução em P0-fundacao.md) |
 | 2026-08-27 | P1.1 concluída (Mac): serviço `workout` (8082, banco `lyfta_workout`) — bootstrap chi+pgxpool+slog só com validação de JWT (chave pública do identity), 13 migrations com o modelo inteiro do ADR-004 (biblioteca com policy dupla global/tenant, plano→versão→dia→bloco→exercício→sets estruturados, rotação, sessões e logs) e imutabilidade garantida por trigger: versão publicada não muda e log de série é append-only. 8 testes verdes; integração identity→workout confirmada com token real (ver Notas de execução em P1-treino.md) |
+| 2026-08-27 | P1.2 concluída (Mac): workout — `POST /v1/media/presign` (owner|coach) assinando PUT no S3-compatible com `aws-sdk-go-v2` (dependência nova aprovada; escolhida por ser a que a Cloudflare documenta para R2). Content-Type e Content-Length entram na assinatura, então o teto de 50 MB é garantia do storage; chave por tenant vinda da claim; `S3_PUBLIC_BASE_URL` alterna entre GET assinado e URL pública de CDN. Upload real no MinIO verificado por teste e via curl ponta a ponta; CI ganhou MinIO no job do workout (ver Notas de execução em P1-treino.md) |

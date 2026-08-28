@@ -34,7 +34,29 @@ func writeError(w http.ResponseWriter, err APIError) {
 	_ = json.NewEncoder(w).Encode(err)
 }
 
+// writeJSON serializa qualquer payload de sucesso com o status informado.
+func writeJSON(w http.ResponseWriter, status int, payload any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(payload)
+}
+
 var (
+	errInvalidBody = func() APIError {
+		return newAPIError(http.StatusBadRequest, "invalid_body")
+	}
+	errValidation = func(field string) APIError {
+		return newAPIError(http.StatusBadRequest, "validation_error", "field", field)
+	}
+	errUnsupportedMediaType = func(contentType string) APIError {
+		return newAPIError(http.StatusUnsupportedMediaType, "unsupported_media_type", "content_type", contentType)
+	}
+	errFileTooLarge = func(maxBytes int64) APIError {
+		return newAPIError(http.StatusRequestEntityTooLarge, "file_too_large", "max_bytes", maxBytes)
+	}
+	errInternal = func() APIError {
+		return newAPIError(http.StatusInternalServerError, "internal_error")
+	}
 	errUnauthenticated = func() APIError {
 		return newAPIError(http.StatusUnauthorized, "unauthenticated")
 	}
