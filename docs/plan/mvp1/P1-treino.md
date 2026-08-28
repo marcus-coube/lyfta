@@ -81,7 +81,7 @@ custom que só o próprio tenant vê.
 **Aceite:** fluxo teste: cria plano A/B com sets estruturados → publica → aluno lê
 `/v1/me/plan`; editar rascunho e republicar gera v2 sem tocar v1.
 
-## - [ ] P1.5 workout — treino do dia, execução e sync (ADR-003)
+## - [x] P1.5 workout — treino do dia, execução e sync (ADR-003)
 
 **Objetivo:** o contrato offline inteiro do lado servidor.
 **Endpoints:**
@@ -456,3 +456,115 @@ mínimo); bugs achados viram tarefas na seção Notas.
   irrelevante no tamanho de um plano, mas é o endpoint que o P1.5 vai
   reaproveitar para o `GET /v1/me/today`, onde entra também a carga anterior. A
   lista de alunos do coach continua no identity (P1.6 precisa dela).
+
+### P1.5 (2026-08-28, Mac)
+
+- **Quatro rotas, todas no grupo autenticado comum, nenhuma de professor:**
+  `GET /v1/me/today`, `POST /v1/sync/workout-logs`, `GET /v1/sync/pull` e
+  `POST /v1/me/plan/override-day`. O aluno é sempre o `sub` da claim — não
+  existe parâmetro de aluno em lugar nenhum, então nenhum token empurra
+  execução ou lê treino de outra pessoa. A única exceção é o override, que
+  aceita `student_id` no corpo e aí exige `coach`/`owner`: a rota mora em
+  `/me/…` mas o ADR-004 §3 dá o override ao aluno **ou** ao professor.
+- **Aluno sem plano é `200 {"status":"no_plan"}`, não 404.** "Seu professor
+  ainda não montou seu treino" é um estado da tela, e o payload do `/today` é
+  feito para ser cacheado inteiro no device (ADR-003 §3): guardar uma exceção
+  no cache local obrigaria o app a tratar erro para desenhar tela normal. Os
+  três estados são `no_plan` | `rest_day` | `ready`, códigos e não texto
+  (ADR-011 §5). Listas vazias saem como `[]`, nunca `null`.
+- **O snapshot da sessão é montado no servidor** (`daySnapshotQuery`, um
+  `jsonb_build_object` só), a partir da versão **publicada** — dia de rascunho
+  responde `unknown_day`. O device manda apenas `day_id`: o histórico do aluno
+  não pode depender do que um cliente afirma que estava na tela. O nome que
+  entra no snapshot é a coluna canônica `exercises.name`, não a tradução: o
+  snapshot é registro histórico, e congelar o texto traduzido prenderia o
+  passado ao idioma do dia em que o treino foi feito (a tradução é resolvida
+  na leitura, ADR-011 §2).
+- **Idempotência por tipo de evento** (ADR-003 §4): `session_start`,
+  `set_log` e `set_revision` são INSERT com `ON CONFLICT (tenant_id,
+  client_id) DO NOTHING` — zero linhas afetadas é `duplicate`, não erro.
+  `session_finish` é UPDATE e não teria UNIQUE para segurá-lo: a idempotência
+  vem do `finished_at IS NULL` no WHERE. **Sem isso, reenviar o lote avançaria
+  a rotação duas vezes** — o aluno terminaria o A e acordaria no C. Foi o
+  ponto mais delicado da tarefa. Alternativa considerada e descartada: uma
+  tabela-ledger de eventos recebidos; resolve os quatro casos de forma
+  uniforme, mas duplica o `client_id` que as tabelas de domínio já guardam,
+  em troca de nada além de auditoria que ninguém pediu.
+- **Um evento ruim não derruba o lote.** Cada evento roda no próprio
+  **savepoint** (`tx.Begin` aninhado do pgx): rejeição desfaz só a si mesma e
+  o lote continua. Sem isso o primeiro erro abortaria a transação e a fila do
+  device ficaria travada para sempre, reenviando o mesmo lote. A resposta é
+  `{results: [...]}` na ordem do lote, com `accepted`/`duplicate`/`rejected` e
+  o código estável (`unknown_day`, `unknown_session`, `unknown_exercise`,
+  `unknown_revised_log`, `invalid_event` + `field`). O **único** caso que
+  recusa o lote inteiro com 400 é evento sem `client_id`: sem ele o device não
+  consegue casar a resposta com a fila.
+- **`exercise_id` conferido sob RLS também aqui:** a FK de `workout_set_logs`
+  roda com privilégios do dono da tabela e ignora policy (mesma armadilha do
+  P1.4), então um UUID de exercício de outro tenant entraria no histórico sem
+  o `SELECT` explícito.
+- **Rotação (ADR-004 §3):** avança só quando a sessão fecha **com ≥1 série** —
+  abrir o treino e desistir não gasta o dia. O passo é dado sobre a **versão
+  ativa**, não sobre a versão que a sessão congelou (quem terminou o A da v1
+  enquanto o coach publicava a v2 vai para o B da v2), casando pelo **rótulo**
+  como no publish do P1.4, e é **circular**: depois do último dia volta ao
+  primeiro.
+- **Carga anterior é por `exercise_id` e atravessa planos** (ADR-004), com um
+  detalhe que não estava no plano: devolve **todas as séries da última sessão**
+  em que aquele exercício apareceu, não só a última série. É o que o player
+  precisa para pré-preencher linha a linha. Logs corrigidos por um
+  `set_revision` somem das leituras via `NOT EXISTS` sobre `revises` (o fato
+  antigo continua na tabela — é imutável); revisão **órfã** (que aponta para
+  um log que o servidor não tem) é rejeitada, senão esconderia nada e ficaria
+  invisível para sempre. Migration 0015 acrescenta o índice de `revises` e o
+  índice `(updated_at, id)` da biblioteca — este é o único índice do serviço
+  que **não** começa por `tenant_id`, de propósito: o pull tem de varrer o
+  global (`tenant_id NULL`) junto com o do tenant.
+- **Cursor do pull carrega duas marcas, não uma.** Keyset `(updated_at, id)`
+  para a biblioteca **e** uma marca d'água separada para o plano. Com uma
+  marca só, o cursor da biblioteca (que só anda quando a biblioteca muda)
+  faria o servidor reenviar o plano inteiro em toda sincronização, para
+  sempre. A marca d'água vem do relógio do **banco** (`SELECT now()`), não do
+  processo — `updated_at` é carimbado pelo Postgres, e comparar com o relógio
+  da API perde atualização sempre que os dois divergem — e recua 5 s: uma
+  transação que começou antes do `now()` da consulta e comitou depois ficaria
+  invisível para sempre com marca exata. O custo do recuo é reenviar algo já
+  sincronizado, o que é idempotente no device. A marca só avança quando a
+  página fecha o delta (`has_more: false`). O plano vem **inteiro** quando
+  mudou: substituir o cache local é mais simples e mais seguro que aplicar
+  diff de árvore no device.
+- **Sanidade do relógio do device** (ADR-003): `performed_at` no futuro além
+  de 24 h é rejeitado como `invalid_event`. Um device com fuso errado
+  envenenaria o histórico e o gráfico de carga do P2.
+- **Refator para não duplicar serialização:** o que era `daysToDTO` +
+  `buildResponse` do `PlanHandler` virou o tipo `planView`
+  (`internal/http/plan_view.go`), usado pelo builder e pelo `/me/today`. O dia
+  que o aluno executa é, campo a campo, o dia que o coach montou — e o pull
+  devolve exercício no mesmo formato da biblioteca (`exerciseToResponse`), sem
+  obrigar o app a ter dois parsers para o mesmo objeto.
+- **Verificado (Mac):** `go vet` limpo, **54 testes verdes** (17 novos: 9 de
+  repo — rotação circular A→B→C→A, fim sem série não anda, lote reenviado sem
+  duplicar log nem rotação, evento ruim sem derrubar o lote, dia de rascunho
+  recusado, carga anterior atravessando planos, revisão escondendo o original
+  e revisão órfã recusada, isolamento entre alunos e tenants com volume
+  conferido, override + recusa de dia fora da versão; 8 de handler cobrindo o
+  Aceite inteiro pela API, drenagem com 4 rejeições no meio, 400 sem
+  `client_id`, revisão, controle de acesso do override, `no_plan`, isolamento
+  cross-tenant e o pull em três estados). Migration 0015 sobe e desce limpa.
+  **Smoke manual ponta a ponta** com `identity` + `workout` no ar: signup →
+  convite → aceite → plano A/B publicado → `GET /me/today` (dia A, 2 sets
+  prescritos, sem carga anterior) → lote de 4 eventos aceito com
+  `next_day_label: B` → **mesmo lote reenviado: 4 duplicatas, rotação parada
+  em B** → `/me/today` no B com a sessão A resumida (2 séries, volume 760 kg)
+  → override de volta ao A trazendo a carga anterior com exatamente 2 séries
+  (40 kg × 10 e 45 kg × 8) → pull inicial com plano + biblioteca paginada.
+- **Anotações para as próximas tarefas:** não há endpoint para **ler uma
+  sessão passada** (`SessionSnapshot` existe no repositório, sem rota) — o
+  P2 vai precisar dele para a tela de histórico. A carga anterior no
+  `/me/today` não exclui a sessão **em andamento**: como o app busca o dia
+  antes de começar, na prática não aparece, mas se o P1.7 rebuscar no meio da
+  execução o aluno verá a própria série de hoje como "anterior". `client_id`
+  continua único por tenant (P1.1): dois alunos do mesmo tenant que gerassem o
+  mesmo UUID colidiriam — probabilidade desprezível, mas a segunda escrita
+  viraria `duplicate` silencioso em vez de erro. O `RecentSessions` limita a
+  3 sessões e não pagina; histórico completo é P2.

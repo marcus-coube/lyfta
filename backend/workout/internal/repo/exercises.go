@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -338,4 +339,82 @@ func (r *ExerciseRepo) ByIDs(ctx context.Context, tenantID string, ids []string,
 		return nil, fmt.Errorf("repo: buscar exercícios por id: %w", err)
 	}
 	return out, nil
+}
+
+// ListUpdatedSince é o pull incremental da biblioteca (ADR-003 §4): tudo que
+// mudou depois do cursor, na ordem (updated_at, id).
+//
+// Ordenar por `updated_at` e não por nome é o ponto: o cliente guarda o
+// cursor da última linha e volta só o delta. Exercício **arquivado** também
+// vem — o app precisa saber que sumiu da biblioteca, e omitir a linha deixaria
+// o cache local com um item fantasma para sempre.
+//
+// since zero significa primeira sincronização: devolve a biblioteca inteira,
+// página a página.
+func (r *ExerciseRepo) ListUpdatedSince(ctx context.Context, tenantID string, since time.Time, cursorID string, locale domain.Locale, limit int) (items []domain.ExerciseListItem, hasMore bool, err error) {
+	if limit <= 0 {
+		limit = DefaultPageSize
+	}
+	if limit > MaxPageSize {
+		limit = MaxPageSize
+	}
+	if locale == "" {
+		locale = domain.LocaleSource
+	}
+	chain := make([]string, 0, 3)
+	for _, l := range domain.LocaleChain(locale) {
+		chain = append(chain, string(l))
+	}
+
+	err = WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		const q = `
+			SELECT ` + exerciseColumns + `,
+			       COALESCE(tr.name, e.name) AS display_name,
+			       COALESCE(tr.instructions, '') AS instructions,
+			       COALESCE(tr.locale, $2) AS name_locale
+			FROM exercises e
+			LEFT JOIN LATERAL (
+				SELECT t.locale, t.name, t.instructions
+				FROM exercise_translations t
+				WHERE t.exercise_id = e.id AND t.locale = ANY($1::text[])
+				ORDER BY array_position($1::text[], t.locale)
+				LIMIT 1
+			) tr ON TRUE
+			WHERE $3::timestamptz IS NULL
+			   OR (e.updated_at, e.id) > ($3::timestamptz, COALESCE($4::uuid, '00000000-0000-0000-0000-000000000000'::uuid))
+			ORDER BY e.updated_at, e.id
+			LIMIT $5`
+		var sinceArg any
+		if !since.IsZero() {
+			sinceArg = since
+		}
+		rows, queryErr := tx.Query(ctx, q, chain, string(domain.LocaleSource), sinceArg, nullString(cursorID), limit+1)
+		if queryErr != nil {
+			return queryErr
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var it domain.ExerciseListItem
+			if scanErr := rows.Scan(
+				&it.ID, &it.TenantID, &it.Exercise.Name, &it.PrimaryMuscle, &it.Equipment,
+				&it.Level, &it.MediaURL, &it.MediaType, &it.CreatedBy, &it.Status,
+				&it.CreatedAt, &it.UpdatedAt,
+				&it.DisplayName, &it.Instructions, &it.NameLocale,
+			); scanErr != nil {
+				return scanErr
+			}
+			// A chave keyset do pull é o próprio updated_at: o cursor volta
+			// como (timestamp, id), não como nome.
+			it.SortKey = it.UpdatedAt.UTC().Format(time.RFC3339Nano)
+			items = append(items, it)
+		}
+		return rows.Err()
+	})
+	if err != nil {
+		return nil, false, fmt.Errorf("repo: listar exercícios alterados: %w", err)
+	}
+	if len(items) > limit {
+		return items[:limit], true, nil
+	}
+	return items, false, nil
 }

@@ -13,9 +13,6 @@ import (
 
 // NewRouter monta o roteador chi do serviço workout com os middlewares base
 // (request-id, logging estruturado, recover, CORS).
-//
-// As rotas de execução e sync offline (P1.5) chegam depois, dentro do mesmo
-// grupo autenticado.
 func NewRouter(
 	logger *slog.Logger,
 	corsOrigins []string,
@@ -23,6 +20,7 @@ func NewRouter(
 	mediaHandler *MediaHandler,
 	exerciseHandler *ExerciseHandler,
 	planHandler *PlanHandler,
+	syncHandler *SyncHandler,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -48,6 +46,15 @@ func NewRouter(
 		// O plano ativo do aluno: resolvido pelo `sub` da claim, sem
 		// parâmetro de aluno — nenhum token lê o plano de outra pessoa.
 		r.Get("/me/plan", planHandler.MyPlan)
+
+		// Execução e sync offline (P1.5, ADR-003). Não são rotas de
+		// professor: quem empurra a fila é o device do aluno, e o aluno é
+		// sempre o `sub` da claim. O coach entra só no override, e mesmo
+		// assim mandando o student_id no corpo.
+		r.Get("/me/today", syncHandler.Today)
+		r.Post("/me/plan/override-day", syncHandler.OverrideDay)
+		r.Post("/sync/workout-logs", syncHandler.PushLogs)
+		r.Get("/sync/pull", syncHandler.Pull)
 
 		// Biblioteca de exercícios: ler é de qualquer usuário autenticado (o
 		// aluno vê nome e mídia no treino dele); escrever é do professor.

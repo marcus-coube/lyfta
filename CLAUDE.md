@@ -40,15 +40,17 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P1.X").
 **Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
 saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
-**P0 (Fundação) concluída; P1 em andamento, 11/29:** `identity` completo (auth,
+**P0 (Fundação) concluída; P1 em andamento, 12/29:** `identity` completo (auth,
 convites, reset), núcleo do app Flutter com auth real ponta a ponta, CI no
 GitHub Actions (`.github/workflows/ci.yml` — `go vet`/`go test` com Postgres em
 service container + `flutter analyze`/`test` + guard de strings) e o serviço
-`workout` com o schema completo do ADR-004, upload de mídia por URL presignada,
-a API da biblioteca de exercícios com seed global de 41 exercícios em 3 locales
-e o builder do professor (rascunho versionado, publicação que congela a versão e
-atribui o plano ao aluno) (P1.1–P1.4). Próxima: **P1.5** (treino do dia, execução
-e sync offline). Escopo do MVP em
+`workout` completo do lado servidor: schema do ADR-004, upload de mídia por URL
+presignada, biblioteca de exercícios com seed global de 41 exercícios em 3
+locales, builder do professor (rascunho versionado, publicação que congela a
+versão e atribui o plano) e o contrato offline do ADR-003 — treino do dia,
+push idempotente da fila de execução, pull incremental e rotação A→B→C
+(P1.1–P1.5). Próxima: **P1.6** (Flutter — biblioteca e builder do professor).
+Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor
 funcionam em **todas** as plataformas (mobile e web).

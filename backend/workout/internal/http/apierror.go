@@ -77,6 +77,15 @@ var (
 	errUnknownExercise = func(exerciseID string) APIError {
 		return newAPIError(http.StatusUnprocessableEntity, "unknown_exercise", "exercise_id", exerciseID)
 	}
+	// O lote de sync veio maior que o teto: o device tem de fatiar a fila.
+	errBatchTooLarge = func(maxEvents int) APIError {
+		return newAPIError(http.StatusBadRequest, "batch_too_large", "max_events", maxEvents)
+	}
+	// Override de rotação apontando para um dia que não é da versão ativa do
+	// aluno (ADR-004 §3).
+	errDayNotInPlan = func(dayID string) APIError {
+		return newAPIError(http.StatusUnprocessableEntity, "day_not_in_plan", "day_id", dayID)
+	}
 	errInvalidCursor = func() APIError {
 		return newAPIError(http.StatusBadRequest, "invalid_cursor")
 	}

@@ -3,16 +3,16 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** `P1.5` (workout — treino do dia, execução e sync)
+**Próxima tarefa:** `P1.6` (Flutter — professor: biblioteca e builder mínimo)
 
 | Fase | Progresso | Situação |
 |---|---|---|
 | P0 — Fundação | 7/7 | concluída |
-| P1 — Treino | 4/8 | em andamento |
+| P1 — Treino | 5/8 | em andamento |
 | P2 — Evolução | 0/5 | não iniciada |
 | P3 — Comunicação | 0/5 | não iniciada |
 | P4 — Praticidade | 0/4 | não iniciada |
-| **Total** | **11/29** | |
+| **Total** | **12/29** | |
 
 ## Bancos locais
 
@@ -53,3 +53,4 @@ exige superusuário — exercício global é `tenant_id NULL`):
 | 2026-08-27 | P1.2 concluída (Mac): workout — `POST /v1/media/presign` (owner|coach) assinando PUT no S3-compatible com `aws-sdk-go-v2` (dependência nova aprovada; escolhida por ser a que a Cloudflare documenta para R2). Content-Type e Content-Length entram na assinatura, então o teto de 50 MB é garantia do storage; chave por tenant vinda da claim; `S3_PUBLIC_BASE_URL` alterna entre GET assinado e URL pública de CDN. Upload real no MinIO verificado por teste e via curl ponta a ponta; CI ganhou MinIO no job do workout (ver Notas de execução em P1-treino.md) |
 | 2026-08-27 | P1.3 concluída (Mac): workout — API da biblioteca (`GET /v1/exercises` com busca sem acento, filtros da taxonomia, cursor keyset e fallback de locale resolvido no banco; `GET/POST/PUT /v1/exercises/{id}`), taxonomia como código estável (o app traduz, ADR-011 §5), `media_url` validada contra a pasta do tenant e re-assinada na leitura, e seed de 41 exercícios globais em 3 locales (`seed/exercises_seed.sql`, idempotente, superusuário, aplicado também no CI). Global é somente leitura: `PUT` responde `403 exercise_is_global`. 26 testes verdes e smoke manual com token real de coach `pt-PT` (ver Notas de execução em P1-treino.md) |
 | 2026-08-28 | P1.4 concluída (Mac): workout — builder e atribuição (`POST /v1/plans`, `PUT /v1/plans/{id}/draft` substituindo a árvore inteira, `GET /v1/plans/{id}` com `?version=draft|latest|N`, `POST /v1/plans/{id}/publish`, `GET /v1/students/{id}/plans`, `GET /v1/me/plan`). A versão nasce ao abrir o rascunho e o publish só carimba `published_at`; `exercise_id` é conferido sob RLS porque a FK ignora policy; `422 plan_incomplete` traz o nível vazio e o dia. "Só coach do aluno edita" ficou como coach dono do plano ou owner — o vínculo coach↔aluno vive no identity (dívida anotada). Bug do P1.1 corrigido: `GetVersionTree` perdia sets em bloco com 2 exercícios (ponteiro para elemento de slice). 37 testes verdes e Aceite exercitado ponta a ponta por curl com identity + workout no ar (ver Notas de execução em P1-treino.md) |
+| 2026-08-28 | P1.5 concluída (Mac): workout — contrato offline do lado servidor (`GET /v1/me/today` cacheável inteiro com dia resolvido, carga anterior por `exercise_id` e histórico recente; `POST /v1/sync/workout-logs` drenando a fila com idempotência por `client_id`; `GET /v1/sync/pull` incremental; `POST /v1/me/plan/override-day`). Cada evento do lote roda no próprio savepoint, então evento ruim não trava a fila do device; `session_finish` é idempotente pelo `finished_at IS NULL` — sem isso o reenvio avançaria a rotação duas vezes. Snapshot do dia montado no servidor a partir da versão publicada (ADR-004 §2) e rotação circular sobre a versão ativa, casando pelo rótulo. Cursor do pull carrega marca d'água do relógio do banco além do keyset da biblioteca. Migration 0015 (índices de `revises` e de sync). 54 testes verdes e Aceite exercitado por curl com os dois serviços no ar (ver Notas de execução em P1-treino.md) |

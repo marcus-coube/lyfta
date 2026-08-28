@@ -428,6 +428,13 @@ func buildTranslations(req exerciseRequest, tenantID, claimLocale string) ([]dom
 // válida agora (bucket privado assina de novo a cada leitura — ver
 // media.ResolveURL).
 func (h *ExerciseHandler) toResponse(ctx context.Context, e domain.Exercise, name, instructions string, locale domain.Locale) exerciseResponse {
+	return exerciseToResponse(ctx, h.presigner, e, name, instructions, locale)
+}
+
+// exerciseToResponse é a mesma serialização sem depender do handler: o pull
+// incremental (P1.5) devolve exercícios pelo mesmo formato da biblioteca, e o
+// app não deve precisar de dois parsers para o mesmo objeto.
+func exerciseToResponse(ctx context.Context, presigner *media.Presigner, e domain.Exercise, name, instructions string, locale domain.Locale) exerciseResponse {
 	if name == "" {
 		name = e.Name
 	}
@@ -442,7 +449,7 @@ func (h *ExerciseHandler) toResponse(ctx context.Context, e domain.Exercise, nam
 		PrimaryMuscle: e.PrimaryMuscle,
 		Equipment:     e.Equipment,
 		Level:         string(e.Level),
-		MediaURL:      h.presigner.ResolveURL(ctx, e.MediaURL),
+		MediaURL:      presigner.ResolveURL(ctx, e.MediaURL),
 		MediaType:     string(e.MediaType),
 		IsGlobal:      e.IsGlobal(),
 		Status:        string(e.Status),

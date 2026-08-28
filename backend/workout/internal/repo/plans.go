@@ -894,3 +894,57 @@ func nextDayForPublish(ctx context.Context, tx pgx.Tx, studentID, planID, versio
 func scanPlan(row pgx.Row, p *domain.Plan) error {
 	return row.Scan(&p.ID, &p.TenantID, &p.StudentID, &p.CoachID, &p.Title, &p.Status, &p.CreatedAt, &p.UpdatedAt)
 }
+
+// --- Rotação e sync (P1.5) ---------------------------------------------
+
+// ErrDayNotInPlan diz que o dia pedido no override não pertence à versão
+// ativa do aluno. Não é 404 do dia: o dia pode existir de verdade, só não é
+// um dia que este aluno pode escolher hoje.
+var ErrDayNotInPlan = errors.New("repo: dia não pertence à versão ativa do aluno")
+
+// SetNextDay sobrescreve o próximo dia da rotação (ADR-004 §3: "com override
+// manual pelo aluno/coach"). O dia tem de pertencer à versão ativa — apontar
+// a rotação para um dia de outro plano deixaria o aluno preso num treino que
+// o coach não atribuiu.
+func (r *PlanRepo) SetNextDay(ctx context.Context, tenantID, studentID, dayID string) (domain.StudentPlanState, error) {
+	var s domain.StudentPlanState
+
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		var activeVersionID string
+		if err := tx.QueryRow(ctx, `
+			SELECT active_version_id FROM student_plan_state
+			WHERE student_id = $1 FOR UPDATE`, studentID).Scan(&activeVersionID); err != nil {
+			return err
+		}
+
+		var belongs bool
+		if err := tx.QueryRow(ctx, `
+			SELECT EXISTS (
+				SELECT 1 FROM workout_days WHERE id = $1 AND plan_version_id = $2
+			)`, dayID, activeVersionID).Scan(&belongs); err != nil {
+			return err
+		}
+		if !belongs {
+			return ErrDayNotInPlan
+		}
+
+		return tx.QueryRow(ctx, `
+			UPDATE student_plan_state
+			SET next_day_id = $2, updated_at = now()
+			WHERE student_id = $1
+			RETURNING tenant_id, student_id, plan_id, active_version_id,
+			          next_day_id, last_session_at, updated_at`, studentID, dayID).Scan(
+			&s.TenantID, &s.StudentID, &s.PlanID, &s.ActiveVersionID,
+			&s.NextDayID, &s.LastSessionAt, &s.UpdatedAt)
+	})
+	if errors.Is(err, pgx.ErrNoRows) {
+		return domain.StudentPlanState{}, ErrNotFound
+	}
+	if errors.Is(err, ErrDayNotInPlan) {
+		return domain.StudentPlanState{}, err
+	}
+	if err != nil {
+		return domain.StudentPlanState{}, fmt.Errorf("repo: sobrescrever próximo dia: %w", err)
+	}
+	return s, nil
+}
