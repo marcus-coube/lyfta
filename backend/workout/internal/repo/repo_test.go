@@ -31,13 +31,21 @@ func testPool(t *testing.T) *pgxpool.Pool {
 	if err != nil {
 		// No CI (P0.7) o Postgres é service container obrigatório: pular aqui
 		// deixaria o pipeline verde sem ter testado nada.
-		if os.Getenv("CI") != "" {
-			t.Fatalf("banco indisponível no CI: %v", err)
-		}
-		t.Skipf("banco indisponível para teste de integração: %v", err)
+		skipOrFail(t, "banco indisponível para teste de integração: "+err.Error())
 	}
 	t.Cleanup(pool.Close)
 	return pool
+}
+
+// skipOrFail pula o teste fora do CI e falha dentro dele: no CI o ambiente
+// (Postgres, seed) é obrigatório, e pular deixaria o pipeline verde sem ter
+// testado nada (P0.7).
+func skipOrFail(t *testing.T, reason string) {
+	t.Helper()
+	if os.Getenv("CI") != "" {
+		t.Fatalf("ambiente incompleto no CI: %s", reason)
+	}
+	t.Skip(reason)
 }
 
 // newTenant devolve um tenant_id novo. Não existe tabela de tenants neste
@@ -51,9 +59,9 @@ func floatPtr(v float64) *float64 { return &v }
 func seedExercise(t *testing.T, pool *pgxpool.Pool, tenantID string) domain.Exercise {
 	t.Helper()
 	ex, err := repo.NewExerciseRepo(pool).Create(context.Background(), domain.Exercise{
-		TenantID: tenantID, Name: "Supino reto", PrimaryMuscle: "peitoral",
-		Equipment: "barra", Level: domain.LevelIntermediate,
-	})
+		TenantID: tenantID, Name: "Supino reto", PrimaryMuscle: "chest",
+		Equipment: "barbell", Level: domain.LevelIntermediate,
+	}, nil)
 	if err != nil {
 		t.Fatalf("criar exercício: %v", err)
 	}

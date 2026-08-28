@@ -52,7 +52,7 @@ MinIO/S3 (`S3_ENDPOINT`, `S3_BUCKET=lyfta-media`, key
 limite 50 MB) + URL pública/presigned GET para exibição.
 **Aceite:** teste sobe arquivo pequeno no MinIO local via URL presignada e lê de volta.
 
-## - [ ] P1.3 workout — API da biblioteca de exercícios
+## - [x] P1.3 workout — API da biblioteca de exercícios
 
 **Objetivo:** biblioteca global + do tenant (ADR-010) consumível pelo builder.
 **Endpoints:** `GET /v1/exercises` (busca por nome no locale do usuário com fallback
@@ -298,3 +298,77 @@ mínimo); bugs achados viram tarefas na seção Notas.
   vale um job de limpeza (ou verificação de existência no P1.3) antes de
   produção. `S3_PUBLIC_BASE_URL` não valida se o bucket é mesmo público: se
   for preenchida com bucket privado, a mídia quebra silenciosamente na UI.
+
+### P1.3 (2026-08-27, Mac)
+
+- **Taxonomia virou código estável, não rótulo** (`internal/domain/library.go`):
+  `primary_muscle` e `equipment` passaram a ser `chest`/`barbell`, validados no
+  handler contra a lista do ADR-010 §4. Quem traduz para "peitoral"/"barra" é o
+  app — string de UI nascendo no backend é exatamente o que o ADR-011 §5
+  proíbe, e filtro que volta lista vazia por causa de grafia é bug caro. Filtro
+  fora da taxonomia responde `400 validation_error`, não lista vazia. O
+  `seedExercise` do `repo_test` do P1.1 foi migrado para os códigos.
+- **Fallback de locale nos dois lados** (ADR-011 §2): na listagem é `LEFT JOIN
+  LATERAL` com `array_position` sobre a cascata (uma tradução por exercício,
+  escolhida no banco); no detalhe é a mesma cascata em Go sobre as traduções já
+  carregadas. A cascata foi **generalizada**: locale pedido primeiro, depois
+  pt-BR → pt-PT → en. Para pt-PT dá a ordem normativa do ADR; para os outros a
+  regra é preferir português antes de inglês. Último recurso é a coluna
+  `exercises.name` (língua-fonte), então exercício sem tradução nenhuma —
+  o custom que o coach cria em dois campos — nunca aparece sem nome. A resposta
+  devolve `locale`, o idioma que **de fato** saiu, para o cliente saber que
+  caiu no fallback.
+- **Busca ignora acento e caixa** (migration 0014, `lyfta_search_norm`): quem
+  digita "triceps" tem de achar "Tríceps testa". Feita com `translate()`
+  IMMUTABLE em vez da extensão `unaccent` — extensão exige superusuário para
+  instalar (dev, CI e Postgres gerenciado) e `unaccent()` é STABLE, logo não
+  indexável. A busca cobre o nome exibido **e** o canônico: com a UI em pt-PT
+  mostrando "Peso morto", procurar "levantamento terra" continua achando.
+- **Paginação keyset** por `(nome normalizado, id)` com cursor opaco em
+  base64 — estável quando entra exercício novo no meio da lista, ao contrário
+  de OFFSET. `limit` default 30, teto 100; cursor corrompido é
+  `400 invalid_cursor`.
+- **Mídia amarrada ao tenant nos dois sentidos:** na escrita, `media_url` é
+  recusada se não apontar para `tenants/{claim}/…` (`Presigner.KeyForTenant`) —
+  é o par do presign do P1.2, que já derivava o caminho da claim; na leitura,
+  a URL é **assinada de novo** (`Presigner.ResolveURL`), porque em bucket
+  privado o que está gravado é uma assinatura que já expirou. Com
+  `S3_PUBLIC_BASE_URL` (R2 em produção) a renovação é no-op e a URL gravada é a
+  permanente. Verificado ponta a ponta: presign → PUT → cadastro → leitura →
+  download 200.
+- **Global é somente leitura, e a API diz isso:** `PUT` num exercício global
+  responde `403 exercise_is_global`, não 404. O RLS recusaria de qualquer jeito,
+  mas "não existe" é resposta errada para um exercício que o professor está
+  vendo na tela. **Clonar** (ADR-010 §3) não ganhou endpoint próprio: é `GET` +
+  `POST` no cliente. Se virar atrito no P1.6, vale um `POST
+  /v1/exercises/{id}/clone`.
+- **Arquivar em vez de apagar:** `status='archived'` some da biblioteca e não há
+  `DELETE` — exercício pode estar referenciado por versão publicada, que é
+  imutável (P1.1).
+- **Seed: 41 exercícios globais × 3 locales** (`seed/exercises_seed.sql`), com
+  os básicos de academia (peito/costas/ombro/braço/perna/panturrilha/abdômen).
+  **Não é migration** — é conteúdo, não schema — e roda como superusuário,
+  porque nenhuma policy de escrita cobre `tenant_id NULL` (decisão do P1.1):
+  `psql -U postgres -d lyfta_workout -f backend/workout/seed/exercises_seed.sql`.
+  Id determinístico (`md5(slug)`) + `ON CONFLICT DO UPDATE` deixam o arquivo
+  reexecutável a cada correção de texto, com o mesmo UUID em toda máquina. O CI
+  ganhou o step de seed no job do workout (os testes de biblioteca dependem
+  dele: pulam sem seed fora do CI, **falham** dentro dele — mesmo padrão do
+  banco no P0.7).
+- **Verificado (Mac):** `go vet` limpo, **26 testes verdes** (14 novos: 6 de
+  repo — busca acentuada no global do seed, cascata pt-PT→pt-BR, isolamento
+  entre bibliotecas de tenants, filtro+paginação completa, recusa de edição de
+  global, upsert de tradução e arquivamento; 8 de handler cobrindo o Aceite
+  pela API, 403 no global, aluno lê mas não escreve, e 8 casos de validação).
+  Migration 0014 sobe e desce limpa; seed rodado 2× sem duplicar. **Smoke
+  manual ponta a ponta:** `identity` + `workout` no ar, signup com
+  `locale=pt-PT`, e o token real trouxe a biblioteca já em português europeu
+  sem nenhum parâmetro — `?locale=en` sobrescreve.
+- **Anotações para as próximas tarefas:** a meta de ~300 exercícios curados do
+  ADR-010 §5 continua aberta (estes 41 são para dev/demo/MVP); os globais **não
+  têm mídia** e a coluna `exercise_media.source_license` do ADR-010 §1 não
+  existe no schema — entra quando a curadoria com GIF começar, junto da
+  importação da base aberta. A busca faz seq scan (`LIKE '%x%'` não usa btree):
+  irrelevante em 300 linhas, resolvível com `pg_trgm` quando doer. Continua sem
+  coleta de lixo de mídia órfã (anotado no P1.2): agora dá para cruzar objetos
+  do bucket com `exercises.media_url`.

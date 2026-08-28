@@ -54,6 +54,17 @@ var (
 	errFileTooLarge = func(maxBytes int64) APIError {
 		return newAPIError(http.StatusRequestEntityTooLarge, "file_too_large", "max_bytes", maxBytes)
 	}
+	errNotFound = func(resource string) APIError {
+		return newAPIError(http.StatusNotFound, "not_found", "resource", resource)
+	}
+	// A biblioteca global é somente leitura para o tenant (ADR-010 §3): o
+	// cliente traduz este código em "clone para editar".
+	errExerciseIsGlobal = func() APIError {
+		return newAPIError(http.StatusForbidden, "exercise_is_global")
+	}
+	errInvalidCursor = func() APIError {
+		return newAPIError(http.StatusBadRequest, "invalid_cursor")
+	}
 	errInternal = func() APIError {
 		return newAPIError(http.StatusInternalServerError, "internal_error")
 	}

@@ -55,7 +55,12 @@ docker compose up -d          # backend/docker-compose.yml
 # 2. Migrations (por serviço)
 cd identity && migrate -path migrations -database "$DATABASE_URL" up
 
-# 3. Subir um serviço
+# 3. Seed da biblioteca global de exercícios (só workout, 1ª vez na máquina).
+#    Não é migration: é conteúdo, e exige superusuário — exercício global é
+#    tenant_id NULL e nenhuma policy de escrita cobre isso (ADR-010 §3).
+psql -U postgres -d lyfta_workout -f workout/seed/exercises_seed.sql
+
+# 4. Subir um serviço
 cd identity && go run ./cmd/api
 ```
 

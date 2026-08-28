@@ -100,6 +100,16 @@ jobs:
           migrate -path "backend/${{ matrix.service }}/migrations" \
             -database "postgres://postgres:postgres@localhost:5432/${DB_NAME}?sslmode=disable" up
 
+      # Biblioteca global de exercícios (P1.3): dado de conteúdo, não de schema,
+      # por isso não é migration. Entra como superusuário — as policies de
+      # escrita não cobrem tenant_id NULL (ADR-010 §3) — e os testes de busca
+      # da biblioteca dependem dela.
+      - name: Aplicar seed da biblioteca
+        if: matrix.service == 'workout'
+        run: |
+          psql -v ON_ERROR_STOP=1 -d "${DB_NAME}" \
+            -f backend/workout/seed/exercises_seed.sql
+
       - name: go vet
         working-directory: backend/${{ matrix.service }}
         run: go vet ./...

@@ -40,13 +40,13 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P1.X").
 **Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
 saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
-**P0 (Fundação) concluída; P1 em andamento, 8/29:** `identity` completo (auth,
+**P0 (Fundação) concluída; P1 em andamento, 10/29:** `identity` completo (auth,
 convites, reset), núcleo do app Flutter com auth real ponta a ponta, CI no
 GitHub Actions (`.github/workflows/ci.yml` — `go vet`/`go test` com Postgres em
 service container + `flutter analyze`/`test` + guard de strings) e o serviço
-`workout` com o schema completo do ADR-004 e upload de mídia por URL
-presignada (P1.1–P1.2). Próxima: **P1.3** (API da biblioteca de exercícios +
-seed). Escopo do MVP em
+`workout` com o schema completo do ADR-004, upload de mídia por URL presignada
+e a API da biblioteca de exercícios com seed global de 41 exercícios em 3
+locales (P1.1–P1.3). Próxima: **P1.4** (API do builder e atribuição). Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor
 funcionam em **todas** as plataformas (mobile e web).

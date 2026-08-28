@@ -15,9 +15,11 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	whttp "github.com/marcus-coube/lyfta/workout/internal/http"
 	"github.com/marcus-coube/lyfta/workout/internal/media"
+	"github.com/marcus-coube/lyfta/workout/internal/repo"
 	"github.com/marcus-coube/lyfta/workout/internal/security"
 )
 
@@ -60,6 +62,13 @@ func signToken(t *testing.T, priv ed25519.PrivateKey, tenantID string, roles []s
 
 func newTestRouter(t *testing.T, publicPEM string) http.Handler {
 	t.Helper()
+	// Sem pool: os testes deste arquivo não tocam o banco. Quem exercita a
+	// biblioteca (exercises_test.go) passa um pool de verdade.
+	return newTestRouterWithPool(t, publicPEM, nil)
+}
+
+func newTestRouterWithPool(t *testing.T, publicPEM string, pool *pgxpool.Pool) http.Handler {
+	t.Helper()
 	verifier, err := security.NewJWTVerifier(publicPEM)
 	if err != nil {
 		t.Fatalf("criar verifier: %v", err)
@@ -74,7 +83,10 @@ func newTestRouter(t *testing.T, publicPEM string) http.Handler {
 		t.Fatalf("criar presigner: %v", err)
 	}
 	logger := slog.New(slog.DiscardHandler)
-	return whttp.NewRouter(logger, []string{"*"}, verifier, whttp.NewMediaHandler(logger, presigner))
+	return whttp.NewRouter(logger, []string{"*"}, verifier,
+		whttp.NewMediaHandler(logger, presigner),
+		whttp.NewExerciseHandler(logger, repo.NewExerciseRepo(pool), presigner),
+	)
 }
 
 func TestHealthzIsPublic(t *testing.T) {

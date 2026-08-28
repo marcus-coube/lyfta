@@ -14,7 +14,7 @@ import (
 // NewRouter monta o roteador chi do serviço workout com os middlewares base
 // (request-id, logging estruturado, recover, CORS).
 //
-// As demais rotas de negócio chegam nas tarefas seguintes: biblioteca (P1.3),
+// As demais rotas de negócio chegam nas tarefas seguintes:
 // builder/atribuição (P1.4) e execução/sync (P1.5) — todas dentro do grupo
 // autenticado.
 func NewRouter(
@@ -22,6 +22,7 @@ func NewRouter(
 	corsOrigins []string,
 	verifier *security.JWTVerifier,
 	mediaHandler *MediaHandler,
+	exerciseHandler *ExerciseHandler,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -44,11 +45,18 @@ func NewRouter(
 		// devolve o tenant que o RLS vai aplicar nas rotas de negócio.
 		r.Get("/whoami", whoamiHandler)
 
+		// Biblioteca de exercícios: ler é de qualquer usuário autenticado (o
+		// aluno vê nome e mídia no treino dele); escrever é do professor.
+		r.Get("/exercises", exerciseHandler.List)
+		r.Get("/exercises/{id}", exerciseHandler.Get)
+
 		// Mídia de exercício: quem sobe GIF/vídeo é o professor (ADR-010 §3),
 		// nunca o aluno.
 		r.Group(func(r chi.Router) {
 			r.Use(RequireRole("owner", "coach"))
 			r.Post("/media/presign", mediaHandler.Presign)
+			r.Post("/exercises", exerciseHandler.Create)
+			r.Put("/exercises/{id}", exerciseHandler.Update)
 		})
 	})
 

@@ -172,3 +172,44 @@ func KeyFromURL(rawURL, bucket string) (string, bool) {
 	}
 	return path, true
 }
+
+// KeyForTenant valida que uma media_url recebida do cliente aponta para um
+// objeto **dentro da pasta do próprio tenant** e devolve a chave.
+//
+// É o par de segurança do presign (P1.2): lá o tenant do caminho vem da claim,
+// aqui a URL que volta no cadastro do exercício é conferida contra a mesma
+// claim. Sem isso um coach do tenant A poderia apontar o exercício para a
+// mídia do tenant B (ou para uma URL arbitrária de fora).
+func (p *Presigner) KeyForTenant(rawURL, tenantID string) (string, bool) {
+	key, ok := KeyFromURL(rawURL, p.bucket)
+	if !ok {
+		return "", false
+	}
+	if !strings.HasPrefix(key, fmt.Sprintf("tenants/%s/", tenantID)) {
+		return "", false
+	}
+	return key, true
+}
+
+// ResolveURL devolve uma URL de exibição válida agora para a mídia guardada no
+// banco.
+//
+// Com bucket público (PublicBaseURL) o valor guardado já é permanente e isto é
+// no-op. Com bucket privado — o MinIO de dev — o que está no banco é uma
+// assinatura que já expirou, então a URL é assinada de novo a cada leitura
+// (operação offline, sem ida ao storage). URL que não aponta para este bucket
+// (mídia externa de um exercício global, por exemplo) volta intacta.
+func (p *Presigner) ResolveURL(ctx context.Context, storedURL string) string {
+	if storedURL == "" {
+		return ""
+	}
+	key, ok := KeyFromURL(storedURL, p.bucket)
+	if !ok {
+		return storedURL
+	}
+	fresh, err := p.ReadURL(ctx, key)
+	if err != nil {
+		return storedURL
+	}
+	return fresh
+}
