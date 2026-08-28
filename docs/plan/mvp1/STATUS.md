@@ -26,6 +26,16 @@
 Criar em cada máquina: `psql -U postgres -f backend/scripts/create-dbs.sql`
 (idempotente).
 
+## Seed por máquina
+
+| Seed | Windows | Mac |
+|---|---|---|
+| biblioteca global de exercícios (P1.3) | ⬜ | ✅ |
+
+Aplicar em cada máquina, depois das migrations do workout (idempotente,
+exige superusuário — exercício global é `tenant_id NULL`):
+`psql -U postgres -d lyfta_workout -f backend/workout/seed/exercises_seed.sql`
+
 ## Log de marcos
 
 | Data | Evento |
