@@ -17,6 +17,12 @@ dependencies:
   dio: ^5.7.0
   flutter_secure_storage: ^9.2.2
   intl: ^0.20.2
+  # Mídia do exercício (P1.6): GIF com cache de disco e vídeo curto.
+  cached_network_image: ^3.4.1
+  video_player: ^2.9.2
+  # Upload da mídia do exercício por URL presignada (P1.2): precisa dos bytes
+  # e do tamanho do arquivo antes de pedir a URL, em web e mobile.
+  file_picker: ^8.1.7
 
 dev_dependencies:
   flutter_test:

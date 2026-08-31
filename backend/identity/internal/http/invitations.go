@@ -56,6 +56,10 @@ func NewInvitationHandler(
 type createInvitationRequest struct {
 	Email string `json:"email"`
 	Role  string `json:"role"`
+	// Name é opcional: o professor costuma saber o nome do aluno na hora de
+	// convidar, e sem ele a lista de alunos (P1.6) mostraria e-mails. O
+	// convidado pode corrigir depois no próprio perfil.
+	Name string `json:"name"`
 }
 
 // Create cria um convite: usuário novo com status=invited + registro em
@@ -82,6 +86,9 @@ func (h *InvitationHandler) Create(w http.ResponseWriter, r *http.Request) {
 	case req.Role != string(domain.RoleOwner) && req.Role != string(domain.RoleCoach) && req.Role != string(domain.RoleStudent):
 		writeError(w, errValidation("role"))
 		return
+	case len(strings.TrimSpace(req.Name)) > maxInviteeNameLen:
+		writeError(w, errValidation("name"))
+		return
 	}
 
 	ctx := r.Context()
@@ -103,7 +110,7 @@ func (h *InvitationHandler) Create(w http.ResponseWriter, r *http.Request) {
 		// (formato esperado é `$argon2id$...`), então login continua
 		// impossível antes do convite ser aceito.
 		PasswordHash: "",
-		Name:         req.Email,
+		Name:         inviteeName(req),
 		Locale:       "pt-BR",
 		Status:       domain.UserStatusInvited,
 		Roles:        []domain.Role{domain.Role(req.Role)},
@@ -126,6 +133,19 @@ func (h *InvitationHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Role:      string(inv.Role),
 		ExpiresAt: inv.ExpiresAt.UTC().Format(time.RFC3339),
 	})
+}
+
+// maxInviteeNameLen limita o nome do convidado — a coluna é TEXT, a API não
+// deve ser.
+const maxInviteeNameLen = 120
+
+// inviteeName usa o nome informado pelo professor e cai no e-mail quando ele
+// não vem — o campo é opcional e a coluna `name` é NOT NULL.
+func inviteeName(req createInvitationRequest) string {
+	if name := strings.TrimSpace(req.Name); name != "" {
+		return name
+	}
+	return req.Email
 }
 
 type invitationResponse struct {

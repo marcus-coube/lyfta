@@ -156,13 +156,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeStudentTabAgenda => 'Schedule';
 
   @override
-  String get homeCoachTitle => 'Students';
-
-  @override
   String get homeCoachTabStudents => 'Students';
-
-  @override
-  String get homeCoachTabWorkouts => 'Workouts';
 
   @override
   String get homeCoachTabChat => 'Chat';
@@ -210,4 +204,393 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorNetwork =>
       'Could not connect to the server. Check your internet connection.';
+
+  @override
+  String get homeCoachTabLibrary => 'Library';
+
+  @override
+  String get commonRetry => 'Try again';
+
+  @override
+  String get commonSave => 'Save';
+
+  @override
+  String get commonCancel => 'Cancel';
+
+  @override
+  String get commonCreate => 'Create';
+
+  @override
+  String get commonRemove => 'Remove';
+
+  @override
+  String get libraryNewExercise => 'New exercise';
+
+  @override
+  String get librarySearchLabel => 'Search exercise';
+
+  @override
+  String get librarySearchHint => 'bench press, squat…';
+
+  @override
+  String get libraryFilterMuscle => 'Muscle';
+
+  @override
+  String get libraryFilterEquipment => 'Equipment';
+
+  @override
+  String get libraryFilterAll => 'All';
+
+  @override
+  String get libraryGlobalBadge => 'Lyfta';
+
+  @override
+  String get libraryEmpty => 'No exercise found.';
+
+  @override
+  String get exerciseFormNewTitle => 'New exercise';
+
+  @override
+  String get exerciseFormEditTitle => 'Edit exercise';
+
+  @override
+  String get exerciseFormDuplicateTitle => 'Duplicate exercise';
+
+  @override
+  String get exerciseFormDuplicateHint =>
+      'Lyfta exercises can\'t be edited. Saving creates a copy in your gym\'s library.';
+
+  @override
+  String get exerciseFormNameLabel => 'Name';
+
+  @override
+  String get exerciseFormNameHint => 'Barbell bench press';
+
+  @override
+  String get exerciseFormNameRequired => 'Enter the exercise name.';
+
+  @override
+  String get exerciseFormMuscleLabel => 'Primary muscle';
+
+  @override
+  String get exerciseFormEquipmentLabel => 'Equipment';
+
+  @override
+  String get exerciseFormLevelLabel => 'Level';
+
+  @override
+  String get exerciseFormInstructionsLabel => 'Instructions';
+
+  @override
+  String get exerciseFormInstructionsHint => 'How to perform the movement';
+
+  @override
+  String get exerciseFormMediaLabel => 'Media';
+
+  @override
+  String get exerciseFormMediaHint => 'GIF or short video, up to 50 MB.';
+
+  @override
+  String get exerciseFormMediaPick => 'Choose file';
+
+  @override
+  String get exerciseFormMediaReplace => 'Replace file';
+
+  @override
+  String get builderTitle => 'Build workout';
+
+  @override
+  String get builderDayTitle => 'Day title';
+
+  @override
+  String get builderAddDay => 'Add day';
+
+  @override
+  String get builderNoDays =>
+      'This plan has no days yet. Start with workout A.';
+
+  @override
+  String get builderAddBlock => 'Add block';
+
+  @override
+  String get builderAddExercise => 'Add exercise';
+
+  @override
+  String get builderAddSet => 'Add set';
+
+  @override
+  String get builderDuplicateSet => 'Duplicate set';
+
+  @override
+  String get builderPickExercise => 'Choose exercise';
+
+  @override
+  String get builderUnknownExercise => 'Exercise removed from the library';
+
+  @override
+  String get builderBlockRest => 'Rest (s)';
+
+  @override
+  String get builderRepsMin => 'Min reps';
+
+  @override
+  String get builderRepsMax => 'Max reps';
+
+  @override
+  String get builderRestSeconds => 'Rest (s)';
+
+  @override
+  String get builderTargetUnit => 'Target unit';
+
+  @override
+  String get builderTargetKg => 'Load (kg)';
+
+  @override
+  String get builderTargetPercent1rm => '% of 1RM';
+
+  @override
+  String get builderTargetRpe => 'RPE';
+
+  @override
+  String get builderTargetRir => 'RIR';
+
+  @override
+  String get builderBlockStraight => 'Straight set';
+
+  @override
+  String get builderBlockSuperset => 'Superset';
+
+  @override
+  String get builderBlockDropset => 'Drop set';
+
+  @override
+  String get builderBlockRestPause => 'Rest-pause';
+
+  @override
+  String get builderBlockCircuit => 'Circuit';
+
+  @override
+  String get builderSaveDraft => 'Save draft';
+
+  @override
+  String get builderSaved => 'Draft saved';
+
+  @override
+  String get builderDraftSaved => 'Draft saved.';
+
+  @override
+  String get builderPublish => 'Publish';
+
+  @override
+  String get builderMoveUp => 'Move up';
+
+  @override
+  String get builderMoveDown => 'Move down';
+
+  @override
+  String get studentsSearchLabel => 'Search student';
+
+  @override
+  String get studentsSearchHint => 'name or email';
+
+  @override
+  String get studentsEmpty => 'No students yet. Invite the first one.';
+
+  @override
+  String get studentsNoPlan => 'No plan';
+
+  @override
+  String get studentsNewPlan => 'New plan';
+
+  @override
+  String get studentsOpenPlan => 'Open';
+
+  @override
+  String get studentsNewPlanTitle => 'New plan';
+
+  @override
+  String get studentsNewPlanDefaultTitle => 'Workout A/B';
+
+  @override
+  String get studentsPlanTitleLabel => 'Plan name';
+
+  @override
+  String get studentsPendingBadge => 'invite pending';
+
+  @override
+  String get studentsInviteTitle => 'Invite student';
+
+  @override
+  String get studentsInviteNameLabel => 'Name';
+
+  @override
+  String get studentsInviteEmailLabel => 'Email';
+
+  @override
+  String get studentsInviteSubmit => 'Invite';
+
+  @override
+  String get errorNotFound => 'We couldn\'t find what you were looking for.';
+
+  @override
+  String get errorInvalidCursor => 'The list changed. Reload the page.';
+
+  @override
+  String get errorExerciseIsGlobal =>
+      'Lyfta exercises can\'t be edited. Duplicate it to make your own.';
+
+  @override
+  String get errorUnsupportedMedia =>
+      'Format not accepted. Use GIF, MP4 or WebM.';
+
+  @override
+  String get errorFileTooLarge => 'File too large. The limit is 50 MB.';
+
+  @override
+  String get errorPlanNoDays => 'Add at least one day before publishing.';
+
+  @override
+  String get errorPlanDayWithoutBlock =>
+      'A day has no blocks. Complete it before publishing.';
+
+  @override
+  String get errorPlanBlockWithoutExercise =>
+      'A block has no exercise. Complete it before publishing.';
+
+  @override
+  String get errorPlanExerciseWithoutSet =>
+      'An exercise has no prescribed set. Complete it before publishing.';
+
+  @override
+  String get errorNoDraftToPublish => 'There are no new changes to publish.';
+
+  @override
+  String get errorUnknownExercise =>
+      'One of the exercises is no longer available in the library.';
+
+  @override
+  String get muscleChest => 'Chest';
+
+  @override
+  String get muscleBack => 'Back';
+
+  @override
+  String get muscleLats => 'Lats';
+
+  @override
+  String get muscleTraps => 'Traps';
+
+  @override
+  String get muscleLowerBack => 'Lower back';
+
+  @override
+  String get muscleShoulders => 'Shoulders';
+
+  @override
+  String get muscleBiceps => 'Biceps';
+
+  @override
+  String get muscleTriceps => 'Triceps';
+
+  @override
+  String get muscleForearms => 'Forearms';
+
+  @override
+  String get muscleAbs => 'Abs';
+
+  @override
+  String get muscleObliques => 'Obliques';
+
+  @override
+  String get muscleQuadriceps => 'Quads';
+
+  @override
+  String get muscleHamstrings => 'Hamstrings';
+
+  @override
+  String get muscleGlutes => 'Glutes';
+
+  @override
+  String get muscleCalves => 'Calves';
+
+  @override
+  String get muscleAdductors => 'Adductors';
+
+  @override
+  String get muscleAbductors => 'Abductors';
+
+  @override
+  String get muscleFullBody => 'Full body';
+
+  @override
+  String get equipmentBarbell => 'Barbell';
+
+  @override
+  String get equipmentDumbbell => 'Dumbbell';
+
+  @override
+  String get equipmentMachine => 'Machine';
+
+  @override
+  String get equipmentCable => 'Cable';
+
+  @override
+  String get equipmentSmith => 'Smith machine';
+
+  @override
+  String get equipmentBodyweight => 'Bodyweight';
+
+  @override
+  String get equipmentKettlebell => 'Kettlebell';
+
+  @override
+  String get equipmentBand => 'Band';
+
+  @override
+  String get equipmentBench => 'Bench';
+
+  @override
+  String get equipmentOther => 'Other';
+
+  @override
+  String get levelBeginner => 'Beginner';
+
+  @override
+  String get levelIntermediate => 'Intermediate';
+
+  @override
+  String get levelAdvanced => 'Advanced';
+
+  @override
+  String builderDraftVersion(int version) {
+    return 'draft v$version';
+  }
+
+  @override
+  String builderPublishedVersion(int version) {
+    return 'v$version published';
+  }
+
+  @override
+  String builderPublishBody(int version) {
+    return 'Publishing freezes this version and sends the workout to the student. Version $version won\'t be editable anymore.';
+  }
+
+  @override
+  String builderPublished(int version) {
+    return 'Version $version published.';
+  }
+
+  @override
+  String studentsPlanActive(String title, int version) {
+    return '$title · v$version';
+  }
+
+  @override
+  String studentsPlanDraft(String title) {
+    return '$title · draft';
+  }
+
+  @override
+  String get builderPublishTitle => 'Publish workout?';
 }

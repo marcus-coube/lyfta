@@ -381,23 +381,11 @@ abstract class AppLocalizations {
   /// **'Agenda'**
   String get homeStudentTabAgenda;
 
-  /// No description provided for @homeCoachTitle.
-  ///
-  /// In pt, this message translates to:
-  /// **'Alunos'**
-  String get homeCoachTitle;
-
   /// No description provided for @homeCoachTabStudents.
   ///
   /// In pt, this message translates to:
   /// **'Alunos'**
   String get homeCoachTabStudents;
-
-  /// No description provided for @homeCoachTabWorkouts.
-  ///
-  /// In pt, this message translates to:
-  /// **'Treinos'**
-  String get homeCoachTabWorkouts;
 
   /// No description provided for @homeCoachTabChat.
   ///
@@ -482,6 +470,744 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Sem conexão com o servidor. Verifique sua internet.'**
   String get errorNetwork;
+
+  /// No description provided for @homeCoachTabLibrary.
+  ///
+  /// In pt, this message translates to:
+  /// **'Biblioteca'**
+  String get homeCoachTabLibrary;
+
+  /// No description provided for @commonRetry.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tentar de novo'**
+  String get commonRetry;
+
+  /// No description provided for @commonSave.
+  ///
+  /// In pt, this message translates to:
+  /// **'Salvar'**
+  String get commonSave;
+
+  /// No description provided for @commonCancel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelar'**
+  String get commonCancel;
+
+  /// No description provided for @commonCreate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Criar'**
+  String get commonCreate;
+
+  /// No description provided for @commonRemove.
+  ///
+  /// In pt, this message translates to:
+  /// **'Remover'**
+  String get commonRemove;
+
+  /// No description provided for @libraryNewExercise.
+  ///
+  /// In pt, this message translates to:
+  /// **'Novo exercício'**
+  String get libraryNewExercise;
+
+  /// No description provided for @librarySearchLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Buscar exercício'**
+  String get librarySearchLabel;
+
+  /// No description provided for @librarySearchHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'supino, agachamento…'**
+  String get librarySearchHint;
+
+  /// No description provided for @libraryFilterMuscle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Músculo'**
+  String get libraryFilterMuscle;
+
+  /// No description provided for @libraryFilterEquipment.
+  ///
+  /// In pt, this message translates to:
+  /// **'Equipamento'**
+  String get libraryFilterEquipment;
+
+  /// No description provided for @libraryFilterAll.
+  ///
+  /// In pt, this message translates to:
+  /// **'Todos'**
+  String get libraryFilterAll;
+
+  /// Selo do exercício da biblioteca global da Lyfta.
+  ///
+  /// In pt, this message translates to:
+  /// **'Lyfta'**
+  String get libraryGlobalBadge;
+
+  /// No description provided for @libraryEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum exercício encontrado.'**
+  String get libraryEmpty;
+
+  /// No description provided for @exerciseFormNewTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Novo exercício'**
+  String get exerciseFormNewTitle;
+
+  /// No description provided for @exerciseFormEditTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editar exercício'**
+  String get exerciseFormEditTitle;
+
+  /// No description provided for @exerciseFormDuplicateTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Duplicar exercício'**
+  String get exerciseFormDuplicateTitle;
+
+  /// No description provided for @exerciseFormDuplicateHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Exercícios da Lyfta não podem ser editados. Salvar cria uma cópia na biblioteca da sua academia.'**
+  String get exerciseFormDuplicateHint;
+
+  /// No description provided for @exerciseFormNameLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome'**
+  String get exerciseFormNameLabel;
+
+  /// No description provided for @exerciseFormNameHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Supino reto com barra'**
+  String get exerciseFormNameHint;
+
+  /// No description provided for @exerciseFormNameRequired.
+  ///
+  /// In pt, this message translates to:
+  /// **'Informe o nome do exercício.'**
+  String get exerciseFormNameRequired;
+
+  /// No description provided for @exerciseFormMuscleLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Músculo principal'**
+  String get exerciseFormMuscleLabel;
+
+  /// No description provided for @exerciseFormEquipmentLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Equipamento'**
+  String get exerciseFormEquipmentLabel;
+
+  /// No description provided for @exerciseFormLevelLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nível'**
+  String get exerciseFormLevelLabel;
+
+  /// No description provided for @exerciseFormInstructionsLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Instruções'**
+  String get exerciseFormInstructionsLabel;
+
+  /// No description provided for @exerciseFormInstructionsHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Como executar o movimento'**
+  String get exerciseFormInstructionsHint;
+
+  /// No description provided for @exerciseFormMediaLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mídia'**
+  String get exerciseFormMediaLabel;
+
+  /// No description provided for @exerciseFormMediaHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'GIF ou vídeo curto de até 50 MB.'**
+  String get exerciseFormMediaHint;
+
+  /// No description provided for @exerciseFormMediaPick.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolher arquivo'**
+  String get exerciseFormMediaPick;
+
+  /// No description provided for @exerciseFormMediaReplace.
+  ///
+  /// In pt, this message translates to:
+  /// **'Trocar arquivo'**
+  String get exerciseFormMediaReplace;
+
+  /// No description provided for @builderTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Montar treino'**
+  String get builderTitle;
+
+  /// No description provided for @builderDayTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Título do dia'**
+  String get builderDayTitle;
+
+  /// No description provided for @builderAddDay.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicionar dia'**
+  String get builderAddDay;
+
+  /// No description provided for @builderNoDays.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este plano ainda não tem nenhum dia. Comece pelo treino A.'**
+  String get builderNoDays;
+
+  /// No description provided for @builderAddBlock.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicionar bloco'**
+  String get builderAddBlock;
+
+  /// No description provided for @builderAddExercise.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicionar exercício'**
+  String get builderAddExercise;
+
+  /// No description provided for @builderAddSet.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicionar série'**
+  String get builderAddSet;
+
+  /// No description provided for @builderDuplicateSet.
+  ///
+  /// In pt, this message translates to:
+  /// **'Duplicar série'**
+  String get builderDuplicateSet;
+
+  /// No description provided for @builderPickExercise.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolher exercício'**
+  String get builderPickExercise;
+
+  /// No description provided for @builderUnknownExercise.
+  ///
+  /// In pt, this message translates to:
+  /// **'Exercício removido da biblioteca'**
+  String get builderUnknownExercise;
+
+  /// No description provided for @builderBlockRest.
+  ///
+  /// In pt, this message translates to:
+  /// **'Descanso (s)'**
+  String get builderBlockRest;
+
+  /// No description provided for @builderRepsMin.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reps mín.'**
+  String get builderRepsMin;
+
+  /// No description provided for @builderRepsMax.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reps máx.'**
+  String get builderRepsMax;
+
+  /// No description provided for @builderRestSeconds.
+  ///
+  /// In pt, this message translates to:
+  /// **'Descanso (s)'**
+  String get builderRestSeconds;
+
+  /// No description provided for @builderTargetUnit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Unidade do alvo'**
+  String get builderTargetUnit;
+
+  /// No description provided for @builderTargetKg.
+  ///
+  /// In pt, this message translates to:
+  /// **'Carga (kg)'**
+  String get builderTargetKg;
+
+  /// No description provided for @builderTargetPercent1rm.
+  ///
+  /// In pt, this message translates to:
+  /// **'% de 1RM'**
+  String get builderTargetPercent1rm;
+
+  /// No description provided for @builderTargetRpe.
+  ///
+  /// In pt, this message translates to:
+  /// **'RPE'**
+  String get builderTargetRpe;
+
+  /// No description provided for @builderTargetRir.
+  ///
+  /// In pt, this message translates to:
+  /// **'RIR'**
+  String get builderTargetRir;
+
+  /// No description provided for @builderBlockStraight.
+  ///
+  /// In pt, this message translates to:
+  /// **'Série simples'**
+  String get builderBlockStraight;
+
+  /// Bloco de dois exercícios alternados sem descanso entre eles.
+  ///
+  /// In pt, this message translates to:
+  /// **'Bi-set'**
+  String get builderBlockSuperset;
+
+  /// No description provided for @builderBlockDropset.
+  ///
+  /// In pt, this message translates to:
+  /// **'Drop set'**
+  String get builderBlockDropset;
+
+  /// No description provided for @builderBlockRestPause.
+  ///
+  /// In pt, this message translates to:
+  /// **'Rest-pause'**
+  String get builderBlockRestPause;
+
+  /// No description provided for @builderBlockCircuit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Circuito'**
+  String get builderBlockCircuit;
+
+  /// No description provided for @builderSaveDraft.
+  ///
+  /// In pt, this message translates to:
+  /// **'Salvar rascunho'**
+  String get builderSaveDraft;
+
+  /// No description provided for @builderSaved.
+  ///
+  /// In pt, this message translates to:
+  /// **'Rascunho salvo'**
+  String get builderSaved;
+
+  /// No description provided for @builderDraftSaved.
+  ///
+  /// In pt, this message translates to:
+  /// **'Rascunho salvo.'**
+  String get builderDraftSaved;
+
+  /// No description provided for @builderPublish.
+  ///
+  /// In pt, this message translates to:
+  /// **'Publicar'**
+  String get builderPublish;
+
+  /// No description provided for @builderMoveUp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mover para cima'**
+  String get builderMoveUp;
+
+  /// No description provided for @builderMoveDown.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mover para baixo'**
+  String get builderMoveDown;
+
+  /// No description provided for @studentsSearchLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Buscar aluno'**
+  String get studentsSearchLabel;
+
+  /// No description provided for @studentsSearchHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'nome ou e-mail'**
+  String get studentsSearchHint;
+
+  /// No description provided for @studentsEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum aluno ainda. Convide o primeiro.'**
+  String get studentsEmpty;
+
+  /// No description provided for @studentsNoPlan.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem plano'**
+  String get studentsNoPlan;
+
+  /// No description provided for @studentsNewPlan.
+  ///
+  /// In pt, this message translates to:
+  /// **'Novo plano'**
+  String get studentsNewPlan;
+
+  /// No description provided for @studentsOpenPlan.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abrir'**
+  String get studentsOpenPlan;
+
+  /// No description provided for @studentsNewPlanTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Novo plano'**
+  String get studentsNewPlanTitle;
+
+  /// No description provided for @studentsNewPlanDefaultTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Treino A/B'**
+  String get studentsNewPlanDefaultTitle;
+
+  /// No description provided for @studentsPlanTitleLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome do plano'**
+  String get studentsPlanTitleLabel;
+
+  /// Aluno que ainda não aceitou o convite.
+  ///
+  /// In pt, this message translates to:
+  /// **'convite pendente'**
+  String get studentsPendingBadge;
+
+  /// No description provided for @studentsInviteTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Convidar aluno'**
+  String get studentsInviteTitle;
+
+  /// No description provided for @studentsInviteNameLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome'**
+  String get studentsInviteNameLabel;
+
+  /// No description provided for @studentsInviteEmailLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'E-mail'**
+  String get studentsInviteEmailLabel;
+
+  /// No description provided for @studentsInviteSubmit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Convidar'**
+  String get studentsInviteSubmit;
+
+  /// No description provided for @errorNotFound.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não encontramos o que você procurava.'**
+  String get errorNotFound;
+
+  /// No description provided for @errorInvalidCursor.
+  ///
+  /// In pt, this message translates to:
+  /// **'A lista mudou. Recarregue a página.'**
+  String get errorInvalidCursor;
+
+  /// No description provided for @errorExerciseIsGlobal.
+  ///
+  /// In pt, this message translates to:
+  /// **'Exercícios da Lyfta não podem ser editados. Duplique para criar o seu.'**
+  String get errorExerciseIsGlobal;
+
+  /// No description provided for @errorUnsupportedMedia.
+  ///
+  /// In pt, this message translates to:
+  /// **'Formato não aceito. Use GIF, MP4 ou WebM.'**
+  String get errorUnsupportedMedia;
+
+  /// No description provided for @errorFileTooLarge.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivo grande demais. O limite é 50 MB.'**
+  String get errorFileTooLarge;
+
+  /// No description provided for @errorPlanNoDays.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicione ao menos um dia antes de publicar.'**
+  String get errorPlanNoDays;
+
+  /// No description provided for @errorPlanDayWithoutBlock.
+  ///
+  /// In pt, this message translates to:
+  /// **'Há um dia sem nenhum bloco. Complete antes de publicar.'**
+  String get errorPlanDayWithoutBlock;
+
+  /// No description provided for @errorPlanBlockWithoutExercise.
+  ///
+  /// In pt, this message translates to:
+  /// **'Há um bloco sem exercício. Complete antes de publicar.'**
+  String get errorPlanBlockWithoutExercise;
+
+  /// No description provided for @errorPlanExerciseWithoutSet.
+  ///
+  /// In pt, this message translates to:
+  /// **'Há um exercício sem série prescrita. Complete antes de publicar.'**
+  String get errorPlanExerciseWithoutSet;
+
+  /// No description provided for @errorNoDraftToPublish.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não há alterações novas para publicar.'**
+  String get errorNoDraftToPublish;
+
+  /// No description provided for @errorUnknownExercise.
+  ///
+  /// In pt, this message translates to:
+  /// **'Um dos exercícios não está mais disponível na biblioteca.'**
+  String get errorUnknownExercise;
+
+  /// No description provided for @muscleChest.
+  ///
+  /// In pt, this message translates to:
+  /// **'Peitoral'**
+  String get muscleChest;
+
+  /// No description provided for @muscleBack.
+  ///
+  /// In pt, this message translates to:
+  /// **'Costas'**
+  String get muscleBack;
+
+  /// No description provided for @muscleLats.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dorsais'**
+  String get muscleLats;
+
+  /// No description provided for @muscleTraps.
+  ///
+  /// In pt, this message translates to:
+  /// **'Trapézio'**
+  String get muscleTraps;
+
+  /// No description provided for @muscleLowerBack.
+  ///
+  /// In pt, this message translates to:
+  /// **'Lombar'**
+  String get muscleLowerBack;
+
+  /// No description provided for @muscleShoulders.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ombros'**
+  String get muscleShoulders;
+
+  /// No description provided for @muscleBiceps.
+  ///
+  /// In pt, this message translates to:
+  /// **'Bíceps'**
+  String get muscleBiceps;
+
+  /// No description provided for @muscleTriceps.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tríceps'**
+  String get muscleTriceps;
+
+  /// No description provided for @muscleForearms.
+  ///
+  /// In pt, this message translates to:
+  /// **'Antebraço'**
+  String get muscleForearms;
+
+  /// No description provided for @muscleAbs.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abdômen'**
+  String get muscleAbs;
+
+  /// No description provided for @muscleObliques.
+  ///
+  /// In pt, this message translates to:
+  /// **'Oblíquos'**
+  String get muscleObliques;
+
+  /// No description provided for @muscleQuadriceps.
+  ///
+  /// In pt, this message translates to:
+  /// **'Quadríceps'**
+  String get muscleQuadriceps;
+
+  /// No description provided for @muscleHamstrings.
+  ///
+  /// In pt, this message translates to:
+  /// **'Posterior de coxa'**
+  String get muscleHamstrings;
+
+  /// No description provided for @muscleGlutes.
+  ///
+  /// In pt, this message translates to:
+  /// **'Glúteos'**
+  String get muscleGlutes;
+
+  /// No description provided for @muscleCalves.
+  ///
+  /// In pt, this message translates to:
+  /// **'Panturrilha'**
+  String get muscleCalves;
+
+  /// No description provided for @muscleAdductors.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adutores'**
+  String get muscleAdductors;
+
+  /// No description provided for @muscleAbductors.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abdutores'**
+  String get muscleAbductors;
+
+  /// No description provided for @muscleFullBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Corpo inteiro'**
+  String get muscleFullBody;
+
+  /// No description provided for @equipmentBarbell.
+  ///
+  /// In pt, this message translates to:
+  /// **'Barra'**
+  String get equipmentBarbell;
+
+  /// No description provided for @equipmentDumbbell.
+  ///
+  /// In pt, this message translates to:
+  /// **'Halteres'**
+  String get equipmentDumbbell;
+
+  /// No description provided for @equipmentMachine.
+  ///
+  /// In pt, this message translates to:
+  /// **'Máquina'**
+  String get equipmentMachine;
+
+  /// No description provided for @equipmentCable.
+  ///
+  /// In pt, this message translates to:
+  /// **'Polia'**
+  String get equipmentCable;
+
+  /// No description provided for @equipmentSmith.
+  ///
+  /// In pt, this message translates to:
+  /// **'Smith'**
+  String get equipmentSmith;
+
+  /// No description provided for @equipmentBodyweight.
+  ///
+  /// In pt, this message translates to:
+  /// **'Peso do corpo'**
+  String get equipmentBodyweight;
+
+  /// No description provided for @equipmentKettlebell.
+  ///
+  /// In pt, this message translates to:
+  /// **'Kettlebell'**
+  String get equipmentKettlebell;
+
+  /// No description provided for @equipmentBand.
+  ///
+  /// In pt, this message translates to:
+  /// **'Elástico'**
+  String get equipmentBand;
+
+  /// No description provided for @equipmentBench.
+  ///
+  /// In pt, this message translates to:
+  /// **'Banco'**
+  String get equipmentBench;
+
+  /// No description provided for @equipmentOther.
+  ///
+  /// In pt, this message translates to:
+  /// **'Outro'**
+  String get equipmentOther;
+
+  /// No description provided for @levelBeginner.
+  ///
+  /// In pt, this message translates to:
+  /// **'Iniciante'**
+  String get levelBeginner;
+
+  /// No description provided for @levelIntermediate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Intermediário'**
+  String get levelIntermediate;
+
+  /// No description provided for @levelAdvanced.
+  ///
+  /// In pt, this message translates to:
+  /// **'Avançado'**
+  String get levelAdvanced;
+
+  /// Rótulo da versão em edição.
+  ///
+  /// In pt, this message translates to:
+  /// **'rascunho v{version}'**
+  String builderDraftVersion(int version);
+
+  /// Rótulo da versão publicada.
+  ///
+  /// In pt, this message translates to:
+  /// **'v{version} publicada'**
+  String builderPublishedVersion(int version);
+
+  /// Corpo da confirmação de publicação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Publicar congela esta versão e envia o treino para o aluno. A versão {version} não poderá mais ser editada.'**
+  String builderPublishBody(int version);
+
+  /// Confirmação após publicar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Versão {version} publicada.'**
+  String builderPublished(int version);
+
+  /// Plano ativo do aluno com o número da versão.
+  ///
+  /// In pt, this message translates to:
+  /// **'{title} · v{version}'**
+  String studentsPlanActive(String title, int version);
+
+  /// Plano do aluno que ainda não foi publicado.
+  ///
+  /// In pt, this message translates to:
+  /// **'{title} · rascunho'**
+  String studentsPlanDraft(String title);
+
+  /// No description provided for @builderPublishTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Publicar treino?'**
+  String get builderPublishTitle;
 }
 
 class _AppLocalizationsDelegate

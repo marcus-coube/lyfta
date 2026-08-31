@@ -21,6 +21,7 @@ func NewRouter(
 	auth *AuthHandler,
 	invitations *InvitationHandler,
 	passwordReset *PasswordResetHandler,
+	users *UserHandler,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -46,6 +47,15 @@ func NewRouter(
 			r.Post("/forgot-password", passwordReset.ForgotPassword)
 			r.Post("/reset-password", passwordReset.ResetPassword)
 		})
+		// Usuários do tenant (P1.6): a lista de alunos do professor. É do
+		// identity porque o vínculo aluno↔tenant vive aqui — nenhum serviço
+		// lê o banco do outro (ADR-013 §2).
+		r.Route("/users", func(r chi.Router) {
+			r.Use(RequireAuth(signer))
+			r.Use(RequireRole(string(domain.RoleOwner), string(domain.RoleCoach)))
+			r.Get("/", users.List)
+		})
+
 		r.Route("/invitations", func(r chi.Router) {
 			// Aceite é público: o convidado só tem o token, ainda não tem sessão.
 			r.Post("/accept", invitations.Accept)

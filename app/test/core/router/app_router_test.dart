@@ -6,6 +6,22 @@ import 'package:lyfta/core/auth/auth_state.dart';
 import 'package:lyfta/core/design_system/design_system.dart';
 import 'package:lyfta/core/l10n/gen/app_localizations.dart';
 import 'package:lyfta/core/router/app_router.dart';
+import 'package:lyfta/features/students/presentation/students_controller.dart';
+
+/// A aba inicial do professor é a lista de alunos (P1.6), que bate em dois
+/// serviços. Este teste é de **roteamento**: a lista entra vazia e sem rede,
+/// senão o `pumpAndSettle` esperaria para sempre por uma requisição que
+/// nunca responde no ambiente de teste.
+class _EmptyStudents extends StudentsController {
+  @override
+  Future<List<StudentRow>> build() async => [];
+}
+
+ProviderContainer _container() {
+  return ProviderContainer(
+    overrides: [studentsProvider.overrideWith(_EmptyStudents.new)],
+  );
+}
 
 Widget _app(ProviderContainer container) {
   return UncontrolledProviderScope(
@@ -22,7 +38,7 @@ Widget _app(ProviderContainer container) {
 
 void main() {
   testWidgets('sem sessão, rota protegida redireciona para /login', (tester) async {
-    final container = ProviderContainer();
+    final container = _container();
     addTearDown(container.dispose);
 
     container.read(appRouterProvider).go('/home');
@@ -36,7 +52,7 @@ void main() {
   });
 
   testWidgets('autenticado como coach, /home cai no shell do professor', (tester) async {
-    final container = ProviderContainer();
+    final container = _container();
     addTearDown(container.dispose);
 
     container.read(authControllerProvider.notifier).signInStub({UserRole.coach});
@@ -45,11 +61,11 @@ void main() {
     await tester.pumpAndSettle();
 
     final l10n = lookupAppLocalizations(const Locale('pt'));
-    expect(find.widgetWithText(AppBar, l10n.homeCoachTitle), findsOneWidget);
+    expect(find.widgetWithText(AppBar, l10n.homeCoachTabStudents), findsOneWidget);
   });
 
   testWidgets('autenticado como student, /home cai no shell do aluno', (tester) async {
-    final container = ProviderContainer();
+    final container = _container();
     addTearDown(container.dispose);
 
     container.read(authControllerProvider.notifier).signInStub({UserRole.student});
@@ -62,7 +78,7 @@ void main() {
   });
 
   testWidgets('autenticado tentando acessar /login volta para /home', (tester) async {
-    final container = ProviderContainer();
+    final container = _container();
     addTearDown(container.dispose);
 
     container.read(authControllerProvider.notifier).signInStub({UserRole.student});

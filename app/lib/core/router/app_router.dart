@@ -7,6 +7,7 @@ import '../../features/auth/presentation/invite_accept_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/reset_password_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
+import '../../features/builder/presentation/plan_builder_screen.dart';
 import '../../features/coach_shell/presentation/coach_shell_screen.dart';
 import '../../features/student_shell/presentation/student_shell_screen.dart';
 import '../auth/auth_controller.dart';
@@ -66,6 +67,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         // aqui além de configurar o esquema nas plataformas.
         builder: (context, state) => InviteAcceptScreen(
           token: state.uri.queryParameters['token'],
+        ),
+      ),
+      // O builder é rota de primeira classe, não um push anônimo: na web o
+      // professor precisa poder recarregar a página do plano que está
+      // montando (e mandar o link para si mesmo).
+      GoRoute(
+        path: '/plans/:id',
+        builder: (context, state) => PlanBuilderScreen(
+          planId: state.pathParameters['id']!,
         ),
       ),
       GoRoute(

@@ -10,9 +10,9 @@ import 'token_storage.dart';
 /// serviço — ADR-013).
 final tokenStorageProvider = Provider<TokenStorage>((ref) => TokenStorage());
 
-/// Cliente HTTP do serviço `identity` (auth, tenants, convites). Os demais
-/// serviços (workout/assessment/comms) ganham providers análogos quando
-/// tarefas futuras precisarem deles.
+/// Cliente HTTP do serviço `identity` (auth, tenants, convites, usuários do
+/// tenant). Cada serviço tem o seu (ADR-013), todos compartilhando o mesmo
+/// [TokenStorage] e a mesma política de refresh.
 ///
 /// O refresh chama o próprio `identity` via um [Dio] "cru" (sem os
 /// interceptors deste client) para não reentrar no fluxo de refresh; ver
@@ -25,5 +25,21 @@ final identityApiClientProvider = Provider<ApiClient>((ref) {
         ref.read(authControllerProvider.notifier).refreshSession(refreshToken),
     onSessionExpired: () =>
         ref.read(authControllerProvider.notifier).signOut(),
+  );
+});
+
+/// Cliente HTTP do serviço `workout` (biblioteca, planos, execução).
+///
+/// Mesma sessão do `identity`: o access token é o mesmo JWT, validado lá com
+/// a chave pública (ADR-013 §4). O refresh continua batendo no `identity`,
+/// que é quem assina — daí os dois clients compartilharem o [TokenStorage] e
+/// o callback de refresh.
+final workoutApiClientProvider = Provider<ApiClient>((ref) {
+  return ApiClient(
+    baseUrl: AppConfig.workoutBaseUrl,
+    tokenStorage: ref.watch(tokenStorageProvider),
+    refreshTokens: (refreshToken) =>
+        ref.read(authControllerProvider.notifier).refreshSession(refreshToken),
+    onSessionExpired: () => ref.read(authControllerProvider.notifier).signOut(),
   );
 });

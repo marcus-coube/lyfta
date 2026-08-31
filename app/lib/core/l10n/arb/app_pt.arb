@@ -53,9 +53,7 @@
   "homeStudentTabEvolution": "Evolução",
   "homeStudentTabChat": "Chat",
   "homeStudentTabAgenda": "Agenda",
-  "homeCoachTitle": "Alunos",
   "homeCoachTabStudents": "Alunos",
-  "homeCoachTabWorkouts": "Treinos",
   "homeCoachTabChat": "Chat",
   "homePlaceholderBody": "Em construção.",
   "roleSwitcherCoach": "Professor",
@@ -76,5 +74,188 @@
   "errorForbidden": "Você não tem permissão para essa ação.",
   "errorSlugTaken": "Este identificador já está em uso.",
   "errorInternal": "Algo deu errado. Tente novamente.",
-  "errorNetwork": "Sem conexão com o servidor. Verifique sua internet."
+  "errorNetwork": "Sem conexão com o servidor. Verifique sua internet.",
+  "homeCoachTabLibrary": "Biblioteca",
+  "commonRetry": "Tentar de novo",
+  "commonSave": "Salvar",
+  "commonCancel": "Cancelar",
+  "commonCreate": "Criar",
+  "commonRemove": "Remover",
+  "libraryNewExercise": "Novo exercício",
+  "librarySearchLabel": "Buscar exercício",
+  "librarySearchHint": "supino, agachamento…",
+  "libraryFilterMuscle": "Músculo",
+  "libraryFilterEquipment": "Equipamento",
+  "libraryFilterAll": "Todos",
+  "libraryGlobalBadge": "Lyfta",
+  "@libraryGlobalBadge": {
+    "description": "Selo do exercício da biblioteca global da Lyfta."
+  },
+  "libraryEmpty": "Nenhum exercício encontrado.",
+  "exerciseFormNewTitle": "Novo exercício",
+  "exerciseFormEditTitle": "Editar exercício",
+  "exerciseFormDuplicateTitle": "Duplicar exercício",
+  "exerciseFormDuplicateHint": "Exercícios da Lyfta não podem ser editados. Salvar cria uma cópia na biblioteca da sua academia.",
+  "exerciseFormNameLabel": "Nome",
+  "exerciseFormNameHint": "Supino reto com barra",
+  "exerciseFormNameRequired": "Informe o nome do exercício.",
+  "exerciseFormMuscleLabel": "Músculo principal",
+  "exerciseFormEquipmentLabel": "Equipamento",
+  "exerciseFormLevelLabel": "Nível",
+  "exerciseFormInstructionsLabel": "Instruções",
+  "exerciseFormInstructionsHint": "Como executar o movimento",
+  "exerciseFormMediaLabel": "Mídia",
+  "exerciseFormMediaHint": "GIF ou vídeo curto de até 50 MB.",
+  "exerciseFormMediaPick": "Escolher arquivo",
+  "exerciseFormMediaReplace": "Trocar arquivo",
+  "builderTitle": "Montar treino",
+  "builderDayTitle": "Título do dia",
+  "builderAddDay": "Adicionar dia",
+  "builderNoDays": "Este plano ainda não tem nenhum dia. Comece pelo treino A.",
+  "builderAddBlock": "Adicionar bloco",
+  "builderAddExercise": "Adicionar exercício",
+  "builderAddSet": "Adicionar série",
+  "builderDuplicateSet": "Duplicar série",
+  "builderPickExercise": "Escolher exercício",
+  "builderUnknownExercise": "Exercício removido da biblioteca",
+  "builderBlockRest": "Descanso (s)",
+  "builderRepsMin": "Reps mín.",
+  "builderRepsMax": "Reps máx.",
+  "builderRestSeconds": "Descanso (s)",
+  "builderTargetUnit": "Unidade do alvo",
+  "builderTargetKg": "Carga (kg)",
+  "builderTargetPercent1rm": "% de 1RM",
+  "builderTargetRpe": "RPE",
+  "builderTargetRir": "RIR",
+  "builderBlockStraight": "Série simples",
+  "builderBlockSuperset": "Bi-set",
+  "@builderBlockSuperset": {
+    "description": "Bloco de dois exercícios alternados sem descanso entre eles."
+  },
+  "builderBlockDropset": "Drop set",
+  "builderBlockRestPause": "Rest-pause",
+  "builderBlockCircuit": "Circuito",
+  "builderSaveDraft": "Salvar rascunho",
+  "builderSaved": "Rascunho salvo",
+  "builderDraftSaved": "Rascunho salvo.",
+  "builderPublish": "Publicar",
+  "builderMoveUp": "Mover para cima",
+  "builderMoveDown": "Mover para baixo",
+  "studentsSearchLabel": "Buscar aluno",
+  "studentsSearchHint": "nome ou e-mail",
+  "studentsEmpty": "Nenhum aluno ainda. Convide o primeiro.",
+  "studentsNoPlan": "Sem plano",
+  "studentsNewPlan": "Novo plano",
+  "studentsOpenPlan": "Abrir",
+  "studentsNewPlanTitle": "Novo plano",
+  "studentsNewPlanDefaultTitle": "Treino A/B",
+  "studentsPlanTitleLabel": "Nome do plano",
+  "studentsPendingBadge": "convite pendente",
+  "@studentsPendingBadge": {
+    "description": "Aluno que ainda não aceitou o convite."
+  },
+  "studentsInviteTitle": "Convidar aluno",
+  "studentsInviteNameLabel": "Nome",
+  "studentsInviteEmailLabel": "E-mail",
+  "studentsInviteSubmit": "Convidar",
+  "errorNotFound": "Não encontramos o que você procurava.",
+  "errorInvalidCursor": "A lista mudou. Recarregue a página.",
+  "errorExerciseIsGlobal": "Exercícios da Lyfta não podem ser editados. Duplique para criar o seu.",
+  "errorUnsupportedMedia": "Formato não aceito. Use GIF, MP4 ou WebM.",
+  "errorFileTooLarge": "Arquivo grande demais. O limite é 50 MB.",
+  "errorPlanNoDays": "Adicione ao menos um dia antes de publicar.",
+  "errorPlanDayWithoutBlock": "Há um dia sem nenhum bloco. Complete antes de publicar.",
+  "errorPlanBlockWithoutExercise": "Há um bloco sem exercício. Complete antes de publicar.",
+  "errorPlanExerciseWithoutSet": "Há um exercício sem série prescrita. Complete antes de publicar.",
+  "errorNoDraftToPublish": "Não há alterações novas para publicar.",
+  "errorUnknownExercise": "Um dos exercícios não está mais disponível na biblioteca.",
+  "muscleChest": "Peitoral",
+  "muscleBack": "Costas",
+  "muscleLats": "Dorsais",
+  "muscleTraps": "Trapézio",
+  "muscleLowerBack": "Lombar",
+  "muscleShoulders": "Ombros",
+  "muscleBiceps": "Bíceps",
+  "muscleTriceps": "Tríceps",
+  "muscleForearms": "Antebraço",
+  "muscleAbs": "Abdômen",
+  "muscleObliques": "Oblíquos",
+  "muscleQuadriceps": "Quadríceps",
+  "muscleHamstrings": "Posterior de coxa",
+  "muscleGlutes": "Glúteos",
+  "muscleCalves": "Panturrilha",
+  "muscleAdductors": "Adutores",
+  "muscleAbductors": "Abdutores",
+  "muscleFullBody": "Corpo inteiro",
+  "equipmentBarbell": "Barra",
+  "equipmentDumbbell": "Halteres",
+  "equipmentMachine": "Máquina",
+  "equipmentCable": "Polia",
+  "equipmentSmith": "Smith",
+  "equipmentBodyweight": "Peso do corpo",
+  "equipmentKettlebell": "Kettlebell",
+  "equipmentBand": "Elástico",
+  "equipmentBench": "Banco",
+  "equipmentOther": "Outro",
+  "levelBeginner": "Iniciante",
+  "levelIntermediate": "Intermediário",
+  "levelAdvanced": "Avançado",
+  "builderDraftVersion": "rascunho v{version}",
+  "@builderDraftVersion": {
+    "description": "Rótulo da versão em edição.",
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "builderPublishedVersion": "v{version} publicada",
+  "@builderPublishedVersion": {
+    "description": "Rótulo da versão publicada.",
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "builderPublishBody": "Publicar congela esta versão e envia o treino para o aluno. A versão {version} não poderá mais ser editada.",
+  "@builderPublishBody": {
+    "description": "Corpo da confirmação de publicação.",
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "builderPublished": "Versão {version} publicada.",
+  "@builderPublished": {
+    "description": "Confirmação após publicar.",
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "studentsPlanActive": "{title} · v{version}",
+  "@studentsPlanActive": {
+    "description": "Plano ativo do aluno com o número da versão.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "studentsPlanDraft": "{title} · rascunho",
+  "@studentsPlanDraft": {
+    "description": "Plano do aluno que ainda não foi publicado.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "builderPublishTitle": "Publicar treino?"
 }

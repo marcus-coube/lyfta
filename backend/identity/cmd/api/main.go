@@ -70,7 +70,8 @@ func run(logger *slog.Logger) error {
 	invitationHandler := ihttp.NewInvitationHandler(logger, invitationRepo, users, authRepo, jwtSigner, mailer, cfg.AppURL)
 	passwordResetHandler := ihttp.NewPasswordResetHandler(logger, authRepo, users, passwordResetRepo, mailer, cfg.AppURL)
 
-	router := ihttp.NewRouter(logger, cfg.CORSOrigins, jwtSigner, authHandler, invitationHandler, passwordResetHandler)
+	userHandler := ihttp.NewUserHandler(logger, users)
+	router := ihttp.NewRouter(logger, cfg.CORSOrigins, jwtSigner, authHandler, invitationHandler, passwordResetHandler, userHandler)
 
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,

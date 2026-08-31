@@ -137,7 +137,7 @@ void main() {
     await tester.tap(find.text(l10n.loginSubmit));
     await tester.pumpAndSettle();
 
-    expect(find.widgetWithText(AppBar, l10n.homeCoachTitle), findsOneWidget);
+    expect(find.widgetWithText(AppBar, l10n.homeCoachTabStudents), findsOneWidget);
   });
 
   testWidgets('login com credencial errada mostra erro i18n e permanece no login', (tester) async {

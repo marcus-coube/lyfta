@@ -68,6 +68,9 @@ var (
 	errUnauthenticated = func() APIError {
 		return newAPIError(http.StatusUnauthorized, "unauthenticated")
 	}
+	errInvalidCursor = func() APIError {
+		return newAPIError(http.StatusBadRequest, "invalid_cursor")
+	}
 	errForbidden = func() APIError {
 		return newAPIError(http.StatusForbidden, "forbidden")
 	}

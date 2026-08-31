@@ -7,11 +7,13 @@ import '../../../core/design_system/design_system.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_shell_scaffold.dart';
 import '../../../shared/widgets/role_context_switcher.dart';
+import '../../library/presentation/library_screen.dart';
+import '../../students/presentation/students_screen.dart';
 
-/// Shell do professor — navegação por destinos placeholder (Alunos, Treinos,
-/// Chat). Lateral em telas largas (web/desktop), barra inferior em mobile
-/// (`LyShellScaffold`, breakpoint ~840px). Telas reais chegam nas fases
-/// seguintes do plano.
+/// Shell do professor — Alunos, Biblioteca e Chat. Lateral em telas largas
+/// (web/desktop), barra inferior em mobile (`LyShellScaffold`, breakpoint
+/// ~840px). Alunos e Biblioteca são as telas reais do P1.6; o chat chega no
+/// P3.
 class CoachShellScreen extends ConsumerStatefulWidget {
   const CoachShellScreen({super.key});
 
@@ -30,12 +32,14 @@ class _CoachShellScreenState extends ConsumerState<CoachShellScreen> {
 
     final destinations = [
       LyShellDestination(icon: Icons.groups_outlined, label: l10n.homeCoachTabStudents),
-      LyShellDestination(icon: Icons.fitness_center_outlined, label: l10n.homeCoachTabWorkouts),
+      LyShellDestination(icon: Icons.fitness_center_outlined, label: l10n.homeCoachTabLibrary),
       LyShellDestination(icon: Icons.chat_bubble_outline, label: l10n.homeCoachTabChat),
     ];
 
     return LyShellScaffold(
-      title: l10n.homeCoachTitle,
+      // O título segue a aba: com telas reais (P1.6) um título fixo mentiria
+      // ("Alunos" em cima da biblioteca).
+      title: destinations[_index].label,
       destinations: destinations,
       selectedIndex: _index,
       onDestinationSelected: (i) => setState(() => _index = i),
@@ -43,9 +47,16 @@ class _CoachShellScreenState extends ConsumerState<CoachShellScreen> {
         if (authState.hasBothRoles)
           const RoleContextSwitcher(current: ActiveContext.coach),
       ],
-      body: Center(
-        child: Text(l10n.homePlaceholderBody, style: LyType.body(c.textSecondary)),
-      ),
+      body: switch (_index) {
+        0 => const StudentsScreen(),
+        1 => const LibraryScreen(),
+        _ => Center(
+            child: Text(
+              l10n.homePlaceholderBody,
+              style: LyType.body(c.textSecondary),
+            ),
+          ),
+      },
     );
   }
 }

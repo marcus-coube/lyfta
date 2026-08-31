@@ -20,5 +20,22 @@
   "errorEmailTaken": "Este e-mail já está a ser utilizado.",
   "errorUnauthenticated": "A tua sessão expirou. Entra novamente.",
   "errorForbidden": "Não tens permissão para essa ação.",
-  "errorNetwork": "Sem ligação ao servidor. Verifica a tua internet."
+  "errorNetwork": "Sem ligação ao servidor. Verifica a tua internet.",
+  "commonSave": "Guardar",
+  "librarySearchHint": "supino, agachamento…",
+  "exerciseFormMediaHint": "GIF ou vídeo curto até 50 MB.",
+  "builderSaveDraft": "Guardar rascunho",
+  "builderSaved": "Rascunho guardado",
+  "builderDraftSaved": "Rascunho guardado.",
+  "studentsSearchHint": "nome ou e-mail",
+  "muscleQuadriceps": "Quadricípite",
+  "muscleHamstrings": "Isquiotibiais",
+  "muscleAbs": "Abdominais",
+  "muscleCalves": "Gémeos",
+  "muscleTraps": "Trapézio",
+  "equipmentDumbbell": "Halteres",
+  "equipmentBodyweight": "Peso corporal",
+  "equipmentBand": "Banda elástica",
+  "errorFileTooLarge": "Ficheiro demasiado grande. O limite é 50 MB.",
+  "errorUnsupportedMedia": "Formato não aceite. Use GIF, MP4 ou WebM."
 }

@@ -101,7 +101,7 @@ custom que só o próprio tenant vê.
 override manual respeitado; teste de carga anterior retorna o último log correto
 entre planos diferentes.
 
-## - [ ] P1.6 Flutter — professor: biblioteca e builder mínimo
+## - [x] P1.6 Flutter — professor: biblioteca e builder mínimo
 
 **Objetivo:** o coach monta o treino no app (web em 1ª classe, mobile funcional).
 **Passos:**
@@ -568,3 +568,109 @@ mínimo); bugs achados viram tarefas na seção Notas.
   mesmo UUID colidiriam — probabilidade desprezível, mas a segunda escrita
   viraria `duplicate` silencioso em vez de erro. O `RecentSessions` limita a
   3 sessões e não pagina; histórico completo é P2.
+
+### P1.6 (2026-08-31, Mac)
+
+- **Endpoint novo no `identity`: `GET /v1/users`** (o plano previa "adicionar
+  se faltar"). Filtro por papel, busca por nome/e-mail sem distinguir caixa,
+  cursor keyset por `(nome, id)` e restrição a `owner|coach`. Papel fora do
+  vocabulário responde `400 validation_error` em vez de lista vazia — filtro
+  que volta vazio por grafia é bug caro de achar. **É do identity porque o
+  vínculo aluno↔tenant vive lá**: o `workout` guarda o plano mas não sabe quem
+  é aluno (ADR-013 §2), então quem cruza as duas coisas é o app, que tem
+  sessão nos dois serviços.
+- **`POST /v1/invitations` ganhou `name` opcional.** Sem isso a lista de
+  alunos do professor mostraria e-mails: o convite criava o usuário com
+  `name = email` e o aceite não pede nome. É um campo, retrocompatível, e o
+  professor já sabe o nome do aluno na hora de convidar. Corrigir o próprio
+  nome depois é tela de perfil, que não existe ainda.
+- **Três dependências novas no Flutter**, duas nomeadas pelo próprio plano:
+  `cached_network_image` (GIF com cache de disco), `video_player` (vídeo curto
+  mudo em loop) e `file_picker`, que o plano não cita mas o upload exige — a
+  URL presignada do P1.2 assina `Content-Length`, então o app precisa dos
+  **bytes e do tamanho** antes de pedir a URL (`withData: true`), em web e em
+  mobile.
+- **A tela do aluno e a do professor compartilham a serialização da árvore.**
+  Do lado do app isso virou `Plan`/`WorkoutDay`/`Block`/`BlockExercise`/
+  `PrescribedSet` com campos **mutáveis**, ao contrário do resto do app: o
+  builder é um editor de cinco níveis que muda a cada tecla, e `copyWith` em
+  cadeia a cada dígito custaria muito mais do que vale. O rascunho vive no
+  estado **local** da tela (não num provider) e o que sai é sempre a árvore
+  inteira — `PUT /draft` substitui tudo (P1.4), então não há estado
+  intermediário a reconciliar.
+- **Editor de séries sem texto livre** (ADR-012 §4): reps mín./máx., alvo com
+  unidade trocável (kg | %1RM | RPE | RIR) e descanso, cada um em seu campo.
+  Dois comportamentos que vieram de pensar no uso real: **adicionar série
+  copia a última** (continuar a prescrição é mais comum que começar do zero) e
+  **trocar a unidade move o número para o campo certo** — 40 kg não vira
+  RPE 40, porque o alvo mora em duas colunas (`target_load_kg` para absoluto,
+  `target_value` para relativo). A última série de um exercício não pode ser
+  removida: exercício sem série não publica (`plan_incomplete`), e é melhor
+  bloquear no editor do que devolver 422 no publish.
+- **Global é somente leitura, e a UI diz isso sem falar em erro:** abrir um
+  exercício da biblioteca da Lyfta abre o formulário em modo **duplicar**, com
+  a explicação no topo. O `403 exercise_is_global` continua traduzido para o
+  caso de corrida, mas o caminho normal nunca chega nele. Não foi preciso o
+  `POST /exercises/{id}/clone` que o P1.3 cogitou: ler + criar no cliente
+  resolveu.
+- **Taxonomia traduzida em um lugar só** (`shared/l10n/taxonomy_l10n.dart`):
+  o backend só conhece códigos (`chest`, `barbell`) e nunca devolve texto de
+  UI (ADR-011 §5). O `switch` é exaustivo de propósito — código novo no
+  backend quebra ali, não silenciosamente na tela.
+- **Responsivo com o mesmo widget, não com tela por plataforma** (guideline
+  `flutter.md`): o builder é master-detail acima de 840px (lista de dias à
+  esquerda, dia aberto à direita) e uma coluna com chips de dia abaixo disso.
+  O breakpoint reaproveita o `lyShellRailBreakpoint` do P0.6.
+- **O builder é rota de primeira classe** (`/plans/:id` no `go_router`), não
+  um `Navigator.push` anônimo: na web o professor precisa recarregar a página
+  do plano que está montando. Isso também trouxe o redirect de sessão de graça
+  — plano é rota privada.
+- **Publicar é ação com confirmação**, e o diálogo mostra o número da versão:
+  publicar congela a versão (ADR-004 §1) e o professor tem de saber o que está
+  congelando. Salvar rascunho pendente acontece antes, sozinho — publicar com
+  alteração não salva na tela seria publicar a versão errada.
+- **Providers moram junto do repositório que constroem** (`data/`), não na
+  `presentation/`: a tela de alunos precisa do `PlanRepository` para mostrar o
+  plano ativo, e assim ela depende da camada de dados do builder em vez da
+  tela dele — o `flutter.md` proíbe feature importar feature, e este é o
+  acoplamento mínimo que a funcionalidade exige.
+- **Bug achado pelo Aceite no Chrome, não pelos testes:** ao voltar do
+  builder, a lista de alunos continuava dizendo "sem plano" — só depois de
+  recarregar a página o plano aparecia. Causa: os controllers chamavam
+  `build()` **na mão** dentro de `refresh()`. Isso roda `ref.watch` fora do
+  ciclo do Riverpod e o resultado não substitui o estado que a tela observa.
+  Corrigido com `ref.invalidateSelf()`, que é a forma de um `AsyncNotifier`
+  refazer o próprio build. O mesmo erro estava no controller da biblioteca
+  (voltar do formulário não recarregaria a lista) — dois pelo preço de um.
+- **Verificado (Mac):** `flutter analyze` limpo, **14 testes verdes** (6 novos
+  de widget do editor de séries: uma linha por série com a prescrição
+  preenchida, adicionar copiando a última, editar escrevendo na série certa,
+  duplicar criando cópia independente, troca de unidade movendo o número e o
+  bloqueio de remover a última série) e o guard de strings do ADR-011 limpo.
+  No backend, `go vet` limpo e 2 testes novos de handler no `identity`
+  (filtro por papel + busca + isolamento entre tenants + 403 do aluno + 401
+  sem sessão; e a paginação por cursor com o `invalid_cursor`). O teste de
+  rota do P0.6 passou a injetar uma lista de alunos vazia: o shell do
+  professor agora abre numa tela que faz rede, e `pumpAndSettle` esperaria
+  para sempre. **Aceite exercitado no Chrome** com `identity` e `workout` no
+  ar: login do professor → lista de alunos vinda do `identity` com os dois
+  convidados → "novo plano" para a Ana → builder em master-detail → dia A
+  "Peito e tríceps" → bloco trocado para **bi-set** → dois exercícios do seed
+  global (a busca por "triceps" **sem acento** achou "Tríceps na polia",
+  confirmando o P1.3 pela UI) → séries estruturadas (8–12 reps, 40 kg, 60 s)
+  com "adicionar série" copiando a anterior → publicar salvando o rascunho
+  sozinho antes, com confirmação nomeando a v1 → app bar em "v1 published".
+  Conferido por `curl` no backend: plano `published`, versão 1, bloco
+  `superset` com os dois exercícios e os sets na ordem certa.
+- **Anotações para as próximas tarefas:** a lista de alunos faz **uma chamada
+  de plano por linha** (N+1) e por isso a página é curta (20); um endpoint de
+  resumo em lote resolve quando a academia crescer. O upload de mídia foi
+  exercitado por teste e pelo P1.2, mas **não** manualmente pela UI nesta
+  sessão — o seletor de arquivo abre um diálogo do sistema, fora do alcance da
+  automação de navegador. Reordenar dia é por menu (subir/descer), não
+  arrastar: `ReorderableListView` no master-detail com o editor ao lado ficou
+  para quando houver mais de três dias na prática. Não há tela de perfil, então
+  o nome do aluno só entra pelo convite. O app roda em Android por construção
+  (mesmo widget, layout estreito), mas **não foi executado em device Android
+  nesta máquina** — o SDK segue não configurado aqui (pendência aberta desde o
+  P0.5).

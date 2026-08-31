@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+
 import '../l10n/gen/app_localizations.dart';
 import 'api_exception.dart';
 
@@ -23,6 +25,29 @@ extension ApiExceptionL10n on ApiException {
         return l10n.errorForbidden;
       case 'slug_taken':
         return l10n.errorSlugTaken;
+      case 'not_found':
+        return l10n.errorNotFound;
+      case 'invalid_cursor':
+        return l10n.errorInvalidCursor;
+      // Biblioteca e mídia (P1.2/P1.3).
+      case 'exercise_is_global':
+        return l10n.errorExerciseIsGlobal;
+      case 'unsupported_media_type':
+        return l10n.errorUnsupportedMedia;
+      case 'file_too_large':
+        return l10n.errorFileTooLarge;
+      // Builder (P1.4): `reason` diz qual nível do plano ficou vazio.
+      case 'plan_incomplete':
+        return switch (params['reason']?.toString()) {
+          'no_days' => l10n.errorPlanNoDays,
+          'day_without_block' => l10n.errorPlanDayWithoutBlock,
+          'block_without_exercise' => l10n.errorPlanBlockWithoutExercise,
+          _ => l10n.errorPlanExerciseWithoutSet,
+        };
+      case 'no_draft_to_publish':
+        return l10n.errorNoDraftToPublish;
+      case 'unknown_exercise':
+        return l10n.errorUnknownExercise;
       case 'network_error':
         return l10n.errorNetwork;
       case 'internal_error':
@@ -30,4 +55,12 @@ extension ApiExceptionL10n on ApiException {
         return l10n.errorInternal;
     }
   }
+}
+
+/// Traduz qualquer erro que caia numa tela: [ApiException] vira mensagem pelo
+/// `code`; o resto cai na mensagem genérica. Evita repetir o mesmo
+/// `is ApiException ? ... : ...` em toda tela.
+String describeApiError(BuildContext context, Object error) {
+  final l10n = AppLocalizations.of(context);
+  return error is ApiException ? error.message(l10n) : l10n.errorInternal;
 }

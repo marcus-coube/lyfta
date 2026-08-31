@@ -92,7 +92,8 @@ func newTestServer(t *testing.T) (*httptest.Server, *security.JWTSigner, *captur
 	invitationHandler := ihttp.NewInvitationHandler(logger, invitationRepo, users, authRepo, signer, mailer, "http://localhost:5173")
 	passwordResetHandler := ihttp.NewPasswordResetHandler(logger, authRepo, users, passwordResetRepo, mailer, "http://localhost:5173")
 
-	router := ihttp.NewRouter(logger, []string{"*"}, signer, authHandler, invitationHandler, passwordResetHandler)
+	userHandler := ihttp.NewUserHandler(logger, users)
+	router := ihttp.NewRouter(logger, []string{"*"}, signer, authHandler, invitationHandler, passwordResetHandler, userHandler)
 	server := httptest.NewServer(router)
 	t.Cleanup(server.Close)
 	return server, signer, mailer

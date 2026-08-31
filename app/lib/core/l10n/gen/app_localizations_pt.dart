@@ -157,13 +157,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get homeStudentTabAgenda => 'Agenda';
 
   @override
-  String get homeCoachTitle => 'Alunos';
-
-  @override
   String get homeCoachTabStudents => 'Alunos';
-
-  @override
-  String get homeCoachTabWorkouts => 'Treinos';
 
   @override
   String get homeCoachTabChat => 'Chat';
@@ -210,6 +204,395 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get errorNetwork =>
       'Sem conexão com o servidor. Verifique sua internet.';
+
+  @override
+  String get homeCoachTabLibrary => 'Biblioteca';
+
+  @override
+  String get commonRetry => 'Tentar de novo';
+
+  @override
+  String get commonSave => 'Salvar';
+
+  @override
+  String get commonCancel => 'Cancelar';
+
+  @override
+  String get commonCreate => 'Criar';
+
+  @override
+  String get commonRemove => 'Remover';
+
+  @override
+  String get libraryNewExercise => 'Novo exercício';
+
+  @override
+  String get librarySearchLabel => 'Buscar exercício';
+
+  @override
+  String get librarySearchHint => 'supino, agachamento…';
+
+  @override
+  String get libraryFilterMuscle => 'Músculo';
+
+  @override
+  String get libraryFilterEquipment => 'Equipamento';
+
+  @override
+  String get libraryFilterAll => 'Todos';
+
+  @override
+  String get libraryGlobalBadge => 'Lyfta';
+
+  @override
+  String get libraryEmpty => 'Nenhum exercício encontrado.';
+
+  @override
+  String get exerciseFormNewTitle => 'Novo exercício';
+
+  @override
+  String get exerciseFormEditTitle => 'Editar exercício';
+
+  @override
+  String get exerciseFormDuplicateTitle => 'Duplicar exercício';
+
+  @override
+  String get exerciseFormDuplicateHint =>
+      'Exercícios da Lyfta não podem ser editados. Salvar cria uma cópia na biblioteca da sua academia.';
+
+  @override
+  String get exerciseFormNameLabel => 'Nome';
+
+  @override
+  String get exerciseFormNameHint => 'Supino reto com barra';
+
+  @override
+  String get exerciseFormNameRequired => 'Informe o nome do exercício.';
+
+  @override
+  String get exerciseFormMuscleLabel => 'Músculo principal';
+
+  @override
+  String get exerciseFormEquipmentLabel => 'Equipamento';
+
+  @override
+  String get exerciseFormLevelLabel => 'Nível';
+
+  @override
+  String get exerciseFormInstructionsLabel => 'Instruções';
+
+  @override
+  String get exerciseFormInstructionsHint => 'Como executar o movimento';
+
+  @override
+  String get exerciseFormMediaLabel => 'Mídia';
+
+  @override
+  String get exerciseFormMediaHint => 'GIF ou vídeo curto de até 50 MB.';
+
+  @override
+  String get exerciseFormMediaPick => 'Escolher arquivo';
+
+  @override
+  String get exerciseFormMediaReplace => 'Trocar arquivo';
+
+  @override
+  String get builderTitle => 'Montar treino';
+
+  @override
+  String get builderDayTitle => 'Título do dia';
+
+  @override
+  String get builderAddDay => 'Adicionar dia';
+
+  @override
+  String get builderNoDays =>
+      'Este plano ainda não tem nenhum dia. Comece pelo treino A.';
+
+  @override
+  String get builderAddBlock => 'Adicionar bloco';
+
+  @override
+  String get builderAddExercise => 'Adicionar exercício';
+
+  @override
+  String get builderAddSet => 'Adicionar série';
+
+  @override
+  String get builderDuplicateSet => 'Duplicar série';
+
+  @override
+  String get builderPickExercise => 'Escolher exercício';
+
+  @override
+  String get builderUnknownExercise => 'Exercício removido da biblioteca';
+
+  @override
+  String get builderBlockRest => 'Descanso (s)';
+
+  @override
+  String get builderRepsMin => 'Reps mín.';
+
+  @override
+  String get builderRepsMax => 'Reps máx.';
+
+  @override
+  String get builderRestSeconds => 'Descanso (s)';
+
+  @override
+  String get builderTargetUnit => 'Unidade do alvo';
+
+  @override
+  String get builderTargetKg => 'Carga (kg)';
+
+  @override
+  String get builderTargetPercent1rm => '% de 1RM';
+
+  @override
+  String get builderTargetRpe => 'RPE';
+
+  @override
+  String get builderTargetRir => 'RIR';
+
+  @override
+  String get builderBlockStraight => 'Série simples';
+
+  @override
+  String get builderBlockSuperset => 'Bi-set';
+
+  @override
+  String get builderBlockDropset => 'Drop set';
+
+  @override
+  String get builderBlockRestPause => 'Rest-pause';
+
+  @override
+  String get builderBlockCircuit => 'Circuito';
+
+  @override
+  String get builderSaveDraft => 'Salvar rascunho';
+
+  @override
+  String get builderSaved => 'Rascunho salvo';
+
+  @override
+  String get builderDraftSaved => 'Rascunho salvo.';
+
+  @override
+  String get builderPublish => 'Publicar';
+
+  @override
+  String get builderMoveUp => 'Mover para cima';
+
+  @override
+  String get builderMoveDown => 'Mover para baixo';
+
+  @override
+  String get studentsSearchLabel => 'Buscar aluno';
+
+  @override
+  String get studentsSearchHint => 'nome ou e-mail';
+
+  @override
+  String get studentsEmpty => 'Nenhum aluno ainda. Convide o primeiro.';
+
+  @override
+  String get studentsNoPlan => 'Sem plano';
+
+  @override
+  String get studentsNewPlan => 'Novo plano';
+
+  @override
+  String get studentsOpenPlan => 'Abrir';
+
+  @override
+  String get studentsNewPlanTitle => 'Novo plano';
+
+  @override
+  String get studentsNewPlanDefaultTitle => 'Treino A/B';
+
+  @override
+  String get studentsPlanTitleLabel => 'Nome do plano';
+
+  @override
+  String get studentsPendingBadge => 'convite pendente';
+
+  @override
+  String get studentsInviteTitle => 'Convidar aluno';
+
+  @override
+  String get studentsInviteNameLabel => 'Nome';
+
+  @override
+  String get studentsInviteEmailLabel => 'E-mail';
+
+  @override
+  String get studentsInviteSubmit => 'Convidar';
+
+  @override
+  String get errorNotFound => 'Não encontramos o que você procurava.';
+
+  @override
+  String get errorInvalidCursor => 'A lista mudou. Recarregue a página.';
+
+  @override
+  String get errorExerciseIsGlobal =>
+      'Exercícios da Lyfta não podem ser editados. Duplique para criar o seu.';
+
+  @override
+  String get errorUnsupportedMedia =>
+      'Formato não aceito. Use GIF, MP4 ou WebM.';
+
+  @override
+  String get errorFileTooLarge => 'Arquivo grande demais. O limite é 50 MB.';
+
+  @override
+  String get errorPlanNoDays => 'Adicione ao menos um dia antes de publicar.';
+
+  @override
+  String get errorPlanDayWithoutBlock =>
+      'Há um dia sem nenhum bloco. Complete antes de publicar.';
+
+  @override
+  String get errorPlanBlockWithoutExercise =>
+      'Há um bloco sem exercício. Complete antes de publicar.';
+
+  @override
+  String get errorPlanExerciseWithoutSet =>
+      'Há um exercício sem série prescrita. Complete antes de publicar.';
+
+  @override
+  String get errorNoDraftToPublish => 'Não há alterações novas para publicar.';
+
+  @override
+  String get errorUnknownExercise =>
+      'Um dos exercícios não está mais disponível na biblioteca.';
+
+  @override
+  String get muscleChest => 'Peitoral';
+
+  @override
+  String get muscleBack => 'Costas';
+
+  @override
+  String get muscleLats => 'Dorsais';
+
+  @override
+  String get muscleTraps => 'Trapézio';
+
+  @override
+  String get muscleLowerBack => 'Lombar';
+
+  @override
+  String get muscleShoulders => 'Ombros';
+
+  @override
+  String get muscleBiceps => 'Bíceps';
+
+  @override
+  String get muscleTriceps => 'Tríceps';
+
+  @override
+  String get muscleForearms => 'Antebraço';
+
+  @override
+  String get muscleAbs => 'Abdômen';
+
+  @override
+  String get muscleObliques => 'Oblíquos';
+
+  @override
+  String get muscleQuadriceps => 'Quadríceps';
+
+  @override
+  String get muscleHamstrings => 'Posterior de coxa';
+
+  @override
+  String get muscleGlutes => 'Glúteos';
+
+  @override
+  String get muscleCalves => 'Panturrilha';
+
+  @override
+  String get muscleAdductors => 'Adutores';
+
+  @override
+  String get muscleAbductors => 'Abdutores';
+
+  @override
+  String get muscleFullBody => 'Corpo inteiro';
+
+  @override
+  String get equipmentBarbell => 'Barra';
+
+  @override
+  String get equipmentDumbbell => 'Halteres';
+
+  @override
+  String get equipmentMachine => 'Máquina';
+
+  @override
+  String get equipmentCable => 'Polia';
+
+  @override
+  String get equipmentSmith => 'Smith';
+
+  @override
+  String get equipmentBodyweight => 'Peso do corpo';
+
+  @override
+  String get equipmentKettlebell => 'Kettlebell';
+
+  @override
+  String get equipmentBand => 'Elástico';
+
+  @override
+  String get equipmentBench => 'Banco';
+
+  @override
+  String get equipmentOther => 'Outro';
+
+  @override
+  String get levelBeginner => 'Iniciante';
+
+  @override
+  String get levelIntermediate => 'Intermediário';
+
+  @override
+  String get levelAdvanced => 'Avançado';
+
+  @override
+  String builderDraftVersion(int version) {
+    return 'rascunho v$version';
+  }
+
+  @override
+  String builderPublishedVersion(int version) {
+    return 'v$version publicada';
+  }
+
+  @override
+  String builderPublishBody(int version) {
+    return 'Publicar congela esta versão e envia o treino para o aluno. A versão $version não poderá mais ser editada.';
+  }
+
+  @override
+  String builderPublished(int version) {
+    return 'Versão $version publicada.';
+  }
+
+  @override
+  String studentsPlanActive(String title, int version) {
+    return '$title · v$version';
+  }
+
+  @override
+  String studentsPlanDraft(String title) {
+    return '$title · rascunho';
+  }
+
+  @override
+  String get builderPublishTitle => 'Publicar treino?';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -289,4 +672,57 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   @override
   String get errorNetwork =>
       'Sem ligação ao servidor. Verifica a tua internet.';
+
+  @override
+  String get commonSave => 'Guardar';
+
+  @override
+  String get librarySearchHint => 'supino, agachamento…';
+
+  @override
+  String get exerciseFormMediaHint => 'GIF ou vídeo curto até 50 MB.';
+
+  @override
+  String get builderSaveDraft => 'Guardar rascunho';
+
+  @override
+  String get builderSaved => 'Rascunho guardado';
+
+  @override
+  String get builderDraftSaved => 'Rascunho guardado.';
+
+  @override
+  String get studentsSearchHint => 'nome ou e-mail';
+
+  @override
+  String get errorUnsupportedMedia =>
+      'Formato não aceite. Use GIF, MP4 ou WebM.';
+
+  @override
+  String get errorFileTooLarge =>
+      'Ficheiro demasiado grande. O limite é 50 MB.';
+
+  @override
+  String get muscleTraps => 'Trapézio';
+
+  @override
+  String get muscleAbs => 'Abdominais';
+
+  @override
+  String get muscleQuadriceps => 'Quadricípite';
+
+  @override
+  String get muscleHamstrings => 'Isquiotibiais';
+
+  @override
+  String get muscleCalves => 'Gémeos';
+
+  @override
+  String get equipmentDumbbell => 'Halteres';
+
+  @override
+  String get equipmentBodyweight => 'Peso corporal';
+
+  @override
+  String get equipmentBand => 'Banda elástica';
 }

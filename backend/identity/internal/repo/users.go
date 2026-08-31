@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -148,4 +149,105 @@ func (r *UserRepo) ListByTenant(ctx context.Context, tenantID string) ([]domain.
 		return nil, err
 	}
 	return users, nil
+}
+
+// UserFilter são os filtros da listagem de usuários do tenant (P1.6): a tela
+// de alunos do professor. Campos vazios não filtram.
+type UserFilter struct {
+	Role   domain.Role
+	Query  string
+	Status domain.UserStatus
+	// Cursor keyset: o nome e o id da última linha da página anterior.
+	CursorName string
+	CursorID   string
+	Limit      int
+}
+
+// Tamanhos de página da listagem de usuários.
+const (
+	DefaultUserPageSize = 50
+	MaxUserPageSize     = 200
+)
+
+// List devolve a página de usuários do tenant, ordenada por nome. hasMore diz
+// se existe página seguinte — a query pede uma linha a mais e a descarta.
+//
+// A busca cobre nome e e-mail, sem distinguir caixa; o cursor é keyset sobre
+// (nome, id), estável quando entra aluno novo no meio da lista.
+func (r *UserRepo) List(ctx context.Context, tenantID string, f UserFilter) (users []domain.User, hasMore bool, err error) {
+	limit := f.Limit
+	if limit <= 0 {
+		limit = DefaultUserPageSize
+	}
+	if limit > MaxUserPageSize {
+		limit = MaxUserPageSize
+	}
+
+	err = WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		// O papel filtra por EXISTS em user_roles: um usuário pode acumular
+		// papéis (ADR-002), então um JOIN duplicaria linhas.
+		const q = `
+			SELECT u.id, u.tenant_id, u.email, u.name, u.locale, u.status, u.created_at,
+			       COALESCE(
+			           (SELECT array_agg(ur.role ORDER BY ur.role)
+			            FROM user_roles ur WHERE ur.user_id = u.id),
+			           '{}'
+			       ) AS roles
+			FROM users u
+			WHERE ($1::text IS NULL OR EXISTS (
+			          SELECT 1 FROM user_roles ur WHERE ur.user_id = u.id AND ur.role = $1))
+			  AND ($2::text IS NULL OR u.status = $2)
+			  AND ($3::text IS NULL OR u.name ILIKE $3 OR u.email ILIKE $3)
+			  AND ($4::text IS NULL OR (u.name, u.id::text) > ($4, $5))
+			ORDER BY u.name, u.id
+			LIMIT $6`
+		rows, queryErr := tx.Query(ctx, q,
+			nullString(string(f.Role)), nullString(string(f.Status)),
+			nullString(likePattern(f.Query)), nullString(f.CursorName), f.CursorID, limit+1)
+		if queryErr != nil {
+			return fmt.Errorf("repo: listar usuários: %w", queryErr)
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var (
+				u     domain.User
+				roles []string
+			)
+			if scanErr := rows.Scan(&u.ID, &u.TenantID, &u.Email, &u.Name, &u.Locale,
+				&u.Status, &u.CreatedAt, &roles); scanErr != nil {
+				return fmt.Errorf("repo: ler usuário: %w", scanErr)
+			}
+			for _, role := range roles {
+				u.Roles = append(u.Roles, domain.Role(role))
+			}
+			users = append(users, u)
+		}
+		return rows.Err()
+	})
+	if err != nil {
+		return nil, false, err
+	}
+	if len(users) > limit {
+		return users[:limit], true, nil
+	}
+	return users, false, nil
+}
+
+// nullString manda NULL em vez de string vazia — é o que deixa os filtros
+// opcionais dentro de uma query só.
+func nullString(v string) any {
+	if v == "" {
+		return nil
+	}
+	return v
+}
+
+// likePattern monta o padrão de busca escapando os curingas do LIKE, para que
+// um nome com `%` não vire busca aberta.
+func likePattern(query string) string {
+	if query == "" {
+		return ""
+	}
+	escaped := strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(query)
+	return "%" + escaped + "%"
 }
