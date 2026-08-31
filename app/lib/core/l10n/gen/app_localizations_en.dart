@@ -593,4 +593,192 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get builderPublishTitle => 'Publish workout?';
+
+  @override
+  String get todayNoPlanTitle => 'Your coach hasn\'t built your plan yet';
+
+  @override
+  String get todayNoPlanBody =>
+      'As soon as the plan is published, today\'s workout shows up here.';
+
+  @override
+  String get todayRestTitle => 'Rest day';
+
+  @override
+  String get todayRestBody =>
+      'Nothing scheduled for today. Recovery is part of training.';
+
+  @override
+  String get todayStart => 'Start workout';
+
+  @override
+  String get todayResume => 'Resume workout';
+
+  @override
+  String get todayOffline =>
+      'No connection — this is the workout stored on your device.';
+
+  @override
+  String get todayLoadError => 'Couldn\'t load your workout.';
+
+  @override
+  String get todayNoPreviousLoad => 'First time';
+
+  @override
+  String get todayRecentTitle => 'Recent workouts';
+
+  @override
+  String get todaySyncing => 'Syncing…';
+
+  @override
+  String get todaySynced => 'All synced';
+
+  @override
+  String get todayEmptyDay => 'This workout has no exercises.';
+
+  @override
+  String get sessionReps => 'Reps';
+
+  @override
+  String get sessionLoadKg => 'Load (kg)';
+
+  @override
+  String get sessionMarkDone => 'Log set';
+
+  @override
+  String get sessionSetDone => 'Logged';
+
+  @override
+  String get sessionRestTitle => 'Rest';
+
+  @override
+  String get sessionRestSkip => 'Skip rest';
+
+  @override
+  String get sessionRestOver => 'Rest is over';
+
+  @override
+  String get sessionRestNotificationTitle => 'Rest is over';
+
+  @override
+  String get sessionFinish => 'Finish workout';
+
+  @override
+  String get sessionFinishTitle => 'Finish workout?';
+
+  @override
+  String get sessionSummaryTitle => 'Workout done';
+
+  @override
+  String get sessionSummarySets => 'Sets';
+
+  @override
+  String get sessionSummaryVolume => 'Volume';
+
+  @override
+  String get sessionSummaryDuration => 'Duration';
+
+  @override
+  String get sessionSummaryClose => 'Close';
+
+  @override
+  String get sessionTargetFreeReps => 'free reps';
+
+  @override
+  String todayDayHeading(String label) {
+    return 'Workout $label';
+  }
+
+  @override
+  String todayPreviousLoad(String load) {
+    return 'Last time: $load kg';
+  }
+
+  @override
+  String todaySetsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets',
+      one: '1 set',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todayRecentEntry(String label, int sets, String volume) {
+    return 'Workout $label · $sets sets · $volume kg';
+  }
+
+  @override
+  String todaySyncPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries to send',
+      one: '1 entry to send',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sessionTitle(String label) {
+    return 'Workout $label';
+  }
+
+  @override
+  String sessionSet(int number) {
+    return 'Set $number';
+  }
+
+  @override
+  String sessionEditSet(int number) {
+    return 'Fix set $number';
+  }
+
+  @override
+  String sessionTargetRepsRange(int min, int max) {
+    return '$min–$max reps';
+  }
+
+  @override
+  String sessionTargetReps(int reps) {
+    return '$reps reps';
+  }
+
+  @override
+  String sessionTargetWithUnit(String value, String unit) {
+    return '$value $unit';
+  }
+
+  @override
+  String sessionRestNotificationBody(String exercise) {
+    return 'Time for your next set of $exercise.';
+  }
+
+  @override
+  String sessionFinishBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'You logged $count sets. Today\'s workout will be completed.',
+      one: 'You logged 1 set. Today\'s workout will be completed.',
+      zero:
+          'You haven\'t logged any set — today\'s workout won\'t be marked as done.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sessionDurationMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String sessionLoggedSet(String reps, String load) {
+    return '$reps reps · $load kg';
+  }
+
+  @override
+  String get sessionEmptyValue => '—';
 }

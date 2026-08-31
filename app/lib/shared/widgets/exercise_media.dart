@@ -4,8 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../../../core/design_system/design_system.dart';
-import '../../domain/exercise.dart';
+import '../../core/design_system/design_system.dart';
+import '../domain/exercise.dart';
 
 /// Miniatura da mídia do exercício: GIF com cache de disco, vídeo com o
 /// primeiro quadro em loop mudo.

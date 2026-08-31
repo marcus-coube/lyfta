@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/exercise_repository.dart';
-import '../domain/exercise.dart';
+import '../../../shared/domain/exercise.dart';
 
 /// Filtros ativos da tela da biblioteca. Fica fora do controller para que
 /// mudar filtro seja uma escrita simples e o carregamento reaja a ela.

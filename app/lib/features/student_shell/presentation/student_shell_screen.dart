@@ -7,11 +7,12 @@ import '../../../core/design_system/design_system.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_shell_scaffold.dart';
 import '../../../shared/widgets/role_context_switcher.dart';
+import '../../workout/presentation/today_screen.dart';
 
-/// Shell do aluno — navegação por destinos placeholder (Hoje, Evolução,
-/// Chat, Agenda). Lateral em telas largas (web/desktop), barra inferior em
-/// mobile (`LyShellScaffold`, breakpoint ~840px). Telas reais chegam nas
-/// fases seguintes do plano.
+/// Shell do aluno — Hoje, Evolução, Chat e Agenda. Lateral em telas largas
+/// (web/desktop), barra inferior em mobile (`LyShellScaffold`, breakpoint
+/// ~840px). **Hoje** é a tela real do P1.7; evolução chega no P2, chat no P3
+/// e agenda no P4.
 class StudentShellScreen extends ConsumerStatefulWidget {
   const StudentShellScreen({super.key});
 
@@ -36,7 +37,9 @@ class _StudentShellScreenState extends ConsumerState<StudentShellScreen> {
     ];
 
     return LyShellScaffold(
-      title: l10n.homeStudentTitle,
+      // O título segue a aba, como no shell do professor: "Lyfta" em cima da
+      // tela Hoje não diz nada ao aluno.
+      title: destinations[_index].label,
       destinations: destinations,
       selectedIndex: _index,
       onDestinationSelected: (i) => setState(() => _index = i),
@@ -44,9 +47,15 @@ class _StudentShellScreenState extends ConsumerState<StudentShellScreen> {
         if (authState.hasBothRoles)
           const RoleContextSwitcher(current: ActiveContext.student),
       ],
-      body: Center(
-        child: Text(l10n.homePlaceholderBody, style: LyType.body(c.textSecondary)),
-      ),
+      body: switch (_index) {
+        0 => const TodayScreen(),
+        _ => Center(
+            child: Text(
+              l10n.homePlaceholderBody,
+              style: LyType.body(c.textSecondary),
+            ),
+          ),
+      },
     );
   }
 }

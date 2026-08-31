@@ -10,6 +10,7 @@ import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/builder/presentation/plan_builder_screen.dart';
 import '../../features/coach_shell/presentation/coach_shell_screen.dart';
 import '../../features/student_shell/presentation/student_shell_screen.dart';
+import '../../features/workout/presentation/session_player_screen.dart';
 import '../auth/auth_controller.dart';
 import '../auth/auth_state.dart';
 
@@ -77,6 +78,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => PlanBuilderScreen(
           planId: state.pathParameters['id']!,
         ),
+      ),
+      // O player é rota própria pelo mesmo motivo do builder: recarregar a
+      // página no meio do treino (web) não pode jogar o aluno para fora — a
+      // sessão está no banco local e a tela se reconstrói a partir dele.
+      GoRoute(
+        path: '/session',
+        builder: (context, state) => const SessionPlayerScreen(),
       ),
       GoRoute(
         path: '/home',

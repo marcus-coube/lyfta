@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/http/api_exception.dart';
 import '../../../core/http/providers.dart';
-import '../domain/plan.dart';
+import '../../../shared/domain/plan.dart';
 
 /// Repositório do builder sobre o cliente HTTP do `workout`.
 final planRepositoryProvider = Provider<PlanRepository>((ref) {

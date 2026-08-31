@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 
 import '../../../../core/design_system/design_system.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
-import '../../domain/plan.dart';
+import '../../../../shared/domain/plan.dart';
+import '../../../../shared/l10n/plan_l10n.dart';
 
 /// Editor da prescrição estruturada de um exercício (ADR-012 §4).
 ///
@@ -297,21 +298,3 @@ class _NumberField extends StatelessWidget {
     );
   }
 }
-
-/// Rótulo da unidade de alvo. Fica aqui (e não em `shared/l10n`) porque só o
-/// builder mostra unidade de prescrição.
-String targetUnitLabel(AppLocalizations l10n, TargetUnit unit) => switch (unit) {
-      TargetUnit.kg => l10n.builderTargetKg,
-      TargetUnit.percent1rm => l10n.builderTargetPercent1rm,
-      TargetUnit.rpe => l10n.builderTargetRpe,
-      TargetUnit.rir => l10n.builderTargetRir,
-    };
-
-/// Rótulo do tipo de bloco (ADR-004 §1).
-String blockTypeLabel(AppLocalizations l10n, BlockType type) => switch (type) {
-      BlockType.straight => l10n.builderBlockStraight,
-      BlockType.superset => l10n.builderBlockSuperset,
-      BlockType.dropset => l10n.builderBlockDropset,
-      BlockType.restPause => l10n.builderBlockRestPause,
-      BlockType.circuit => l10n.builderBlockCircuit,
-    };

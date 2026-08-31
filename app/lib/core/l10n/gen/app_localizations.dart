@@ -1208,6 +1208,276 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Publicar treino?'**
   String get builderPublishTitle;
+
+  /// Estado da tela Hoje quando o aluno não tem plano ativo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Seu professor ainda não montou seu treino'**
+  String get todayNoPlanTitle;
+
+  /// Explicação do estado sem plano.
+  ///
+  /// In pt, this message translates to:
+  /// **'Assim que ele publicar o plano, o treino do dia aparece aqui.'**
+  String get todayNoPlanBody;
+
+  /// Estado da tela Hoje sem treino programado.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dia de descanso'**
+  String get todayRestTitle;
+
+  /// Explicação do dia de descanso.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nada programado para hoje. Descanso também faz parte do treino.'**
+  String get todayRestBody;
+
+  /// Botão que começa a execução do treino do dia.
+  ///
+  /// In pt, this message translates to:
+  /// **'Iniciar treino'**
+  String get todayStart;
+
+  /// Botão quando já existe uma sessão aberta no aparelho.
+  ///
+  /// In pt, this message translates to:
+  /// **'Continuar treino'**
+  String get todayResume;
+
+  /// Aviso discreto de que o conteúdo veio do cache local.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem conexão — este é o treino baixado no aparelho.'**
+  String get todayOffline;
+
+  /// Erro ao carregar a tela Hoje sem cache local.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível carregar o treino.'**
+  String get todayLoadError;
+
+  /// Chip do exercício que o aluno nunca executou.
+  ///
+  /// In pt, this message translates to:
+  /// **'Primeira vez'**
+  String get todayNoPreviousLoad;
+
+  /// Título do histórico recente na tela Hoje.
+  ///
+  /// In pt, this message translates to:
+  /// **'Últimos treinos'**
+  String get todayRecentTitle;
+
+  /// Indicador de sincronização em andamento.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sincronizando…'**
+  String get todaySyncing;
+
+  /// Indicador de fila vazia.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tudo sincronizado'**
+  String get todaySynced;
+
+  /// Dia publicado sem bloco algum.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este treino não tem exercícios.'**
+  String get todayEmptyDay;
+
+  /// Rótulo do campo de repetições executadas.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reps'**
+  String get sessionReps;
+
+  /// Rótulo do campo de carga executada.
+  ///
+  /// In pt, this message translates to:
+  /// **'Carga (kg)'**
+  String get sessionLoadKg;
+
+  /// Ação que grava a série executada.
+  ///
+  /// In pt, this message translates to:
+  /// **'Registrar série'**
+  String get sessionMarkDone;
+
+  /// Estado da série já registrada.
+  ///
+  /// In pt, this message translates to:
+  /// **'Registrada'**
+  String get sessionSetDone;
+
+  /// Título do cronômetro de descanso.
+  ///
+  /// In pt, this message translates to:
+  /// **'Descanso'**
+  String get sessionRestTitle;
+
+  /// Ação que encerra o descanso antes da hora.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pular descanso'**
+  String get sessionRestSkip;
+
+  /// Fim da contagem de descanso.
+  ///
+  /// In pt, this message translates to:
+  /// **'Descanso concluído'**
+  String get sessionRestOver;
+
+  /// Título da notificação local do descanso.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fim do descanso'**
+  String get sessionRestNotificationTitle;
+
+  /// Ação que encerra a sessão.
+  ///
+  /// In pt, this message translates to:
+  /// **'Finalizar treino'**
+  String get sessionFinish;
+
+  /// Título da confirmação de fim de treino.
+  ///
+  /// In pt, this message translates to:
+  /// **'Finalizar treino?'**
+  String get sessionFinishTitle;
+
+  /// Título do resumo do fim do treino.
+  ///
+  /// In pt, this message translates to:
+  /// **'Treino concluído'**
+  String get sessionSummaryTitle;
+
+  /// Rótulo do total de séries no resumo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Séries'**
+  String get sessionSummarySets;
+
+  /// Rótulo do volume total no resumo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Volume'**
+  String get sessionSummaryVolume;
+
+  /// Rótulo da duração no resumo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Duração'**
+  String get sessionSummaryDuration;
+
+  /// Fecha o resumo do treino.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fechar'**
+  String get sessionSummaryClose;
+
+  /// Prescrição sem faixa de repetições.
+  ///
+  /// In pt, this message translates to:
+  /// **'reps livres'**
+  String get sessionTargetFreeReps;
+
+  /// Cabeçalho do dia da rotação (A, B, C…).
+  ///
+  /// In pt, this message translates to:
+  /// **'Treino {label}'**
+  String todayDayHeading(String label);
+
+  /// Chip com a maior carga da última vez que o exercício foi feito.
+  ///
+  /// In pt, this message translates to:
+  /// **'Anterior: {load} kg'**
+  String todayPreviousLoad(String load);
+
+  /// Quantidade de séries prescritas de um exercício.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 série} other{{count} séries}}'**
+  String todaySetsCount(int count);
+
+  /// Linha do histórico recente.
+  ///
+  /// In pt, this message translates to:
+  /// **'Treino {label} · {sets} séries · {volume} kg'**
+  String todayRecentEntry(String label, int sets, String volume);
+
+  /// Fila de execução ainda não sincronizada.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 registro por enviar} other{{count} registros por enviar}}'**
+  String todaySyncPending(int count);
+
+  /// Título do player de execução.
+  ///
+  /// In pt, this message translates to:
+  /// **'Treino {label}'**
+  String sessionTitle(String label);
+
+  /// Rótulo de uma série dentro do exercício.
+  ///
+  /// In pt, this message translates to:
+  /// **'Série {number}'**
+  String sessionSet(int number);
+
+  /// Título do diálogo de correção de uma série já registrada.
+  ///
+  /// In pt, this message translates to:
+  /// **'Corrigir série {number}'**
+  String sessionEditSet(int number);
+
+  /// Faixa de repetições prescrita.
+  ///
+  /// In pt, this message translates to:
+  /// **'{min}–{max} reps'**
+  String sessionTargetRepsRange(int min, int max);
+
+  /// Repetições prescritas sem faixa.
+  ///
+  /// In pt, this message translates to:
+  /// **'{reps} reps'**
+  String sessionTargetReps(int reps);
+
+  /// Alvo de carga prescrito com a unidade (kg, %1RM, RPE, RIR).
+  ///
+  /// In pt, this message translates to:
+  /// **'{value} {unit}'**
+  String sessionTargetWithUnit(String value, String unit);
+
+  /// Corpo da notificação de fim de descanso.
+  ///
+  /// In pt, this message translates to:
+  /// **'Hora da próxima série de {exercise}.'**
+  String sessionRestNotificationBody(String exercise);
+
+  /// Corpo da confirmação de fim de treino.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{Você não registrou nenhuma série — o treino de hoje não será marcado como feito.} =1{Você registrou 1 série. O treino de hoje será concluído.} other{Você registrou {count} séries. O treino de hoje será concluído.}}'**
+  String sessionFinishBody(int count);
+
+  /// Duração do treino em minutos.
+  ///
+  /// In pt, this message translates to:
+  /// **'{minutes} min'**
+  String sessionDurationMinutes(int minutes);
+
+  /// Resumo de uma série já registrada no player.
+  ///
+  /// In pt, this message translates to:
+  /// **'{reps} reps · {load} kg'**
+  String sessionLoggedSet(String reps, String load);
+
+  /// Marcador de valor não informado numa série registrada.
+  ///
+  /// In pt, this message translates to:
+  /// **'—'**
+  String get sessionEmptyValue;
 }
 
 class _AppLocalizationsDelegate

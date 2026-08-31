@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lyfta/core/design_system/design_system.dart';
 import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/builder/domain/plan.dart';
+import 'package:lyfta/shared/domain/plan.dart';
 import 'package:lyfta/features/builder/presentation/widgets/set_editor.dart';
 
 /// Monta o editor isolado, com tema e i18n reais — é o componente que o

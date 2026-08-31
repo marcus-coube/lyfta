@@ -23,12 +23,28 @@ dependencies:
   # Upload da mídia do exercício por URL presignada (P1.2): precisa dos bytes
   # e do tamanho do arquivo antes de pedir a URL, em web e mobile.
   file_picker: ^8.1.7
+  # Execução de treino offline (P1.7, ADR-003): SQLite local via drift
+  # (`drift_flutter` resolve o caminho do banco em mobile/desktop; na web o
+  # store é em memória, ver MemoryWorkoutStore), `client_id` UUID v7 da fila
+  # de eventos, gatilho de reconexão e o alarme do descanso entre séries
+  # (notificação agendada + vibração).
+  drift: ^2.34.3
+  drift_flutter: ^0.3.1
+  uuid: ^4.6.0
+  connectivity_plus: ^7.3.1
+  flutter_local_notifications: ^22.3.0
+  timezone: ^0.11.1
+  vibration: ^3.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
   flutter_secure_storage_platform_interface: ^1.1.2
+  # Geração do banco local (`dart run build_runner build` depois de mexer nas
+  # tabelas de features/workout/data/local/workout_database.dart).
+  drift_dev: ^2.34.5
+  build_runner: ^2.15.1
 
 flutter:
   uses-material-design: true

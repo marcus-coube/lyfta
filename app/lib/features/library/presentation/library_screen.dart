@@ -5,10 +5,10 @@ import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/l10n/taxonomy_l10n.dart';
-import '../domain/exercise.dart';
+import '../../../shared/domain/exercise.dart';
 import 'exercise_form_screen.dart';
 import 'library_controller.dart';
-import 'widgets/exercise_media.dart';
+import '../../../shared/widgets/exercise_media.dart';
 
 /// Biblioteca de exercícios do professor (P1.6): busca, filtros da taxonomia
 /// e criação de exercício próprio.

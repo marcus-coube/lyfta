@@ -119,7 +119,7 @@ entre planos diferentes.
 **Aceite:** no Chrome, coach monta plano A/B com superset e publica; no Android o
 mesmo fluxo funciona; teste de widget do editor de sets (adicionar/editar linha).
 
-## - [ ] P1.7 Flutter — aluno: treino do dia offline + execução
+## - [x] P1.7 Flutter — aluno: treino do dia offline + execução
 
 **Objetivo:** a experiência-estrela do MVP. Offline-first de verdade (ADR-003).
 **Passos:**
@@ -674,3 +674,116 @@ mínimo); bugs achados viram tarefas na seção Notas.
   (mesmo widget, layout estreito), mas **não foi executado em device Android
   nesta máquina** — o SDK segue não configurado aqui (pendência aberta desde o
   P0.5).
+
+### P1.7 (2026-08-31, Mac)
+
+- **Refator antes da feature: o vocabulário comum subiu para `shared/`.** A
+  árvore do plano (`plan.dart`), o exercício (`exercise.dart`) e o widget de
+  mídia saíram de `features/builder`/`features/library` para
+  `lib/shared/domain/` e `lib/shared/widgets/`, e os rótulos de tipo de bloco
+  e unidade de alvo viraram `shared/l10n/plan_l10n.dart`. Sem isso a feature
+  do aluno importaria a do professor, que o `flutter.md` proíbe — e o
+  conteúdo é literalmente o mesmo: **o dia que o aluno executa é o dia que o
+  coach montou** (P1.5). Três features usam esse vocabulário agora.
+- **Na web o store local é em memória, não SQLite — desvio consciente do
+  ADR-003 §3.** O drift na web exige `sqlite3.wasm` e `drift_worker.js`
+  servidos junto do bundle, e a pasta `app/web/` é **gerada** por
+  `flutter create .` (não versionada). Carregar dois binários no build para
+  atender "aluno treinando no navegador sem rede" — caso que não existe: o
+  offline do ADR-003 é do aluno no ginásio com o celular — não se paga. A
+  interface `WorkoutLocalStore` tem duas implementações escolhidas por
+  `dart.library.js_interop`: `DriftWorkoutStore` (mobile/desktop, persistente)
+  e `MemoryWorkoutStore` (web). **Consequência honesta:** na web a fila vive
+  enquanto a aba viver; como a aba só existe se houve rede para carregar o
+  app, o worker drena a cada evento e a janela de perda é a de uma
+  requisição. Formalizar isso como ADR ficou em aberto — a decisão está aqui
+  e no código, não numa edição silenciosa do ADR-003.
+- **Quatro tabelas locais, não as três do plano.** `today_cache` guarda o
+  payload **cru** do `GET /me/today` (o contrato do P1.5 foi desenhado para
+  ser cacheado inteiro; normalizar aqui criaria um segundo modelo para manter
+  em dia), `pending_events` é a fila de saída, e os fatos ficam separados dela
+  em `local_sessions` + `local_set_logs`. A `recent_loads` que o plano previa
+  **não existe**: carga anterior já vem dentro do payload do dia. A quarta
+  tabela é o preço de o player ler os fatos e não a fila — a fila é drenada e
+  apagada, os fatos não.
+- **O `set_no` é contínuo por exercício dentro da sessão, não por bloco.** Um
+  exercício que aparece em dois blocos do mesmo dia (aquecimento e série
+  pesada) numeraria duas vezes "série 1", e as duas linhas cairiam uma sobre a
+  outra na leitura de carga anterior do P1.5. `Today.runs` achata o dia já com
+  o deslocamento certo.
+- **Pré-preenchimento: reps da prescrição, carga da última vez.** São fontes
+  diferentes de propósito — reps é o que o professor mandou fazer; carga é o
+  que o aluno levantou, que é o número que progride (e o alvo em kg pode nem
+  existir quando a prescrição é RPE/RIR). Vírgula decimal é aceita: o teclado
+  do aluno em pt-BR manda vírgula.
+- **Dois bugs de corrida do Riverpod achados pelo Aceite, não pelos testes.**
+  (1) `TodayController.build` disparava o sync direto, e um provider não pode
+  alterar o estado de outro durante a própria inicialização — a assertion
+  estourava dentro de um `unawaited` e **nada aparecia na tela**. Foi para
+  `Future.microtask`. (2) Pior: o `_running = true` do worker ficava antes do
+  `try`, então a exceção do item (1) deixava a trava ligada para sempre e a
+  fila **nunca mais drenava**. Hoje tudo que mexe em `state` está dentro do
+  `try/finally`.
+- **Rejeição do servidor sai da fila junto com o que foi aceito.** Só erro de
+  **rede** preserva a fila: um evento que o servidor recusa por conteúdo nunca
+  vai ser aceito numa retentativa, e mantê-lo travaria o device para sempre
+  reenviando o mesmo lote. Enfileirar o mesmo `client_id` duas vezes é no-op —
+  a fila tem a mesma idempotência que o servidor.
+- **A ordem da fila desempata pelo `client_id`.** Dois eventos criados no
+  mesmo milissegundo sairiam em ordem arbitrária do SQLite; como o
+  `client_id` é UUID **v7** (ordenável no tempo), `ORDER BY created_at,
+  client_id` devolve a ordem em que os fatos aconteceram — `session_start`
+  antes dos `set_log` da mesma sessão.
+- **O descanso tem dois mecanismos porque são situações diferentes:** em
+  primeiro plano o app vibra e toca o som do sistema no instante certo; com o
+  celular no bolso quem avisa é a notificação local agendada
+  (`flutter_local_notifications` + `timezone`, com queda de `exactAllowWhileIdle`
+  para `inexact` quando o Android 12+ nega o alarme exato — descanso avisado
+  com atraso é melhor que descanso sem aviso). Nada disso é requisito: sem
+  permissão, o cronômetro da tela continua contando.
+- **Corrigir série não reinicia o descanso** e não vira update: gera outro log
+  com `revises` apontando para o `client_id` do errado (ADR-003 §5). O fato
+  antigo continua na tabela local e some da leitura, igual ao servidor.
+- **A linha de série quebra em duas abaixo de 420px.** Num iPhone os dois
+  campos numéricos ao lado do rótulo ficariam com ~70px cada e o rótulo
+  flutuante "Carga (kg)" não caberia. Mesmo widget com `LayoutBuilder`
+  (guideline `flutter.md`), não tela por plataforma.
+- **Sair da conta apaga a execução local**, e isso vive no `main.dart` (raiz de
+  composição) porque `core/` não conhece feature. O banco é por aluno, mas
+  celular emprestado não pode misturar treino de duas pessoas.
+- **Verificado (Mac):** `flutter analyze` limpo, **28 testes verdes** (7 novos
+  da fila offline sobre SQLite em memória — ordem dos eventos, drenagem em
+  lote único, falha de rede preservando a fila e contando a tentativa, lote
+  reenviado voltando `duplicate` sem duplicar, `client_id` repetido não
+  duplicando, evento recusado saindo da fila e a revisão escondendo o original
+  sem apagar o fato; 4 de widget da linha de série — pré-preenchimento,
+  registro com vírgula decimal, quebra em tela estreita e correção virando
+  revisão) e guard de strings limpo. O teste de rota do P0.6 passou a injetar
+  também os providers do aluno: a aba Hoje faz rede e banco local, e
+  `pumpAndSettle` esperaria para sempre. CI ganhou `libsqlite3-0` — no Dart VM
+  o drift usa a lib do sistema, não o `sqlite3_flutter_libs`.
+  **Aceite exercitado no Chrome** com `identity` e `workout` no ar, logando
+  como a aluna Ana do P1.6: tela Hoje com o dia A, superset e chips "primeira
+  vez" → treino iniciado → série 1 registrada **com rede** e conferida no
+  banco do servidor → **serviço `workout` derrubado** (modo avião do
+  laboratório) → mais duas séries + correção da série 1 + finalizar, tudo
+  gravado local e sem erro na tela, com o indicador em "4 registros por
+  enviar" → serviço religado → fila drenada sozinha pelo backoff, resultando
+  em **4 logs e nenhuma duplicata**, sessão fechada e volume do servidor
+  (1180 kg) idêntico ao resumo que o app mostrou offline → recarga da tela
+  trazendo "última vez: 40 kg / 25 kg" e o histórico recente.
+- **Anotações para as próximas tarefas:** o **roteiro em device Android com
+  modo avião de verdade continua pendente** — o SDK segue não configurado
+  nesta máquina (dívida aberta desde o P0.5), então notificação local,
+  vibração e o gatilho de reconexão do `connectivity_plus` estão
+  **implementados e não exercitados em hardware**; o que foi verificado é o
+  caminho offline (servidor fora do ar) no Chrome. O backoff vai a 5 min e o
+  Chrome estrangula `Timer` de aba em segundo plano, então na web a fila pode
+  demorar a drenar sozinha — no celular quem resolve isso é o evento de
+  reconexão. Não há gesto de "sincronizar agora": o `pull-to-refresh` da tela
+  Hoje faz isso de lado, mas o indicador de pendências não é tocável. O
+  `GET /v1/sync/pull` do P1.5 **não é usado** pelo app: o `/me/today` já traz
+  o plano inteiro e é o suficiente enquanto o offline for só a execução. A
+  rotação A→B não pôde ser vista ponta a ponta porque o plano de teste tem um
+  dia só (voltou para A, que é o circular correto) — é o Aceite do P1.8.
+  `Today.recentSessions` não abre sessão passada (não há rota; é P2).

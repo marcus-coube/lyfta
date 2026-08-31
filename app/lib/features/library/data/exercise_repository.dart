@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/http/api_exception.dart';
 import '../../../core/http/providers.dart';
-import '../domain/exercise.dart';
+import '../../../shared/domain/exercise.dart';
 
 /// Repositório da biblioteca sobre o cliente HTTP do `workout`.
 final exerciseRepositoryProvider = Provider<ExerciseRepository>((ref) {

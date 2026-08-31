@@ -257,5 +257,275 @@
       }
     }
   },
-  "builderPublishTitle": "Publicar treino?"
+  "builderPublishTitle": "Publicar treino?",
+  "todayNoPlanTitle": "Seu professor ainda não montou seu treino",
+  "@todayNoPlanTitle": {
+    "description": "Estado da tela Hoje quando o aluno não tem plano ativo."
+  },
+  "todayNoPlanBody": "Assim que ele publicar o plano, o treino do dia aparece aqui.",
+  "@todayNoPlanBody": {
+    "description": "Explicação do estado sem plano."
+  },
+  "todayRestTitle": "Dia de descanso",
+  "@todayRestTitle": {
+    "description": "Estado da tela Hoje sem treino programado."
+  },
+  "todayRestBody": "Nada programado para hoje. Descanso também faz parte do treino.",
+  "@todayRestBody": {
+    "description": "Explicação do dia de descanso."
+  },
+  "todayStart": "Iniciar treino",
+  "@todayStart": {
+    "description": "Botão que começa a execução do treino do dia."
+  },
+  "todayResume": "Continuar treino",
+  "@todayResume": {
+    "description": "Botão quando já existe uma sessão aberta no aparelho."
+  },
+  "todayOffline": "Sem conexão — este é o treino baixado no aparelho.",
+  "@todayOffline": {
+    "description": "Aviso discreto de que o conteúdo veio do cache local."
+  },
+  "todayLoadError": "Não foi possível carregar o treino.",
+  "@todayLoadError": {
+    "description": "Erro ao carregar a tela Hoje sem cache local."
+  },
+  "todayNoPreviousLoad": "Primeira vez",
+  "@todayNoPreviousLoad": {
+    "description": "Chip do exercício que o aluno nunca executou."
+  },
+  "todayRecentTitle": "Últimos treinos",
+  "@todayRecentTitle": {
+    "description": "Título do histórico recente na tela Hoje."
+  },
+  "todaySyncing": "Sincronizando…",
+  "@todaySyncing": {
+    "description": "Indicador de sincronização em andamento."
+  },
+  "todaySynced": "Tudo sincronizado",
+  "@todaySynced": {
+    "description": "Indicador de fila vazia."
+  },
+  "todayEmptyDay": "Este treino não tem exercícios.",
+  "@todayEmptyDay": {
+    "description": "Dia publicado sem bloco algum."
+  },
+  "sessionReps": "Reps",
+  "@sessionReps": {
+    "description": "Rótulo do campo de repetições executadas."
+  },
+  "sessionLoadKg": "Carga (kg)",
+  "@sessionLoadKg": {
+    "description": "Rótulo do campo de carga executada."
+  },
+  "sessionMarkDone": "Registrar série",
+  "@sessionMarkDone": {
+    "description": "Ação que grava a série executada."
+  },
+  "sessionSetDone": "Registrada",
+  "@sessionSetDone": {
+    "description": "Estado da série já registrada."
+  },
+  "sessionRestTitle": "Descanso",
+  "@sessionRestTitle": {
+    "description": "Título do cronômetro de descanso."
+  },
+  "sessionRestSkip": "Pular descanso",
+  "@sessionRestSkip": {
+    "description": "Ação que encerra o descanso antes da hora."
+  },
+  "sessionRestOver": "Descanso concluído",
+  "@sessionRestOver": {
+    "description": "Fim da contagem de descanso."
+  },
+  "sessionRestNotificationTitle": "Fim do descanso",
+  "@sessionRestNotificationTitle": {
+    "description": "Título da notificação local do descanso."
+  },
+  "sessionFinish": "Finalizar treino",
+  "@sessionFinish": {
+    "description": "Ação que encerra a sessão."
+  },
+  "sessionFinishTitle": "Finalizar treino?",
+  "@sessionFinishTitle": {
+    "description": "Título da confirmação de fim de treino."
+  },
+  "sessionSummaryTitle": "Treino concluído",
+  "@sessionSummaryTitle": {
+    "description": "Título do resumo do fim do treino."
+  },
+  "sessionSummarySets": "Séries",
+  "@sessionSummarySets": {
+    "description": "Rótulo do total de séries no resumo."
+  },
+  "sessionSummaryVolume": "Volume",
+  "@sessionSummaryVolume": {
+    "description": "Rótulo do volume total no resumo."
+  },
+  "sessionSummaryDuration": "Duração",
+  "@sessionSummaryDuration": {
+    "description": "Rótulo da duração no resumo."
+  },
+  "sessionSummaryClose": "Fechar",
+  "@sessionSummaryClose": {
+    "description": "Fecha o resumo do treino."
+  },
+  "sessionTargetFreeReps": "reps livres",
+  "@sessionTargetFreeReps": {
+    "description": "Prescrição sem faixa de repetições."
+  },
+  "todayDayHeading": "Treino {label}",
+  "@todayDayHeading": {
+    "description": "Cabeçalho do dia da rotação (A, B, C…).",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "todayPreviousLoad": "Anterior: {load} kg",
+  "@todayPreviousLoad": {
+    "description": "Chip com a maior carga da última vez que o exercício foi feito.",
+    "placeholders": {
+      "load": {
+        "type": "String"
+      }
+    }
+  },
+  "todaySetsCount": "{count, plural, =1{1 série} other{{count} séries}}",
+  "@todaySetsCount": {
+    "description": "Quantidade de séries prescritas de um exercício.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "todayRecentEntry": "Treino {label} · {sets} séries · {volume} kg",
+  "@todayRecentEntry": {
+    "description": "Linha do histórico recente.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "sets": {
+        "type": "int"
+      },
+      "volume": {
+        "type": "String"
+      }
+    }
+  },
+  "todaySyncPending": "{count, plural, =1{1 registro por enviar} other{{count} registros por enviar}}",
+  "@todaySyncPending": {
+    "description": "Fila de execução ainda não sincronizada.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionTitle": "Treino {label}",
+  "@sessionTitle": {
+    "description": "Título do player de execução.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionSet": "Série {number}",
+  "@sessionSet": {
+    "description": "Rótulo de uma série dentro do exercício.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionEditSet": "Corrigir série {number}",
+  "@sessionEditSet": {
+    "description": "Título do diálogo de correção de uma série já registrada.",
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionTargetRepsRange": "{min}–{max} reps",
+  "@sessionTargetRepsRange": {
+    "description": "Faixa de repetições prescrita.",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionTargetReps": "{reps} reps",
+  "@sessionTargetReps": {
+    "description": "Repetições prescritas sem faixa.",
+    "placeholders": {
+      "reps": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionTargetWithUnit": "{value} {unit}",
+  "@sessionTargetWithUnit": {
+    "description": "Alvo de carga prescrito com a unidade (kg, %1RM, RPE, RIR).",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionRestNotificationBody": "Hora da próxima série de {exercise}.",
+  "@sessionRestNotificationBody": {
+    "description": "Corpo da notificação de fim de descanso.",
+    "placeholders": {
+      "exercise": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionFinishBody": "{count, plural, =0{Você não registrou nenhuma série — o treino de hoje não será marcado como feito.} =1{Você registrou 1 série. O treino de hoje será concluído.} other{Você registrou {count} séries. O treino de hoje será concluído.}}",
+  "@sessionFinishBody": {
+    "description": "Corpo da confirmação de fim de treino.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionDurationMinutes": "{minutes} min",
+  "@sessionDurationMinutes": {
+    "description": "Duração do treino em minutos.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionLoggedSet": "{reps} reps · {load} kg",
+  "@sessionLoggedSet": {
+    "description": "Resumo de uma série já registrada no player.",
+    "placeholders": {
+      "reps": {
+        "type": "String"
+      },
+      "load": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionEmptyValue": "—",
+  "@sessionEmptyValue": {
+    "description": "Marcador de valor não informado numa série registrada."
+  }
 }

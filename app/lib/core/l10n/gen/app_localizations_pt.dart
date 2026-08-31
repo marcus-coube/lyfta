@@ -593,6 +593,194 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get builderPublishTitle => 'Publicar treino?';
+
+  @override
+  String get todayNoPlanTitle => 'Seu professor ainda não montou seu treino';
+
+  @override
+  String get todayNoPlanBody =>
+      'Assim que ele publicar o plano, o treino do dia aparece aqui.';
+
+  @override
+  String get todayRestTitle => 'Dia de descanso';
+
+  @override
+  String get todayRestBody =>
+      'Nada programado para hoje. Descanso também faz parte do treino.';
+
+  @override
+  String get todayStart => 'Iniciar treino';
+
+  @override
+  String get todayResume => 'Continuar treino';
+
+  @override
+  String get todayOffline =>
+      'Sem conexão — este é o treino baixado no aparelho.';
+
+  @override
+  String get todayLoadError => 'Não foi possível carregar o treino.';
+
+  @override
+  String get todayNoPreviousLoad => 'Primeira vez';
+
+  @override
+  String get todayRecentTitle => 'Últimos treinos';
+
+  @override
+  String get todaySyncing => 'Sincronizando…';
+
+  @override
+  String get todaySynced => 'Tudo sincronizado';
+
+  @override
+  String get todayEmptyDay => 'Este treino não tem exercícios.';
+
+  @override
+  String get sessionReps => 'Reps';
+
+  @override
+  String get sessionLoadKg => 'Carga (kg)';
+
+  @override
+  String get sessionMarkDone => 'Registrar série';
+
+  @override
+  String get sessionSetDone => 'Registrada';
+
+  @override
+  String get sessionRestTitle => 'Descanso';
+
+  @override
+  String get sessionRestSkip => 'Pular descanso';
+
+  @override
+  String get sessionRestOver => 'Descanso concluído';
+
+  @override
+  String get sessionRestNotificationTitle => 'Fim do descanso';
+
+  @override
+  String get sessionFinish => 'Finalizar treino';
+
+  @override
+  String get sessionFinishTitle => 'Finalizar treino?';
+
+  @override
+  String get sessionSummaryTitle => 'Treino concluído';
+
+  @override
+  String get sessionSummarySets => 'Séries';
+
+  @override
+  String get sessionSummaryVolume => 'Volume';
+
+  @override
+  String get sessionSummaryDuration => 'Duração';
+
+  @override
+  String get sessionSummaryClose => 'Fechar';
+
+  @override
+  String get sessionTargetFreeReps => 'reps livres';
+
+  @override
+  String todayDayHeading(String label) {
+    return 'Treino $label';
+  }
+
+  @override
+  String todayPreviousLoad(String load) {
+    return 'Anterior: $load kg';
+  }
+
+  @override
+  String todaySetsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count séries',
+      one: '1 série',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todayRecentEntry(String label, int sets, String volume) {
+    return 'Treino $label · $sets séries · $volume kg';
+  }
+
+  @override
+  String todaySyncPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count registros por enviar',
+      one: '1 registro por enviar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sessionTitle(String label) {
+    return 'Treino $label';
+  }
+
+  @override
+  String sessionSet(int number) {
+    return 'Série $number';
+  }
+
+  @override
+  String sessionEditSet(int number) {
+    return 'Corrigir série $number';
+  }
+
+  @override
+  String sessionTargetRepsRange(int min, int max) {
+    return '$min–$max reps';
+  }
+
+  @override
+  String sessionTargetReps(int reps) {
+    return '$reps reps';
+  }
+
+  @override
+  String sessionTargetWithUnit(String value, String unit) {
+    return '$value $unit';
+  }
+
+  @override
+  String sessionRestNotificationBody(String exercise) {
+    return 'Hora da próxima série de $exercise.';
+  }
+
+  @override
+  String sessionFinishBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Você registrou $count séries. O treino de hoje será concluído.',
+      one: 'Você registrou 1 série. O treino de hoje será concluído.',
+      zero:
+          'Você não registrou nenhuma série — o treino de hoje não será marcado como feito.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sessionDurationMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String sessionLoggedSet(String reps, String load) {
+    return '$reps reps · $load kg';
+  }
+
+  @override
+  String get sessionEmptyValue => '—';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -725,4 +913,60 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get equipmentBand => 'Banda elástica';
+
+  @override
+  String get todayNoPlanTitle =>
+      'O teu professor ainda não montou o teu treino';
+
+  @override
+  String get todayNoPlanBody =>
+      'Assim que ele publicar o plano, o treino do dia aparece aqui.';
+
+  @override
+  String get todayOffline =>
+      'Sem ligação — este é o treino descarregado no aparelho.';
+
+  @override
+  String get todayLoadError => 'Não foi possível carregar o teu treino.';
+
+  @override
+  String get sessionMarkDone => 'Registar série';
+
+  @override
+  String get sessionSetDone => 'Registada';
+
+  @override
+  String todaySetsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count séries',
+      one: '1 série',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todaySyncPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count registos por enviar',
+      one: '1 registo por enviar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sessionFinishBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Registaste $count séries. O treino de hoje será concluído.',
+      one: 'Registaste 1 série. O treino de hoje será concluído.',
+      zero:
+          'Não registaste nenhuma série — o treino de hoje não será marcado como feito.',
+    );
+    return '$_temp0';
+  }
 }

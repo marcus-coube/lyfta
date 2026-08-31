@@ -37,5 +37,14 @@
   "equipmentBodyweight": "Peso corporal",
   "equipmentBand": "Banda elástica",
   "errorFileTooLarge": "Ficheiro demasiado grande. O limite é 50 MB.",
-  "errorUnsupportedMedia": "Formato não aceite. Use GIF, MP4 ou WebM."
+  "errorUnsupportedMedia": "Formato não aceite. Use GIF, MP4 ou WebM.",
+  "todayNoPlanTitle": "O teu professor ainda não montou o teu treino",
+  "todayNoPlanBody": "Assim que ele publicar o plano, o treino do dia aparece aqui.",
+  "todayOffline": "Sem ligação — este é o treino descarregado no aparelho.",
+  "todayLoadError": "Não foi possível carregar o teu treino.",
+  "todaySetsCount": "{count, plural, =1{1 série} other{{count} séries}}",
+  "todaySyncPending": "{count, plural, =1{1 registo por enviar} other{{count} registos por enviar}}",
+  "sessionMarkDone": "Registar série",
+  "sessionSetDone": "Registada",
+  "sessionFinishBody": "{count, plural, =0{Não registaste nenhuma série — o treino de hoje não será marcado como feito.} =1{Registaste 1 série. O treino de hoje será concluído.} other{Registaste {count} séries. O treino de hoje será concluído.}}"
 }

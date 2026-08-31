@@ -1,4 +1,4 @@
-import '../../library/domain/exercise.dart';
+import 'exercise.dart';
 
 /// Tipo de bloco (ADR-004 §1): um exercício "normal" é um bloco `straight`
 /// com um exercício só. Códigos, não rótulos — o app é quem traduz.

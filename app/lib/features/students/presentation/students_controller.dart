@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/http/providers.dart';
 import '../../builder/data/plan_repository.dart';
-import '../../builder/domain/plan.dart';
+import '../../../shared/domain/plan.dart';
 import '../data/student_repository.dart';
 import '../domain/student.dart';
 

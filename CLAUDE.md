@@ -35,25 +35,23 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 - **[docs/benchmarking/](docs/benchmarking/)** — auditoria HubFit × Trainerize × Lyfta.
 - `docs/guidelines/` — convenções de código (ex.: `flutter.md`).
 
-## Estado atual (2026-08-28)
+## Estado atual (2026-08-31)
 **Executando o plano do MVP 1.0** ([docs/plan/mvp1/](docs/plan/mvp1/)) na ordem
 P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P1.X").
 **Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
 saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
-**P0 (Fundação) concluída; P1 em andamento, 13/29:** `identity` completo (auth,
-convites, reset), núcleo do app Flutter com auth real ponta a ponta, CI no
-GitHub Actions (`.github/workflows/ci.yml` — `go vet`/`go test` com Postgres em
-service container + `flutter analyze`/`test` + guard de strings) e o serviço
-`workout` completo do lado servidor: schema do ADR-004, upload de mídia por URL
-presignada, biblioteca de exercícios com seed global de 41 exercícios em 3
-locales, builder do professor (rascunho versionado, publicação que congela a
-versão e atribui o plano) e o contrato offline do ADR-003 — treino do dia,
-push idempotente da fila de execução, pull incremental e rotação A→B→C
-(P1.1–P1.5). No app, o professor já tem biblioteca (busca, filtros, exercício
-custom com upload) e builder completo (dias A/B/C, blocos, séries
-estruturadas, publicação versionada), com a lista de alunos vindo do
-`identity` (P1.6). Próxima: **P1.7** (Flutter — aluno: treino do dia offline
-e execução). Escopo do MVP em
+**P0 (Fundação) concluída; P1 em andamento, 14/29:** `identity` completo (auth,
+convites, reset, lista de usuários do tenant), CI no GitHub Actions
+(`.github/workflows/ci.yml`) e o serviço `workout` completo do lado servidor —
+schema do ADR-004, mídia por URL presignada, biblioteca com seed global de 41
+exercícios em 3 locales, builder versionado e o contrato offline do ADR-003
+(treino do dia, push idempotente da fila, pull incremental, rotação A→B→C)
+(P1.1–P1.5). No app Flutter, o **professor** tem biblioteca e builder completo
+(P1.6) e o **aluno** tem o treino do dia offline: banco local por plataforma
+(SQLite via drift no celular, memória na web — ver Notas do P1.7), tela Hoje
+com carga anterior, player com timer de descanso e correção append-only, e
+worker que drena a fila com backoff e reconexão (P1.7). Próxima: **P1.8**
+(rotação e roteiro E2E). Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor
 funcionam em **todas** as plataformas (mobile e web).
@@ -95,6 +93,7 @@ por legado). Commits descritivos, escopo coeso por commit.
 cd app && flutter pub get      # deps
 flutter run -d chrome          # rodar (ou -d <device>)
 flutter analyze && flutter test
+dart run build_runner build   # só depois de mexer no banco local (drift, P1.7)
 
 # Backend (por serviço, ex. identity)
 cd backend && docker compose up -d          # Redis + MinIO (Postgres é o local)

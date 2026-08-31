@@ -7,8 +7,8 @@ import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/l10n/taxonomy_l10n.dart';
 import '../data/exercise_repository.dart';
-import '../domain/exercise.dart';
-import 'widgets/exercise_media.dart';
+import '../../../shared/domain/exercise.dart';
+import '../../../shared/widgets/exercise_media.dart';
 
 /// Formulário do exercício próprio do tenant.
 ///

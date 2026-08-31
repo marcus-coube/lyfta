@@ -5,7 +5,7 @@ import '../../../../core/design_system/design_system.dart';
 import '../../../../core/http/api_exception_l10n.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../library/data/exercise_repository.dart';
-import '../../../library/domain/exercise.dart';
+import '../../../../shared/domain/exercise.dart';
 import '../../../library/presentation/library_screen.dart';
 
 /// Seletor de exercício da biblioteca, aberto de dentro do builder.

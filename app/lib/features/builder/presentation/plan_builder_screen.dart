@@ -6,7 +6,8 @@ import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_shell_scaffold.dart';
 import '../data/plan_repository.dart';
-import '../domain/plan.dart';
+import '../../../shared/domain/plan.dart';
+import '../../../shared/l10n/plan_l10n.dart';
 import 'widgets/exercise_picker.dart';
 import 'widgets/set_editor.dart';
 

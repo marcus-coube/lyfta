@@ -141,6 +141,12 @@ jobs:
           channel: stable
           cache: true
 
+      # Os testes da fila offline (P1.7) abrem SQLite em memória pelo drift,
+      # que usa a libsqlite3 **do sistema** no Dart VM (o
+      # `sqlite3_flutter_libs` só vale para o app empacotado).
+      - name: libsqlite3
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libsqlite3-0
+
       - name: flutter pub get
         run: flutter pub get
 
