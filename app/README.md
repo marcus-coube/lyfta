@@ -4,18 +4,48 @@ App único (Android/iOS/Web) — ver `docs/000-product_description.md`.
 
 ## Rodar pela primeira vez
 
-O repositório versiona apenas `lib/`, `pubspec.yaml` e configs. Gere as
-pastas de plataforma localmente:
+O repositório versiona `lib/`, `pubspec.yaml`, configs **e `android/`**
+(ADR-014 — o manifest carrega permissões e o cleartext de debug). As demais
+pastas de plataforma são geradas localmente:
 
 ```bash
 cd app
-flutter create . --project-name lyfta --org br.com.lyfta --platforms=android,ios,web
+flutter create . --project-name lyfta --org br.com.lyfta --platforms=ios,web
 flutter pub get
 flutter run -d chrome   # ou -d <device>
 ```
 
-> `flutter create .` não sobrescreve os arquivos existentes de `lib/`.
+> **Não** passe `android` nessa lista: `flutter create` sobrescreveria os
+> arquivos versionados. `flutter create .` não toca no que já existe em `lib/`.
 > Confira com `git status` após rodar.
+
+## Android (emulador ou device)
+
+O SDK não vem com o repo. Numa máquina nova:
+
+```bash
+brew install openjdk@21                          # o Gradle do template não aceita JDK 26
+brew install --cask android-commandlinetools
+export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
+yes | sdkmanager --sdk_root="$ANDROID_HOME" --licenses
+sdkmanager --sdk_root="$ANDROID_HOME" platform-tools "platforms;android-36" \
+  "build-tools;36.0.0" emulator "system-images;android-36;google_apis;arm64-v8a"
+flutter config --android-sdk="$ANDROID_HOME" --jdk-dir=/opt/homebrew/opt/openjdk@21
+avdmanager create avd -n lyfta_pixel -k "system-images;android-36;google_apis;arm64-v8a" -d pixel_7
+emulator -avd lyfta_pixel &
+```
+
+Imagem `google_apis` e não `google_apis_playstore`: só nela o `adb root`
+funciona, o que permite alternar modo avião por comando no teste offline
+(ADR-003).
+
+Backend local visto de dentro do emulador é `10.0.2.2`, não `localhost`:
+
+```bash
+flutter run -d emulator-5554 \
+  --dart-define=IDENTITY_BASE_URL=http://10.0.2.2:8081 \
+  --dart-define=WORKOUT_BASE_URL=http://10.0.2.2:8082
+```
 
 ## Banco local (drift)
 

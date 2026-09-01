@@ -29,7 +29,7 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
   **pacotes** (MVP 1.0 → 2.0 → 3.0 → 4.0 running → V2 IA → Futuro).
 - **[docs/014-plano-de-documentacao.md](docs/014-plano-de-documentacao.md)** — plano de
   docs + marcos de implementação e de-para marco→pacote.
-- **[docs/adr/](docs/adr/)** — decisões estruturais (ADR-001..013). São normativas.
+- **[docs/adr/](docs/adr/)** — decisões estruturais (ADR-001..014). São normativas.
 - **[docs/plan/mvp1/](docs/plan/mvp1/)** — plano de execução do MVP 1.0 (P0–P4,
   29 tarefas, protocolo do agente). Progresso em `STATUS.md`.
 - **[docs/benchmarking/](docs/benchmarking/)** — auditoria HubFit × Trainerize × Lyfta.
@@ -63,8 +63,10 @@ funcionam em **todas** as plataformas (mobile e web).
 3. Docker Desktop instalado? `cd backend && docker compose up -d` (Redis+MinIO) e
    executar a verificação pendente das Notas de execução do P0 (no Windows o
    Docker ainda não está instalado — verificação do compose está pendente lá).
-4. `cd app && flutter pub get`; plataformas geradas com `flutter create .`
-   (ver [app/README.md](app/README.md)).
+4. `cd app && flutter pub get`; `android/` vem no git (ADR-014) — as demais
+   plataformas se geram com `flutter create .` **sem** `android` na lista.
+   Android SDK não vem no repo: receita em [app/README.md](app/README.md)
+   (instalado no Mac; pendente no Windows).
 5. Segredos são locais por máquina (`.env` de cada serviço, nunca no git);
    `backend/.env.example` documenta as variáveis.
 6. Continuar: dizer "implemente <próxima tarefa do STATUS.md>".

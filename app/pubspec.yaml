@@ -22,7 +22,7 @@ dependencies:
   video_player: ^2.9.2
   # Upload da mídia do exercício por URL presignada (P1.2): precisa dos bytes
   # e do tamanho do arquivo antes de pedir a URL, em web e mobile.
-  file_picker: ^8.1.7
+  file_picker: ^11.0.3
   # Execução de treino offline (P1.7, ADR-003): SQLite local via drift
   # (`drift_flutter` resolve o caminho do banco em mobile/desktop; na web o
   # store é em memória, ver MemoryWorkoutStore), `client_id` UUID v7 da fila

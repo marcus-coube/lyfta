@@ -69,7 +69,7 @@ class _ExerciseFormScreenState extends ConsumerState<ExerciseFormScreen> {
   /// exatamente o arquivo anunciado, então os bytes precisam estar em mãos
   /// antes de pedi-la.
   Future<void> _pickMedia() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: const ['gif', 'mp4', 'webm'],
       withData: true,

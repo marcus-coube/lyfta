@@ -44,9 +44,16 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Pastas de plataforma — geradas com `flutter create .`, não versionadas
-# (só lib/, pubspec.yaml e configs entram no git — ver app/README.md).
-/android/
+# `android/` É versionada (ADR-014): o manifest carrega permissões do timer de
+# descanso e o cleartext de debug, que não sobrevivem a um `flutter create .`.
+# O resto do que fica de fora (local.properties, gradlew, keystores) já está
+# em `android/.gitignore`, que veio do template.
+/android/.kotlin/
+/android/build/
+/android/app/build/
+
+# Demais pastas de plataforma — geradas com `flutter create .`, não versionadas
+# (ver app/README.md).
 /ios/
 /web/
 /linux/
