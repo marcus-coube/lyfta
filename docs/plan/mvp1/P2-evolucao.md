@@ -19,7 +19,7 @@ Lista `GET /v1/me/exercises/logged` (exercícios com histórico, para o índice 
 tela Evolução).
 **Aceite:** teste com 3 sessões calcula max/volume corretos e exclui sets revisados.
 
-## - [ ] P2.2 Serviço assessment — esqueleto + schema
+## - [x] P2.2 Serviço assessment — esqueleto + schema
 
 **Objetivo:** serviço de avaliação física de pé.
 **Passos:** bootstrap padrão (chi, pgx, migrations, JWT, RLS — igual P1.1).
@@ -129,3 +129,50 @@ mesmos widgets renderizam nos dois shells sem duplicação de código.
   C, os mesmos números que o app do aluno mostrou no emulador, e
   `?locale=en` trouxe "Crunch"/"Dumbbell lunge" — o endpoint resolve locale, o
   app é que ainda não manda (dívida do P1.8).
+
+### P2.2 (2026-09-02, Mac)
+
+- **Quarto serviço, bootstrap idêntico ao workout (P1.1):** chi+pgxpool+slog,
+  `internal/security/jwt.go` e `internal/repo/{pool,tenant}.go` duplicados
+  (nem uma linha importada de outro serviço — ADR-013 §2), `/healthz` público
+  e `/v1/whoami` autenticado como sonda. Nenhum handler de negócio ainda: a
+  API completa (POST/GET/DELETE, presign de foto, summary) é a P2.3.
+- **Sem S3 nesta tarefa.** O plano só pede "esqueleto + schema"; presign de
+  foto é escopo explícito da P2.3. `internal/config` não exige `S3_*` — vai
+  ganhar isso junto com o handler de upload, para não travar o boot do
+  serviço por uma variável que ainda não é usada.
+- **As 3 tabelas são fatos "flat" por aluno**, sem a árvore do workout: uma
+  única policy de RLS por tabela (`tenant_isolation`, USING+WITH CHECK), como
+  `workout_set_logs`/`prescribed_sets` — não a policy dupla de `exercises`,
+  porque não há registro global aqui. Índice `(tenant_id, student_id,
+  measured_at|taken_at DESC)` em cada uma: é exatamente o que a paginação por
+  cursor da P2.3 vai percorrer.
+- **Só os campos que o plano listou** — nenhum `created_by` em
+  `body_measurements`/`bioimpedance_records` (a P2.3 decide se o autor do
+  lançamento importa; hoje não muda schema, é dado de auditoria opcional).
+  Adicionei `created_at` nas três tabelas (não estava na lista do plano, mas é
+  o padrão do repositório — `exercises`, `workout_sessions` etc. — e serve de
+  desempate estável quando duas medidas caem no mesmo dia).
+- **`progress_photos.media_key` é `NOT NULL`**, diferente de
+  `exercises.media_url` (opcional lá porque um exercício pode não ter mídia):
+  uma foto sem mídia não é um registro válido.
+- **Teste de RLS sem repositório de domínio ainda** (mesmo caminho que
+  `TestSetLogsAreAppendOnly` usou no workout antes do P1.5 existir): SQL cru
+  via `repo.WithTenant`, porque construir `internal/repo/assessment.go` cedo
+  seria antecipar a P2.3. `TestCrossTenantIsolation` grava um registro de cada
+  tabela sob o tenant A e confirma que B vê zero linhas nas três; um segundo
+  teste (`TestRLSBlocksWriteWithoutTenantContext`) cobre a metade que o
+  round-trip não cobre — insert direto no pool, sem `SET LOCAL
+  app.tenant_id`, é recusado pela `FORCE ROW LEVEL SECURITY`.
+- **Reversibilidade verificada de verdade:** `migrate ... down -all` seguido
+  de `up` de novo, depois os testes rodando limpos — não só leitura visual
+  das 4 migrations.
+- **CI não precisou de ajuste.** O job `discover` já lista serviços por
+  `backend/<svc>/go.mod`, cria `lyfta_assessment` a partir de
+  `DB_NAME: lyfta_${{ matrix.service }}` e roda migrations+testes como
+  `lyfta_app` — o mesmo mecanismo que pegou o workout automaticamente na
+  P0.7 pegou o assessment sem editar o workflow.
+- **Verificado (Mac):** `go vet` limpo, `gofmt -l` limpo, **2 testes verdes**;
+  smoke manual com `identity` e `assessment` no ar — signup real gerando
+  token EdDSA, `/v1/whoami` do assessment devolvendo `tenant_id`/`roles`
+  corretos, 401 sem token e com token malformado.

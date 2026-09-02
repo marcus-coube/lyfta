@@ -3,16 +3,16 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** `P2.2` (Serviço assessment — esqueleto + schema)
+**Próxima tarefa:** `P2.3` (assessment — API completa)
 
 | Fase | Progresso | Situação |
 |---|---|---|
 | P0 — Fundação | 7/7 | concluída |
 | P1 — Treino | 8/8 | concluída |
-| P2 — Evolução | 1/5 | em andamento |
+| P2 — Evolução | 2/5 | em andamento |
 | P3 — Comunicação | 0/5 | não iniciada |
 | P4 — Praticidade | 0/4 | não iniciada |
-| **Total** | **16/29** | |
+| **Total** | **17/29** | |
 
 ## Bancos locais
 
@@ -69,3 +69,4 @@ Aceite (aluno em Android).
 | 2026-09-01 | Ambiente Android configurado (Mac), pré-requisito do P1.8: JDK 21, command-line tools, SDK 36 e AVD `lyfta_pixel` (API 36, imagem `google_apis` — só nela o `adb root` permite alternar modo avião por comando). O alvo expôs quatro defeitos que a web escondia: (a) `flutter_local_notifications` não monta sem core library desugaring; (b) faltavam `VIBRATE` e `POST_NOTIFICATIONS` — o timer de descanso do P1.7 nunca teria funcionado em Android; (c) `targetSdk` 36 recusa HTTP em claro, resolvido com `network_security_config.xml` só no source set de debug; (d) `file_picker` 8.3.7 compila contra android-34 e barra o build — subiu para 11.0.3 (a 12 conflita com `flutter_secure_storage` 9 em `win32`), cuja API virou estática. Como as três primeiras correções vivem em `android/` e não sobrevivem a `flutter create .`, a pasta passou a ser versionada ([ADR-014](../../adr/ADR-014-pastas-de-plataforma-versionadas.md)). Fechou com um impasse do AGP 9: `connectivity_plus` exige `builtInKotlin=false` e o `file_picker` aposta em `true` — resolvido aplicando o plugin Kotlin só no módulo do `file_picker`, com `jvmTarget` alinhado em 17. APK instalado e app aberto no emulador; `flutter analyze` limpo e 25 testes verdes |
 | 2026-09-02 | **P1.8 concluída (Mac) — fase P1 fechada:** roteiro E2E de [e2e-p1.md](e2e-p1.md) executado até o fim (22/22) com coach no Chrome e aluno no emulador Android, retomando a conta parada no passo 16. Troca de treino pela folha de escolha, recusa com a rede cortada por `adb svc` (a fila offline é só da execução, ADR-003 §1), treino C encerrado devolvendo a tela para o A **sozinho** — a volta circular que o P1.7 não viu — e republicação para a v2 mantendo o aluno no B (a rotação reancora pelo rótulo). O roteiro expôs um defeito de UI, corrigido aqui: campo pré-preenchido sem foco faz o texto digitado **somar** ao valor de fábrica (foi assim que nasceu o plano "Workout A/BPlano E2E ABC"); `LyTextField` ganhou `autofocus` e o diálogo de novo plano abre com o título selecionado. Dívidas anotadas nas Notas do P1: o app não manda `?locale=`, então o conteúdo dinâmico segue a conta e não o idioma da tela; e o header da lista de alunos estoura em janela muito baixa. `flutter analyze` limpo, 38 testes verdes, guard de strings limpo |
 | 2026-09-02 | P2.1 concluída (Mac): workout — histórico por exercício (`GET /v1/me/exercises/{id}/history` e a variante `/students/{id}/...`, mais o índice `/exercises/logged` nas duas portas). Agregação inteira em SQL sobre `workout_set_logs` — máximo, volume Σ(reps×carga) e `top_set` por sessão —, reusando o filtro que esconde log corrigido por `set_revision`. O eixo é o `exercise_id`, então a série atravessa versões e planos (ADR-004 §2), e nenhuma migration foi precisa: o índice `(tenant_id, exercise_id, performed_at DESC)` do P1.1 é o caminho da consulta. Cursor keyset `(performed_at, session_id)` em ordem decrescente; exercício desconhecido é 404, não página vazia. 62 testes verdes (7 novos) e smoke com os dois serviços no ar sobre os dados do E2E do P1.8: 1020 kg no treino A e 432 kg no C, iguais ao que o app mostrou |
+| 2026-09-02 | P2.2 concluída (Mac): quarto serviço, `assessment` (8083, banco `lyfta_assessment`) — bootstrap idêntico ao workout (chi+pgxpool+slog, `security`/`repo` duplicados, nenhum import entre serviços, ADR-013 §2), `/healthz` e `/v1/whoami`. 4 migrations com as 3 tabelas do plano (`body_measurements`, `bioimpedance_records`, `progress_photos`), todas fatos flat por aluno com uma única policy `tenant_isolation` e índice `(tenant_id, student_id, measured_at\|taken_at DESC)`; sem S3 ainda — presign de foto é escopo da P2.3. CI descobriu o serviço sozinho pela matrix (`backend/<svc>/go.mod`), sem editar o workflow. 2 testes verdes de isolamento cross-tenant (SQL direto via `repo.WithTenant`, mesmo caminho do `TestSetLogsAreAppendOnly` do workout antes de existir repositório de domínio), reversibilidade `down -all`→`up` verificada, e smoke com `identity`+`assessment` no ar: token real de signup autenticando no `/v1/whoami` |
