@@ -65,11 +65,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # MinIO só é necessário para os testes de mídia do workout (P1.2). Como
-      # `services:` não aceita condicional nem comando customizado, sobe como
-      # step — o bucket é criado pelo próprio teste.
+      # MinIO só é necessário para os testes de mídia do workout (P1.2) e do
+      # assessment (P2.3 — foto de evolução). Como `services:` não aceita
+      # condicional nem comando customizado, sobe como step — o bucket é
+      # criado pelo próprio teste.
       - name: Subir MinIO
-        if: matrix.service == 'workout'
+        if: matrix.service == 'workout' || matrix.service == 'assessment'
         run: |
           docker run -d --name minio -p 9000:9000 \
             -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \

@@ -3,16 +3,16 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** `P2.3` (assessment — API completa)
+**Próxima tarefa:** `P2.4` (Flutter — aluno: tela Evolução)
 
 | Fase | Progresso | Situação |
 |---|---|---|
 | P0 — Fundação | 7/7 | concluída |
 | P1 — Treino | 8/8 | concluída |
-| P2 — Evolução | 2/5 | em andamento |
+| P2 — Evolução | 3/5 | em andamento |
 | P3 — Comunicação | 0/5 | não iniciada |
 | P4 — Praticidade | 0/4 | não iniciada |
-| **Total** | **17/29** | |
+| **Total** | **18/29** | |
 
 ## Bancos locais
 
@@ -70,3 +70,4 @@ Aceite (aluno em Android).
 | 2026-09-02 | **P1.8 concluída (Mac) — fase P1 fechada:** roteiro E2E de [e2e-p1.md](e2e-p1.md) executado até o fim (22/22) com coach no Chrome e aluno no emulador Android, retomando a conta parada no passo 16. Troca de treino pela folha de escolha, recusa com a rede cortada por `adb svc` (a fila offline é só da execução, ADR-003 §1), treino C encerrado devolvendo a tela para o A **sozinho** — a volta circular que o P1.7 não viu — e republicação para a v2 mantendo o aluno no B (a rotação reancora pelo rótulo). O roteiro expôs um defeito de UI, corrigido aqui: campo pré-preenchido sem foco faz o texto digitado **somar** ao valor de fábrica (foi assim que nasceu o plano "Workout A/BPlano E2E ABC"); `LyTextField` ganhou `autofocus` e o diálogo de novo plano abre com o título selecionado. Dívidas anotadas nas Notas do P1: o app não manda `?locale=`, então o conteúdo dinâmico segue a conta e não o idioma da tela; e o header da lista de alunos estoura em janela muito baixa. `flutter analyze` limpo, 38 testes verdes, guard de strings limpo |
 | 2026-09-02 | P2.1 concluída (Mac): workout — histórico por exercício (`GET /v1/me/exercises/{id}/history` e a variante `/students/{id}/...`, mais o índice `/exercises/logged` nas duas portas). Agregação inteira em SQL sobre `workout_set_logs` — máximo, volume Σ(reps×carga) e `top_set` por sessão —, reusando o filtro que esconde log corrigido por `set_revision`. O eixo é o `exercise_id`, então a série atravessa versões e planos (ADR-004 §2), e nenhuma migration foi precisa: o índice `(tenant_id, exercise_id, performed_at DESC)` do P1.1 é o caminho da consulta. Cursor keyset `(performed_at, session_id)` em ordem decrescente; exercício desconhecido é 404, não página vazia. 62 testes verdes (7 novos) e smoke com os dois serviços no ar sobre os dados do E2E do P1.8: 1020 kg no treino A e 432 kg no C, iguais ao que o app mostrou |
 | 2026-09-02 | P2.2 concluída (Mac): quarto serviço, `assessment` (8083, banco `lyfta_assessment`) — bootstrap idêntico ao workout (chi+pgxpool+slog, `security`/`repo` duplicados, nenhum import entre serviços, ADR-013 §2), `/healthz` e `/v1/whoami`. 4 migrations com as 3 tabelas do plano (`body_measurements`, `bioimpedance_records`, `progress_photos`), todas fatos flat por aluno com uma única policy `tenant_isolation` e índice `(tenant_id, student_id, measured_at\|taken_at DESC)`; sem S3 ainda — presign de foto é escopo da P2.3. CI descobriu o serviço sozinho pela matrix (`backend/<svc>/go.mod`), sem editar o workflow. 2 testes verdes de isolamento cross-tenant (SQL direto via `repo.WithTenant`, mesmo caminho do `TestSetLogsAreAppendOnly` do workout antes de existir repositório de domínio), reversibilidade `down -all`→`up` verificada, e smoke com `identity`+`assessment` no ar: token real de signup autenticando no `/v1/whoami` |
+| 2026-09-02 | P2.3 concluída (Mac): assessment — API completa. `POST`/`GET` lista (cursor keyset por `measured_at\|taken_at`+id)/`DELETE` para os três recursos, cada um em duas portas (`/me/...` pela claim, `/students/{id}/...` pelo coach — mesmo critério do P1.4/P2.1); presign de foto (`POST /v1/{me\|students/{id}}/media/presign`, key `tenants/{t}/students/{s}/photos/{uuid}.ext`, jpeg/png/webp, 15 MB, `S3_*` agora obrigatória no `config`, quitando a dívida da P2.2); `GET /v1/students/{id}/summary` com última medida/bioimpedância, contagem de fotos e deltas de peso/cintura/%gordura (nulo quando falta o registro anterior). `progress_photos.media_key` guarda a key crua, não uma URL — o presigner do assessment ficou mais simples que o do workout, sem o parsing de `media_url`, ganhando em troca `ValidKeyForStudent` como par de segurança. `created_by` ficou de fora (dívida da P2.2 segue aberta, não bloqueia o Aceite). CI ganhou o step de MinIO também para `assessment` (antes só `workout`). `gofmt`/`go vet` limpos, 29 testes verdes, e smoke com `identity`+`assessment` reais: coach lança 2 medidas + 1 bioimpedância + 1 foto (upload de verdade no MinIO) para um `student_id` avulso, summary devolveu os deltas certos, e um segundo tenant leu lista vazia nas mesmas rotas |

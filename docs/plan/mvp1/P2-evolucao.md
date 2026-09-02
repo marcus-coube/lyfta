@@ -35,7 +35,7 @@ Migrations:
   back, media_key, notes)`.
 **Aceite:** migrations limpas; RLS testada cross-tenant.
 
-## - [ ] P2.3 assessment — API completa
+## - [x] P2.3 assessment — API completa
 
 **Objetivo:** CRUD + listagens para app.
 **Endpoints:** para cada recurso: `POST`, `GET` lista (cursor por `measured_at`/
@@ -176,3 +176,69 @@ mesmos widgets renderizam nos dois shells sem duplicação de código.
   smoke manual com `identity` e `assessment` no ar — signup real gerando
   token EdDSA, `/v1/whoami` do assessment devolvendo `tenant_id`/`roles`
   corretos, 401 sem token e com token malformado.
+
+### P2.3 (2026-09-02, Mac)
+
+- **Duas portas por recurso, igual ao histórico do P2.1:** `/me/...` resolve
+  o aluno pela claim (sem parâmetro de aluno na URL — nenhum token lê/apaga o
+  registro de outra pessoa) e `/students/{id}/...` é do coach, qualquer
+  professor do tenant (mesmo critério do P1.4/P2.1; o vínculo coach↔aluno
+  segue dívida do identity). `/me/...` não tem `RequireRole`: é o mesmo
+  critério do `/me/plan` do workout — funciona para qualquer subject
+  autenticado, só que na prática só o aluno tem o que ler.
+- **`created_by` ficou de fora**, e a dívida da P2.2 segue aberta: nenhuma das
+  três tabelas registra quem lançou (aluno ou coach). Não é regra do Aceite
+  desta tarefa (só permissão + deltas), e a P2.4/P2.5 não pedem essa
+  informação na tela. Se o produto precisar de "lançado por" na ficha,
+  entra como migration nova, sem tocar as já commitadas.
+- **Presigner do assessment é mais simples que o do workout**, não por
+  economia e sim porque o dado guardado é diferente: `progress_photos.media_key`
+  guarda a **key crua** (não uma `media_url`), então não precisou duplicar
+  `KeyFromURL`/`KeyForTenant`/`ResolveURL` — só `ObjectKey`, `PresignPut`,
+  `ReadURL` e um `ValidKeyForStudent` novo (prefixo
+  `tenants/{t}/students/{s}/photos/`) que é o par de segurança do presign:
+  sem ele, um `media_key` forjado apontando para a pasta de outro aluno
+  seria aceito no cadastro da foto. Key layout, tipos (jpeg/png/webp) e teto
+  (15 MB) exatamente como pedido no plano; `S3_*` entrou no `config` como
+  obrigatório, igual ao workout — quitando a dívida anotada na P2.2.
+- **Presign tem duas rotas** (`/me/media/presign`, `/students/{id}/media/presign`)
+  porque, diferente da mídia de exercício do workout (só tenant no caminho),
+  a foto carrega o aluno na key — o aluno sobe a própria foto (P2.4) e o
+  coach sobe pela ficha (avaliação presencial), cada um assinando a pasta
+  certa.
+- **Cursor keyset por `(measured_at|taken_at, id)` descendente**, formato
+  opaco igual ao do histórico/biblioteca do workout — duplicado, não
+  importado (ADR-013 §2). As três listagens reusam a mesma função de
+  parsing de cursor/limit (`parseListQuery`) porque são idênticas: só muda a
+  tabela.
+- **O resumo reusa `List(..., limit=2)`** em vez de uma query dedicada de
+  "penúltimo registro": os dois primeiros itens da listagem cronológica já
+  são o mais recente e o anterior, então o delta sai do mesmo caminho que a
+  tela de histórico usa. Delta é **nulo, não zero**, quando falta o lado
+  anterior — combinado com o P2.1 (`max_load_kg` nulo em exercício sem
+  carga): "não dá para saber" não pode desenhar como "não mudou nada".
+- **Validação no handler espelha os CHECK/NUMERIC do schema da P2.2**
+  (ex.: `waist_cm` até 9999.9, `body_fat_pct` 0–100): sem isso um valor fora
+  da precisão da coluna estouraria como `internal_error` em vez de
+  `validation_error` traduzível.
+- **CI precisou de ajuste, ao contrário da P2.2:** o step "Subir MinIO" era
+  condicional a `matrix.service == 'workout'`; passou a subir também para
+  `assessment`. A suíte de handler não depende disso (presign é operação
+  offline, mesma prova do `router_test.go` do workout), mas o round-trip de
+  upload real (`internal/media/presigner_test.go`, duplicado do P1.2 com
+  JPEG em vez de GIF) precisa do MinIO no ar — sem o ajuste ficaria pulado
+  silenciosamente fora do CI e falhando dentro dele.
+- **Verificado (Mac):** `gofmt -l` limpo, `go vet` limpo, **29 testes
+  verdes** (`internal/repo`: round-trip e paginação dos três agregados;
+  `internal/media`: round-trip de upload real no MinIO + rejeições offline;
+  `internal/http`: CRUD ponta a ponta nas duas portas, isolação entre
+  tenants e entre alunos do mesmo tenant, presign feliz/rejeitado, key
+  forjada rejeitada, resumo com deltas corretos e sem anterior). Smoke com
+  `identity`+`assessment` reais no ar (matando processos `go run` obsoletos
+  de uma sessão anterior antes, para não validar contra binário velho):
+  signup → coach lança 2 medidas + 1 bioimpedância para um `student_id`
+  avulso (sem cadastro no identity — o serviço não tem FK, ADR-013 §2) →
+  presign real → `PUT` de bytes de verdade no MinIO → cadastro da foto →
+  `GET /summary` devolveu `weight_kg: -3`, `waist_cm: -3.5`,
+  `photo_count: 1`, e um segundo tenant (signup separado) leu lista vazia
+  nas mesmas rotas.

@@ -14,6 +14,7 @@ import (
 
 	"github.com/marcus-coube/lyfta/assessment/internal/config"
 	ahttp "github.com/marcus-coube/lyfta/assessment/internal/http"
+	"github.com/marcus-coube/lyfta/assessment/internal/media"
 	"github.com/marcus-coube/lyfta/assessment/internal/repo"
 	"github.com/marcus-coube/lyfta/assessment/internal/security"
 )
@@ -50,7 +51,29 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 
-	router := ahttp.NewRouter(logger, cfg.CORSOrigins, verifier)
+	presigner, err := media.NewPresigner(media.Config{
+		Endpoint:      cfg.S3Endpoint,
+		Region:        cfg.S3Region,
+		Bucket:        cfg.S3Bucket,
+		AccessKey:     cfg.S3AccessKey,
+		SecretKey:     cfg.S3SecretKey,
+		UsePathStyle:  cfg.S3UsePathStyle,
+		PublicBaseURL: cfg.S3PublicBaseURL,
+	})
+	if err != nil {
+		return err
+	}
+
+	measurements := repo.NewMeasurementRepo(pool)
+	bioimpedance := repo.NewBioimpedanceRepo(pool)
+	photos := repo.NewPhotoRepo(pool)
+	router := ahttp.NewRouter(logger, cfg.CORSOrigins, verifier,
+		ahttp.NewMeasurementHandler(logger, measurements),
+		ahttp.NewBioimpedanceHandler(logger, bioimpedance),
+		ahttp.NewPhotoHandler(logger, photos, presigner),
+		ahttp.NewMediaHandler(logger, presigner),
+		ahttp.NewSummaryHandler(logger, measurements, bioimpedance, photos, presigner),
+	)
 
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,
