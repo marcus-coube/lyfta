@@ -15,8 +15,8 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
   plataformas com `flutter create .` (ver [app/README.md](app/README.md)).
   - `lib/core/design_system/` — tokens, tema e componentes `Ly*` (fonte de verdade do DS).
   - `lib/features/` — features por domínio (`auth/` = login visual, único hoje).
-- `backend/` — microserviços Go: `identity` (8081) e `workout` (8082) existem;
-  `assessment` (8083) e `comms` (8084) ainda não. Stack pinada, portas e bancos em
+- `backend/` — microserviços Go: `identity` (8081), `workout` (8082) e
+  `assessment` (8083) existem; `comms` (8084) ainda não. Stack pinada, portas e bancos em
   [backend/README.md](backend/README.md). Futuro: cada serviço em repo próprio —
   **nunca** importar código entre serviços (duplicar é o certo: ver o
   `internal/security` de cada um).
@@ -40,7 +40,7 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P2.X").
 **Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
 saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
-**P0 e P1 concluídas, P2 começada, 16/29:** `identity` completo (auth, convites, reset, lista
+**P0 e P1 concluídas, P2 em andamento, 17/29:** `identity` completo (auth, convites, reset, lista
 de usuários do tenant), CI no GitHub Actions (`.github/workflows/ci.yml`) e o
 serviço `workout` completo do lado servidor — schema do ADR-004, mídia por URL
 presignada, biblioteca com seed global de 41 exercícios em 3 locales, builder
@@ -54,8 +54,10 @@ e reconexão (P1.7). O loop A→B→C fecha ponta a ponta: o roteiro E2E de
 [e2e-p1.md](docs/plan/mvp1/e2e-p1.md) foi executado nos 22 passos com coach no
 Chrome e aluno em emulador Android com a rede cortada de verdade (P1.8) — é o
 teste de fumaça a repetir antes de cada release. No P2, o `workout` já serve o
-histórico por exercício que vira o gráfico de carga (P2.1). Próxima: **P2.2**
-(serviço `assessment` — esqueleto e schema). Escopo do MVP em
+histórico por exercício que vira o gráfico de carga (P2.1) e o serviço
+`assessment` está de pé — esqueleto igual ao do `workout` e as três tabelas de
+avaliação (medidas, bioimpedância digitada, fotos) com RLS forçada (P2.2).
+Próxima: **P2.3** (API completa do `assessment`). Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor
 funcionam em **todas** as plataformas (mobile e web).
