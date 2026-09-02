@@ -28,19 +28,8 @@ class AuthSession {
   final String userId;
   final Set<String> roles;
 
-  /// Converte os papéis crus (`owner`/`coach`/`student`) do backend para o
-  /// enum de UI. `owner` conta como `coach` para fins de shell/navegação —
-  /// quem é dono também é professor.
-  Set<UserRole> get userRoles {
-    final result = <UserRole>{};
-    if (roles.contains('owner') || roles.contains('coach')) {
-      result.add(UserRole.coach);
-    }
-    if (roles.contains('student')) {
-      result.add(UserRole.student);
-    }
-    return result;
-  }
+  /// Papéis desta sessão no enum de UI (ver `userRolesFrom`).
+  Set<UserRole> get userRoles => userRolesFrom(roles);
 }
 
 /// Uma opção de tenant devolvida pelo backend quando um e-mail existe em mais

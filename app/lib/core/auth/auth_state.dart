@@ -3,6 +3,24 @@
 /// seletor no app bar.
 enum UserRole { coach, student }
 
+/// Converte os papéis crus (`owner`/`coach`/`student`) do backend para o enum
+/// de UI. `owner` conta como `coach` para fins de shell/navegação — quem é
+/// dono também é professor.
+///
+/// Vive aqui, e não em `AuthSession`, porque a restauração offline da sessão
+/// parte do que está no `TokenStorage`, sem resposta do servidor: a regra tem
+/// de ser a mesma nos dois caminhos.
+Set<UserRole> userRolesFrom(Set<String> roles) {
+  final result = <UserRole>{};
+  if (roles.contains('owner') || roles.contains('coach')) {
+    result.add(UserRole.coach);
+  }
+  if (roles.contains('student')) {
+    result.add(UserRole.student);
+  }
+  return result;
+}
+
 /// Contexto ativo escolhido pelo usuário (relevante só quando ele tem os dois
 /// papéis simultaneamente, ex.: dono de estúdio que também treina).
 enum ActiveContext { coach, student }

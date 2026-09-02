@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/auth/data/auth_session.dart';
 import '../config/app_config.dart';
+import '../http/api_exception.dart';
 import '../http/error_mapping_interceptor.dart';
 import '../http/token_storage.dart';
 import 'auth_state.dart';
@@ -13,7 +14,9 @@ import 'auth_state.dart';
 ///
 /// Liga ao `identity` de verdade (P0.6): no boot, tenta restaurar a sessão
 /// do [TokenStorage] revalidando-a com um refresh (garante que o access
-/// token devolvido ao resto do app está sempre fresco). Chamadas de
+/// token devolvido ao resto do app está sempre fresco). **Falha de rede no
+/// boot não desloga** (P1.8): só uma recusa do servidor limpa a sessão.
+/// Chamadas de
 /// login/signup/accept invite persistem a sessão nova; o refresh usado pelo
 /// [AuthInterceptor] das demais chamadas HTTP passa por [refreshSession].
 class AuthController extends Notifier<AuthState> {
@@ -55,6 +58,23 @@ class AuthController extends Notifier<AuthState> {
         tenantId: stored.tenantId,
       );
       await _applySession(session);
+    } on ApiException catch (e) {
+      if (e.code == 'network_error') {
+        // Sem rede o refresh não prova **nada** sobre a sessão. Derrubá-la
+        // trancaria o aluno para fora do treino já baixado e da fila de
+        // execução — exatamente o que o ADR-003 §1 promete manter de pé —, e
+        // sem rede ele nem consegue entrar de novo para destravar a fila.
+        // A sessão guardada segue valendo; o AuthInterceptor renova o access
+        // token na primeira chamada com rede.
+        state = AuthState.authenticated(
+          roles: userRolesFrom(stored.roles),
+          tenantId: stored.tenantId,
+          userId: stored.userId,
+        );
+        return;
+      }
+      await _tokenStorage.clear();
+      state = const AuthState.unauthenticated();
     } catch (_) {
       await _tokenStorage.clear();
       state = const AuthState.unauthenticated();
