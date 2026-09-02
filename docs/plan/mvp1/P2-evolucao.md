@@ -7,7 +7,7 @@ Refs normativas: ADR-012 (escopo digitado), ADR-013, ADR-001 (RLS).
 
 ---
 
-## - [ ] P2.1 workout — API de histórico por exercício
+## - [x] P2.1 workout — API de histórico por exercício
 
 **Objetivo:** dados prontos para o gráfico de progressão.
 **Endpoints:** `GET /v1/me/exercises/{exercise_id}/history` (e variante coach
@@ -78,3 +78,54 @@ mesmos widgets renderizam nos dois shells sem duplicação de código.
 ## Notas de execução
 
 (o agente anota aqui descobertas, dívidas e desvios aprovados)
+
+### P2.1 (2026-09-02, Mac)
+
+- **A agregação é toda em SQL, num CTE só.** `effective` aplica o
+  `effectiveLogFilter` que já existia (log corrigido por `set_revision` some da
+  leitura, ADR-003 §5), `agg` soma por sessão e `top` escolhe a melhor série
+  com `DISTINCT ON`. Trazer log a log para somar em Go custaria uma linha por
+  série executada na vida do aluno — e o gráfico do P2.4 pede meses.
+- **O eixo é o `exercise_id`, não o plano.** É o que faz a série sobreviver a
+  republicar versão e a trocar de plano (ADR-004 §2) — o mesmo motivo pelo qual
+  a "carga anterior" do P1.5 já casava por exercício. Nenhuma migration nova: o
+  índice `(tenant_id, exercise_id, performed_at DESC)` do P1.1 é exatamente o
+  que a consulta percorre.
+- **`top_set` é a maior carga, desempatando por mais reps e depois pela série
+  mais cedo.** É a linha que o aluno lembra ("bati 45 por 8"), e por isso vai
+  separada dos agregados em vez de ser derivada na tela.
+- **`max_load_kg` é nulo, não zero, em exercício sem carga.** Corpo livre e
+  trabalho por tempo existem na biblioteca; zero faria o gráfico desenhar uma
+  linha no chão em vez de mudar de métrica.
+- **Duas portas para a mesma leitura:** `/me/...` resolve o aluno pela claim
+  (nenhum token lê o histórico de outra pessoa, nem por engano — a rota não tem
+  parâmetro de aluno) e `/students/{id}/...` vive no grupo de professor. Ler o
+  histórico de um aluno é de **qualquer professor do tenant**, o mesmo critério
+  que o P1.4 usou para ler plano; o vínculo coach↔aluno continua sendo dívida
+  do identity.
+- **A variante coach de `/exercises/logged` entrou junto**, embora o plano só
+  cite a do aluno: sem ela a aba Carga do P2.5 não teria de onde montar o
+  seletor de exercício, e é o mesmo handler com o `student_id` vindo da URL.
+- **Ordem decrescente e cursor keyset `(performed_at, session_id)`.** A tela
+  abre no presente e pagina para trás; quem inverte para o eixo do tempo é o
+  cliente. O range 1m/3m/6m do P2.4 se resolve paginando até passar da data —
+  não há `?since=`, e se a tela sofrer com isso vira um parâmetro depois.
+- **Exercício desconhecido é 404, não página vazia:** sem isso a tela não
+  distingue "id errado" de "ainda não treinou isso". O índice também descarta
+  exercício que sumiu da biblioteca — o seletor não tem o que desenhar sem
+  nome nem mídia.
+- **Descoberta de ambiente:** `source .env` não sobe os serviços nesta máquina
+  (o `<` do `MAIL_FROM` vira redireção) e um loader ingênuo linha a linha
+  **também** falha: `JWT_PUBLIC_KEY` vem entre aspas e o PEM chega inválido. O
+  loader precisa tirar as aspas do valor. Reforça a nota do P1.8: vale um
+  `--env-file` ou script de dev.
+- **Verificado (Mac):** `go vet` limpo e **62 testes verdes** (7 novos: 4 de
+  repo — três sessões com máximo/volume/top set corretos, revisão de série
+  fora da conta, paginação sem repetir ponto e índice só com o que foi
+  treinado; 3 de handler — as duas portas vendo a mesma série, aluno barrado na
+  rota do professor, tenant estrangeiro sem nada, id malformado e cursor
+  inválido). Smoke com os dois serviços no ar sobre os dados que o E2E do P1.8
+  deixou: o histórico devolveu **1020 kg** para o treino A e **432 kg** para o
+  C, os mesmos números que o app do aluno mostrou no emulador, e
+  `?locale=en` trouxe "Crunch"/"Dumbbell lunge" — o endpoint resolve locale, o
+  app é que ainda não manda (dívida do P1.8).

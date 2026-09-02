@@ -21,6 +21,7 @@ func NewRouter(
 	exerciseHandler *ExerciseHandler,
 	planHandler *PlanHandler,
 	syncHandler *SyncHandler,
+	historyHandler *HistoryHandler,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -56,6 +57,12 @@ func NewRouter(
 		r.Post("/sync/workout-logs", syncHandler.PushLogs)
 		r.Get("/sync/pull", syncHandler.Pull)
 
+		// Progresso por exercício (P2.1). O eixo é o `exercise_id`, então a
+		// série atravessa planos e versões; quem lê pelo `/me/` é sempre o
+		// dono da claim.
+		r.Get("/me/exercises/logged", historyHandler.MyLogged)
+		r.Get("/me/exercises/{exercise_id}/history", historyHandler.MyHistory)
+
 		// Biblioteca de exercícios: ler é de qualquer usuário autenticado (o
 		// aluno vê nome e mídia no treino dele); escrever é do professor.
 		r.Get("/exercises", exerciseHandler.List)
@@ -77,6 +84,11 @@ func NewRouter(
 			r.Put("/plans/{id}/draft", planHandler.UpdateDraft)
 			r.Post("/plans/{id}/publish", planHandler.Publish)
 			r.Get("/students/{id}/plans", planHandler.ListByStudent)
+
+			// O mesmo progresso, com o aluno na URL: é o que a tela do
+			// professor acompanha (P2.5).
+			r.Get("/students/{id}/exercises/logged", historyHandler.StudentLogged)
+			r.Get("/students/{id}/exercises/{exercise_id}/history", historyHandler.StudentHistory)
 		})
 	})
 

@@ -72,6 +72,7 @@ func run(logger *slog.Logger) error {
 		whttp.NewExerciseHandler(logger, exercises, presigner),
 		whttp.NewPlanHandler(logger, plans, exercises, presigner),
 		whttp.NewSyncHandler(logger, plans, sessions, exercises, presigner),
+		whttp.NewHistoryHandler(logger, sessions, exercises, presigner),
 	)
 
 	server := &http.Server{

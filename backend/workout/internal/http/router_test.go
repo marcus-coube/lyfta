@@ -92,11 +92,13 @@ func newTestRouterWithPool(t *testing.T, publicPEM string, pool *pgxpool.Pool) h
 	logger := slog.New(slog.DiscardHandler)
 	exercises := repo.NewExerciseRepo(pool)
 	plans := repo.NewPlanRepo(pool)
+	sessions := repo.NewSessionRepo(pool)
 	return whttp.NewRouter(logger, []string{"*"}, verifier,
 		whttp.NewMediaHandler(logger, presigner),
 		whttp.NewExerciseHandler(logger, exercises, presigner),
 		whttp.NewPlanHandler(logger, plans, exercises, presigner),
-		whttp.NewSyncHandler(logger, plans, repo.NewSessionRepo(pool), exercises, presigner),
+		whttp.NewSyncHandler(logger, plans, sessions, exercises, presigner),
+		whttp.NewHistoryHandler(logger, sessions, exercises, presigner),
 	)
 }
 
