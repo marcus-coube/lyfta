@@ -35,23 +35,26 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 - **[docs/benchmarking/](docs/benchmarking/)** — auditoria HubFit × Trainerize × Lyfta.
 - `docs/guidelines/` — convenções de código (ex.: `flutter.md`).
 
-## Estado atual (2026-08-31)
+## Estado atual (2026-09-02)
 **Executando o plano do MVP 1.0** ([docs/plan/mvp1/](docs/plan/mvp1/)) na ordem
-P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P1.X").
+P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P2.X").
 **Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
 saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
-**P0 (Fundação) concluída; P1 em andamento, 14/29:** `identity` completo (auth,
-convites, reset, lista de usuários do tenant), CI no GitHub Actions
-(`.github/workflows/ci.yml`) e o serviço `workout` completo do lado servidor —
-schema do ADR-004, mídia por URL presignada, biblioteca com seed global de 41
-exercícios em 3 locales, builder versionado e o contrato offline do ADR-003
-(treino do dia, push idempotente da fila, pull incremental, rotação A→B→C)
-(P1.1–P1.5). No app Flutter, o **professor** tem biblioteca e builder completo
-(P1.6) e o **aluno** tem o treino do dia offline: banco local por plataforma
-(SQLite via drift no celular, memória na web — ver Notas do P1.7), tela Hoje
-com carga anterior, player com timer de descanso e correção append-only, e
-worker que drena a fila com backoff e reconexão (P1.7). Próxima: **P1.8**
-(rotação e roteiro E2E). Escopo do MVP em
+**P0 e P1 concluídas, 15/29:** `identity` completo (auth, convites, reset, lista
+de usuários do tenant), CI no GitHub Actions (`.github/workflows/ci.yml`) e o
+serviço `workout` completo do lado servidor — schema do ADR-004, mídia por URL
+presignada, biblioteca com seed global de 41 exercícios em 3 locales, builder
+versionado e o contrato offline do ADR-003 (treino do dia, push idempotente da
+fila, pull incremental, rotação A→B→C) (P1.1–P1.5). No app Flutter, o
+**professor** tem biblioteca e builder completo (P1.6) e o **aluno** tem o
+treino do dia offline: banco local por plataforma (SQLite via drift no celular,
+memória na web — ver Notas do P1.7), tela Hoje com carga anterior, player com
+timer de descanso e correção append-only, e worker que drena a fila com backoff
+e reconexão (P1.7). O loop A→B→C fecha ponta a ponta: o roteiro E2E de
+[e2e-p1.md](docs/plan/mvp1/e2e-p1.md) foi executado nos 22 passos com coach no
+Chrome e aluno em emulador Android com a rede cortada de verdade (P1.8) — é o
+teste de fumaça a repetir antes de cada release. Próxima: **P2.1** (histórico
+por exercício). Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor
 funcionam em **todas** as plataformas (mobile e web).

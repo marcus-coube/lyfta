@@ -96,4 +96,5 @@ interrompe o roteiro: anotar como bug nas "Notas de execução" do P1.
 
 | Data | Máquina | Coach | Aluno | Resultado |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| 2026-09-01 | Mac | Chrome | emulador `lyfta_pixel` | passos 1–16 (execução offline com rede cortada, fila drenada sem duplicata, volume igual ao do resumo) |
+| 2026-09-02 | Mac | Chrome | emulador `lyfta_pixel` | passos 17–22 na mesma conta: troca de treino, recusa offline, volta circular C→A e republicação para v2 mantendo o aluno no B |

@@ -54,7 +54,15 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
   }
 
   Future<String?> _askPlanTitle(String initial) {
-    final controller = TextEditingController(text: initial);
+    // Seleção no texto todo: o campo já vem preenchido com o título padrão e,
+    // sem isso, digitar **soma** ao default em vez de trocá-lo — foi assim que
+    // o E2E do P1.8 criou um plano chamado "Workout A/BPlano E2E ABC".
+    final controller = TextEditingController.fromValue(
+      TextEditingValue(
+        text: initial,
+        selection: TextSelection(baseOffset: 0, extentOffset: initial.length),
+      ),
+    );
     final l10n = AppLocalizations.of(context);
     return showDialog<String>(
       context: context,
@@ -63,6 +71,7 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
         content: LyTextField(
           label: l10n.studentsPlanTitleLabel,
           controller: controller,
+          autofocus: true,
         ),
         actions: [
           TextButton(

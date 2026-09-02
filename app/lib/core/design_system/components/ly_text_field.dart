@@ -18,6 +18,7 @@ class LyTextField extends StatefulWidget {
     this.textInputAction,
     this.onSubmitted,
     this.onChanged,
+    this.autofocus = false,
   });
 
   final String label;
@@ -30,6 +31,10 @@ class LyTextField extends StatefulWidget {
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onSubmitted;
   final ValueChanged<String>? onChanged;
+
+  /// Abre o campo já focado. Num diálogo com texto pré-preenchido é o que faz
+  /// a seleção inicial valer: sem foco, digitar acrescenta ao valor de fábrica.
+  final bool autofocus;
 
   @override
   State<LyTextField> createState() => _LyTextFieldState();
@@ -49,6 +54,7 @@ class _LyTextFieldState extends State<LyTextField> {
         const SizedBox(height: LySpace.x2),
         TextField(
           controller: widget.controller,
+          autofocus: widget.autofocus,
           obscureText: _obscured,
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,

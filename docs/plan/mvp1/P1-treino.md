@@ -147,7 +147,7 @@ já baixado, executar 2 exercícios com timer tocando/vibrando, fechar o app, re
 a rede → logs aparecem no banco do servidor sem duplicatas; teste unitário da fila
 (enqueue/drain/retry/idempotência).
 
-## - [ ] P1.8 Rotação e integração ponta a ponta
+## - [x] P1.8 Rotação e integração ponta a ponta
 
 **Objetivo:** fechar o loop A→B→C e validar o marco da fase.
 **Passos:** ao `session_finish` sincronizado, o próximo `GET /today` traz o dia
@@ -787,3 +787,58 @@ mínimo); bugs achados viram tarefas na seção Notas.
   rotação A→B não pôde ser vista ponta a ponta porque o plano de teste tem um
   dia só (voltou para A, que é o circular correto) — é o Aceite do P1.8.
   `Today.recentSessions` não abre sessão passada (não há rota; é P2).
+
+### P1.8 — fechamento do roteiro E2E (2026-09-02, Mac)
+
+O código do P1.8 entrou no commit anterior; esta sessão executou os passos
+**17–22** que faltavam e fechou a tarefa. Coach no Chrome (app servido em
+`web-server`), aluno no emulador Android `lyfta_pixel`, `identity` e `workout`
+locais contra o Postgres da máquina — a mesma conta E2E do dia 01, que estava
+parada no passo 16 (treino B na tela, A já executado com 1020 kg).
+
+- **Roteiro completo, 22/22, sem passo interrompido.** Trocar o treino levou o
+  dia para C e o rodapé para "próximo: A" (17); com wi-fi e dados cortados por
+  `adb svc`, a troca respondeu "trocar o treino precisa de internet" e o dia
+  **não** mudou (18) — é o ADR-003 §1 aparecendo na tela: a fila offline é só
+  da execução. Treino C executado e encerrado (2 séries, 432 kg) devolveu a
+  tela Hoje para o **A** sozinho, sem puxar para atualizar (19–20), fechando a
+  volta circular que o P1.7 não conseguiu ver com plano de um dia só. Com o
+  coach na web, o aluno aparece com o plano ativo e a versão (21) e, depois de
+  mudar uma carga e republicar, a versão virou **2** e o aluno **continuou no
+  B** (22): republicar reancora a rotação pelo rótulo, não zera para o A.
+  Registro na tabela de [e2e-p1.md](e2e-p1.md).
+- **`source .env` não sobe os serviços nesta máquina.** `MAIL_FROM=Lyfta
+  <no-reply@…>` tem `<` e o shell trata como redireção: o `source` morre na
+  linha e tudo abaixo dela (`APP_ENV`, chaves) fica de fora, com o serviço
+  subindo pela metade ou nem subindo. Carregar o arquivo linha a linha
+  (`key=${line#*=}`, sem passar pelo parser) resolve. Vale um `--env-file` ou
+  um script de dev quando o P3 encostar em e-mail.
+- **Suspeitas do roteiro que não eram bug, e o que sobrou.** O tenant do E2E
+  tem o slug `academia-e2eacademia-…` e o plano se chama `Workout A/BPlano E2E
+  ABC`: a cara é de campo que acumula a cada tecla. Não é — dois testes novos
+  (`signup_slug_test.dart`) digitam letra a letra e mostram o espelho nome→slug
+  gerando `academia-e2e` uma vez só, e parando de espelhar quando o slug é
+  editado à mão. **A causa é o campo pré-preenchido:** o diálogo de novo plano
+  abre com o título padrão e, sem foco nem seleção, o que se digita **soma** ao
+  default. Corrigido onde nasce: `LyTextField` ganhou `autofocus` e o diálogo
+  abre com o texto inteiro selecionado (teste no DS). A lista de alunos também
+  parecia presa na v1 depois de publicar, mas era artefato de eu ter navegado
+  por URL: voltando do builder pelo caminho normal o `refresh()` roda e a v2
+  aparece.
+- **Dívida achada — conteúdo dinâmico ignora o idioma da tela.** O app nunca
+  manda `?locale=`, então o `workout` cai na claim do JWT (`users.locale`): no
+  emulador em inglês a UI está toda em inglês e os exercícios vêm em pt-BR
+  ("Abdominal supra", que tem `en: Crunch` no seed). Os endpoints já aceitam o
+  parâmetro — falta o app enviar o locale efetivo da UI em biblioteca,
+  `/me/today` e pull. Fica para o P2 (ou uma tarefa própria): decidir se o
+  conteúdo segue o dispositivo ou a conta é a única parte que o ADR-011 não
+  responde.
+- **Dívida menor — header da lista de alunos estoura em janela muito baixa.**
+  `students_screen.dart` tem `body: Column` com o campo de busca fixo em cima;
+  com o body em 89px (janela de ~450px de altura na web) sobra "BOTTOM
+  OVERFLOWED BY 15 PIXELS". Não aparece em tamanho de uso real e a correção
+  (deixar o header rolar junto) não vale interromper o P1 — anotado para
+  quando o P4 mexer em responsividade.
+- **Verificado (Mac):** `flutter analyze` limpo, **38 testes verdes** (3 novos:
+  2 do slug, 1 do `LyTextField`), guard de strings limpo. O roteiro em si é a
+  verificação de integração — Aceite do P1.8 e da fase P1.
