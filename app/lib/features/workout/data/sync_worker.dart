@@ -11,7 +11,12 @@ import 'workout_repository.dart';
 /// O que a barra do app mostra sobre a sincronização: quantos fatos ainda
 /// não chegaram ao servidor e se o último despacho falhou.
 class SyncState {
-  const SyncState({this.pending = 0, this.syncing = false, this.failed = false});
+  const SyncState({
+    this.pending = 0,
+    this.syncing = false,
+    this.failed = false,
+    this.drainedRevision = 0,
+  });
 
   final int pending;
   final bool syncing;
@@ -20,13 +25,27 @@ class SyncState {
   /// já reagendou.
   final bool failed;
 
+  /// Sobe a cada drenagem que **de fato** despachou eventos.
+  ///
+  /// É o gatilho de "o servidor sabe de coisas novas": ao chegar o
+  /// `session_finish`, a rotação avança lá (ADR-004 §3) e o treino do dia
+  /// que está na tela vira passado. Sem isso o aluno voltaria do modo avião
+  /// e continuaria vendo — e podendo repetir — o treino que acabou de fazer.
+  final int drainedRevision;
+
   bool get hasPending => pending > 0;
 
-  SyncState copyWith({int? pending, bool? syncing, bool? failed}) {
+  SyncState copyWith({
+    int? pending,
+    bool? syncing,
+    bool? failed,
+    int? drainedRevision,
+  }) {
     return SyncState(
       pending: pending ?? this.pending,
       syncing: syncing ?? this.syncing,
       failed: failed ?? this.failed,
+      drainedRevision: drainedRevision ?? this.drainedRevision,
     );
   }
 }
@@ -100,13 +119,17 @@ class SyncWorker extends Notifier<SyncState> {
     try {
       _retry?.cancel();
       state = state.copyWith(syncing: true);
+      var sent = 0;
       while (true) {
         final drained = await repo.drainOnce(studentId);
         if (drained == 0) break;
+        sent += drained;
       }
       _attempt = 0;
       state = SyncState(
         pending: await repo.pendingCount(studentId),
+        drainedRevision:
+            sent > 0 ? state.drainedRevision + 1 : state.drainedRevision,
       );
     } on ApiException {
       state = state.copyWith(

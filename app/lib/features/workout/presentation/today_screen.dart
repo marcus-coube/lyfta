@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/design_system/design_system.dart';
+import '../../../core/http/api_exception.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/domain/plan.dart';
 import '../../../shared/l10n/plan_l10n.dart';
@@ -77,6 +78,10 @@ class _TodayBody extends ConsumerWidget {
                   ),
                 TodayStatus.ready => _DayCard(today: today),
               },
+              if (today.rotation.length > 1) ...[
+                const SizedBox(height: LySpace.x4),
+                _RotationBar(today: today),
+              ],
               if (today.recentSessions.isNotEmpty) ...[
                 const SizedBox(height: LySpace.x6),
                 _RecentSessions(sessions: today.recentSessions),
@@ -257,6 +262,139 @@ class _StartBar extends ConsumerWidget {
           },
         ),
       ),
+      ),
+    );
+  }
+}
+
+/// Onde a rotação aparece para o aluno: qual treino vem depois e o atalho
+/// para trocar o de hoje (P1.8).
+///
+/// Fica fora do `_DayCard` porque vale também em dia de descanso — é ali que
+/// antecipar o próximo treino faz mais sentido.
+class _RotationBar extends ConsumerStatefulWidget {
+  const _RotationBar({required this.today});
+
+  final Today today;
+
+  @override
+  ConsumerState<_RotationBar> createState() => _RotationBarState();
+}
+
+class _RotationBarState extends ConsumerState<_RotationBar> {
+  bool _switching = false;
+
+  Future<void> _open() async {
+    final l10n = AppLocalizations.of(context);
+    final chosen = await showModalBottomSheet<RotationDay>(
+      context: context,
+      backgroundColor: context.ly.surface,
+      showDragHandle: true,
+      builder: (_) => _SwitchDaySheet(today: widget.today),
+    );
+    if (chosen == null || !mounted) return;
+
+    setState(() => _switching = true);
+    try {
+      await ref.read(todayControllerProvider.notifier).overrideDay(chosen.id);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      // Rede é o caso comum aqui — a troca é a única ação do aluno que não
+      // entra na fila offline (ADR-003 §1).
+      final message = e.code == 'network_error'
+          ? l10n.todaySwitchOffline
+          : l10n.todaySwitchError;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
+    } finally {
+      if (mounted) setState(() => _switching = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ly;
+    final l10n = AppLocalizations.of(context);
+    final next = widget.today.nextDay;
+
+    return LyCard(
+      child: Row(
+        children: [
+          Expanded(
+            child: next == null
+                ? Text(l10n.todaySwitch, style: LyType.body(c.textSecondary))
+                : Text(
+                    l10n.todayNextWorkout(next.label),
+                    style: LyType.body(c.textSecondary),
+                  ),
+          ),
+          const SizedBox(width: LySpace.x3),
+          if (_switching)
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2, color: c.accent),
+            )
+          else
+            LyButton(
+              label: l10n.todaySwitch,
+              variant: LyButtonVariant.secondary,
+              expanded: false,
+              onPressed: _open,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Lista dos treinos do rodízio para o aluno escolher o de hoje.
+class _SwitchDaySheet extends StatelessWidget {
+  const _SwitchDaySheet({required this.today});
+
+  final Today today;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ly;
+    final l10n = AppLocalizations.of(context);
+    final currentId = today.day?.id;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          LySpace.x4,
+          0,
+          LySpace.x4,
+          LySpace.x4,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.todaySwitchTitle, style: LyType.title(c.textPrimary)),
+            const SizedBox(height: LySpace.x3),
+            for (final day in today.rotation)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  l10n.todayDayHeading(day.label),
+                  style: LyType.body(c.textPrimary),
+                ),
+                subtitle: day.title == null
+                    ? null
+                    : Text(day.title!, style: LyType.caption(c.textSecondary)),
+                trailing: day.id == currentId
+                    ? _Chip(label: l10n.todaySwitchCurrent, color: c.accent)
+                    : const Icon(Icons.chevron_right),
+                // O dia de hoje não é escolha: fechar sem nada evita um POST
+                // que não muda coisa alguma.
+                onTap: day.id == currentId
+                    ? null
+                    : () => Navigator.of(context).pop(day),
+              ),
+          ],
+        ),
       ),
     );
   }

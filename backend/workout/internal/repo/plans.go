@@ -191,6 +191,39 @@ func (r *PlanRepo) AddPrescribedSet(ctx context.Context, s domain.PrescribedSet)
 	return s, nil
 }
 
+// ListDays devolve só o nível dia da versão, em ordem de posição — sem
+// blocos, exercícios nem sets.
+//
+// É o que a rotação precisa (P1.8): a tela Hoje mostra "próximo: B" e oferece
+// trocar o treino do dia, e para isso basta rótulo e ordem. Puxar a árvore
+// inteira com `GetVersionTree` seria trazer dezenas de sets por uma lista de
+// três rótulos.
+func (r *PlanRepo) ListDays(ctx context.Context, tenantID, versionID string) ([]domain.Day, error) {
+	var days []domain.Day
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		rows, err := tx.Query(ctx, `
+			SELECT id, tenant_id, plan_version_id, label, position, title
+			FROM workout_days WHERE plan_version_id = $1 ORDER BY position`, versionID)
+		if err != nil {
+			return err
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var d domain.Day
+			if err := rows.Scan(&d.ID, &d.TenantID, &d.PlanVersionID,
+				&d.Label, &d.Position, &d.Title); err != nil {
+				return err
+			}
+			days = append(days, d)
+		}
+		return rows.Err()
+	})
+	if err != nil {
+		return nil, fmt.Errorf("repo: listar dias da versão: %w", err)
+	}
+	return days, nil
+}
+
 // GetVersionTree lê a versão inteira montada — dias, blocos, exercícios e
 // sets — em uma transação só. É o formato que vira snapshot da sessão
 // (ADR-004 §2) e a base da tela de treino do dia.

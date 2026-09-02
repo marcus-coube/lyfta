@@ -215,6 +215,35 @@
   "sessionSummaryClose": "Close",
   "sessionTargetFreeReps": "free reps",
   "todayDayHeading": "Workout {label}",
+  "todayNextWorkout": "Next: workout {label}",
+  "@todayNextWorkout": {
+    "description": "Which workout the rotation serves after today's.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "todaySwitch": "Switch today's workout",
+  "@todaySwitch": {
+    "description": "Action that opens the rotation list."
+  },
+  "todaySwitchTitle": "Which workout do you want today?",
+  "@todaySwitchTitle": {
+    "description": "Title of the switch-workout sheet."
+  },
+  "todaySwitchCurrent": "Today",
+  "@todaySwitchCurrent": {
+    "description": "Marks the day the rotation already serves today."
+  },
+  "todaySwitchOffline": "No connection — switching the workout needs internet.",
+  "@todaySwitchOffline": {
+    "description": "Switching is the student's only action that requires the network."
+  },
+  "todaySwitchError": "Couldn't switch the workout.",
+  "@todaySwitchError": {
+    "description": "Generic failure when switching today's workout."
+  },
   "todayPreviousLoad": "Last time: {load} kg",
   "todaySetsCount": "{count, plural, =1{1 set} other{{count} sets}}",
   "todayRecentEntry": "Workout {label} · {sets} sets · {volume} kg",

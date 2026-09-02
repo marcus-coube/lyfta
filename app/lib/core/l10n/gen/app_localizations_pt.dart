@@ -690,6 +690,27 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String todayNextWorkout(String label) {
+    return 'Próximo: treino $label';
+  }
+
+  @override
+  String get todaySwitch => 'Trocar treino de hoje';
+
+  @override
+  String get todaySwitchTitle => 'Qual treino você quer fazer hoje?';
+
+  @override
+  String get todaySwitchCurrent => 'Hoje';
+
+  @override
+  String get todaySwitchOffline =>
+      'Sem conexão — trocar o treino precisa de internet.';
+
+  @override
+  String get todaySwitchError => 'Não foi possível trocar o treino.';
+
+  @override
   String todayPreviousLoad(String load) {
     return 'Anterior: $load kg';
   }
@@ -934,6 +955,13 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get sessionSetDone => 'Registada';
+
+  @override
+  String get todaySwitchTitle => 'Que treino queres fazer hoje?';
+
+  @override
+  String get todaySwitchOffline =>
+      'Sem ligação — trocar o treino precisa de internet.';
 
   @override
   String todaySetsCount(int count) {

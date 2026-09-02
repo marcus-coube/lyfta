@@ -40,6 +40,12 @@ type apiToday struct {
 			} `json:"exercises"`
 		} `json:"blocks"`
 	} `json:"day"`
+	Rotation []struct {
+		ID       string `json:"id"`
+		Label    string `json:"label"`
+		Position int    `json:"position"`
+	} `json:"rotation"`
+	NextDayID     *string `json:"next_day_id"`
 	PreviousLoads []struct {
 		ExerciseID string `json:"exercise_id"`
 		Sets       []struct {
@@ -507,5 +513,83 @@ func TestPullIncremental(t *testing.T) {
 	rec := do(t, a.handler, http.MethodGet, "/v1/sync/pull?cursor=nao!e!cursor", a.student, nil)
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("cursor inválido deveria dar 400, veio %d %s", rec.Code, rec.Body.String())
+	}
+}
+
+// TestTodayExposesRotation cobre o que a tela Hoje precisa para dizer "próximo
+// treino: B" e para oferecer a troca de treino (P1.8): o rodízio inteiro e o
+// dia seguinte, com a volta circular C→A.
+//
+// O `next_day_id` é conferido contra o dia que a rotação **de fato** entrega
+// depois do `session_finish`. É o ponto do teste: se a regra do servidor e a
+// projeção divergirem, a tela promete um treino e abre outro.
+func TestTodayExposesRotation(t *testing.T) {
+	a := builderFixture(t)
+	planID := createPlan(t, a, a.coach)
+	if rec := do(t, a.handler, http.MethodPut, "/v1/plans/"+planID+"/draft", a.coach,
+		draftBody(a.exerciseID, "A", "B", "C")); rec.Code != http.StatusOK {
+		t.Fatalf("salvar rascunho: %d %s", rec.Code, rec.Body.String())
+	}
+	if rec := do(t, a.handler, http.MethodPost, "/v1/plans/"+planID+"/publish", a.coach, nil); rec.Code != http.StatusOK {
+		t.Fatalf("publicar: %d %s", rec.Code, rec.Body.String())
+	}
+
+	today := decodeToday(t, do(t, a.handler, http.MethodGet, "/v1/me/today", a.student, nil))
+	if len(today.Rotation) != 3 {
+		t.Fatalf("o rodízio inteiro deveria vir no payload: %+v", today.Rotation)
+	}
+	byLabel := map[string]string{}
+	for i, d := range today.Rotation {
+		if d.Position != i {
+			t.Fatalf("rodízio fora de ordem: %+v", today.Rotation)
+		}
+		byLabel[d.Label] = d.ID
+	}
+	if today.Day.Label != "A" || today.NextDayID == nil || *today.NextDayID != byLabel["B"] {
+		t.Fatalf("no dia A o próximo deveria ser o B: dia=%s next=%v", today.Day.Label, today.NextDayID)
+	}
+
+	// Terminar A tem de levar exatamente ao dia que o payload prometeu.
+	finish := func(dayID string) apiToday {
+		t.Helper()
+		batch := newWorkoutBatch(dayID, a.exerciseID, 40)
+		sync := decodeSync(t, do(t, a.handler, http.MethodPost, "/v1/sync/workout-logs", a.student, batch.body()))
+		if sync.Rejected != 0 {
+			t.Fatalf("lote deveria ser aceito inteiro: %+v", sync)
+		}
+		return decodeToday(t, do(t, a.handler, http.MethodGet, "/v1/me/today", a.student, nil))
+	}
+
+	promised := *today.NextDayID
+	today = finish(today.Day.ID)
+	if today.Day.ID != promised || today.Day.Label != "B" {
+		t.Fatalf("a rotação não parou onde o payload prometeu: %+v", today.Day)
+	}
+
+	promised = *today.NextDayID
+	today = finish(today.Day.ID)
+	if today.Day.ID != promised || today.Day.Label != "C" {
+		t.Fatalf("A→B→C: %+v", today.Day)
+	}
+
+	// Último dia: o rodízio é circular e o payload já anuncia a volta ao A.
+	if *today.NextDayID != byLabel["A"] {
+		t.Fatalf("depois do C o payload deveria prometer o A: %v", today.NextDayID)
+	}
+	promised = *today.NextDayID
+	today = finish(today.Day.ID)
+	if today.Day.ID != promised || today.Day.Label != "A" {
+		t.Fatalf("C→A (circular): %+v", today.Day)
+	}
+
+	// Trocar o treino de hoje move o rodízio inteiro: escolher o C faz o
+	// payload prometer o A logo em seguida.
+	if rec := do(t, a.handler, http.MethodPost, "/v1/me/plan/override-day", a.student,
+		map[string]any{"day_id": byLabel["C"]}); rec.Code != http.StatusOK {
+		t.Fatalf("trocar treino do dia: %d %s", rec.Code, rec.Body.String())
+	}
+	today = decodeToday(t, do(t, a.handler, http.MethodGet, "/v1/me/today", a.student, nil))
+	if today.Day.Label != "C" || *today.NextDayID != byLabel["A"] {
+		t.Fatalf("depois do override o próximo deveria ser o A: dia=%s next=%v", today.Day.Label, today.NextDayID)
 	}
 }

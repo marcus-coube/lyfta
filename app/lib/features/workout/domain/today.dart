@@ -143,6 +143,35 @@ class SessionSummary {
   final double totalVolumeKg;
 }
 
+/// Um dia do rodízio visto de fora do treino: rótulo e ordem, sem a árvore.
+///
+/// É o vocabulário de "próximo treino: B" e da lista de troca de treino
+/// (P1.8) — vem no mesmo payload do dia de hoje justamente para a tela
+/// funcionar sem rede.
+class RotationDay {
+  const RotationDay({
+    required this.id,
+    required this.label,
+    required this.position,
+    this.title,
+  });
+
+  factory RotationDay.fromJson(Map<String, dynamic> json) {
+    final title = (json['title'] as String? ?? '').trim();
+    return RotationDay(
+      id: json['id'] as String? ?? '',
+      label: json['label'] as String? ?? '',
+      position: json['position'] as int? ?? 0,
+      title: title.isEmpty ? null : title,
+    );
+  }
+
+  final String id;
+  final String label;
+  final int position;
+  final String? title;
+}
+
 /// O treino do dia inteiro — o payload de `GET /v1/me/today`, que é cacheado
 /// **integralmente** no device (ADR-003 §3): tudo que a tela Hoje e o player
 /// precisam sai desta única leitura, porque a próxima pode ser sem rede.
@@ -151,8 +180,10 @@ class Today {
     required this.status,
     required this.previousLoads,
     required this.recentSessions,
+    this.rotation = const [],
     this.plan,
     this.day,
+    this.nextDayId,
   });
 
   factory Today.fromJson(Map<String, dynamic> json) {
@@ -170,6 +201,10 @@ class Today {
       recentSessions: (json['recent_sessions'] as List<dynamic>? ?? const [])
           .map((raw) => SessionSummary.fromJson(raw as Map<String, dynamic>))
           .toList(),
+      rotation: (json['rotation'] as List<dynamic>? ?? const [])
+          .map((raw) => RotationDay.fromJson(raw as Map<String, dynamic>))
+          .toList(),
+      nextDayId: json['next_day_id'] as String?,
     );
   }
 
@@ -183,7 +218,26 @@ class Today {
   final Map<String, PreviousLoad> previousLoads;
   final List<SessionSummary> recentSessions;
 
+  /// O rodízio da versão ativa, em ordem de posição.
+  final List<RotationDay> rotation;
+
+  /// O dia que a rotação entrega **depois** do de hoje, circular. Quem calcula
+  /// é o servidor (ADR-004 §3): recalcular aqui abriria espaço para a tela
+  /// prometer um treino e o servidor abrir outro.
+  final String? nextDayId;
+
   bool get hasWorkout => status == TodayStatus.ready && day != null;
+
+  /// O próximo treino do rodízio, quando ele é conhecido e diferente do de
+  /// hoje. Rodízio de um dia só não tem "próximo": repetir o rótulo de hoje
+  /// como novidade seria ruído.
+  RotationDay? get nextDay {
+    if (nextDayId == null || rotation.length < 2) return null;
+    for (final d in rotation) {
+      if (d.id == nextDayId) return d;
+    }
+    return null;
+  }
 
   /// O dia achatado na ordem de execução — é como o player caminha pelo
   /// treino.

@@ -383,6 +383,35 @@
       }
     }
   },
+  "todayNextWorkout": "Próximo: treino {label}",
+  "@todayNextWorkout": {
+    "description": "Qual treino a rotação entrega depois do de hoje.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "todaySwitch": "Trocar treino de hoje",
+  "@todaySwitch": {
+    "description": "Ação que abre a lista de treinos do rodízio."
+  },
+  "todaySwitchTitle": "Qual treino você quer fazer hoje?",
+  "@todaySwitchTitle": {
+    "description": "Título da folha de troca de treino."
+  },
+  "todaySwitchCurrent": "Hoje",
+  "@todaySwitchCurrent": {
+    "description": "Marca o dia que a rotação já entrega hoje."
+  },
+  "todaySwitchOffline": "Sem conexão — trocar o treino precisa de internet.",
+  "@todaySwitchOffline": {
+    "description": "A troca de treino é a única ação do aluno que exige rede."
+  },
+  "todaySwitchError": "Não foi possível trocar o treino.",
+  "@todaySwitchError": {
+    "description": "Falha genérica ao trocar o treino do dia."
+  },
   "todayPreviousLoad": "Anterior: {load} kg",
   "@todayPreviousLoad": {
     "description": "Chip com a maior carga da última vez que o exercício foi feito.",

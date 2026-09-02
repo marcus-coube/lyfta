@@ -42,6 +42,8 @@
   "todayNoPlanBody": "Assim que ele publicar o plano, o treino do dia aparece aqui.",
   "todayOffline": "Sem ligação — este é o treino descarregado no aparelho.",
   "todayLoadError": "Não foi possível carregar o teu treino.",
+  "todaySwitchTitle": "Que treino queres fazer hoje?",
+  "todaySwitchOffline": "Sem ligação — trocar o treino precisa de internet.",
   "todaySetsCount": "{count, plural, =1{1 série} other{{count} séries}}",
   "todaySyncPending": "{count, plural, =1{1 registo por enviar} other{{count} registos por enviar}}",
   "sessionMarkDone": "Registar série",

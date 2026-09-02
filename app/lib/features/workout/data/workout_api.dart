@@ -9,8 +9,8 @@ final workoutApiProvider = Provider<WorkoutApi>((ref) {
   return WorkoutApi(ref.watch(workoutApiClientProvider).dio);
 });
 
-/// As duas rotas do contrato offline que o aluno usa (P1.5): baixar o treino
-/// do dia e drenar a fila de execução.
+/// As rotas do contrato offline que o aluno usa (P1.5): baixar o treino do
+/// dia, drenar a fila de execução e trocar o treino de hoje.
 class WorkoutApi {
   WorkoutApi(this._dio);
 
@@ -34,6 +34,20 @@ class WorkoutApi {
       ),
     );
     return SyncResult.fromJson(response!);
+  }
+
+  /// `POST /v1/me/plan/override-day` — troca o treino de hoje (ADR-004 §3).
+  ///
+  /// Fora do contrato offline de propósito: mexer na rotação é decisão que
+  /// precisa do servidor, e o ADR-003 §1 limita a fila à **execução**. Sem
+  /// rede, a chamada falha e a tela diz isso.
+  Future<void> overrideDay(String dayId) async {
+    await _send<Map<String, dynamic>>(
+      () => _dio.post<Map<String, dynamic>>(
+        '/v1/me/plan/override-day',
+        data: {'day_id': dayId},
+      ),
+    );
   }
 
   Future<T?> _send<T>(Future<Response<T>> Function() request) async {

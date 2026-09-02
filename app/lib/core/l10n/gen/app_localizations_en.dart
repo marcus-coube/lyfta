@@ -690,6 +690,27 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String todayNextWorkout(String label) {
+    return 'Next: workout $label';
+  }
+
+  @override
+  String get todaySwitch => 'Switch today\'s workout';
+
+  @override
+  String get todaySwitchTitle => 'Which workout do you want today?';
+
+  @override
+  String get todaySwitchCurrent => 'Today';
+
+  @override
+  String get todaySwitchOffline =>
+      'No connection — switching the workout needs internet.';
+
+  @override
+  String get todaySwitchError => 'Couldn\'t switch the workout.';
+
+  @override
   String todayPreviousLoad(String load) {
     return 'Last time: $load kg';
   }

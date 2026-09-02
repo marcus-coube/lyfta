@@ -1389,6 +1389,42 @@ abstract class AppLocalizations {
   /// **'Treino {label}'**
   String todayDayHeading(String label);
 
+  /// Qual treino a rotação entrega depois do de hoje.
+  ///
+  /// In pt, this message translates to:
+  /// **'Próximo: treino {label}'**
+  String todayNextWorkout(String label);
+
+  /// Ação que abre a lista de treinos do rodízio.
+  ///
+  /// In pt, this message translates to:
+  /// **'Trocar treino de hoje'**
+  String get todaySwitch;
+
+  /// Título da folha de troca de treino.
+  ///
+  /// In pt, this message translates to:
+  /// **'Qual treino você quer fazer hoje?'**
+  String get todaySwitchTitle;
+
+  /// Marca o dia que a rotação já entrega hoje.
+  ///
+  /// In pt, this message translates to:
+  /// **'Hoje'**
+  String get todaySwitchCurrent;
+
+  /// A troca de treino é a única ação do aluno que exige rede.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem conexão — trocar o treino precisa de internet.'**
+  String get todaySwitchOffline;
+
+  /// Falha genérica ao trocar o treino do dia.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível trocar o treino.'**
+  String get todaySwitchError;
+
   /// Chip com a maior carga da última vez que o exercício foi feito.
   ///
   /// In pt, this message translates to:

@@ -88,13 +88,31 @@ type sessionSummaryDTO struct {
 	TotalVolumeKg float64    `json:"total_volume_kg"`
 }
 
+// rotationDayDTO é um dia do rodízio visto de fora do treino: rótulo e ordem,
+// sem a árvore. Serve para a tela Hoje dizer qual vem depois e para a lista da
+// troca de treino (P1.8).
+type rotationDayDTO struct {
+	ID       string `json:"id"`
+	Label    string `json:"label"`
+	Position int    `json:"position"`
+	Title    string `json:"title,omitempty"`
+}
+
 // todayResponse é pensado para ser cacheado **inteiro** no device (ADR-003
 // §3): tudo que a tela Hoje e o player de execução precisam sai desta única
 // chamada, porque a próxima pode acontecer sem rede.
 type todayResponse struct {
-	Status         string              `json:"status"`
-	Plan           *todayPlanDTO       `json:"plan"`
-	Day            *dayDTO             `json:"day"`
+	Status string        `json:"status"`
+	Plan   *todayPlanDTO `json:"plan"`
+	Day    *dayDTO       `json:"day"`
+	// Rotation é o rodízio inteiro da versão ativa, em ordem. Vai junto do
+	// dia de hoje porque a tela precisa dele sem rede: é dela que saem
+	// "próximo: B" e a lista da troca de treino.
+	Rotation []rotationDayDTO `json:"rotation"`
+	// NextDayID é o dia que a rotação entrega **depois** de terminar o de
+	// hoje — circular, calculado no servidor para o app não repetir a regra
+	// do ADR-004 §3 e as duas versões não divergirem.
+	NextDayID      *string             `json:"next_day_id"`
 	PreviousLoads  []previousLoadDTO   `json:"previous_loads"`
 	RecentSessions []sessionSummaryDTO `json:"recent_sessions"`
 	ServerTime     time.Time           `json:"server_time"`
@@ -113,6 +131,7 @@ func (h *SyncHandler) Today(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	resp := todayResponse{
 		Status:         todayStatusNoPlan,
+		Rotation:       []rotationDayDTO{},
 		PreviousLoads:  []previousLoadDTO{},
 		RecentSessions: []sessionSummaryDTO{},
 		ServerTime:     time.Now().UTC(),
@@ -163,6 +182,22 @@ func (h *SyncHandler) Today(w http.ResponseWriter, r *http.Request) {
 			TotalSets: s.TotalSets, TotalVolumeKg: s.TotalVolumeKg,
 		})
 	}
+
+	// A rotação é montada antes de decidir se hoje tem treino: em dia de
+	// descanso a tela continua oferecendo trocar o treino do dia, que é
+	// justamente quando o aluno quer antecipar o próximo.
+	rotation, err := h.plans.ListDays(ctx, claims.TenantID, state.ActiveVersionID)
+	if err != nil {
+		h.logger.Error("today_rotation_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
+	}
+	for _, d := range rotation {
+		resp.Rotation = append(resp.Rotation, rotationDayDTO{
+			ID: d.ID, Label: d.Label, Position: d.Position, Title: d.Title,
+		})
+	}
+	resp.NextDayID = dayAfter(rotation, state.NextDayID)
 
 	if state.NextDayID == nil {
 		resp.Status = todayStatusRestDay
@@ -224,6 +259,34 @@ func (h *SyncHandler) Today(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, resp)
+}
+
+// dayAfter devolve o dia seguinte ao de hoje no rodízio, circular — a mesma
+// regra que `advanceRotation` aplica quando a sessão é encerrada (ADR-004 §3).
+//
+// Aqui o casamento é por **id** e não por rótulo: os dois lados leem a mesma
+// versão ativa, então o id basta. A duplicação da regra é deliberada e mínima:
+// a alternativa seria o app recalculá-la, e aí "próximo: B" poderia mentir
+// enquanto o servidor avançasse para outro dia.
+func dayAfter(rotation []domain.Day, currentID *string) *string {
+	if len(rotation) == 0 {
+		return nil
+	}
+	if currentID == nil {
+		// Dia de descanso: o rodízio recomeça no primeiro.
+		next := rotation[0].ID
+		return &next
+	}
+	for i := range rotation {
+		if rotation[i].ID == *currentID {
+			next := rotation[(i+1)%len(rotation)].ID
+			return &next
+		}
+	}
+	// O dia de hoje não está na versão ativa — o mesmo caso que
+	// `advanceRotation` resolve caindo no primeiro dia.
+	next := rotation[0].ID
+	return &next
 }
 
 type syncEventDTO struct {

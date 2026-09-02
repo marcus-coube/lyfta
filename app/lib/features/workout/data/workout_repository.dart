@@ -91,6 +91,16 @@ class WorkoutRepository {
     return TodayView(today: Today.fromJson(payload), fetchedAt: DateTime.now());
   }
 
+  /// Troca o treino de hoje e rebaixa o payload já com o dia novo (P1.8).
+  ///
+  /// A exceção de rede **sobe**, ao contrário do resto deste repositório: sem
+  /// servidor não há como mudar a rotação, e engolir o erro deixaria a tela
+  /// mostrando o dia velho como se a troca tivesse valido.
+  Future<TodayView> overrideDay(String studentId, String dayId) async {
+    await _api.overrideDay(dayId);
+    return _fetch(studentId);
+  }
+
   Future<LocalSession?> openSession(String studentId) =>
       _store.openSession(studentId);
 
