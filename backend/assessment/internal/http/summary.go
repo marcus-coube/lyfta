@@ -7,7 +7,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/media"
 	"github.com/marcus-coube/lyfta/assessment/internal/repo"
 )
 
@@ -20,12 +19,11 @@ type SummaryHandler struct {
 	measurements *repo.MeasurementRepo
 	bioimpedance *repo.BioimpedanceRepo
 	photos       *repo.PhotoRepo
-	presigner    *media.Presigner
 }
 
 // NewSummaryHandler cria o handler de resumo.
-func NewSummaryHandler(logger *slog.Logger, measurements *repo.MeasurementRepo, bioimpedance *repo.BioimpedanceRepo, photos *repo.PhotoRepo, presigner *media.Presigner) *SummaryHandler {
-	return &SummaryHandler{logger: logger, measurements: measurements, bioimpedance: bioimpedance, photos: photos, presigner: presigner}
+func NewSummaryHandler(logger *slog.Logger, measurements *repo.MeasurementRepo, bioimpedance *repo.BioimpedanceRepo, photos *repo.PhotoRepo) *SummaryHandler {
+	return &SummaryHandler{logger: logger, measurements: measurements, bioimpedance: bioimpedance, photos: photos}
 }
 
 type summaryDeltaDTO struct {

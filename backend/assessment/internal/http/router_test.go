@@ -106,7 +106,7 @@ func newTestRouterWithPool(t *testing.T, publicPEM string, pool *pgxpool.Pool) h
 		ahttp.NewBioimpedanceHandler(logger, bioimpedance),
 		ahttp.NewPhotoHandler(logger, photos, presigner),
 		ahttp.NewMediaHandler(logger, presigner),
-		ahttp.NewSummaryHandler(logger, measurements, bioimpedance, photos, presigner),
+		ahttp.NewSummaryHandler(logger, measurements, bioimpedance, photos),
 	)
 }
 

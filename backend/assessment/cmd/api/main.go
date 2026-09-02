@@ -72,7 +72,7 @@ func run(logger *slog.Logger) error {
 		ahttp.NewBioimpedanceHandler(logger, bioimpedance),
 		ahttp.NewPhotoHandler(logger, photos, presigner),
 		ahttp.NewMediaHandler(logger, presigner),
-		ahttp.NewSummaryHandler(logger, measurements, bioimpedance, photos, presigner),
+		ahttp.NewSummaryHandler(logger, measurements, bioimpedance, photos),
 	)
 
 	server := &http.Server{
