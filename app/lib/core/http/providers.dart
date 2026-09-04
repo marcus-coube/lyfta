@@ -23,8 +23,7 @@ final identityApiClientProvider = Provider<ApiClient>((ref) {
     tokenStorage: ref.watch(tokenStorageProvider),
     refreshTokens: (refreshToken) =>
         ref.read(authControllerProvider.notifier).refreshSession(refreshToken),
-    onSessionExpired: () =>
-        ref.read(authControllerProvider.notifier).signOut(),
+    onSessionExpired: () => ref.read(authControllerProvider.notifier).signOut(),
   );
 });
 
@@ -37,6 +36,19 @@ final identityApiClientProvider = Provider<ApiClient>((ref) {
 final workoutApiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(
     baseUrl: AppConfig.workoutBaseUrl,
+    tokenStorage: ref.watch(tokenStorageProvider),
+    refreshTokens: (refreshToken) =>
+        ref.read(authControllerProvider.notifier).refreshSession(refreshToken),
+    onSessionExpired: () => ref.read(authControllerProvider.notifier).signOut(),
+  );
+});
+
+/// Cliente HTTP do serviço `assessment` (medidas, bioimpedância, fotos de
+/// evolução — P2.2/P2.3). Mesma sessão dos demais: o `identity` é quem
+/// assina o JWT que todo serviço valida (ADR-013 §4).
+final assessmentApiClientProvider = Provider<ApiClient>((ref) {
+  return ApiClient(
+    baseUrl: AppConfig.assessmentBaseUrl,
     tokenStorage: ref.watch(tokenStorageProvider),
     refreshTokens: (refreshToken) =>
         ref.read(authControllerProvider.notifier).refreshSession(refreshToken),

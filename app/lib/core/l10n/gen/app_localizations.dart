@@ -1514,6 +1514,360 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'—'**
   String get sessionEmptyValue;
+
+  /// No description provided for @evolutionTabLoad.
+  ///
+  /// In pt, this message translates to:
+  /// **'Carga'**
+  String get evolutionTabLoad;
+
+  /// No description provided for @evolutionTabMeasurements.
+  ///
+  /// In pt, this message translates to:
+  /// **'Medidas'**
+  String get evolutionTabMeasurements;
+
+  /// No description provided for @evolutionTabPhotos.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fotos'**
+  String get evolutionTabPhotos;
+
+  /// No description provided for @evolutionMeasurementsSection.
+  ///
+  /// In pt, this message translates to:
+  /// **'Medidas corporais'**
+  String get evolutionMeasurementsSection;
+
+  /// No description provided for @evolutionAddMeasurement.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova medida'**
+  String get evolutionAddMeasurement;
+
+  /// No description provided for @evolutionBioimpedanceSection.
+  ///
+  /// In pt, this message translates to:
+  /// **'Bioimpedância'**
+  String get evolutionBioimpedanceSection;
+
+  /// No description provided for @evolutionAddBioimpedance.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova leitura'**
+  String get evolutionAddBioimpedance;
+
+  /// No description provided for @evolutionPhotosSection.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fotos de evolução'**
+  String get evolutionPhotosSection;
+
+  /// No description provided for @evolutionAddPhoto.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova foto'**
+  String get evolutionAddPhoto;
+
+  /// No description provided for @evolutionDeleteTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagar registro?'**
+  String get evolutionDeleteTitle;
+
+  /// No description provided for @evolutionDeleteBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Essa ação não pode ser desfeita.'**
+  String get evolutionDeleteBody;
+
+  /// No description provided for @evolutionPhotosCompareTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Comparar antes/depois'**
+  String get evolutionPhotosCompareTitle;
+
+  /// No description provided for @evolutionDateLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Data'**
+  String get evolutionDateLabel;
+
+  /// No description provided for @evolutionValueHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'0'**
+  String get evolutionValueHint;
+
+  /// No description provided for @evolutionNotesLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Observações'**
+  String get evolutionNotesLabel;
+
+  /// No description provided for @measurementFormEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Preencha ao menos uma medida.'**
+  String get measurementFormEmpty;
+
+  /// No description provided for @evolutionMeasurementsEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma medida registrada ainda.'**
+  String get evolutionMeasurementsEmpty;
+
+  /// No description provided for @evolutionBioimpedanceEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma leitura de bioimpedância ainda.'**
+  String get evolutionBioimpedanceEmpty;
+
+  /// No description provided for @evolutionMetricMaxLoad.
+  ///
+  /// In pt, this message translates to:
+  /// **'Carga máxima'**
+  String get evolutionMetricMaxLoad;
+
+  /// No description provided for @evolutionMetricVolume.
+  ///
+  /// In pt, this message translates to:
+  /// **'Volume'**
+  String get evolutionMetricVolume;
+
+  /// No description provided for @evolutionRangeOneMonth.
+  ///
+  /// In pt, this message translates to:
+  /// **'1 mês'**
+  String get evolutionRangeOneMonth;
+
+  /// No description provided for @evolutionRangeThreeMonths.
+  ///
+  /// In pt, this message translates to:
+  /// **'3 meses'**
+  String get evolutionRangeThreeMonths;
+
+  /// No description provided for @evolutionRangeSixMonths.
+  ///
+  /// In pt, this message translates to:
+  /// **'6 meses'**
+  String get evolutionRangeSixMonths;
+
+  /// No description provided for @evolutionRangeAll.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tudo'**
+  String get evolutionRangeAll;
+
+  /// No description provided for @evolutionNoDataForRange.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem registros neste período.'**
+  String get evolutionNoDataForRange;
+
+  /// No description provided for @evolutionNoExercisesYet.
+  ///
+  /// In pt, this message translates to:
+  /// **'Você ainda não registrou nenhuma série. Treine para ver o gráfico aqui.'**
+  String get evolutionNoExercisesYet;
+
+  /// No description provided for @evolutionPhotosEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma foto ainda.'**
+  String get evolutionPhotosEmpty;
+
+  /// No description provided for @evolutionPhotosCompareNeedTwo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Registre pelo menos duas fotos para comparar.'**
+  String get evolutionPhotosCompareNeedTwo;
+
+  /// No description provided for @evolutionPoseFront.
+  ///
+  /// In pt, this message translates to:
+  /// **'Frente'**
+  String get evolutionPoseFront;
+
+  /// No description provided for @evolutionPoseSide.
+  ///
+  /// In pt, this message translates to:
+  /// **'Lado'**
+  String get evolutionPoseSide;
+
+  /// No description provided for @evolutionPoseBack.
+  ///
+  /// In pt, this message translates to:
+  /// **'Costas'**
+  String get evolutionPoseBack;
+
+  /// No description provided for @evolutionNewMeasurement.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova medida'**
+  String get evolutionNewMeasurement;
+
+  /// No description provided for @evolutionNewBioimpedance.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova leitura de bioimpedância'**
+  String get evolutionNewBioimpedance;
+
+  /// No description provided for @evolutionNewPhoto.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova foto'**
+  String get evolutionNewPhoto;
+
+  /// No description provided for @evolutionPhotoFromCamera.
+  ///
+  /// In pt, this message translates to:
+  /// **'Câmera'**
+  String get evolutionPhotoFromCamera;
+
+  /// No description provided for @evolutionPhotoFromGallery.
+  ///
+  /// In pt, this message translates to:
+  /// **'Galeria'**
+  String get evolutionPhotoFromGallery;
+
+  /// No description provided for @evolutionPhotoEmptyPreview.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolha uma foto para continuar.'**
+  String get evolutionPhotoEmptyPreview;
+
+  /// No description provided for @evolutionPhotoRequired.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolha uma foto antes de salvar.'**
+  String get evolutionPhotoRequired;
+
+  /// No description provided for @evolutionPhotoPickError.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível processar a foto. Tente outra.'**
+  String get evolutionPhotoPickError;
+
+  /// No description provided for @measurementFieldWeightKg.
+  ///
+  /// In pt, this message translates to:
+  /// **'Peso (kg)'**
+  String get measurementFieldWeightKg;
+
+  /// No description provided for @measurementFieldHeightCm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Altura (cm)'**
+  String get measurementFieldHeightCm;
+
+  /// No description provided for @measurementFieldNeckCm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pescoço (cm)'**
+  String get measurementFieldNeckCm;
+
+  /// No description provided for @measurementFieldShoulderCm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ombro (cm)'**
+  String get measurementFieldShoulderCm;
+
+  /// No description provided for @measurementFieldChestCm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Peito (cm)'**
+  String get measurementFieldChestCm;
+
+  /// No description provided for @measurementFieldWaistCm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cintura (cm)'**
+  String get measurementFieldWaistCm;
+
+  /// No description provided for @measurementFieldAbdomenCm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abdômen (cm)'**
+  String get measurementFieldAbdomenCm;
+
+  /// No description provided for @measurementFieldHipCm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Quadril (cm)'**
+  String get measurementFieldHipCm;
+
+  /// No description provided for @measurementFieldArmLCm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Braço esq. (cm)'**
+  String get measurementFieldArmLCm;
+
+  /// No description provided for @measurementFieldArmRCm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Braço dir. (cm)'**
+  String get measurementFieldArmRCm;
+
+  /// No description provided for @measurementFieldThighLCm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Coxa esq. (cm)'**
+  String get measurementFieldThighLCm;
+
+  /// No description provided for @measurementFieldThighRCm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Coxa dir. (cm)'**
+  String get measurementFieldThighRCm;
+
+  /// No description provided for @measurementFieldCalfLCm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Panturrilha esq. (cm)'**
+  String get measurementFieldCalfLCm;
+
+  /// No description provided for @measurementFieldCalfRCm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Panturrilha dir. (cm)'**
+  String get measurementFieldCalfRCm;
+
+  /// No description provided for @bioimpedanceFieldBodyFatPct.
+  ///
+  /// In pt, this message translates to:
+  /// **'% de gordura'**
+  String get bioimpedanceFieldBodyFatPct;
+
+  /// No description provided for @bioimpedanceFieldMuscleMassKg.
+  ///
+  /// In pt, this message translates to:
+  /// **'Massa muscular (kg)'**
+  String get bioimpedanceFieldMuscleMassKg;
+
+  /// No description provided for @bioimpedanceFieldVisceralFat.
+  ///
+  /// In pt, this message translates to:
+  /// **'Gordura visceral'**
+  String get bioimpedanceFieldVisceralFat;
+
+  /// No description provided for @bioimpedanceFieldBodyWaterPct.
+  ///
+  /// In pt, this message translates to:
+  /// **'% de água corporal'**
+  String get bioimpedanceFieldBodyWaterPct;
+
+  /// No description provided for @bioimpedanceFieldBoneMassKg.
+  ///
+  /// In pt, this message translates to:
+  /// **'Massa óssea (kg)'**
+  String get bioimpedanceFieldBoneMassKg;
+
+  /// No description provided for @bioimpedanceFieldBmrKcal.
+  ///
+  /// In pt, this message translates to:
+  /// **'Taxa metabólica basal (kcal)'**
+  String get bioimpedanceFieldBmrKcal;
 }
 
 class _AppLocalizationsDelegate

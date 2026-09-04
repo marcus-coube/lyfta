@@ -35,6 +35,12 @@ dependencies:
   flutter_local_notifications: ^22.3.0
   timezone: ^0.11.1
   vibration: ^3.2.0
+  # Tela Evolução (P2.4): gráfico de progressão de carga, captura de foto
+  # (câmera/galeria) e compressão antes do upload presignado — o serviço
+  # `assessment` não recebe bytes brutos além do necessário (P2.3).
+  fl_chart: ^0.69.2
+  image_picker: ^1.1.2
+  flutter_image_compress: ^2.3.0
 
 dev_dependencies:
   flutter_test:

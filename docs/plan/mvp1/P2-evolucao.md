@@ -49,7 +49,7 @@ lançar (comum em avaliação presencial).
 **Aceite:** testes de permissão (aluno A não lê aluno B; coach de outro tenant não
 lê nada); deltas do summary corretos.
 
-## - [ ] P2.4 Flutter — aluno: tela Evolução
+## - [x] P2.4 Flutter — aluno: tela Evolução
 
 **Objetivo:** a aba Evolução completa do aluno.
 **Passos:**
@@ -242,3 +242,84 @@ mesmos widgets renderizam nos dois shells sem duplicação de código.
   `GET /summary` devolveu `weight_kg: -3`, `waist_cm: -3.5`,
   `photo_count: 1`, e um segundo tenant (signup separado) leu lista vazia
   nas mesmas rotas.
+
+### P2.4 (2026-09-04, Mac)
+
+- **`features/evolution/` segue `domain/`+`data/`+`presentation/` como o
+  resto do app, mas com um quinto diretório, `widgets/`, no nível da
+  feature (não dentro de `presentation/`) — é o que o plano pediu
+  explicitamente para o P2.5 reusar sem duplicar código: `load_chart_panel`,
+  `exercise_selector`, `measurement_form`/`list`, `bioimpedance_form`/`list`,
+  `photo_grid`, `photo_compare`, `evolution_date_field`, `delta_badge` e
+  `pose_label` são todos "burros" (só recebem dados e callbacks, nunca
+  falam com repositório) para o coach poder embrulhá-los com o controller
+  dele sem tocar o widget.
+- **Dois serviços, um repositório só.** `EvolutionRepository` guarda dois
+  `Dio` (`workout` para o histórico do P2.1, `assessment` para
+  medidas/bioimpedância/fotos do P2.3) — nenhum import de código entre eles
+  (ADR-013 §2). `assessmentApiClientProvider` entrou em `core/http/providers.dart`,
+  espelhando o `workoutApiClientProvider` (P0.6).
+- **O range do gráfico (1m/3m/6m/tudo) pagina no cliente.** Confirmando a
+  nota do P2.1: `/exercises/{id}/history` não tem `?since=`.
+  `EvolutionRepository.exerciseHistory` pagina pelo cursor até a sessão mais
+  antiga da página passar do corte, com teto de 40 páginas (60 itens cada)
+  — 2400 pontos antes de desistir, folga generosa para o horizonte do MVP.
+  Se algum dia isso morder de verdade, o parâmetro entra no servidor.
+- **Seleção de exercício não escreve estado até o aluno escolher.**
+  `loadSelectionProvider.exerciseId` começa nulo; a tela deriva um "efetivo"
+  (`selection.exerciseId ?? items.first`) só na renderização, e
+  `exerciseHistoryProvider` virou `family` sobre `(exerciseId, since)` em
+  vez de ler `loadSelectionProvider` direto — evita a race de sincronizar
+  dois providers com `ref.listen`/callback de frame só para mostrar o
+  primeiro exercício da lista por padrão.
+- **Deltas coloridos são por sinal, não por campo:** `DeltaBadge` pinta
+  `success` quando o valor cai e `danger` quando sobe, para todo campo
+  (peso, cintura, %gordura, ...). É uma simplificação consciente — ganhar
+  peso pode ser a meta de alguém —, documentada no código; sem um objetivo
+  declarado por medida, "queda = verde" é a leitura mais comum na maioria
+  dos campos (cintura, gordura). Vira dívida se o produto precisar de meta
+  por medida.
+- **Fotos: compressão sempre em JPEG**, independente do formato de origem
+  escolhido no picker (`flutter_image_compress`, `quality: 82`,
+  `minWidth/minHeight: 1280`) — o `content_type` do presign nunca depende
+  de inspecionar a extensão do arquivo. O comparador antes/depois guarda a
+  seleção por `id` da foto, não pela instância: a lista é substituída
+  inteira a cada `refresh()` do controller, e um `DropdownButtonFormField`
+  cujo `value` não é `identical` a nenhum item da lista nova quebra a
+  asserção do widget — achado rodando o teste manual local antes de
+  escrever o teste automatizado.
+- **Sem mudança na permissão de câmera do Android.** `image_picker` usa
+  intent implícita para `ImageSource.camera` (delega para o app de câmera
+  do sistema), então não precisa de `<uses-permission CAMERA>` no
+  `AndroidManifest.xml` — só precisaria se o app quisesse controlar a
+  câmera diretamente. Fica como algo a confirmar no Aceite manual em
+  device: nesta sessão não havia como validar o fluxo de câmera de verdade
+  (só galeria foi exercitada, com uma imagem local no Chrome).
+- **Formatação numérica duplicada de propósito.**
+  `shared/format/metric_format.dart` repete a lógica de
+  `features/workout/presentation/prescription_format.dart#formatLoad` (sem
+  `.0` decorativo) — feature não importa feature (guideline flutter.md).
+  Unificar os dois num único helper em `shared/` é limpeza futura, não
+  bloqueia esta tarefa.
+- **Escopo não expandido:** nenhuma rota `/students/{id}/...` do coach foi
+  implementada no repositório ou nos controllers — só `/me/...`. O P2.5 vai
+  precisar da própria variante (ou generalizar `EvolutionRepository` para
+  aceitar um `studentId` opcional), decisão que fica para quando aquela
+  tarefa for aberta.
+- **Verificado (Mac):** `flutter analyze` limpo, guard de strings limpo,
+  **42 testes verdes** (4 novos do `MeasurementForm`: preenchimento parcial
+  com um campo, preenchimento parcial em vários campos aceitando vírgula
+  decimal pt-BR, formulário vazio bloqueado com a mensagem de erro visível,
+  e observação sozinha também bloqueada — "não é uma medida"). Rodado só no
+  Chrome nesta sessão (sem toque em dispositivo real); o Aceite manual
+  completo — aluno em Android lançando medida+bioimpedância+foto e vendo o
+  gráfico de carga real do P1 (dados do E2E do P1.8: 1020 kg no treino A) —
+  fica para o humano. Roteiro sugerido: subir `identity`+`workout`+
+  `assessment` locais, `flutter run -d emulator-5554
+  --dart-define=IDENTITY_BASE_URL=http://10.0.2.2:8081
+  --dart-define=WORKOUT_BASE_URL=http://10.0.2.2:8082
+  --dart-define=ASSESSMENT_BASE_URL=http://10.0.2.2:8083`, logar como o
+  aluno do E2E do P1.8, abrir a aba Evolução, conferir que a aba Carga
+  mostra a série real, lançar uma medida parcial, uma leitura de
+  bioimpedância e uma foto (câmera **e** galeria) e conferir que aparecem
+  nas listas/grade sem recarregar o app.

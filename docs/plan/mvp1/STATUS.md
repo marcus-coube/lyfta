@@ -3,16 +3,16 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** `P2.4` (Flutter — aluno: tela Evolução)
+**Próxima tarefa:** `P2.5` (Flutter — professor: evolução do aluno)
 
 | Fase | Progresso | Situação |
 |---|---|---|
 | P0 — Fundação | 7/7 | concluída |
 | P1 — Treino | 8/8 | concluída |
-| P2 — Evolução | 3/5 | em andamento |
+| P2 — Evolução | 4/5 | em andamento |
 | P3 — Comunicação | 0/5 | não iniciada |
 | P4 — Praticidade | 0/4 | não iniciada |
-| **Total** | **18/29** | |
+| **Total** | **19/29** | |
 
 ## Bancos locais
 
@@ -71,3 +71,4 @@ Aceite (aluno em Android).
 | 2026-09-02 | P2.1 concluída (Mac): workout — histórico por exercício (`GET /v1/me/exercises/{id}/history` e a variante `/students/{id}/...`, mais o índice `/exercises/logged` nas duas portas). Agregação inteira em SQL sobre `workout_set_logs` — máximo, volume Σ(reps×carga) e `top_set` por sessão —, reusando o filtro que esconde log corrigido por `set_revision`. O eixo é o `exercise_id`, então a série atravessa versões e planos (ADR-004 §2), e nenhuma migration foi precisa: o índice `(tenant_id, exercise_id, performed_at DESC)` do P1.1 é o caminho da consulta. Cursor keyset `(performed_at, session_id)` em ordem decrescente; exercício desconhecido é 404, não página vazia. 62 testes verdes (7 novos) e smoke com os dois serviços no ar sobre os dados do E2E do P1.8: 1020 kg no treino A e 432 kg no C, iguais ao que o app mostrou |
 | 2026-09-02 | P2.2 concluída (Mac): quarto serviço, `assessment` (8083, banco `lyfta_assessment`) — bootstrap idêntico ao workout (chi+pgxpool+slog, `security`/`repo` duplicados, nenhum import entre serviços, ADR-013 §2), `/healthz` e `/v1/whoami`. 4 migrations com as 3 tabelas do plano (`body_measurements`, `bioimpedance_records`, `progress_photos`), todas fatos flat por aluno com uma única policy `tenant_isolation` e índice `(tenant_id, student_id, measured_at\|taken_at DESC)`; sem S3 ainda — presign de foto é escopo da P2.3. CI descobriu o serviço sozinho pela matrix (`backend/<svc>/go.mod`), sem editar o workflow. 2 testes verdes de isolamento cross-tenant (SQL direto via `repo.WithTenant`, mesmo caminho do `TestSetLogsAreAppendOnly` do workout antes de existir repositório de domínio), reversibilidade `down -all`→`up` verificada, e smoke com `identity`+`assessment` no ar: token real de signup autenticando no `/v1/whoami` |
 | 2026-09-02 | P2.3 concluída (Mac): assessment — API completa. `POST`/`GET` lista (cursor keyset por `measured_at\|taken_at`+id)/`DELETE` para os três recursos, cada um em duas portas (`/me/...` pela claim, `/students/{id}/...` pelo coach — mesmo critério do P1.4/P2.1); presign de foto (`POST /v1/{me\|students/{id}}/media/presign`, key `tenants/{t}/students/{s}/photos/{uuid}.ext`, jpeg/png/webp, 15 MB, `S3_*` agora obrigatória no `config`, quitando a dívida da P2.2); `GET /v1/students/{id}/summary` com última medida/bioimpedância, contagem de fotos e deltas de peso/cintura/%gordura (nulo quando falta o registro anterior). `progress_photos.media_key` guarda a key crua, não uma URL — o presigner do assessment ficou mais simples que o do workout, sem o parsing de `media_url`, ganhando em troca `ValidKeyForStudent` como par de segurança. `created_by` ficou de fora (dívida da P2.2 segue aberta, não bloqueia o Aceite). CI ganhou o step de MinIO também para `assessment` (antes só `workout`). `gofmt`/`go vet` limpos, 29 testes verdes, e smoke com `identity`+`assessment` reais: coach lança 2 medidas + 1 bioimpedância + 1 foto (upload de verdade no MinIO) para um `student_id` avulso, summary devolveu os deltas certos, e um segundo tenant leu lista vazia nas mesmas rotas |
+| 2026-09-04 | P2.4 concluída (Mac): app — aba Evolução do aluno. `features/evolution/` (domain/data/presentation + `widgets/` reusável para o P2.5): gráfico de progressão por exercício (`fl_chart`, toggle carga máxima × volume, seletor a partir de `/exercises/logged`, range 1m/3m/6m/tudo paginando no cliente — o histórico não tem `?since=`, nota do P2.1), medidas corporais e bioimpedância (form só com os campos preenchidos, lista histórica com deltas coloridos por sinal) e fotos de evolução (`image_picker` câmera/galeria, compressão para JPEG com `flutter_image_compress` antes do upload presignado no `assessment`, grade por data/pose e comparador antes/depois). `assessmentApiClientProvider` novo em `core/http/providers.dart`, mesmo padrão do `workoutApiClientProvider`. Widgets "burros" (só dados+callbacks) para o P2.5 reusar sem duplicar. `flutter analyze` limpo, guard de strings limpo, 42 testes verdes (4 novos do form de medidas: parcial ok, vazio bloqueado, observação sozinha bloqueada, vírgula decimal aceita). Aceite manual em Android (aluno lança medida+bioimpedância+foto e vê o gráfico de carga real do P1) fica para o humano — roteiro no P2-evolucao.md |

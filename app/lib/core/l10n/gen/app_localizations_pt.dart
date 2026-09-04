@@ -802,6 +802,187 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get sessionEmptyValue => '—';
+
+  @override
+  String get evolutionTabLoad => 'Carga';
+
+  @override
+  String get evolutionTabMeasurements => 'Medidas';
+
+  @override
+  String get evolutionTabPhotos => 'Fotos';
+
+  @override
+  String get evolutionMeasurementsSection => 'Medidas corporais';
+
+  @override
+  String get evolutionAddMeasurement => 'Nova medida';
+
+  @override
+  String get evolutionBioimpedanceSection => 'Bioimpedância';
+
+  @override
+  String get evolutionAddBioimpedance => 'Nova leitura';
+
+  @override
+  String get evolutionPhotosSection => 'Fotos de evolução';
+
+  @override
+  String get evolutionAddPhoto => 'Nova foto';
+
+  @override
+  String get evolutionDeleteTitle => 'Apagar registro?';
+
+  @override
+  String get evolutionDeleteBody => 'Essa ação não pode ser desfeita.';
+
+  @override
+  String get evolutionPhotosCompareTitle => 'Comparar antes/depois';
+
+  @override
+  String get evolutionDateLabel => 'Data';
+
+  @override
+  String get evolutionValueHint => '0';
+
+  @override
+  String get evolutionNotesLabel => 'Observações';
+
+  @override
+  String get measurementFormEmpty => 'Preencha ao menos uma medida.';
+
+  @override
+  String get evolutionMeasurementsEmpty => 'Nenhuma medida registrada ainda.';
+
+  @override
+  String get evolutionBioimpedanceEmpty =>
+      'Nenhuma leitura de bioimpedância ainda.';
+
+  @override
+  String get evolutionMetricMaxLoad => 'Carga máxima';
+
+  @override
+  String get evolutionMetricVolume => 'Volume';
+
+  @override
+  String get evolutionRangeOneMonth => '1 mês';
+
+  @override
+  String get evolutionRangeThreeMonths => '3 meses';
+
+  @override
+  String get evolutionRangeSixMonths => '6 meses';
+
+  @override
+  String get evolutionRangeAll => 'Tudo';
+
+  @override
+  String get evolutionNoDataForRange => 'Sem registros neste período.';
+
+  @override
+  String get evolutionNoExercisesYet =>
+      'Você ainda não registrou nenhuma série. Treine para ver o gráfico aqui.';
+
+  @override
+  String get evolutionPhotosEmpty => 'Nenhuma foto ainda.';
+
+  @override
+  String get evolutionPhotosCompareNeedTwo =>
+      'Registre pelo menos duas fotos para comparar.';
+
+  @override
+  String get evolutionPoseFront => 'Frente';
+
+  @override
+  String get evolutionPoseSide => 'Lado';
+
+  @override
+  String get evolutionPoseBack => 'Costas';
+
+  @override
+  String get evolutionNewMeasurement => 'Nova medida';
+
+  @override
+  String get evolutionNewBioimpedance => 'Nova leitura de bioimpedância';
+
+  @override
+  String get evolutionNewPhoto => 'Nova foto';
+
+  @override
+  String get evolutionPhotoFromCamera => 'Câmera';
+
+  @override
+  String get evolutionPhotoFromGallery => 'Galeria';
+
+  @override
+  String get evolutionPhotoEmptyPreview => 'Escolha uma foto para continuar.';
+
+  @override
+  String get evolutionPhotoRequired => 'Escolha uma foto antes de salvar.';
+
+  @override
+  String get evolutionPhotoPickError =>
+      'Não foi possível processar a foto. Tente outra.';
+
+  @override
+  String get measurementFieldWeightKg => 'Peso (kg)';
+
+  @override
+  String get measurementFieldHeightCm => 'Altura (cm)';
+
+  @override
+  String get measurementFieldNeckCm => 'Pescoço (cm)';
+
+  @override
+  String get measurementFieldShoulderCm => 'Ombro (cm)';
+
+  @override
+  String get measurementFieldChestCm => 'Peito (cm)';
+
+  @override
+  String get measurementFieldWaistCm => 'Cintura (cm)';
+
+  @override
+  String get measurementFieldAbdomenCm => 'Abdômen (cm)';
+
+  @override
+  String get measurementFieldHipCm => 'Quadril (cm)';
+
+  @override
+  String get measurementFieldArmLCm => 'Braço esq. (cm)';
+
+  @override
+  String get measurementFieldArmRCm => 'Braço dir. (cm)';
+
+  @override
+  String get measurementFieldThighLCm => 'Coxa esq. (cm)';
+
+  @override
+  String get measurementFieldThighRCm => 'Coxa dir. (cm)';
+
+  @override
+  String get measurementFieldCalfLCm => 'Panturrilha esq. (cm)';
+
+  @override
+  String get measurementFieldCalfRCm => 'Panturrilha dir. (cm)';
+
+  @override
+  String get bioimpedanceFieldBodyFatPct => '% de gordura';
+
+  @override
+  String get bioimpedanceFieldMuscleMassKg => 'Massa muscular (kg)';
+
+  @override
+  String get bioimpedanceFieldVisceralFat => 'Gordura visceral';
+
+  @override
+  String get bioimpedanceFieldBodyWaterPct => '% de água corporal';
+
+  @override
+  String get bioimpedanceFieldBoneMassKg => 'Massa óssea (kg)';
+
+  @override
+  String get bioimpedanceFieldBmrKcal => 'Taxa metabólica basal (kcal)';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).

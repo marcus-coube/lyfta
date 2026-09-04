@@ -802,4 +802,184 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sessionEmptyValue => '—';
+
+  @override
+  String get evolutionTabLoad => 'Load';
+
+  @override
+  String get evolutionTabMeasurements => 'Measurements';
+
+  @override
+  String get evolutionTabPhotos => 'Photos';
+
+  @override
+  String get evolutionMeasurementsSection => 'Body measurements';
+
+  @override
+  String get evolutionAddMeasurement => 'New measurement';
+
+  @override
+  String get evolutionBioimpedanceSection => 'Bioimpedance';
+
+  @override
+  String get evolutionAddBioimpedance => 'New reading';
+
+  @override
+  String get evolutionPhotosSection => 'Progress photos';
+
+  @override
+  String get evolutionAddPhoto => 'New photo';
+
+  @override
+  String get evolutionDeleteTitle => 'Delete record?';
+
+  @override
+  String get evolutionDeleteBody => 'This action can\'t be undone.';
+
+  @override
+  String get evolutionPhotosCompareTitle => 'Compare before/after';
+
+  @override
+  String get evolutionDateLabel => 'Date';
+
+  @override
+  String get evolutionValueHint => '0';
+
+  @override
+  String get evolutionNotesLabel => 'Notes';
+
+  @override
+  String get measurementFormEmpty => 'Fill in at least one measurement.';
+
+  @override
+  String get evolutionMeasurementsEmpty => 'No measurements logged yet.';
+
+  @override
+  String get evolutionBioimpedanceEmpty => 'No bioimpedance readings yet.';
+
+  @override
+  String get evolutionMetricMaxLoad => 'Max load';
+
+  @override
+  String get evolutionMetricVolume => 'Volume';
+
+  @override
+  String get evolutionRangeOneMonth => '1 month';
+
+  @override
+  String get evolutionRangeThreeMonths => '3 months';
+
+  @override
+  String get evolutionRangeSixMonths => '6 months';
+
+  @override
+  String get evolutionRangeAll => 'All';
+
+  @override
+  String get evolutionNoDataForRange => 'No entries in this period.';
+
+  @override
+  String get evolutionNoExercisesYet =>
+      'You haven\'t logged any set yet. Train to see the chart here.';
+
+  @override
+  String get evolutionPhotosEmpty => 'No photos yet.';
+
+  @override
+  String get evolutionPhotosCompareNeedTwo =>
+      'Log at least two photos to compare.';
+
+  @override
+  String get evolutionPoseFront => 'Front';
+
+  @override
+  String get evolutionPoseSide => 'Side';
+
+  @override
+  String get evolutionPoseBack => 'Back';
+
+  @override
+  String get evolutionNewMeasurement => 'New measurement';
+
+  @override
+  String get evolutionNewBioimpedance => 'New bioimpedance reading';
+
+  @override
+  String get evolutionNewPhoto => 'New photo';
+
+  @override
+  String get evolutionPhotoFromCamera => 'Camera';
+
+  @override
+  String get evolutionPhotoFromGallery => 'Gallery';
+
+  @override
+  String get evolutionPhotoEmptyPreview => 'Choose a photo to continue.';
+
+  @override
+  String get evolutionPhotoRequired => 'Choose a photo before saving.';
+
+  @override
+  String get evolutionPhotoPickError =>
+      'Couldn\'t process the photo. Try another one.';
+
+  @override
+  String get measurementFieldWeightKg => 'Weight (kg)';
+
+  @override
+  String get measurementFieldHeightCm => 'Height (cm)';
+
+  @override
+  String get measurementFieldNeckCm => 'Neck (cm)';
+
+  @override
+  String get measurementFieldShoulderCm => 'Shoulder (cm)';
+
+  @override
+  String get measurementFieldChestCm => 'Chest (cm)';
+
+  @override
+  String get measurementFieldWaistCm => 'Waist (cm)';
+
+  @override
+  String get measurementFieldAbdomenCm => 'Abdomen (cm)';
+
+  @override
+  String get measurementFieldHipCm => 'Hip (cm)';
+
+  @override
+  String get measurementFieldArmLCm => 'Left arm (cm)';
+
+  @override
+  String get measurementFieldArmRCm => 'Right arm (cm)';
+
+  @override
+  String get measurementFieldThighLCm => 'Left thigh (cm)';
+
+  @override
+  String get measurementFieldThighRCm => 'Right thigh (cm)';
+
+  @override
+  String get measurementFieldCalfLCm => 'Left calf (cm)';
+
+  @override
+  String get measurementFieldCalfRCm => 'Right calf (cm)';
+
+  @override
+  String get bioimpedanceFieldBodyFatPct => 'Body fat %';
+
+  @override
+  String get bioimpedanceFieldMuscleMassKg => 'Muscle mass (kg)';
+
+  @override
+  String get bioimpedanceFieldVisceralFat => 'Visceral fat';
+
+  @override
+  String get bioimpedanceFieldBodyWaterPct => 'Body water %';
+
+  @override
+  String get bioimpedanceFieldBoneMassKg => 'Bone mass (kg)';
+
+  @override
+  String get bioimpedanceFieldBmrKcal => 'Basal metabolic rate (kcal)';
 }

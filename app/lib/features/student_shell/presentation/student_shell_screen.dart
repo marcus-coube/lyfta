@@ -7,12 +7,13 @@ import '../../../core/design_system/design_system.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_shell_scaffold.dart';
 import '../../../shared/widgets/role_context_switcher.dart';
+import '../../evolution/presentation/evolution_screen.dart';
 import '../../workout/presentation/today_screen.dart';
 
 /// Shell do aluno — Hoje, Evolução, Chat e Agenda. Lateral em telas largas
 /// (web/desktop), barra inferior em mobile (`LyShellScaffold`, breakpoint
-/// ~840px). **Hoje** é a tela real do P1.7; evolução chega no P2, chat no P3
-/// e agenda no P4.
+/// ~840px). **Hoje** é a tela real do P1.7, **Evolução** é a do P2.4; chat
+/// chega no P3 e agenda no P4.
 class StudentShellScreen extends ConsumerStatefulWidget {
   const StudentShellScreen({super.key});
 
@@ -30,10 +31,22 @@ class _StudentShellScreenState extends ConsumerState<StudentShellScreen> {
     final authState = ref.watch(authControllerProvider);
 
     final destinations = [
-      LyShellDestination(icon: Icons.today_outlined, label: l10n.homeStudentTabToday),
-      LyShellDestination(icon: Icons.show_chart_outlined, label: l10n.homeStudentTabEvolution),
-      LyShellDestination(icon: Icons.chat_bubble_outline, label: l10n.homeStudentTabChat),
-      LyShellDestination(icon: Icons.calendar_month_outlined, label: l10n.homeStudentTabAgenda),
+      LyShellDestination(
+        icon: Icons.today_outlined,
+        label: l10n.homeStudentTabToday,
+      ),
+      LyShellDestination(
+        icon: Icons.show_chart_outlined,
+        label: l10n.homeStudentTabEvolution,
+      ),
+      LyShellDestination(
+        icon: Icons.chat_bubble_outline,
+        label: l10n.homeStudentTabChat,
+      ),
+      LyShellDestination(
+        icon: Icons.calendar_month_outlined,
+        label: l10n.homeStudentTabAgenda,
+      ),
     ];
 
     return LyShellScaffold(
@@ -49,6 +62,7 @@ class _StudentShellScreenState extends ConsumerState<StudentShellScreen> {
       ],
       body: switch (_index) {
         0 => const TodayScreen(),
+        1 => const EvolutionScreen(),
         _ => Center(
             child: Text(
               l10n.homePlaceholderBody,
