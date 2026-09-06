@@ -5,13 +5,16 @@ import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../domain/bioimpedance.dart';
+import '../domain/evolution_scope.dart';
 import '../widgets/bioimpedance_form.dart';
 import 'bioimpedance_controller.dart';
 
 /// Tela de lançamento de bioimpedância — mesmo desenho da
 /// [MeasurementFormScreen].
 class BioimpedanceFormScreen extends ConsumerStatefulWidget {
-  const BioimpedanceFormScreen({super.key});
+  const BioimpedanceFormScreen({super.key, required this.scope});
+
+  final EvolutionScope scope;
 
   @override
   ConsumerState<BioimpedanceFormScreen> createState() =>
@@ -29,7 +32,9 @@ class _BioimpedanceFormScreenState
       _error = null;
     });
     try {
-      await ref.read(bioimpedanceProvider.notifier).create(draft);
+      await ref
+          .read(bioimpedanceProvider(widget.scope).notifier)
+          .create(draft);
       if (mounted) Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) return;

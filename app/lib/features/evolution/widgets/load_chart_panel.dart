@@ -153,11 +153,17 @@ class _Chart extends StatelessWidget {
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 28,
+              // Sem `interval`, o fl_chart chama este builder em frações do
+              // eixo (0.0, 0.2, 0.4…) e `round()` mapeia várias delas para o
+              // mesmo ponto — a mesma data sai repetida lado a lado. O passo
+              // é o índice do ponto, então o intervalo é ele mesmo.
+              interval: labelStep.toDouble(),
               getTitlesWidget: (value, meta) {
                 final index = value.round();
                 if (index < 0 ||
                     index >= series.length ||
-                    index % labelStep != 0) {
+                    index % labelStep != 0 ||
+                    (value - index).abs() > 0.01) {
                   return const SizedBox.shrink();
                 }
                 return Padding(

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/evolution_repository.dart';
+import '../domain/evolution_scope.dart';
 import '../domain/exercise_history.dart';
 
 /// O que o gráfico de carga desenha: carga máxima da sessão ou volume total
@@ -53,13 +54,16 @@ class LoadSelection {
   }
 }
 
-final loadSelectionProvider =
-    StateProvider.autoDispose<LoadSelection>((ref) => const LoadSelection());
+/// A seleção é por escopo: a aba Carga do aluno e a ficha de cada aluno no
+/// shell do coach guardam a sua — trocar de aluno não herda um exercício que
+/// o outro nunca treinou.
+final loadSelectionProvider = StateProvider.autoDispose
+    .family<LoadSelection, EvolutionScope>((ref, scope) => const LoadSelection());
 
 /// Exercícios já treinados, para o seletor da aba Carga.
-final loggedExercisesProvider =
-    FutureProvider.autoDispose<List<LoggedExercise>>((ref) {
-  return ref.watch(evolutionRepositoryProvider).loggedExercises();
+final loggedExercisesProvider = FutureProvider.autoDispose
+    .family<List<LoggedExercise>, EvolutionScope>((ref, scope) {
+  return ref.watch(evolutionRepositoryProvider).loggedExercises(scope);
 });
 
 /// Parâmetros de uma busca de histórico — `family` em vez de ler
@@ -68,7 +72,11 @@ final loggedExercisesProvider =
 /// selecionado ainda), e derivar esse "efetivo" na tela sem escrever de
 /// volta no provider evita depender de timing de `ref.listen`/callback de
 /// frame para sincronizar os dois.
-typedef ExerciseHistoryQuery = ({String exerciseId, DateTime? since});
+typedef ExerciseHistoryQuery = ({
+  EvolutionScope scope,
+  String exerciseId,
+  DateTime? since,
+});
 
 /// Série de um exercício, em ordem crescente de data (o servidor devolve
 /// decrescente — quem inverte para o eixo do tempo é o cliente, mesma nota
@@ -78,6 +86,6 @@ final exerciseHistoryProvider = FutureProvider.autoDispose
         (ref, query) async {
   final points = await ref
       .watch(evolutionRepositoryProvider)
-      .exerciseHistory(query.exerciseId, since: query.since);
+      .exerciseHistory(query.scope, query.exerciseId, since: query.since);
   return points.reversed.toList();
 });

@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/http/api_exception.dart';
 import '../../../core/http/providers.dart';
 import '../domain/bioimpedance.dart';
+import '../domain/evolution_scope.dart';
+import '../domain/evolution_summary.dart';
 import '../domain/exercise_history.dart';
 import '../domain/measurement.dart';
 import '../domain/progress_photo.dart';
@@ -29,14 +31,17 @@ final evolutionRepositoryProvider = Provider<EvolutionRepository>((ref) {
   );
 });
 
-/// Repositório da tela Evolução (P2.4): histórico de carga sobre o
-/// `workout` (P2.1) e medidas/bioimpedância/fotos sobre o `assessment`
-/// (P2.3) — dois serviços, dois `Dio` (ADR-013: só HTTP entre eles, nenhum
-/// import de código).
+/// Repositório da tela Evolução: histórico de carga sobre o `workout`
+/// (P2.1) e medidas/bioimpedância/fotos/resumo sobre o `assessment` (P2.3)
+/// — dois serviços, dois `Dio` (ADR-013: só HTTP entre eles, nenhum import
+/// de código).
 ///
-/// Só as rotas `/me/...` — a tela do aluno nunca lê/escreve pelo aluno de
-/// outra pessoa. As rotas `/students/{id}/...` do coach (P2.5) ficam de
-/// fora deste repositório de propósito, para não antecipar escopo.
+/// Todo método recebe um [EvolutionScope]: `EvolutionScope.me()` para a tela
+/// do aluno (P2.4, rotas `/me/...`) ou `EvolutionScope.student(id)` para a
+/// ficha do coach (P2.5, rotas `/students/{id}/...`). As duas portas de cada
+/// endpoint têm o mesmo formato nos dois serviços, então [EvolutionScope]
+/// resolve o prefixo uma vez só — nenhum controller/widget precisa saber
+/// qual porta está usando.
 class EvolutionRepository {
   EvolutionRepository({required Dio workoutDio, required Dio assessmentDio})
       : _workout = workoutDio,
@@ -50,9 +55,11 @@ class EvolutionRepository {
   // ---------------------------------------------------------------------
 
   /// Índice de exercícios já treinados — alimenta o seletor da aba Carga.
-  Future<List<LoggedExercise>> loggedExercises() async {
-    final json =
-        await _get<Map<String, dynamic>>(_workout, '/v1/me/exercises/logged');
+  Future<List<LoggedExercise>> loggedExercises(EvolutionScope scope) async {
+    final json = await _get<Map<String, dynamic>>(
+      _workout,
+      '${scope.basePath}/exercises/logged',
+    );
     final items = (json!['items'] as List<dynamic>? ?? const [])
         .map((raw) => LoggedExercise.fromJson(raw as Map<String, dynamic>))
         .toList();
@@ -67,6 +74,7 @@ class EvolutionRepository {
   /// teto de páginas evita paginar para sempre num histórico gigantesco —
   /// se algum dia isso morder de verdade, o parâmetro entra no servidor.
   Future<List<ExerciseHistoryPoint>> exerciseHistory(
+    EvolutionScope scope,
     String exerciseId, {
     DateTime? since,
   }) async {
@@ -78,7 +86,7 @@ class EvolutionRepository {
     for (var page = 0; page < maxPages; page++) {
       final json = await _get<Map<String, dynamic>>(
         _workout,
-        '/v1/me/exercises/$exerciseId/history',
+        '${scope.basePath}/exercises/$exerciseId/history',
         query: {
           'limit': pageLimit,
           if (cursor != null) 'cursor': cursor,
@@ -103,13 +111,14 @@ class EvolutionRepository {
   // Medidas corporais (assessment, P2.3)
   // ---------------------------------------------------------------------
 
-  Future<EvolutionPage<BodyMeasurement>> listMeasurements({
+  Future<EvolutionPage<BodyMeasurement>> listMeasurements(
+    EvolutionScope scope, {
     String? cursor,
     int? limit,
   }) async {
     final json = await _get<Map<String, dynamic>>(
       _assessment,
-      '/v1/me/measurements',
+      '${scope.basePath}/measurements',
       query: {
         if (cursor != null) 'cursor': cursor,
         if (limit != null) 'limit': limit,
@@ -118,31 +127,37 @@ class EvolutionRepository {
     return _page(json!, BodyMeasurement.fromJson);
   }
 
-  Future<BodyMeasurement> createMeasurement(MeasurementDraft draft) async {
+  Future<BodyMeasurement> createMeasurement(
+    EvolutionScope scope,
+    MeasurementDraft draft,
+  ) async {
     final json = await _send(
       () => _assessment.post<Map<String, dynamic>>(
-        '/v1/me/measurements',
+        '${scope.basePath}/measurements',
         data: draft.toJson(),
       ),
     );
     return BodyMeasurement.fromJson(json!);
   }
 
-  Future<void> deleteMeasurement(String id) async {
-    await _send(() => _assessment.delete<void>('/v1/me/measurements/$id'));
+  Future<void> deleteMeasurement(EvolutionScope scope, String id) async {
+    await _send(
+      () => _assessment.delete<void>('${scope.basePath}/measurements/$id'),
+    );
   }
 
   // ---------------------------------------------------------------------
   // Bioimpedância (assessment, P2.3)
   // ---------------------------------------------------------------------
 
-  Future<EvolutionPage<BioimpedanceRecord>> listBioimpedance({
+  Future<EvolutionPage<BioimpedanceRecord>> listBioimpedance(
+    EvolutionScope scope, {
     String? cursor,
     int? limit,
   }) async {
     final json = await _get<Map<String, dynamic>>(
       _assessment,
-      '/v1/me/bioimpedance',
+      '${scope.basePath}/bioimpedance',
       query: {
         if (cursor != null) 'cursor': cursor,
         if (limit != null) 'limit': limit,
@@ -151,31 +166,37 @@ class EvolutionRepository {
     return _page(json!, BioimpedanceRecord.fromJson);
   }
 
-  Future<BioimpedanceRecord> createBioimpedance(BioimpedanceDraft draft) async {
+  Future<BioimpedanceRecord> createBioimpedance(
+    EvolutionScope scope,
+    BioimpedanceDraft draft,
+  ) async {
     final json = await _send(
       () => _assessment.post<Map<String, dynamic>>(
-        '/v1/me/bioimpedance',
+        '${scope.basePath}/bioimpedance',
         data: draft.toJson(),
       ),
     );
     return BioimpedanceRecord.fromJson(json!);
   }
 
-  Future<void> deleteBioimpedance(String id) async {
-    await _send(() => _assessment.delete<void>('/v1/me/bioimpedance/$id'));
+  Future<void> deleteBioimpedance(EvolutionScope scope, String id) async {
+    await _send(
+      () => _assessment.delete<void>('${scope.basePath}/bioimpedance/$id'),
+    );
   }
 
   // ---------------------------------------------------------------------
   // Fotos de evolução (assessment, P2.3)
   // ---------------------------------------------------------------------
 
-  Future<EvolutionPage<ProgressPhoto>> listPhotos({
+  Future<EvolutionPage<ProgressPhoto>> listPhotos(
+    EvolutionScope scope, {
     String? cursor,
     int? limit,
   }) async {
     final json = await _get<Map<String, dynamic>>(
       _assessment,
-      '/v1/me/photos',
+      '${scope.basePath}/photos',
       query: {
         if (cursor != null) 'cursor': cursor,
         if (limit != null) 'limit': limit,
@@ -186,13 +207,14 @@ class EvolutionRepository {
 
   /// Pede a URL assinada para o upload (etapa 1 das duas do presign,
   /// P1.2/P2.3): o serviço nunca recebe os bytes da foto.
-  Future<AssessmentUploadTarget> presignPhoto({
+  Future<AssessmentUploadTarget> presignPhoto(
+    EvolutionScope scope, {
     required String contentType,
     required int sizeBytes,
   }) async {
     final json = await _send(
       () => _assessment.post<Map<String, dynamic>>(
-        '/v1/me/media/presign',
+        '${scope.basePath}/media/presign',
         data: {'content_type': contentType, 'size_bytes': sizeBytes},
       ),
     );
@@ -221,7 +243,8 @@ class EvolutionRepository {
   /// Cadastra a foto depois do upload — `mediaKey` é sempre a `key`
   /// devolvida pelo presign, nunca inventada no cliente (o servidor confere
   /// que ela cai na pasta do aluno certo).
-  Future<ProgressPhoto> createPhoto({
+  Future<ProgressPhoto> createPhoto(
+    EvolutionScope scope, {
     required DateTime takenAt,
     required Pose pose,
     required String mediaKey,
@@ -229,7 +252,7 @@ class EvolutionRepository {
   }) async {
     final json = await _send(
       () => _assessment.post<Map<String, dynamic>>(
-        '/v1/me/photos',
+        '${scope.basePath}/photos',
         data: {
           'taken_at': takenAt.toIso8601String().substring(0, 10),
           'pose': pose.code,
@@ -241,8 +264,25 @@ class EvolutionRepository {
     return ProgressPhoto.fromJson(json!);
   }
 
-  Future<void> deletePhoto(String id) async {
-    await _send(() => _assessment.delete<void>('/v1/me/photos/$id'));
+  Future<void> deletePhoto(EvolutionScope scope, String id) async {
+    await _send(
+      () => _assessment.delete<void>('${scope.basePath}/photos/$id'),
+    );
+  }
+
+  // ---------------------------------------------------------------------
+  // Resumo do coach (assessment, P2.3) — não existe porta `/me/summary`: só
+  // o coach vê o condensado, a tela do aluno já tem as três listas.
+  // ---------------------------------------------------------------------
+
+  Future<EvolutionSummary> summary(EvolutionScope scope) async {
+    assert(
+      scope.isCoach,
+      'resumo é só do coach — o assessment não expõe /me/summary',
+    );
+    final json =
+        await _get<Map<String, dynamic>>(_assessment, '${scope.basePath}/summary');
+    return EvolutionSummary.fromJson(json!);
   }
 
   // ---------------------------------------------------------------------

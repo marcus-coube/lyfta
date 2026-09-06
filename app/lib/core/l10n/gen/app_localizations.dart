@@ -1515,6 +1515,18 @@ abstract class AppLocalizations {
   /// **'—'**
   String get sessionEmptyValue;
 
+  /// Botão da lista de alunos que abre a ficha de evolução.
+  ///
+  /// In pt, this message translates to:
+  /// **'Evolução'**
+  String get studentsOpenEvolution;
+
+  /// Aba de resumo na ficha de evolução do aluno (só o professor vê).
+  ///
+  /// In pt, this message translates to:
+  /// **'Resumo'**
+  String get evolutionTabSummary;
+
   /// No description provided for @evolutionTabLoad.
   ///
   /// In pt, this message translates to:
@@ -1532,6 +1544,30 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Fotos'**
   String get evolutionTabPhotos;
+
+  /// Título do cartão com a medida corporal mais recente do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Última medida'**
+  String get evolutionSummaryLatestMeasurement;
+
+  /// Título do cartão com a leitura de bioimpedância mais recente.
+  ///
+  /// In pt, this message translates to:
+  /// **'Última bioimpedância'**
+  String get evolutionSummaryLatestBioimpedance;
+
+  /// Rótulo da contagem de fotos no resumo do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fotos de evolução'**
+  String get evolutionSummaryPhotoCount;
+
+  /// Título da ficha de evolução do aluno aberta pelo professor.
+  ///
+  /// In pt, this message translates to:
+  /// **'Evolução'**
+  String get evolutionStudentTitle;
 
   /// No description provided for @evolutionMeasurementsSection.
   ///

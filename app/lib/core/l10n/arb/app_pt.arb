@@ -557,9 +557,33 @@
   "@sessionEmptyValue": {
     "description": "Marcador de valor não informado numa série registrada."
   },
+  "studentsOpenEvolution": "Evolução",
+  "@studentsOpenEvolution": {
+    "description": "Botão da lista de alunos que abre a ficha de evolução."
+  },
+  "evolutionTabSummary": "Resumo",
+  "@evolutionTabSummary": {
+    "description": "Aba de resumo na ficha de evolução do aluno (só o professor vê)."
+  },
   "evolutionTabLoad": "Carga",
   "evolutionTabMeasurements": "Medidas",
   "evolutionTabPhotos": "Fotos",
+  "evolutionSummaryLatestMeasurement": "Última medida",
+  "@evolutionSummaryLatestMeasurement": {
+    "description": "Título do cartão com a medida corporal mais recente do aluno."
+  },
+  "evolutionSummaryLatestBioimpedance": "Última bioimpedância",
+  "@evolutionSummaryLatestBioimpedance": {
+    "description": "Título do cartão com a leitura de bioimpedância mais recente."
+  },
+  "evolutionSummaryPhotoCount": "Fotos de evolução",
+  "@evolutionSummaryPhotoCount": {
+    "description": "Rótulo da contagem de fotos no resumo do aluno."
+  },
+  "evolutionStudentTitle": "Evolução",
+  "@evolutionStudentTitle": {
+    "description": "Título da ficha de evolução do aluno aberta pelo professor."
+  },
   "evolutionMeasurementsSection": "Medidas corporais",
   "evolutionAddMeasurement": "Nova medida",
   "evolutionBioimpedanceSection": "Bioimpedância",

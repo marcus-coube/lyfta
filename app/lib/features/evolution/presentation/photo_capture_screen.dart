@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
+import '../domain/evolution_scope.dart';
 import '../domain/progress_photo.dart';
 import '../widgets/evolution_date_field.dart';
 import '../widgets/pose_label.dart';
@@ -20,7 +21,9 @@ import 'photos_controller.dart';
 /// depende do formato original escolhido no picker, então não precisa
 /// inspecionar a extensão do arquivo de origem.
 class PhotoCaptureScreen extends ConsumerStatefulWidget {
-  const PhotoCaptureScreen({super.key});
+  const PhotoCaptureScreen({super.key, required this.scope});
+
+  final EvolutionScope scope;
 
   @override
   ConsumerState<PhotoCaptureScreen> createState() => _PhotoCaptureScreenState();
@@ -85,7 +88,7 @@ class _PhotoCaptureScreenState extends ConsumerState<PhotoCaptureScreen> {
       _error = null;
     });
     try {
-      await ref.read(photosProvider.notifier).upload(
+      await ref.read(photosProvider(widget.scope).notifier).upload(
             bytes: bytes,
             contentType: _contentType,
             takenAt: _takenAt,

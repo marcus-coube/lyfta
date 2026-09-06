@@ -5,6 +5,7 @@ import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../domain/bioimpedance.dart';
+import '../domain/evolution_scope.dart';
 import '../domain/measurement.dart';
 import '../domain/progress_photo.dart';
 import '../widgets/bioimpedance_list.dart';
@@ -20,14 +21,19 @@ import 'measurement_form_screen.dart';
 import 'measurements_controller.dart';
 import 'photo_capture_screen.dart';
 import 'photos_controller.dart';
+import 'summary_tab.dart';
 
-/// A aba Evolução do aluno (P2.4): Carga, Medidas e Fotos.
+/// A aba Evolução (P2.4) e a ficha de evolução do aluno vista pelo coach
+/// (P2.5) — a mesma composição, parametrizada pelo [EvolutionScope].
 ///
-/// Três seções em abas, não telas separadas — é o mesmo dado (o progresso
-/// do aluno) visto de três ângulos, e o P2.5 reabre exatamente esta
-/// composição na ficha do aluno pelo lado do coach.
+/// Seções em abas, não telas separadas: é o mesmo dado (o progresso do
+/// aluno) visto de vários ângulos. No escopo do coach entra uma aba a mais,
+/// o Resumo (`GET /v1/students/{id}/summary`, P2.3), que a tela do aluno não
+/// tem — quem já vê as três listas inteiras não precisa do condensado.
 class EvolutionScreen extends StatefulWidget {
-  const EvolutionScreen({super.key});
+  const EvolutionScreen({super.key, this.scope = const EvolutionScope.me()});
+
+  final EvolutionScope scope;
 
   @override
   State<EvolutionScreen> createState() => _EvolutionScreenState();
@@ -35,7 +41,10 @@ class EvolutionScreen extends StatefulWidget {
 
 class _EvolutionScreenState extends State<EvolutionScreen>
     with SingleTickerProviderStateMixin {
-  late final _tabController = TabController(length: 3, vsync: this);
+  late final _tabController = TabController(
+    length: widget.scope.isCoach ? 4 : 3,
+    vsync: this,
+  );
 
   @override
   void dispose() {
@@ -57,7 +66,11 @@ class _EvolutionScreenState extends State<EvolutionScreen>
             labelColor: c.accent,
             unselectedLabelColor: c.textSecondary,
             indicatorColor: c.accent,
+            isScrollable: widget.scope.isCoach,
+            tabAlignment:
+                widget.scope.isCoach ? TabAlignment.start : TabAlignment.fill,
             tabs: [
+              if (widget.scope.isCoach) Tab(text: l10n.evolutionTabSummary),
               Tab(text: l10n.evolutionTabLoad),
               Tab(text: l10n.evolutionTabMeasurements),
               Tab(text: l10n.evolutionTabPhotos),
@@ -67,7 +80,12 @@ class _EvolutionScreenState extends State<EvolutionScreen>
         Expanded(
           child: TabBarView(
             controller: _tabController,
-            children: const [_LoadTab(), _MeasurementsTab(), _PhotosTab()],
+            children: [
+              if (widget.scope.isCoach) SummaryTab(scope: widget.scope),
+              _LoadTab(scope: widget.scope),
+              _MeasurementsTab(scope: widget.scope),
+              _PhotosTab(scope: widget.scope),
+            ],
           ),
         ),
       ],
@@ -76,21 +94,23 @@ class _EvolutionScreenState extends State<EvolutionScreen>
 }
 
 class _LoadTab extends ConsumerWidget {
-  const _LoadTab();
+  const _LoadTab({required this.scope});
+
+  final EvolutionScope scope;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = context.ly;
-    final logged = ref.watch(loggedExercisesProvider);
+    final logged = ref.watch(loggedExercisesProvider(scope));
 
     return logged.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, _) => _TabError(
         message: describeApiError(context, error),
-        onRetry: () => ref.invalidate(loggedExercisesProvider),
+        onRetry: () => ref.invalidate(loggedExercisesProvider(scope)),
       ),
       data: (items) {
-        final selection = ref.watch(loadSelectionProvider);
+        final selection = ref.watch(loadSelectionProvider(scope));
         final effectiveId = selection.exerciseId ??
             (items.isEmpty ? null : items.first.exercise.id);
 
@@ -101,7 +121,7 @@ class _LoadTab extends ConsumerWidget {
               items: items,
               selectedId: effectiveId,
               onChanged: (id) => ref
-                  .read(loadSelectionProvider.notifier)
+                  .read(loadSelectionProvider(scope).notifier)
                   .update((s) => s.copyWith(exerciseId: id)),
             ),
             const SizedBox(height: LySpace.x4),
@@ -111,6 +131,7 @@ class _LoadTab extends ConsumerWidget {
                   final history = ref.watch(
                     exerciseHistoryProvider(
                       (
+                        scope: scope,
                         exerciseId: effectiveId,
                         since: selection.range.since(DateTime.now())
                       ),
@@ -129,11 +150,11 @@ class _LoadTab extends ConsumerWidget {
                       points: points,
                       metric: selection.metric,
                       onMetricChanged: (metric) => ref
-                          .read(loadSelectionProvider.notifier)
+                          .read(loadSelectionProvider(scope).notifier)
                           .update((s) => s.copyWith(metric: metric)),
                       range: selection.range,
                       onRangeChanged: (range) => ref
-                          .read(loadSelectionProvider.notifier)
+                          .read(loadSelectionProvider(scope).notifier)
                           .update((s) => s.copyWith(range: range)),
                     ),
                   );
@@ -147,13 +168,15 @@ class _LoadTab extends ConsumerWidget {
 }
 
 class _MeasurementsTab extends ConsumerWidget {
-  const _MeasurementsTab();
+  const _MeasurementsTab({required this.scope});
+
+  final EvolutionScope scope;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final measurements = ref.watch(measurementsProvider);
-    final bioimpedance = ref.watch(bioimpedanceProvider);
+    final measurements = ref.watch(measurementsProvider(scope));
+    final bioimpedance = ref.watch(bioimpedanceProvider(scope));
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -204,13 +227,13 @@ class _MeasurementsTab extends ConsumerWidget {
 
   Future<void> _openMeasurementForm(BuildContext context) async {
     await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const MeasurementFormScreen()),
+      MaterialPageRoute(builder: (_) => MeasurementFormScreen(scope: scope)),
     );
   }
 
   Future<void> _openBioimpedanceForm(BuildContext context) async {
     await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const BioimpedanceFormScreen()),
+      MaterialPageRoute(builder: (_) => BioimpedanceFormScreen(scope: scope)),
     );
   }
 
@@ -238,7 +261,7 @@ class _MeasurementsTab extends ConsumerWidget {
       ),
     );
     if (confirmed ?? false) {
-      await ref.read(measurementsProvider.notifier).delete(item.id);
+      await ref.read(measurementsProvider(scope).notifier).delete(item.id);
     }
   }
 
@@ -266,18 +289,20 @@ class _MeasurementsTab extends ConsumerWidget {
       ),
     );
     if (confirmed ?? false) {
-      await ref.read(bioimpedanceProvider.notifier).delete(item.id);
+      await ref.read(bioimpedanceProvider(scope).notifier).delete(item.id);
     }
   }
 }
 
 class _PhotosTab extends ConsumerWidget {
-  const _PhotosTab();
+  const _PhotosTab({required this.scope});
+
+  final EvolutionScope scope;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final photos = ref.watch(photosProvider);
+    final photos = ref.watch(photosProvider(scope));
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(
@@ -292,7 +317,9 @@ class _PhotosTab extends ConsumerWidget {
           actionLabel: l10n.evolutionAddPhoto,
           onAction: () async {
             await Navigator.of(context).push<bool>(
-              MaterialPageRoute(builder: (_) => const PhotoCaptureScreen()),
+              MaterialPageRoute(
+                builder: (_) => PhotoCaptureScreen(scope: scope),
+              ),
             );
           },
         ),
@@ -351,7 +378,7 @@ class _PhotosTab extends ConsumerWidget {
       ),
     );
     if (confirmed ?? false) {
-      await ref.read(photosProvider.notifier).delete(photo.id);
+      await ref.read(photosProvider(scope).notifier).delete(photo.id);
     }
   }
 }

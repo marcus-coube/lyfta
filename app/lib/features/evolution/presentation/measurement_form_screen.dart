@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
+import '../domain/evolution_scope.dart';
 import '../domain/measurement.dart';
 import '../widgets/measurement_form.dart';
 import 'measurements_controller.dart';
@@ -11,7 +12,12 @@ import 'measurements_controller.dart';
 /// Tela de lançamento de medida corporal — envolve o [MeasurementForm]
 /// (widget "burro", reusável no P2.5) com o repositório e a navegação.
 class MeasurementFormScreen extends ConsumerStatefulWidget {
-  const MeasurementFormScreen({super.key});
+  const MeasurementFormScreen({super.key, required this.scope});
+
+  /// De quem é a medida sendo lançada: o próprio aluno (P2.4) ou o aluno da
+  /// ficha aberta pelo coach (P2.5) — avaliação presencial é lançada por
+  /// quem mediu, não por quem foi medido.
+  final EvolutionScope scope;
 
   @override
   ConsumerState<MeasurementFormScreen> createState() =>
@@ -28,7 +34,7 @@ class _MeasurementFormScreenState extends ConsumerState<MeasurementFormScreen> {
       _error = null;
     });
     try {
-      await ref.read(measurementsProvider.notifier).create(draft);
+      await ref.read(measurementsProvider(widget.scope).notifier).create(draft);
       if (mounted) Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) return;

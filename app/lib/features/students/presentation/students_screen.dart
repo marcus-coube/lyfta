@@ -26,6 +26,15 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
     super.dispose();
   }
 
+  /// Abre a ficha de evolução do aluno (P2.5). O nome vai por `extra` só
+  /// para o título — a tela funciona sem ele quando a URL é aberta direto.
+  void _openEvolution(StudentRow row) {
+    context.push<void>(
+      '/students/${row.student.id}/evolution',
+      extra: row.student.name,
+    );
+  }
+
   Future<void> _openPlan(String planId) async {
     await context.push<void>('/plans/$planId');
     if (!mounted) return;
@@ -206,6 +215,7 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                     row: rows[index],
                     onOpenPlan: _openPlan,
                     onNewPlan: () => _newPlan(rows[index]),
+                    onOpenEvolution: () => _openEvolution(rows[index]),
                   ),
                 );
               },
@@ -222,11 +232,13 @@ class _StudentTile extends StatelessWidget {
     required this.row,
     required this.onOpenPlan,
     required this.onNewPlan,
+    required this.onOpenEvolution,
   });
 
   final StudentRow row;
   final ValueChanged<String> onOpenPlan;
   final VoidCallback onNewPlan;
+  final VoidCallback onOpenEvolution;
 
   @override
   Widget build(BuildContext context) {
@@ -277,7 +289,18 @@ class _StudentTile extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: LySpace.x3),
+          const SizedBox(width: LySpace.x2),
+          // Evolução fica ao lado do plano, não no lugar dele: são as duas
+          // coisas que o professor faz com um aluno (montar treino e
+          // acompanhar progresso), e o toque no card segue abrindo o plano
+          // como no P1.6.
+          IconButton(
+            onPressed: onOpenEvolution,
+            icon: const Icon(Icons.show_chart),
+            color: c.textSecondary,
+            tooltip: l10n.studentsOpenEvolution,
+          ),
+          const SizedBox(width: LySpace.x2),
           LyButton(
             label: plan == null ? l10n.studentsNewPlan : l10n.studentsOpenPlan,
             variant: LyButtonVariant.secondary,

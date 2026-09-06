@@ -63,7 +63,7 @@ lê nada); deltas do summary corretos.
 **Aceite:** aluno lança medida+bioimpedância+foto no Android e vê gráfico de carga
 real do P1; teste de widget do form de medidas (parcial ok, vazio bloqueado).
 
-## - [ ] P2.5 Flutter — professor: evolução do aluno
+## - [x] P2.5 Flutter — professor: evolução do aluno
 
 **Objetivo:** o coach enxerga o progresso de cada aluno.
 **Passos:** na ficha do aluno (shell professor): abas Resumo (summary do P2.3 com
@@ -323,3 +323,50 @@ mesmos widgets renderizam nos dois shells sem duplicação de código.
   mostra a série real, lançar uma medida parcial, uma leitura de
   bioimpedância e uma foto (câmera **e** galeria) e conferir que aparecem
   nas listas/grade sem recarregar o app.
+
+### P2.5 (2026-09-06, Mac)
+
+- **O escopo virou um valor, não um segundo repositório.** `EvolutionScope`
+  (`me()` ou `student(id)`) carrega só o prefixo da rota — `/v1/me` ou
+  `/v1/students/{id}` —, que é igual nos dois serviços (P2.1 e P2.3). Todo
+  método do `EvolutionRepository` passou a recebê-lo, e os controllers
+  viraram `family` por escopo. Sem isso, ou o coach ganhava uma cópia de
+  cada controller e widget, ou o repositório teria dois métodos por rota; a
+  dívida anotada no P2.4 fecha aqui.
+- **Cada aluno tem seu próprio estado, inclusive a seleção do gráfico.**
+  `loadSelectionProvider` também é família: abrir a ficha de outro aluno não
+  herda um exercício que ele nunca treinou, e voltar para a lista não deixa
+  a seleção anterior grudada.
+- **A ficha é a mesma `EvolutionScreen`, com uma aba a mais.** No escopo do
+  coach entra o Resumo (`GET /students/{id}/summary`), que a tela do aluno
+  não tem porque o `assessment` não expõe `/me/summary` — quem já vê as três
+  listas inteiras não precisa do condensado. O `summary()` do repositório
+  tem `assert(scope.isCoach)` para essa porta não ser chamada por engano.
+- **Evolução entrou como ação ao lado do plano na lista de alunos**, não no
+  lugar dele: são as duas coisas que o professor faz com um aluno, e o toque
+  no card segue abrindo o plano como no P1.6. A rota
+  `/students/{id}/evolution` é de primeira classe (mesmo motivo do builder:
+  recarregar a página na web), com o nome do aluno vindo por `extra` só para
+  o título — sem ele a tela abre igual.
+- **Defeito de gráfico achado no Aceite e corrigido aqui:** sem `interval`,
+  o `fl_chart` chama o `getTitlesWidget` em frações do eixo (0.0, 0.2, 0.4…)
+  e o `round()` mapeava várias delas para o mesmo ponto — o eixo X saía com
+  a mesma data repetida quatro vezes seguidas. O P2.4 não viu porque a tela
+  do aluno nunca teve dados nesta máquina. Passou a valer `interval:
+  labelStep` mais o descarte de valor não inteiro.
+- **Verificado (Mac):** `flutter analyze` limpo, guard de strings limpo e
+  **44 testes verdes** (2 novos: a mesma tela montada nos dois escopos —
+  3 abas e nenhuma chamada de resumo no do aluno; 4 abas, resumo pedido uma
+  vez e nenhuma chamada vazando para `/me` no do coach). Aceite exercitado no
+  Chrome com `identity`+`workout`+`assessment` no ar, sobre um cenário criado
+  para isso (coach, aluna convidada e aceita, 3 medidas, 2 bioimpedâncias e 4
+  sessões de treino pelo `POST /sync/workout-logs`): as 4 abas navegadas com
+  dado real — Resumo com deltas -3 kg / -3,5 cm / -4,6 %, Medidas com os três
+  registros e deltas coloridos, Carga desenhando 32,5→40 kg (e o volume
+  877,5→1160 kg no toggle, com o range de 1 mês cortando para os dois últimos
+  pontos) e Fotos no estado vazio com o botão de lançamento do coach.
+- **Dívida que segue aberta:** `created_by` continua fora das tabelas do
+  `assessment` (P2.2/P2.3), então uma medida lançada pelo coach é
+  indistinguível de uma lançada pelo aluno; e o vínculo coach↔aluno continua
+  sendo dívida do `identity` — qualquer professor do tenant abre a ficha de
+  qualquer aluno, o mesmo critério do P1.4/P2.1.

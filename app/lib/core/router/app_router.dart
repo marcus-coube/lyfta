@@ -9,6 +9,7 @@ import '../../features/auth/presentation/reset_password_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/builder/presentation/plan_builder_screen.dart';
 import '../../features/coach_shell/presentation/coach_shell_screen.dart';
+import '../../features/evolution/presentation/student_evolution_screen.dart';
 import '../../features/student_shell/presentation/student_shell_screen.dart';
 import '../../features/workout/presentation/session_player_screen.dart';
 import '../auth/auth_controller.dart';
@@ -77,6 +78,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/plans/:id',
         builder: (context, state) => PlanBuilderScreen(
           planId: state.pathParameters['id']!,
+        ),
+      ),
+      // A ficha de evolução do aluno é rota de primeira classe pelo mesmo
+      // motivo do builder: o professor abre, manda o link para si mesmo e
+      // recarrega a página na web sem perder onde estava.
+      GoRoute(
+        path: '/students/:id/evolution',
+        builder: (context, state) => StudentEvolutionScreen(
+          studentId: state.pathParameters['id']!,
+          studentName: state.extra as String?,
         ),
       ),
       // O player é rota própria pelo mesmo motivo do builder: recarregar a

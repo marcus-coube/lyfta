@@ -804,6 +804,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get sessionEmptyValue => '—';
 
   @override
+  String get studentsOpenEvolution => 'Evolução';
+
+  @override
+  String get evolutionTabSummary => 'Resumo';
+
+  @override
   String get evolutionTabLoad => 'Carga';
 
   @override
@@ -811,6 +817,18 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get evolutionTabPhotos => 'Fotos';
+
+  @override
+  String get evolutionSummaryLatestMeasurement => 'Última medida';
+
+  @override
+  String get evolutionSummaryLatestBioimpedance => 'Última bioimpedância';
+
+  @override
+  String get evolutionSummaryPhotoCount => 'Fotos de evolução';
+
+  @override
+  String get evolutionStudentTitle => 'Evolução';
 
   @override
   String get evolutionMeasurementsSection => 'Medidas corporais';
