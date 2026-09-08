@@ -50,3 +50,43 @@ type ConversationSummary struct {
 	LastMessage *Message
 	UnreadCount int
 }
+
+// PainLevel é a dor relatada no check-in de treino (P3.3) — `strong` é o
+// gatilho do push imediato pro coach (P3.4).
+type PainLevel string
+
+const (
+	PainNone   PainLevel = "none"
+	PainMild   PainLevel = "mild"
+	PainStrong PainLevel = "strong"
+)
+
+// IsValidPainLevel confere se v é um PainLevel conhecido.
+func IsValidPainLevel(v PainLevel) bool {
+	return v == PainNone || v == PainMild || v == PainStrong
+}
+
+// IsValidCheckinScore confere se v está no intervalo 1..5 usado tanto por
+// `rating` quanto por `difficulty` (migration 0003).
+func IsValidCheckinScore(v int) bool {
+	return v >= 1 && v <= 5
+}
+
+// WorkoutCheckin é a avaliação estruturada que o aluno registra ao concluir
+// o treino (ADR-012 §2) — idempotente por (tenant_id, session_client_id), o
+// mesmo client_id da sessão no serviço workout (ADR-003 §2, sem FK entre
+// bancos, ADR-013 §2).
+type WorkoutCheckin struct {
+	ID              string
+	TenantID        string
+	StudentID       string
+	SessionClientID string
+	Rating          int
+	Difficulty      int
+	Pain            PainLevel
+	PainNotes       string
+	Comment         string
+	CreatedAt       time.Time
+	ReviewedBy      string
+	ReviewedAt      *time.Time
+}

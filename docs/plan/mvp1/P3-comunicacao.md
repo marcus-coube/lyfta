@@ -40,7 +40,7 @@ mesmo com 1 instância, já nasce certo). Migrations:
 **Aceite:** teste de integração: 2 conexões WS trocam mensagem; queda de WS não
 perde mensagem (REST recupera); não lidas zeram no read.
 
-## - [ ] P3.3 comms — check-in de treino (avaliação)
+## - [x] P3.3 comms — check-in de treino (avaliação)
 
 **Objetivo:** feedback estruturado do aluno ao concluir o treino.
 **Endpoints:** `POST /v1/checkins` (aluno; 1 por `session_client_id` — idempotente);
@@ -196,3 +196,64 @@ assinado à mão com a chave privada do `identity` (mesmas claims que o
 depender de inbox no smoke manual), e a partir daí: conversa criada pelo
 coach, mensagem de texto trocada, não lida zerando no read, presign de
 imagem com `PUT` real no MinIO e leitura do `media_url` assinado de volta.
+
+**P3.3:** check-in de treino. Nenhuma migration nova — a `workout_checkins`
+da P3.1 já tinha todas as colunas do plano. `POST /v1/checkins` (sem
+restrição de papel, mesmo critério do `/v1/sync/workout-logs` do workout):
+`student_id` vem só da claim (`claims.Subject`), nunca do corpo — se o
+corpo mandar `student_id` ele é ignorado, não decodificado. Idempotência
+pela unique `(tenant_id, session_client_id)` com o mesmo truque do
+`ConversationRepo.GetOrCreate` (`ON CONFLICT ... DO UPDATE SET tenant_id =
+tenant_id` só para forçar o `RETURNING` da linha existente): reenvio da
+mesma sessão com dados diferentes devolve os dados **originais**, não
+sobrescreve.
+
+`GET /v1/checkins?student_id=` (coach/owner) trata `student_id` como
+filtro **opcional**, não obrigatório — decisão registrada aqui em vez de
+travar a tarefa: a P3.5 usa esse endpoint tanto na aba de check-ins da
+ficha do aluno (com `student_id`) quanto, potencialmente, numa fila geral
+do coach (sem filtro); e o índice `idx_workout_checkins_pending` da P3.1
+foi desenhado sem coluna de aluno, o que só faz sentido para a consulta
+sem filtro. Ordenação (Aceite: "não revisados primeiro, depois
+cronológico") é `reviewed_at NULLS FIRST, created_at DESC, id DESC` nos
+dois casos. `EXPLAIN` confirmado neste ambiente: sem `student_id`, o plano
+usa `idx_workout_checkins_pending` (com `enable_bitmapscan`/`seqscan`
+desligados vira `Index Scan` + `Incremental Sort`, aproveitando a
+pré-ordenação do índice; com o planner padrão, no volume pequeno do dev,
+vira `Bitmap Heap Scan` sobre o mesmo índice + `Sort` explícito — o índice
+é usado nos dois casos, só não elimina o `Sort` a essa escala); com
+`student_id`, o Postgres troca para `idx_workout_checkins_student` e
+ordena em memória — aceitável porque o volume por aluno é pequeno.
+
+Cursor keyset ficou em 3 campos (`reviewed_at` + `created_at` + `id`) em
+vez dos 2 do cursor de mensagens, porque a ordenação mistura uma coluna
+nullable em ASC (NULLS FIRST) com `created_at` em DESC — não dá pra usar
+comparação de tupla simples. Armadilha encontrada e corrigida ainda nesta
+tarefa: a primeira versão usava um "zero-time" do Go como sentinela de "não
+revisado" e comparava contra o `-infinity` do SQL — os dois não são o mesmo
+valor (`0001-01-01` é maior que `-infinity`), então a segunda página vinha
+sempre vazia. A correção usa `*time.Time` nulo de verdade dos dois lados
+(`COALESCE(reviewed_at, '-infinity') = COALESCE($1, '-infinity')`), com um
+parâmetro à parte (`$2 IS NULL`) só para dizer "sem cursor" — coberto por
+`TestCheckinListPagination`.
+
+Dor `strong` publica um evento (`checkin.pain_strong`) no canal Redis
+`comms:user:{coach}` que o P3.2 já criou, mesmo formato dos eventos de
+chat — sem tocar no `internal/ws.Hub` nem antecipar FCM (isso é P3.4).
+"Qual é o coach" resolve consultando as próprias `conversations` do comms
+(o par aluno-coach já vive aqui desde a P3.1): publica para todo coach com
+quem o aluno já tem conversa aberta. Se ainda não existir nenhuma
+conversa, nada é publicado — o alcance completo ("qualquer professor do
+tenant", independente de chat já aberto) depende do vínculo coach↔aluno do
+identity, dívida já anotada desde o P1.4, e do FCM da P3.4.
+
+`gofmt`/`go vet` limpos, 27 testes verdes (11 novos: 6 de repositório
+cobrindo idempotência/ordenação/paginação/filtro por aluno/revisão
+idempotente/not-found, 6 de integração HTTP sobre `httptest.NewServer`
+com Postgres+Redis reais cobrindo o Aceite literal, autorização por papel,
+validação de campos e o gancho de push), inclusive com `-race`. Smoke
+manual com `identity`+`comms` reais: signup real do coach, token de aluno
+assinado à mão com a chave privada do identity (mesmo atalho do smoke da
+P3.2, sem depender de convite por e-mail) — aluno cria check-in, reenvio
+idempotente confirmado, coach lista e revisa, aluno tentando listar recebe
+403.

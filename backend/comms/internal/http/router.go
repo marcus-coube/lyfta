@@ -30,6 +30,7 @@ func NewRouter(
 	conversationHandler *ConversationHandler,
 	mediaHandler *MediaHandler,
 	wsHandler *WSHandler,
+	checkinHandler *CheckinHandler,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -70,6 +71,17 @@ func NewRouter(
 		r.Group(func(r chi.Router) {
 			r.Use(RequireRole("owner", "coach"))
 			r.Post("/conversations", conversationHandler.Start)
+		})
+
+		// Check-in de treino (P3.3): o aluno escreve o próprio (student_id vem
+		// da claim, ver CheckinHandler.Create) — sem restrição de papel aqui,
+		// igual ao restante do chat. Ler a fila e revisar é coisa de
+		// coach/owner, mesmo critério de "qualquer professor do tenant".
+		r.Post("/checkins", checkinHandler.Create)
+		r.Group(func(r chi.Router) {
+			r.Use(RequireRole("owner", "coach"))
+			r.Get("/checkins", checkinHandler.List)
+			r.Post("/checkins/{id}/review", checkinHandler.Review)
 		})
 	})
 

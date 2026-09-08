@@ -82,10 +82,12 @@ func run(logger *slog.Logger) error {
 
 	conversations := repo.NewConversationRepo(pool)
 	messages := repo.NewMessageRepo(pool)
+	checkins := repo.NewCheckinRepo(pool)
 	router := chttp.NewRouter(logger, cfg.CORSOrigins, verifier,
 		chttp.NewConversationHandler(logger, conversations, messages, presigner, redisClient),
 		chttp.NewMediaHandler(logger, conversations, presigner),
 		chttp.NewWSHandler(logger, verifier, hub),
+		chttp.NewCheckinHandler(logger, checkins, conversations, redisClient),
 	)
 
 	server := &http.Server{
