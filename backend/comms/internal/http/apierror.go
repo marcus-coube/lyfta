@@ -34,11 +34,44 @@ func writeError(w http.ResponseWriter, err APIError) {
 	_ = json.NewEncoder(w).Encode(err)
 }
 
+// writeJSON serializa qualquer payload de sucesso com o status informado.
+func writeJSON(w http.ResponseWriter, status int, payload any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(payload)
+}
+
 var (
 	errUnauthenticated = func() APIError {
 		return newAPIError(http.StatusUnauthorized, "unauthenticated")
 	}
 	errForbidden = func() APIError {
 		return newAPIError(http.StatusForbidden, "forbidden")
+	}
+	errInvalidBody = func() APIError {
+		return newAPIError(http.StatusBadRequest, "invalid_body")
+	}
+	errValidation = func(field string) APIError {
+		return newAPIError(http.StatusBadRequest, "validation_error", "field", field)
+	}
+	errInvalidCursor = func() APIError {
+		return newAPIError(http.StatusBadRequest, "invalid_cursor")
+	}
+	errNotFound = func(resource string) APIError {
+		return newAPIError(http.StatusNotFound, "not_found", "resource", resource)
+	}
+	errUnsupportedMediaType = func(contentType string) APIError {
+		return newAPIError(http.StatusUnsupportedMediaType, "unsupported_media_type", "content_type", contentType)
+	}
+	errFileTooLarge = func(maxBytes int64) APIError {
+		return newAPIError(http.StatusRequestEntityTooLarge, "file_too_large", "max_bytes", maxBytes)
+	}
+	// A key do presign não bate com a pasta da conversa alvo — ver
+	// media.ValidKeyForConversation.
+	errInvalidMediaKey = func() APIError {
+		return newAPIError(http.StatusUnprocessableEntity, "invalid_media_key")
+	}
+	errInternal = func() APIError {
+		return newAPIError(http.StatusInternalServerError, "internal_error")
 	}
 )

@@ -52,6 +52,11 @@ func newTestKeys(t *testing.T) string {
 	return string(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: pubBytes}))
 }
 
+// newTestRouter monta o roteador com os handlers de chat vazios (nil): os
+// três testes deste arquivo só exercitam /healthz e /v1/whoami — a
+// integração real do chat (REST+WS) mora em chat_integration_test.go, que
+// precisa de Postgres/Redis de verdade e por isso constrói o roteador com
+// handlers reais.
 func newTestRouter(t *testing.T) http.Handler {
 	t.Helper()
 	verifier, err := security.NewJWTVerifier(newTestKeys(t))
@@ -59,7 +64,10 @@ func newTestRouter(t *testing.T) http.Handler {
 		t.Fatalf("criar verifier: %v", err)
 	}
 	logger := slog.New(slog.DiscardHandler)
-	return chttp.NewRouter(logger, []string{"*"}, verifier)
+	var conversationHandler *chttp.ConversationHandler
+	var mediaHandler *chttp.MediaHandler
+	var wsHandler *chttp.WSHandler
+	return chttp.NewRouter(logger, []string{"*"}, verifier, conversationHandler, mediaHandler, wsHandler)
 }
 
 func TestHealthzIsPublic(t *testing.T) {
@@ -94,7 +102,10 @@ func TestWhoamiAcceptsValidToken(t *testing.T) {
 		t.Fatalf("criar verifier: %v", err)
 	}
 	logger := slog.New(slog.DiscardHandler)
-	handler := chttp.NewRouter(logger, []string{"*"}, verifier)
+	var conversationHandler *chttp.ConversationHandler
+	var mediaHandler *chttp.MediaHandler
+	var wsHandler *chttp.WSHandler
+	handler := chttp.NewRouter(logger, []string{"*"}, verifier, conversationHandler, mediaHandler, wsHandler)
 
 	token := signToken(t, priv, "tenant-a", "user-a", []string{"coach"})
 	req := httptest.NewRequest(http.MethodGet, "/v1/whoami", nil)

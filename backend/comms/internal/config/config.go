@@ -5,23 +5,30 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
 // Config agrega as variáveis de ambiente usadas pelo serviço comms.
 // Sem JWT_PRIVATE_KEY: quem assina token é o identity; o comms só valida com
-// a chave pública (ADR-013 §4). S3_* entra na P3.2 junto do presign de imagem
-// do chat — não é obrigatória aqui porque a P3.1 não expõe nenhum endpoint de
-// mídia (mesma progressão do assessment: dívida anotada, quitada quando o
-// endpoint existir).
+// a chave pública (ADR-013 §4). S3_* entra na P3.2 junto do presign de
+// imagem do chat — dívida anotada na P3.1 (não havia endpoint de mídia
+// ainda), quitada aqui, mesma progressão do assessment (P2.2 → P2.3).
 type Config struct {
-	Port          string
-	DatabaseURL   string
-	JWTPublicKey  string
-	InternalToken string
-	RedisURL      string
-	CORSOrigins   []string
-	AppEnv        string
+	Port            string
+	DatabaseURL     string
+	JWTPublicKey    string
+	InternalToken   string
+	RedisURL        string
+	S3Endpoint      string
+	S3Region        string
+	S3Bucket        string
+	S3AccessKey     string
+	S3SecretKey     string
+	S3UsePathStyle  bool
+	S3PublicBaseURL string
+	CORSOrigins     []string
+	AppEnv          string
 }
 
 // Load lê as variáveis de ambiente do processo e valida as obrigatórias.
@@ -32,8 +39,18 @@ func Load() (Config, error) {
 		JWTPublicKey:  unescapeNewlines(os.Getenv("JWT_PUBLIC_KEY")),
 		InternalToken: os.Getenv("INTERNAL_TOKEN"),
 		RedisURL:      getEnv("REDIS_URL", "redis://localhost:6379/0"),
-		CORSOrigins:   splitAndTrim(getEnv("CORS_ORIGINS", "http://localhost:*")),
-		AppEnv:        getEnv("APP_ENV", "development"),
+		S3Endpoint:    os.Getenv("S3_ENDPOINT"),
+		S3Region:      getEnv("S3_REGION", "us-east-1"),
+		S3Bucket:      getEnv("S3_BUCKET", "lyfta-media"),
+		S3AccessKey:   os.Getenv("S3_ACCESS_KEY"),
+		S3SecretKey:   os.Getenv("S3_SECRET_KEY"),
+		// MinIO e o endpoint de conta do R2 servem bucket por caminho; um S3
+		// "de verdade" usa subdomínio (S3_USE_PATH_STYLE=false) — mesmo
+		// critério do workout/assessment.
+		S3UsePathStyle:  getEnvBool("S3_USE_PATH_STYLE", true),
+		S3PublicBaseURL: os.Getenv("S3_PUBLIC_BASE_URL"),
+		CORSOrigins:     splitAndTrim(getEnv("CORS_ORIGINS", "http://localhost:*")),
+		AppEnv:          getEnv("APP_ENV", "development"),
 	}
 
 	if cfg.DatabaseURL == "" {
@@ -48,6 +65,18 @@ func Load() (Config, error) {
 	// serviço subiria e só falharia na primeira mensagem em trânsito.
 	if cfg.RedisURL == "" {
 		return Config{}, fmt.Errorf("config: REDIS_URL é obrigatória")
+	}
+	// Imagem de chat (P3.2) é parte do serviço: sem storage configurado o
+	// upload falharia só na hora do uso, com o aluno/coach na frente da tela.
+	for _, v := range []struct{ name, value string }{
+		{"S3_ENDPOINT", cfg.S3Endpoint},
+		{"S3_BUCKET", cfg.S3Bucket},
+		{"S3_ACCESS_KEY", cfg.S3AccessKey},
+		{"S3_SECRET_KEY", cfg.S3SecretKey},
+	} {
+		if v.value == "" {
+			return Config{}, fmt.Errorf("config: %s é obrigatória (storage da imagem de chat)", v.name)
+		}
 	}
 
 	return cfg, nil
@@ -65,6 +94,20 @@ func getEnv(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+// getEnvBool aceita os valores que strconv.ParseBool entende ("1", "true",
+// "false"…); qualquer outra coisa cai no fallback.
+func getEnvBool(key string, fallback bool) bool {
+	v, ok := os.LookupEnv(key)
+	if !ok || v == "" {
+		return fallback
+	}
+	parsed, err := strconv.ParseBool(v)
+	if err != nil {
+		return fallback
+	}
+	return parsed
 }
 
 func splitAndTrim(v string) []string {

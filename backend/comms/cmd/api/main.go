@@ -14,9 +14,11 @@ import (
 
 	"github.com/marcus-coube/lyfta/comms/internal/config"
 	chttp "github.com/marcus-coube/lyfta/comms/internal/http"
+	"github.com/marcus-coube/lyfta/comms/internal/media"
 	"github.com/marcus-coube/lyfta/comms/internal/pubsub"
 	"github.com/marcus-coube/lyfta/comms/internal/repo"
 	"github.com/marcus-coube/lyfta/comms/internal/security"
+	"github.com/marcus-coube/lyfta/comms/internal/ws"
 )
 
 func main() {
@@ -59,7 +61,32 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 
-	router := chttp.NewRouter(logger, cfg.CORSOrigins, verifier)
+	presigner, err := media.NewPresigner(media.Config{
+		Endpoint:      cfg.S3Endpoint,
+		Region:        cfg.S3Region,
+		Bucket:        cfg.S3Bucket,
+		AccessKey:     cfg.S3AccessKey,
+		SecretKey:     cfg.S3SecretKey,
+		UsePathStyle:  cfg.S3UsePathStyle,
+		PublicBaseURL: cfg.S3PublicBaseURL,
+	})
+	if err != nil {
+		return err
+	}
+
+	// Registro das conexões WS ativas nesta instância (P3.2) — o
+	// pubsub.Relay entrega aqui o que os handlers REST publicam no Redis
+	// (fan-out entre instâncias, mesmo com uma única instância hoje).
+	hub := ws.NewHub()
+	go pubsub.Relay(ctx, redisClient, logger, hub.Deliver)
+
+	conversations := repo.NewConversationRepo(pool)
+	messages := repo.NewMessageRepo(pool)
+	router := chttp.NewRouter(logger, cfg.CORSOrigins, verifier,
+		chttp.NewConversationHandler(logger, conversations, messages, presigner, redisClient),
+		chttp.NewMediaHandler(logger, conversations, presigner),
+		chttp.NewWSHandler(logger, verifier, hub),
+	)
 
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,

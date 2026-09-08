@@ -25,7 +25,7 @@ mesmo com 1 instância, já nasce certo). Migrations:
 - `notification_log (id, tenant_id, user_id, kind, payload, sent_at)`.
 **Aceite:** migrations limpas; RLS testada.
 
-## - [ ] P3.2 comms — chat REST + WebSocket
+## - [x] P3.2 comms — chat REST + WebSocket
 
 **Objetivo:** troca de mensagens em tempo real com histórico.
 **Endpoints:**
@@ -126,3 +126,73 @@ ping+round-trip do Redis, healthz público, whoami rejeita/aceita token).
 `gofmt`/`go vet` limpos, reversibilidade `down -all`→`up` verificada, e smoke
 com `identity`+`comms` reais no ar: signup gerando token real autenticando no
 `/v1/whoami`.
+
+**P3.2:** chat REST + WebSocket. Duas dependências novas, ambas pré-aprovadas
+na sessão: `github.com/gorilla/websocket` (lib mais consolidada do
+ecossistema Go, casa bem com chi/`net/http` via `Upgrader` — linha nova em
+`backend/README.md` § Stack pinada) e `aws-sdk-go-v2` (`service/s3` +
+`credentials`) no comms, quitando a dívida de mídia anotada na P3.1 (mesmo
+presigner do workout/assessment, adaptado: `internal/media`, key
+`tenants/{t}/chat/{conversation_id}/{uuid}.ext`, `ValidKeyForConversation`
+como par de segurança). `S3_*` virou obrigatória em `internal/config` e
+entrou no `.env.example`/`.env` do comms.
+
+Endpoints (`internal/http/conversations.go`, `media.go`, `ws.go`):
+`GET /v1/conversations` (prévia + não lidas via `LEFT JOIN LATERAL` +
+subquery, sem porta `/me`×`/students/{id}` — aluno e coach acessam a mesma
+conversa, autorização é "sou participante", checada dentro do handler),
+`GET/POST /v1/conversations/{id}/messages` (cursor keyset por
+`created_at,id` com precisão de instante — `internal/http/cursor.go` é
+irmão do cursor do assessment, mas RFC3339Nano em vez de `DateOnly`: mensagem
+acontece várias por segundo), `POST .../read` (zera não lidas do leitor,
+idempotente), `POST .../media/presign`. O plano só descrevia
+`GET /v1/conversations` — como abrir uma conversa nova não estava no plano,
+acrescentei `POST /v1/conversations {student_id}` (só coach/owner, "qualquer
+professor do tenant" — mesmo critério do P1.4/P2.1/P2.3) fazendo
+get-or-create sobre a unique da migration 0001: é a peça que faltava para o
+chat ser utilizável e não conflita com nenhum ADR, então segui em vez de
+parar (registrado aqui em vez de silenciar).
+
+WebSocket: `GET /ws?token=` (token na query — o handshake do browser não
+manda header customizado) autentica com o mesmo `security.JWTVerifier`,
+depois `internal/ws.Hub` registra a conexão por `user_id` (mais de uma por
+usuário — múltiplos devices). Fan-out entre instâncias via Redis
+(`internal/pubsub`): o handler REST publica o evento serializado no canal
+`comms:user:{id}` de cada participante (não por conversa — como quem publica
+já filtra pelos dois participantes da conversa, publicar por usuário é mais
+simples e a P3.4 reusa o mesmo canal para decidir se manda push);
+`pubsub.Relay` é uma goroutine única por instância que assina
+`comms:user:*` e entrega ao `Hub` local — sem isso a instância que recebeu o
+POST e a instância com a conexão WS do destinatário poderiam ser processos
+diferentes. Confirmado que `StructuredLogging` não vaza o token: loga
+`r.URL.Path`, que no `net/http` já exclui a query string — nenhuma redação
+extra foi necessária (só o comentário em `router.go` registrando a
+verificação).
+
+Teste de integração (`internal/http/chat_integration_test.go`,
+`TestChatEndToEnd`) sobe o roteador real atrás de `httptest.NewServer`
+(WebSocket precisa de hijack de verdade — `ResponseRecorder` não serve) com
+Postgres/Redis reais (mesmo padrão skip-fora-do-CI/fail-no-CI dos demais
+testes de integração do serviço) e cobre o Aceite literal: duas conexões WS
+(aluno e coach) recebem `message.new` quando o aluno manda texto; o WS do
+coach cai (`Close()`), uma mensagem chega nesse meio tempo, e o histórico
+REST do coach recupera as duas mensagens sem perda; `POST .../read` zera
+`unread_count` de 1 para 0. `TestChatAuthorizationAndValidation` cobre as
+bordas (tipo inválido, imagem sem `media_key`, `media_key` de outra
+conversa, usuário de fora recebendo 403, conversa inexistente 404 em vez de
+vazar 403). `internal/repo/conversations_test.go` cobre get-or-create
+idempotente, paginação por cursor e que `MarkRead` só afeta mensagens do
+outro participante. `internal/ws.Hub` ficou só em memória por instância
+(sem presença em Redis) — a P3.4 pede explicitamente esse registro
+Redis-backed para decidir push, então fica para lá em vez de antecipar aqui.
+
+CI: passo do MinIO passou a subir também para `matrix.service == 'comms'`
+(mesma condição do workout/assessment). `gofmt`/`go vet` limpos, todos os
+testes verdes (incluindo `-race`), e smoke com `identity`+`comms` reais no
+ar: signup do coach pelo `identity`; para o aluno, o e-mail de convite não
+tinha como ser lido nesta sessão, então o token de acesso do aluno foi
+assinado à mão com a chave privada do `identity` (mesmas claims que o
+`/v1/auth/login` emitiria — não é um caminho novo, só um atalho para não
+depender de inbox no smoke manual), e a partir daí: conversa criada pelo
+coach, mensagem de texto trocada, não lida zerando no read, presign de
+imagem com `PUT` real no MinIO e leitura do `media_url` assinado de volta.

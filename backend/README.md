@@ -31,6 +31,10 @@ de código entre serviços — só HTTP).
   **aws-sdk-go-v2** (`service/s3` + `credentials`) — é o SDK que a Cloudflare
   documenta para R2, então trocar MinIO por S3/R2 é configuração
   (`S3_ENDPOINT`, `S3_USE_PATH_STYLE`, `S3_PUBLIC_BASE_URL`), não código (ADR-009).
+- WebSocket (só `comms`): **gorilla/websocket** — a lib mais consolidada do
+  ecossistema Go, casa bem com chi/`net/http` via `Upgrader`; o registro de
+  conexões (`internal/ws`) é a base do fan-out de chat (P3.2) e do push do
+  P3.4.
 
 ## Layout padrão de cada serviço
 
