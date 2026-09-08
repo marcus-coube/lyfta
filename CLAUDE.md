@@ -64,8 +64,9 @@ Na P3, o quinto serviço, `comms`, está de pé com o schema inteiro da fase
 (conversas, mensagens, check-ins, tokens de device, log de notificação) (P3.1)
 e já serve o chat: REST com cursor e não lidas, imagem por presign e
 `GET /ws?token=` entregando `message.new`/`message.read`, com fan-out entre
-instâncias pelo Redis (P3.2).
-Próxima: **P3.3** (check-in de treino). Escopo do MVP em
+instâncias pelo Redis (P3.2), mais o check-in de treino do aluno — idempotente
+por sessão, com a fila do coach ordenada por não revisados (P3.3).
+Próxima: **P3.4** (push FCM + job de treino pendente). Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor
 funcionam em **todas** as plataformas (mobile e web).
