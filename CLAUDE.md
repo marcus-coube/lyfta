@@ -61,9 +61,11 @@ gráfico de carga (`fl_chart`), medidas e bioimpedância com deltas, fotos com
 comparador antes/depois —, parametrizada por `EvolutionScope` (`me()` ou
 `student(id)`), com a aba Resumo a mais no lado do professor (P2.4/P2.5).
 Na P3, o quinto serviço, `comms`, está de pé com o schema inteiro da fase
-(conversas, mensagens, check-ins, tokens de device, log de notificação) e o
-cliente Redis que vai fazer o fan-out do WS (P3.1).
-Próxima: **P3.2** (chat REST + WebSocket). Escopo do MVP em
+(conversas, mensagens, check-ins, tokens de device, log de notificação) (P3.1)
+e já serve o chat: REST com cursor e não lidas, imagem por presign e
+`GET /ws?token=` entregando `message.new`/`message.read`, com fan-out entre
+instâncias pelo Redis (P3.2).
+Próxima: **P3.3** (check-in de treino). Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor
 funcionam em **todas** as plataformas (mobile e web).
