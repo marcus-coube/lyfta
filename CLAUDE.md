@@ -15,8 +15,8 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
   plataformas com `flutter create .` (ver [app/README.md](app/README.md)).
   - `lib/core/design_system/` — tokens, tema e componentes `Ly*` (fonte de verdade do DS).
   - `lib/features/` — features por domínio (`auth/` = login visual, único hoje).
-- `backend/` — microserviços Go: `identity` (8081), `workout` (8082) e
-  `assessment` (8083) existem; `comms` (8084) ainda não. Stack pinada, portas e bancos em
+- `backend/` — microserviços Go: `identity` (8081), `workout` (8082),
+  `assessment` (8083) e `comms` (8084) existem. Stack pinada, portas e bancos em
   [backend/README.md](backend/README.md). Futuro: cada serviço em repo próprio —
   **nunca** importar código entre serviços (duplicar é o certo: ver o
   `internal/security` de cada um).
@@ -35,13 +35,13 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 - **[docs/benchmarking/](docs/benchmarking/)** — auditoria HubFit × Trainerize × Lyfta.
 - `docs/guidelines/` — convenções de código (ex.: `flutter.md`).
 
-## Estado atual (2026-09-02)
+## Estado atual (2026-09-08)
 **Executando o plano do MVP 1.0** ([docs/plan/mvp1/](docs/plan/mvp1/)) na ordem
-P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P2.X").
+P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P3.X").
 **Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
 saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
-**P0, P1 e P2 concluídas, 20/29:** `identity` completo (auth, convites, reset, lista
-de usuários do tenant), CI no GitHub Actions (`.github/workflows/ci.yml`) e o
+**P0, P1 e P2 concluídas e a P3 começada, 21/29:** `identity` completo (auth,
+convites, reset, lista de usuários do tenant), CI no GitHub Actions (`.github/workflows/ci.yml`) e o
 serviço `workout` completo do lado servidor — schema do ADR-004, mídia por URL
 presignada, biblioteca com seed global de 41 exercícios em 3 locales, builder
 versionado e o contrato offline do ADR-003 (treino do dia, push idempotente da
@@ -60,7 +60,10 @@ histórico por exercício que vira o gráfico de carga (P2.1), o serviço
 gráfico de carga (`fl_chart`), medidas e bioimpedância com deltas, fotos com
 comparador antes/depois —, parametrizada por `EvolutionScope` (`me()` ou
 `student(id)`), com a aba Resumo a mais no lado do professor (P2.4/P2.5).
-Próxima: **P3.1** (fase P3 — Comunicação). Escopo do MVP em
+Na P3, o quinto serviço, `comms`, está de pé com o schema inteiro da fase
+(conversas, mensagens, check-ins, tokens de device, log de notificação) e o
+cliente Redis que vai fazer o fan-out do WS (P3.1).
+Próxima: **P3.2** (chat REST + WebSocket). Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor
 funcionam em **todas** as plataformas (mobile e web).
