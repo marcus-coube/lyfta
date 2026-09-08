@@ -8,7 +8,7 @@ Refs normativas: ADR-012 (escopo texto+imagem), ADR-013 (comms + M2M), ADR-011.
 
 ---
 
-## - [ ] P3.1 Serviço comms — esqueleto + schema
+## - [x] P3.1 Serviço comms — esqueleto + schema
 
 **Objetivo:** serviço de comunicação de pé.
 **Passos:** bootstrap padrão + Redis (pub/sub para fan-out de WS entre instâncias —
@@ -93,3 +93,36 @@ bolha de mensagem e do form de check-in.
 ## Notas de execução
 
 (o agente anota aqui descobertas, dívidas e desvios aprovados)
+
+**P3.1:** quinto microserviço, `comms` (8084, banco `lyfta_comms`) — bootstrap
+idêntico ao assessment (chi+pgxpool+slog, JWT EdDSA validado com a chave pública
+do identity, `/healthz` + `/v1/whoami`, `internal/security`/`internal/repo`
+duplicados, nenhum import entre serviços, ADR-013 §2). 6 migrations com as 5
+tabelas do plano — `conversations` (unique por tenant+student+coach),
+`messages` (append-only, `CHECK` casando `type` com `body`/`media_key`),
+`workout_checkins` (unique por tenant+`session_client_id`, idempotência igual
+à do workout), `device_tokens` (unique por tenant+user+platform, upsert-ready)
+e `notification_log` — todas com RLS forçada e policy `tenant_isolation`,
+índice começando por `tenant_id`. Dependência nova: `github.com/redis/go-redis/v9`
+(cliente oficial recomendado pelo Redis) — Redis já é infra pinada
+(`backend/README.md`/`docker-compose.yml`), faltava só o driver Go, mesmo
+raciocínio do `aws-sdk-go-v2` na P1.2. `internal/pubsub/redis.go` cria o
+client e confirma com `PING` na subida (falha cedo, como o pool do Postgres);
+o fan-out de WS de fato (publish/subscribe por conversa) é escopo da P3.2 —
+aqui só o mecanismo básico é testado (round-trip publish→subscribe).
+
+Índice de dedupe do `notification_log` mudou de funcional (`sent_at::date`)
+para simples (`tenant_id, user_id, kind, sent_at DESC`): o cast
+`timestamptz -> date` não é `IMMUTABLE` (depende do timezone da sessão) e o
+Postgres recusa a migration. A consulta de dedupe do job diário (P3.4) filtra
+por uma faixa `[início do dia, início do dia seguinte)` sobre esse índice —
+descoberto rodando a migration local, não é uma dívida, é a forma certa.
+
+CI ganhou o step condicional de Redis para o job `comms` (mesmo padrão do
+MinIO para workout/assessment) e a env `REDIS_URL` no `go test`. 8 testes
+verdes (isolamento cross-tenant nas 5 tabelas, RLS bloqueia escrita sem
+`app.tenant_id`, unicidade de `conversations` e de `workout_checkins`,
+ping+round-trip do Redis, healthz público, whoami rejeita/aceita token).
+`gofmt`/`go vet` limpos, reversibilidade `down -all`→`up` verificada, e smoke
+com `identity`+`comms` reais no ar: signup gerando token real autenticando no
+`/v1/whoami`.
