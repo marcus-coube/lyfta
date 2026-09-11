@@ -14,6 +14,7 @@ import (
 
 	"github.com/marcus-coube/lyfta/comms/internal/domain"
 	"github.com/marcus-coube/lyfta/comms/internal/pubsub"
+	"github.com/marcus-coube/lyfta/comms/internal/push"
 	"github.com/marcus-coube/lyfta/comms/internal/repo"
 )
 
@@ -29,6 +30,7 @@ type CheckinHandler struct {
 	checkins      *repo.CheckinRepo
 	conversations *repo.ConversationRepo
 	redisClient   *redis.Client
+	notifier      *push.Notifier
 }
 
 // NewCheckinHandler cria o handler de check-ins.
@@ -38,11 +40,11 @@ type CheckinHandler struct {
 // essa tabela para descobrir "o coach deste aluno" é mais barato que
 // inventar uma consulta M2M nova ao identity — que é o único lugar que sabe
 // o vínculo coach↔aluno de verdade (dívida aberta desde o P1.4). Se o aluno
-// ainda não tem conversa aberta com nenhum coach, nada é publicado: o
-// alcance completo ("qualquer professor do tenant" via FCM) é escopo da
-// P3.4.
-func NewCheckinHandler(logger *slog.Logger, checkins *repo.CheckinRepo, conversations *repo.ConversationRepo, redisClient *redis.Client) *CheckinHandler {
-	return &CheckinHandler{logger: logger, checkins: checkins, conversations: conversations, redisClient: redisClient}
+// ainda não tem conversa aberta com nenhum coach, nada é publicado. notifier
+// pode ser nil nos testes que não exercitam push (mesmo critério do
+// ConversationHandler).
+func NewCheckinHandler(logger *slog.Logger, checkins *repo.CheckinRepo, conversations *repo.ConversationRepo, redisClient *redis.Client, notifier *push.Notifier) *CheckinHandler {
+	return &CheckinHandler{logger: logger, checkins: checkins, conversations: conversations, redisClient: redisClient, notifier: notifier}
 }
 
 type checkinDTO struct {
@@ -147,9 +149,12 @@ func (h *CheckinHandler) Create(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusCreated, h.toDTO(created))
 }
 
-// notifyCoachesOfStrongPain publica o evento de dor forte para cada coach
-// com quem o aluno já tem conversa aberta neste tenant — falha ao publicar
-// não derruba a criação do check-in, que já está gravado.
+// notifyCoachesOfStrongPain publica o evento de dor forte para cada coach com
+// quem o aluno já tem conversa aberta neste tenant, e manda push pra eles —
+// sempre, esteja o coach online ou não (ao contrário de message.new, o plano
+// não condiciona este push à presença: dor é importante o bastante pra tocar
+// mesmo com o app aberto). Falha ao publicar/mandar push não derruba a
+// criação do check-in, que já está gravado.
 func (h *CheckinHandler) notifyCoachesOfStrongPain(r *http.Request, c domain.WorkoutCheckin) {
 	convs, err := h.conversations.ListForUser(r.Context(), c.TenantID, c.StudentID)
 	if err != nil {
@@ -166,6 +171,11 @@ func (h *CheckinHandler) notifyCoachesOfStrongPain(r *http.Request, c domain.Wor
 	for _, conv := range convs {
 		if err := pubsub.PublishToUser(r.Context(), h.redisClient, conv.CoachID, payload); err != nil {
 			h.logger.Error("checkin_pain_event_publish_failed", slog.Any("error", err), slog.String("coach_id", conv.CoachID))
+		}
+		if h.notifier != nil {
+			h.notifier.Send(r.Context(), c.TenantID, conv.CoachID, push.KindCheckinPainStrong, map[string]string{
+				"type": "checkin.pain_strong", "checkin_id": c.ID, "student_id": c.StudentID,
+			})
 		}
 	}
 }

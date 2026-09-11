@@ -29,6 +29,20 @@ type Config struct {
 	S3PublicBaseURL string
 	CORSOrigins     []string
 	AppEnv          string
+
+	// Push FCM (P3.4). FCMCredentialsJSON aceita caminho de arquivo .json ou
+	// o JSON inline (ver backend/comms/.env.example); vazia é uma opção
+	// válida — o serviço sobe normalmente com push desligado (dev sem
+	// Firebase configurado), só loga um aviso na subida (main.go).
+	FCMCredentialsJSON string
+	// WorkoutBaseURL é onde o comms encontra o workout para o M2M do job
+	// diário (GET /internal/v1/pending-students, ADR-013 §4/§5).
+	WorkoutBaseURL string
+	// NotificationTimezone resolve "hoje" e "18h" para o job diário. Não há
+	// timezone por tenant hoje (nem no identity, nem aqui) — dívida anotada
+	// nas Notas de execução da P3.4; até existir, todo tenant usa o mesmo
+	// fuso.
+	NotificationTimezone string
 }
 
 // Load lê as variáveis de ambiente do processo e valida as obrigatórias.
@@ -51,6 +65,10 @@ func Load() (Config, error) {
 		S3PublicBaseURL: os.Getenv("S3_PUBLIC_BASE_URL"),
 		CORSOrigins:     splitAndTrim(getEnv("CORS_ORIGINS", "http://localhost:*")),
 		AppEnv:          getEnv("APP_ENV", "development"),
+
+		FCMCredentialsJSON:   os.Getenv("FCM_CREDENTIALS_JSON"),
+		WorkoutBaseURL:       getEnv("WORKOUT_BASE_URL", "http://localhost:8082"),
+		NotificationTimezone: getEnv("NOTIFICATION_TIMEZONE", "America/Sao_Paulo"),
 	}
 
 	if cfg.DatabaseURL == "" {

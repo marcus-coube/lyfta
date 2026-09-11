@@ -35,6 +35,12 @@ de código entre serviços — só HTTP).
   ecossistema Go, casa bem com chi/`net/http` via `Upgrader`; o registro de
   conexões (`internal/ws`) é a base do fan-out de chat (P3.2) e do push do
   P3.4.
+- Push FCM (só `comms`, P3.4): **golang.org/x/oauth2/google** + chamada HTTP
+  direta à FCM HTTP v1 API, em vez do Admin SDK oficial
+  (`firebase.google.com/go/v4`) — o SDK arrasta uma árvore de dependências
+  pensada pra todo o produto Firebase (Firestore, Storage, Auth...) pra usar
+  uma fração mínima (mandar 1 mensagem por token); a chamada direta ao v1 é o
+  que o SDK faz por baixo dos panos, então não perde nada essencial ao MVP.
 
 ## Layout padrão de cada serviço
 

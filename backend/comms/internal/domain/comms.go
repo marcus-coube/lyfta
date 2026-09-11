@@ -90,3 +90,46 @@ type WorkoutCheckin struct {
 	ReviewedBy      string
 	ReviewedAt      *time.Time
 }
+
+// Locale é o idioma de renderização do push (ADR-011 §3: o servidor
+// renderiza no locale do destinatário) — os três do lançamento (ADR-011 §1).
+const (
+	LocalePTBR = "pt-BR"
+	LocalePTPT = "pt-PT"
+	LocaleEN   = "en"
+)
+
+// IsValidLocale confere se v é um dos três locales do lançamento.
+func IsValidLocale(v string) bool {
+	return v == LocalePTBR || v == LocalePTPT || v == LocaleEN
+}
+
+// DevicePlatform é a plataforma do device que registrou o token de push
+// (P3.4) — mesmas três da migration 0004_device_tokens.
+type DevicePlatform string
+
+const (
+	PlatformAndroid DevicePlatform = "android"
+	PlatformIOS     DevicePlatform = "ios"
+	PlatformWeb     DevicePlatform = "web"
+)
+
+// IsValidPlatform confere se v é uma DevicePlatform conhecida.
+func IsValidPlatform(v DevicePlatform) bool {
+	return v == PlatformAndroid || v == PlatformIOS || v == PlatformWeb
+}
+
+// DeviceToken é o token de push de um device (P3.4) — upsert por
+// tenant+user+platform (migration 0004). Locale é gravado no momento do
+// registro (POST /v1/devices): é a única fonte do idioma do destinatário
+// disponível fora de uma requisição HTTP dele (o job diário roda numa
+// goroutine, sem claim — ver Notas de execução da P3.4).
+type DeviceToken struct {
+	ID        string
+	TenantID  string
+	UserID    string
+	Platform  DevicePlatform
+	Token     string
+	Locale    string
+	UpdatedAt time.Time
+}

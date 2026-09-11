@@ -49,7 +49,7 @@ perde mensagem (REST recupera); não lidas zeram no read.
 **Aceite:** duplicata de check-in não cria segundo registro; listagem do coach
 ordena não revisados primeiro.
 
-## - [ ] P3.4 comms — push FCM + job de treino pendente
+## - [x] P3.4 comms — push FCM + job de treino pendente
 
 **Objetivo:** as duas notificações do MVP (ADR-012): nova mensagem e treino pendente.
 **Passos:**
@@ -257,3 +257,169 @@ assinado à mão com a chave privada do identity (mesmo atalho do smoke da
 P3.2, sem depender de convite por e-mail) — aluno cria check-in, reenvio
 idempotente confirmado, coach lista e revisa, aluno tentando listar recebe
 403.
+
+**P3.4:** push FCM + job de treino pendente. O passo 1 (setup do Firebase,
+projeto `lyfta-a3bd3`) já estava feito e commitado antes desta tarefa
+(commit `cbaf599`); aqui entrou só código.
+
+Cliente FCM: `golang.org/x/oauth2/google` + chamada HTTP direta à FCM v1
+(`internal/fcm`), não o Admin SDK oficial (`firebase.google.com/go/v4`) —
+dependência nova registrada em `backend/README.md` § Stack pinada. O SDK
+oficial cobre a mesma necessidade (mandar 1 mensagem por token), mas
+arrasta uma árvore pensada pro produto Firebase inteiro (Firestore,
+Storage, Auth...); `go mod tidy` confirmou que a escolha minimalista trouxe
+só `golang.org/x/oauth2` (direto) e `cloud.google.com/go/compute/metadata`
+(indireto, pequeno) — nada de `cloud.google.com/go` inteiro. `NewClient`
+decodifica a service account (`FCM_CREDENTIALS_JSON`, caminho de arquivo ou
+JSON inline, já documentada desde o setup do Firebase) e monta um
+`http.Client` que renova o token OAuth2 sozinho; `Send` fala HTTP v1 puro e
+mapeia token morto (`UNREGISTERED`/`NOT_FOUND`) para `ErrUnregistered`, que
+o `internal/push.Notifier` usa pra apagar o device_token (senão o job
+tentaria mandar pro mesmo token morto todo dia). Sem
+`FCM_CREDENTIALS_JSON` configurada, o serviço sobe do mesmo jeito com push
+desligado (`Notifier` com `pusher` nil, só loga) — decisão deliberada pra
+não travar CI/dev sem Firebase por causa de uma feature que não bloqueia
+chat nem check-in; com credencial inválida, falha cedo (mesmo critério do
+resto da config).
+
+**Locale do destinatário:** a claim `locale` do JWT (ADR-011 §3) só ajuda
+quando o request em mãos é do PRÓPRIO destinatário — mas em nenhum dos dois
+casos de push isso é verdade. Nos eventos em tempo real (`message.new`,
+`checkin.pain_strong`) as claims disponíveis no request são sempre de quem
+DISPARA o evento (remetente/aluno), nunca de quem vai receber; e o job
+diário roda numa goroutine, sem request nenhum. Por isso `device_tokens`
+ganhou a coluna `locale` (migration `0007_device_tokens_locale`, `NOT NULL
+DEFAULT 'pt-BR'`), gravada a cada `POST /v1/devices` — é a única fonte do
+idioma do destinatário disponível fora de uma requisição HTTP dele, e serve
+os dois casos (tempo real e job) com um único caminho em vez de dois
+divergentes. `internal/push/messages.go` renderiza pt-BR/pt-PT/en a partir
+dela, com fallback pt-BR se o valor gravado não for um dos três (nunca
+deveria acontecer — a coluna não tem `CHECK`, só o handler valida antes de
+gravar).
+
+**Timezone do job:** o plano fala em "até as 18h locais do tenant", mas não
+existe coluna de timezone em nenhuma tabela de tenant (nem identity nem
+comms) e criá-la seria migration no identity — fora do escopo desta tarefa
+(P3.4 é só comms + 1 endpoint interno no workout). Resolvido com um default
+único no comms: env `NOTIFICATION_TIMEZONE` (`America/Sao_Paulo`), aplicado
+a **todos** os tenants por ora. **Dívida técnica registrada**: quando
+houver timezone por tenant (provável extensão do identity), o job precisa
+varrer por tenant com o fuso de cada um, em vez de uma janela `[since,
+until)` global — não é mudança grande (o `workoutclient.PendingStudents` já
+recebe `since`/`until` como parâmetros, então vira "chamar N vezes, um por
+fuso distinto entre os tenants", não redesenhar o mecanismo).
+
+**Presença entre instâncias:** a Nota da P3.2 já previa que o
+`internal/ws.Hub` só sabe das conexões da própria instância, e que a P3.4
+precisaria de um registro compartilhado pra decidir push de `message.new`.
+Criado `internal/pubsub/presence.go`: um Set Redis por usuário
+(`comms:presence:{user_id}`), `SADD`+`EXPIRE` (90s, renovado a cada ping de
+30s do WS) no registro da conexão, `SREM` no fechamento — o TTL cobre o
+processo caindo sem fechar a conexão direito (`kill -9`), sem isso a marca
+ficaria órfã para sempre. `ConversationHandler.SendMessage` consulta
+`pubsub.IsOnline` do **outro** participante (nunca de quem mandou) antes de
+notificar: online, só WS (evita duplicar como push); offline, `Notifier`
+entra em ação.
+
+**Push de dor forte** (`CheckinHandler`) é **sempre** enviado ao coach,
+esteja ele online ou não — ao contrário de `message.new`, o texto do plano
+não condiciona esse push à presença ("dor é importante o bastante pra tocar
+mesmo com o app aberto"), então a assinatura ficou deliberadamente
+assimétrica em vez de reusar a mesma checagem de presença.
+
+**Job diário** (`internal/job.PendingWorkoutJob`): ticker de 5 minutos
+checando se já passou da hora de disparo (18h, `time.Location` de
+`NOTIFICATION_TIMEZONE`) e ainda não varreu hoje (`lastSweptDay` em
+memória — evita bater no workout a cada tick pelo resto do dia depois do
+primeiro sweep bem-sucedido). Duas camadas de proteção contra duplicata,
+cada uma cobrindo um cenário diferente: `pg_try_advisory_lock` (não
+bloqueante, `hashtext('lyfta_comms_pending_workout_job')::bigint`) evita
+que duas instâncias do comms varram ao mesmo tempo; dedupe por
+`notification_log` (`NotificationLogRepo.ExistsInRange`, filtro por faixa
+`[since, until)` sobre o índice simples da P3.1 — o mesmo motivo de não dar
+pra usar índice funcional por `date` já registrado lá) evita reenviar pro
+mesmo aluno se o processo reiniciar e varrer de novo no mesmo dia. Se
+**todos** os envios de um aluno falharem (sem device token, ou FCM
+recusando todos), nenhum `notification_log` é gravado para ele — ele só é
+tentado de novo se o processo reiniciar antes da meia-noite (`lastSweptDay`
+reseta), porque o ticker não força um segundo sweep no mesmo dia uma vez
+que o primeiro já rodou; aceito como limitação de MVP (o volume de
+"pendentes" tende a ser pequeno e o cenário é raro — sem device token
+nenhum registrado é o caso mais comum, e aí não há o que reenviar mesmo).
+
+**Endpoint interno no workout** (`GET /internal/v1/pending-students`):
+mesma solução de M2M cross-tenant que o identity já usa desde a P0.3
+(`find_tenants_by_email`, migration `0008_email_lookup`) — função SQL
+`SECURITY DEFINER` de superfície mínima (`find_pending_students`, migration
+`0016_pending_students`), porque a consulta precisa atravessar TODOS os
+tenants de propósito (é um job, não uma requisição de usuário com
+`app.tenant_id` setado) e a RLS forçada bloquearia isso do jeito normal.
+"Plano ativo" usa o mesmo critério que o resto do serviço já assume
+(`GetState`/`MyPlan`): existir uma linha em `student_plan_state`, sem
+reconferir `workout_plans.status` — ela só existe depois de um `Publish` e
+é sempre reescrita pra apontar pro plano atualmente publicado. "Sem sessão
+no intervalo" filtra por `workout_sessions.received_at` (carimbo do
+servidor, ADR-003 §2), não `started_at` (relógio do device, não confiável)
+— mesma fonte de verdade que a P1.5 já usa. O intervalo `[since, until)` é
+decidido inteiramente pelo comms (`?since=&until=` na query, RFC3339): o
+workout não sabe nada de timezone, só responde à pergunta com a janela que
+recebe — é o `workoutclient.Client` novo do comms
+(`internal/workoutclient`, tipos duplicados de propósito, ADR-013 §2) que
+resolve "hoje" e chama com `X-Internal-Token`, o mesmo mecanismo M2M já
+documentado (`RequireInternalToken`, novo middleware no workout, mesmo
+critério do `RequireAuth`/`RequireRole` existentes).
+
+**Verificação:** `gofmt`/`go vet` limpos e todos os testes verdes
+(inclusive `-race`) nos dois serviços tocados. No comms: `internal/fcm`
+(3 testes de unidade sobre `httptest.Server`, sem rede/credencial real —
+sucesso, token morto, erro genérico — mais 2 rejeitando credencial vazia/
+inválida), `internal/pubsub` (2 testes novos de presença — marcar/
+desmarcar, múltiplas conexões do mesmo usuário), `internal/workoutclient`
+(2 testes de contrato HTTP), `internal/job` (2 testes cobrindo o Aceite
+literal "job não duplica no mesmo dia" — `Sweep` chamado duas vezes com o
+mesmo intervalo só manda push uma vez — e que o dedupe não vaza entre
+faixas de dias diferentes; usam Postgres real + `fakePusher`/
+`fakeWorkoutSource` em memória, sem bater na Google nem precisar do
+workout no ar), `internal/repo` (4 testes novos: upsert de device token
+substitui token+locale sem duplicar linha, isolamento cross-tenant de
+`ListForUser`, dedupe de `NotificationLogRepo` por faixa/kind — cobre "log
+de notificações consultável"), `internal/http` (`devices_test.go`: upsert
+por HTTP, validação de plataforma/token/locale/autenticação). No workout:
+`internal/repo/pending_test.go` (2 testes: aluno pendente aparece
+cross-tenant, aluno que treinou dentro do intervalo não aparece) e
+`internal/http/pending_students_test.go` (401 sem/com token errado, 400
+com `since`/`until` ausentes ou invertidos, 200 com o Aceite literal sobre
+Postgres real).
+
+Smoke manual com `identity`+`workout`+`comms` reais no ar (`FCM_CREDENTIALS_JSON`
+já configurada nesta máquina desde o setup do Firebase): `GET
+/internal/v1/pending-students` sem token e com token errado devolvem 401,
+com o token certo devolve a lista cross-tenant de verdade (dezenas de
+alunos de sessões de smoke anteriores, confirmando que a função
+`SECURITY DEFINER` realmente atravessa tenants); `POST /v1/devices`
+registra um token; o coach manda uma mensagem nova pro aluno (sem WS
+aberto) e o log do comms mostra `push_send_failed` com
+`"fcm: resposta 400 (INVALID_ARGUMENT)"` — ou seja, a chamada chegou de
+verdade na API do Google, autenticada com a credencial real da service
+account, e foi recusada só porque o token do device era fake (esperado);
+com o comms subindo depois das 18h locais, o job disparou sozinho na
+subida e logou `pending_job_sweep_failed` com "connection refused" porque
+o workout ainda não estava no ar naquele instante — confirma que a resolução
+do timezone (`since`/`until` batendo com meia-noite em
+`America/Sao_Paulo`) e o disparo automático do job funcionam.
+
+**Pendente de verificação manual** (fora do alcance desta sessão): o
+Aceite "push chega no Android físico/emulador com Play Services" — só dá
+pra confirmar com um device de verdade rodando o app Flutter com
+`firebase_messaging` (escopo da P3.5, que ainda não existe). Passo a passo
+para quando a P3.5 estiver pronta: (1) abrir o app como aluno num Android
+com Play Services e deixar `POST /v1/devices` registrar o token real do
+FCM; (2) como coach (outro device/sessão), mandar uma mensagem pro aluno
+com o app **fechado** (chat) ou registrar um check-in com dor forte (para
+o coach); (3) conferir que a notificação chega no Android mesmo com o app
+fechado, e que tocar nela abre o app (deep link é escopo da P3.5); (4)
+para o job diário, ajustar `NOTIFICATION_TIMEZONE`/o relógio do
+device para simular passar das 18h sem ter treinado, e conferir a chegada
+de "Treino pendente" uma única vez (repetir no mesmo dia não deve gerar
+segunda notificação — o automatizado já cobre a lógica, isto é só a
+confirmação visual em device real).

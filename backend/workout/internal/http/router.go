@@ -17,11 +17,13 @@ func NewRouter(
 	logger *slog.Logger,
 	corsOrigins []string,
 	verifier *security.JWTVerifier,
+	internalToken string,
 	mediaHandler *MediaHandler,
 	exerciseHandler *ExerciseHandler,
 	planHandler *PlanHandler,
 	syncHandler *SyncHandler,
 	historyHandler *HistoryHandler,
+	pendingHandler *PendingStudentsHandler,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -37,6 +39,16 @@ func NewRouter(
 	}))
 
 	r.Get("/healthz", healthzHandler)
+
+	// M2M (ADR-013 §4/§5): o job diário do comms (P3.4) consulta quem tem
+	// plano ativo e não treinou hoje. Autenticação própria (X-Internal-Token),
+	// fora do /v1 porque não é uma requisição de usuário — não há JWT nem
+	// tenant de request aqui, a consulta atravessa todos os tenants de
+	// propósito (ver internal/repo.PendingRepo).
+	r.Route("/internal/v1", func(r chi.Router) {
+		r.Use(RequireInternalToken(internalToken))
+		r.Get("/pending-students", pendingHandler.List)
+	})
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Use(RequireAuth(verifier))

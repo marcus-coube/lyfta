@@ -67,12 +67,14 @@ func run(logger *slog.Logger) error {
 	exercises := repo.NewExerciseRepo(pool)
 	plans := repo.NewPlanRepo(pool)
 	sessions := repo.NewSessionRepo(pool)
-	router := whttp.NewRouter(logger, cfg.CORSOrigins, verifier,
+	pending := repo.NewPendingRepo(pool)
+	router := whttp.NewRouter(logger, cfg.CORSOrigins, verifier, cfg.InternalToken,
 		whttp.NewMediaHandler(logger, presigner),
 		whttp.NewExerciseHandler(logger, exercises, presigner),
 		whttp.NewPlanHandler(logger, plans, exercises, presigner),
 		whttp.NewSyncHandler(logger, plans, sessions, exercises, presigner),
 		whttp.NewHistoryHandler(logger, sessions, exercises, presigner),
+		whttp.NewPendingStudentsHandler(logger, pending),
 	)
 
 	server := &http.Server{

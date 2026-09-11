@@ -15,6 +15,7 @@ import (
 	"github.com/marcus-coube/lyfta/comms/internal/domain"
 	"github.com/marcus-coube/lyfta/comms/internal/media"
 	"github.com/marcus-coube/lyfta/comms/internal/pubsub"
+	"github.com/marcus-coube/lyfta/comms/internal/push"
 	"github.com/marcus-coube/lyfta/comms/internal/repo"
 )
 
@@ -32,13 +33,16 @@ type ConversationHandler struct {
 	messages      *repo.MessageRepo
 	presigner     *media.Presigner
 	redisClient   *redis.Client
+	notifier      *push.Notifier
 }
 
-// NewConversationHandler cria o handler de conversas.
-func NewConversationHandler(logger *slog.Logger, conversations *repo.ConversationRepo, messages *repo.MessageRepo, presigner *media.Presigner, redisClient *redis.Client) *ConversationHandler {
+// NewConversationHandler cria o handler de conversas. notifier pode ser nil
+// nos testes que não exercitam o push (mesmo critério do presigner nil em
+// chat_integration_test.go) — SendMessage confere antes de usar.
+func NewConversationHandler(logger *slog.Logger, conversations *repo.ConversationRepo, messages *repo.MessageRepo, presigner *media.Presigner, redisClient *redis.Client, notifier *push.Notifier) *ConversationHandler {
 	return &ConversationHandler{
 		logger: logger, conversations: conversations, messages: messages,
-		presigner: presigner, redisClient: redisClient,
+		presigner: presigner, redisClient: redisClient, notifier: notifier,
 	}
 }
 
@@ -251,8 +255,39 @@ func (h *ConversationHandler) SendMessage(w http.ResponseWriter, r *http.Request
 
 	dto := h.toMessageDTO(r, created)
 	h.publish(r, conv, wsEvent{Type: "message.new", ConversationID: conv.ID, Message: &dto})
+	h.pushToRecipientIfOffline(r, conv, created)
 
 	writeJSON(w, http.StatusCreated, dto)
+}
+
+// pushToRecipientIfOffline manda push de nova mensagem pro OUTRO participante
+// (nunca pra quem mandou) — só se ele não tiver nenhuma conexão WS ativa em
+// nenhuma instância (internal/pubsub.IsOnline, presença compartilhada via
+// Redis, P3.4). Quem está com o app aberto já recebeu message.new pelo WS
+// (h.publish acima); duplicar como push também seria ruído. Falha ao
+// consultar presença ou notifier nil (testes que não exercitam push) não
+// impedem a resposta — a mensagem já está gravada.
+func (h *ConversationHandler) pushToRecipientIfOffline(r *http.Request, conv domain.Conversation, msg domain.Message) {
+	if h.notifier == nil {
+		return
+	}
+	recipientID := conv.CoachID
+	if msg.SenderID == conv.CoachID {
+		recipientID = conv.StudentID
+	}
+
+	online, err := pubsub.IsOnline(r.Context(), h.redisClient, recipientID)
+	if err != nil {
+		h.logger.Error("push_presence_check_failed", slog.Any("error", err))
+		online = false // presença indisponível: prefere mandar push a mais do que perder o aviso.
+	}
+	if online {
+		return
+	}
+
+	h.notifier.Send(r.Context(), conv.TenantID, recipientID, push.KindMessageNew, map[string]string{
+		"type": "message.new", "conversation_id": conv.ID,
+	})
 }
 
 // MarkRead marca como lidas as mensagens da conversa que o chamador ainda

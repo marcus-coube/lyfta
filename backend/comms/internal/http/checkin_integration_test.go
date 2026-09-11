@@ -74,12 +74,12 @@ func newCheckinTestServer(t *testing.T) (*httptest.Server, ed25519.PrivateKey, *
 	conversations := repo.NewConversationRepo(pool)
 	messages := repo.NewMessageRepo(pool)
 	checkins := repo.NewCheckinRepo(pool)
-	conversationHandler := chttp.NewConversationHandler(logger, conversations, messages, nil, redisClient)
+	conversationHandler := chttp.NewConversationHandler(logger, conversations, messages, nil, redisClient, nil)
 	var mediaHandler *chttp.MediaHandler
-	wsHandler := chttp.NewWSHandler(logger, verifier, hub)
-	checkinHandler := chttp.NewCheckinHandler(logger, checkins, conversations, redisClient)
+	wsHandler := chttp.NewWSHandler(logger, verifier, hub, redisClient)
+	checkinHandler := chttp.NewCheckinHandler(logger, checkins, conversations, redisClient, nil)
 
-	router := chttp.NewRouter(logger, []string{"*"}, verifier, conversationHandler, mediaHandler, wsHandler, checkinHandler)
+	router := chttp.NewRouter(logger, []string{"*"}, verifier, conversationHandler, mediaHandler, wsHandler, checkinHandler, nil)
 	server := httptest.NewServer(router)
 	t.Cleanup(server.Close)
 	return server, priv, hub

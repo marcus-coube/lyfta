@@ -67,6 +67,12 @@ func signTokenAs(t *testing.T, priv ed25519.PrivateKey, tenantID, subject string
 	return signed
 }
 
+// testInternalToken é o valor de INTERNAL_TOKEN usado pelos testes de router
+// que não exercitam M2M (a maioria) — só precisa existir para o middleware
+// RequireInternalToken ter algo pra comparar; quem testa /internal/v1 de
+// verdade é pending_students_test.go.
+const testInternalToken = "test-internal-token"
+
 func newTestRouter(t *testing.T, publicPEM string) http.Handler {
 	t.Helper()
 	// Sem pool: os testes deste arquivo não tocam o banco. Quem exercita a
@@ -93,12 +99,14 @@ func newTestRouterWithPool(t *testing.T, publicPEM string, pool *pgxpool.Pool) h
 	exercises := repo.NewExerciseRepo(pool)
 	plans := repo.NewPlanRepo(pool)
 	sessions := repo.NewSessionRepo(pool)
-	return whttp.NewRouter(logger, []string{"*"}, verifier,
+	pending := repo.NewPendingRepo(pool)
+	return whttp.NewRouter(logger, []string{"*"}, verifier, testInternalToken,
 		whttp.NewMediaHandler(logger, presigner),
 		whttp.NewExerciseHandler(logger, exercises, presigner),
 		whttp.NewPlanHandler(logger, plans, exercises, presigner),
 		whttp.NewSyncHandler(logger, plans, sessions, exercises, presigner),
 		whttp.NewHistoryHandler(logger, sessions, exercises, presigner),
+		whttp.NewPendingStudentsHandler(logger, pending),
 	)
 }
 

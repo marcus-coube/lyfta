@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -13,13 +14,22 @@ import (
 	"time"
 
 	"github.com/marcus-coube/lyfta/comms/internal/config"
+	"github.com/marcus-coube/lyfta/comms/internal/fcm"
 	chttp "github.com/marcus-coube/lyfta/comms/internal/http"
+	"github.com/marcus-coube/lyfta/comms/internal/job"
 	"github.com/marcus-coube/lyfta/comms/internal/media"
 	"github.com/marcus-coube/lyfta/comms/internal/pubsub"
+	"github.com/marcus-coube/lyfta/comms/internal/push"
 	"github.com/marcus-coube/lyfta/comms/internal/repo"
 	"github.com/marcus-coube/lyfta/comms/internal/security"
+	"github.com/marcus-coube/lyfta/comms/internal/workoutclient"
 	"github.com/marcus-coube/lyfta/comms/internal/ws"
 )
+
+// pendingWorkoutTriggerHour é a hora (0-23) a partir da qual o job diário
+// considera o dia fechado para quem ainda não treinou — "até as 18h locais"
+// do plano (P3.4, passo 3).
+const pendingWorkoutTriggerHour = 18
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
@@ -80,15 +90,47 @@ func run(logger *slog.Logger) error {
 	hub := ws.NewHub()
 	go pubsub.Relay(ctx, redisClient, logger, hub.Deliver)
 
+	// Push FCM (P3.4). Sem credencial configurada, o serviço sobe do mesmo
+	// jeito — chat e check-in não dependem de push — só com push desligado
+	// (Notifier com pusher nil: loga e não faz nada). Com credencial
+	// inválida, falha cedo, mesmo critério do resto da config.
+	var pusher push.Pusher
+	if cfg.FCMCredentialsJSON == "" {
+		logger.Warn("push_disabled", slog.String("reason", "FCM_CREDENTIALS_JSON não configurada"))
+	} else {
+		fcmClient, err := fcm.NewClient(ctx, cfg.FCMCredentialsJSON)
+		if err != nil {
+			return err
+		}
+		pusher = fcmClient
+	}
+
+	location, err := time.LoadLocation(cfg.NotificationTimezone)
+	if err != nil {
+		return fmt.Errorf("comms: NOTIFICATION_TIMEZONE inválida: %w", err)
+	}
+
 	conversations := repo.NewConversationRepo(pool)
 	messages := repo.NewMessageRepo(pool)
 	checkins := repo.NewCheckinRepo(pool)
+	deviceTokens := repo.NewDeviceTokenRepo(pool)
+	notifications := repo.NewNotificationLogRepo(pool)
+	notifier := push.NewNotifier(logger, deviceTokens, notifications, pusher)
+
 	router := chttp.NewRouter(logger, cfg.CORSOrigins, verifier,
-		chttp.NewConversationHandler(logger, conversations, messages, presigner, redisClient),
+		chttp.NewConversationHandler(logger, conversations, messages, presigner, redisClient, notifier),
 		chttp.NewMediaHandler(logger, conversations, presigner),
-		chttp.NewWSHandler(logger, verifier, hub),
-		chttp.NewCheckinHandler(logger, checkins, conversations, redisClient),
+		chttp.NewWSHandler(logger, verifier, hub, redisClient),
+		chttp.NewCheckinHandler(logger, checkins, conversations, redisClient, notifier),
+		chttp.NewDeviceHandler(logger, deviceTokens),
 	)
+
+	// Job diário "treino pendente" (P3.4, passo 3) — M2M com o workout
+	// (ADR-013 §4/§5), dedupe por notification_log e pg_advisory_lock contra
+	// duas instâncias rodando ao mesmo tempo (ver internal/job).
+	workoutClient := workoutclient.NewClient(cfg.WorkoutBaseURL, cfg.InternalToken)
+	pendingJob := job.NewPendingWorkoutJob(logger, pool, workoutClient, notifications, notifier, location, pendingWorkoutTriggerHour)
+	go pendingJob.Run(ctx)
 
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,

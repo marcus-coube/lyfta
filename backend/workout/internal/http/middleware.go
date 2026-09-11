@@ -114,6 +114,24 @@ func TenantFromContext(ctx context.Context) (string, bool) {
 	return claims.TenantID, true
 }
 
+// RequireInternalToken protege rotas M2M (ADR-013 §4) — comparação simples
+// do header X-Internal-Token com o valor configurado (env INTERNAL_TOKEN).
+// Sem Bearer/claims aqui: quem chama é outro serviço (o comms, no caso do
+// job diário da P3.4), não um usuário, então não existe tenant de request
+// para setar — o handler que fica atrás desta rota consulta todos os
+// tenants de propósito (ver internal/repo.PendingRepo).
+func RequireInternalToken(token string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if token == "" || r.Header.Get("X-Internal-Token") != token {
+				writeError(w, errUnauthenticated())
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 // RequireRole exige que as claims contenham ao menos um dos papéis
 // informados (ex.: biblioteca e builder são de owner|coach).
 func RequireRole(roles ...string) func(http.Handler) http.Handler {

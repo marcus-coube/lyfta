@@ -127,12 +127,12 @@ func TestChatEndToEnd(t *testing.T) {
 
 	conversations := repo.NewConversationRepo(pool)
 	messages := repo.NewMessageRepo(pool)
-	conversationHandler := chttp.NewConversationHandler(logger, conversations, messages, nil, redisClient)
+	conversationHandler := chttp.NewConversationHandler(logger, conversations, messages, nil, redisClient, nil)
 	var mediaHandler *chttp.MediaHandler
-	wsHandler := chttp.NewWSHandler(logger, verifier, hub)
+	wsHandler := chttp.NewWSHandler(logger, verifier, hub, redisClient)
 	var checkinHandler *chttp.CheckinHandler
 
-	router := chttp.NewRouter(logger, []string{"*"}, verifier, conversationHandler, mediaHandler, wsHandler, checkinHandler)
+	router := chttp.NewRouter(logger, []string{"*"}, verifier, conversationHandler, mediaHandler, wsHandler, checkinHandler, nil)
 	server := httptest.NewServer(router)
 	t.Cleanup(server.Close)
 
@@ -394,11 +394,11 @@ func TestChatAuthorizationAndValidation(t *testing.T) {
 	hub := ws.NewHub()
 	conversations := repo.NewConversationRepo(pool)
 	messages := repo.NewMessageRepo(pool)
-	conversationHandler := chttp.NewConversationHandler(logger, conversations, messages, nil, redisClient)
+	conversationHandler := chttp.NewConversationHandler(logger, conversations, messages, nil, redisClient, nil)
 	var mediaHandler *chttp.MediaHandler
-	wsHandler := chttp.NewWSHandler(logger, verifier, hub)
+	wsHandler := chttp.NewWSHandler(logger, verifier, hub, redisClient)
 	var checkinHandler *chttp.CheckinHandler
-	router := chttp.NewRouter(logger, []string{"*"}, verifier, conversationHandler, mediaHandler, wsHandler, checkinHandler)
+	router := chttp.NewRouter(logger, []string{"*"}, verifier, conversationHandler, mediaHandler, wsHandler, checkinHandler, nil)
 	server := httptest.NewServer(router)
 	t.Cleanup(server.Close)
 

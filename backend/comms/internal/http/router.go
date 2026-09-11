@@ -31,6 +31,7 @@ func NewRouter(
 	mediaHandler *MediaHandler,
 	wsHandler *WSHandler,
 	checkinHandler *CheckinHandler,
+	deviceHandler *DeviceHandler,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -83,6 +84,10 @@ func NewRouter(
 			r.Get("/checkins", checkinHandler.List)
 			r.Post("/checkins/{id}/review", checkinHandler.Review)
 		})
+
+		// Registro de token de push (P3.4, passo 1) — qualquer usuário
+		// autenticado registra o próprio device, sem restrição de papel.
+		r.Post("/devices", deviceHandler.Register)
 	})
 
 	return r

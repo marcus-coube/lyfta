@@ -1,12 +1,16 @@
 package http
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/redis/go-redis/v9"
 
+	"github.com/marcus-coube/lyfta/comms/internal/pubsub"
 	"github.com/marcus-coube/lyfta/comms/internal/security"
 	"github.com/marcus-coube/lyfta/comms/internal/ws"
 )
@@ -21,22 +25,26 @@ const (
 )
 
 // WSHandler promove a conexão WebSocket do chat (P3.2) e a registra no Hub
-// (internal/ws) — o registro de conexões que a P3.4 vai consultar para
-// decidir se manda push (destinatário já está com o app aberto).
+// (internal/ws, só desta instância) e na presença compartilhada via Redis
+// (internal/pubsub, entre todas as instâncias) — a P3.4 consulta essa
+// segunda para decidir se manda push de message.new (o Hub sozinho não
+// serve: ele só sabe das conexões presas neste processo).
 type WSHandler struct {
-	logger   *slog.Logger
-	verifier *security.JWTVerifier
-	hub      *ws.Hub
-	upgrader websocket.Upgrader
+	logger      *slog.Logger
+	verifier    *security.JWTVerifier
+	hub         *ws.Hub
+	redisClient *redis.Client
+	upgrader    websocket.Upgrader
 }
 
-// NewWSHandler cria o handler de WebSocket sobre o verifier e o Hub
-// compartilhados com o resto do serviço.
-func NewWSHandler(logger *slog.Logger, verifier *security.JWTVerifier, hub *ws.Hub) *WSHandler {
+// NewWSHandler cria o handler de WebSocket sobre o verifier, o Hub e o client
+// Redis compartilhados com o resto do serviço.
+func NewWSHandler(logger *slog.Logger, verifier *security.JWTVerifier, hub *ws.Hub, redisClient *redis.Client) *WSHandler {
 	return &WSHandler{
-		logger:   logger,
-		verifier: verifier,
-		hub:      hub,
+		logger:      logger,
+		verifier:    verifier,
+		hub:         hub,
+		redisClient: redisClient,
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
@@ -79,13 +87,27 @@ func (h *WSHandler) Serve(w http.ResponseWriter, r *http.Request) {
 	h.hub.Register(claims.Subject, conn)
 	defer h.hub.Unregister(claims.Subject, conn)
 
+	// Presença entre instâncias (P3.4): connID identifica esta conexão dentro
+	// do Set Redis do usuário — mais de uma conexão do mesmo usuário (vários
+	// devices) marca entradas distintas, e sair de uma não derruba a
+	// presença da outra (ver internal/pubsub.PresenceUnmark).
+	connID := uuid.NewString()
+	if err := pubsub.PresenceMark(r.Context(), h.redisClient, claims.Subject, connID); err != nil {
+		h.logger.Error("ws_presence_mark_failed", slog.Any("error", err))
+	}
+	defer func() {
+		if err := pubsub.PresenceUnmark(context.Background(), h.redisClient, claims.Subject, connID); err != nil {
+			h.logger.Error("ws_presence_unmark_failed", slog.Any("error", err))
+		}
+	}()
+
 	_ = raw.SetReadDeadline(time.Now().Add(wsPongWait))
 	raw.SetPongHandler(func(string) error {
 		return raw.SetReadDeadline(time.Now().Add(wsPongWait))
 	})
 
 	stop := make(chan struct{})
-	go h.pingLoop(conn, stop)
+	go h.pingLoop(claims.Subject, connID, conn, stop)
 	defer close(stop)
 
 	// O cliente não manda conteúdo de negócio, mas o loop de leitura precisa
@@ -99,7 +121,10 @@ func (h *WSHandler) Serve(w http.ResponseWriter, r *http.Request) {
 	_ = conn.Close()
 }
 
-func (h *WSHandler) pingLoop(conn *ws.Conn, stop <-chan struct{}) {
+// pingLoop manda o ping de keepalive e renova a marca de presença (Redis)
+// desta conexão a cada intervalo — sem renovar, presenceTTL (90s, bem maior
+// que wsPingInterval) expiraria a marca sozinha mesmo com a conexão viva.
+func (h *WSHandler) pingLoop(userID, connID string, conn *ws.Conn, stop <-chan struct{}) {
 	ticker := time.NewTicker(wsPingInterval)
 	defer ticker.Stop()
 	for {
@@ -109,6 +134,9 @@ func (h *WSHandler) pingLoop(conn *ws.Conn, stop <-chan struct{}) {
 		case <-ticker.C:
 			if err := conn.WritePing(); err != nil {
 				return
+			}
+			if err := pubsub.PresenceMark(context.Background(), h.redisClient, userID, connID); err != nil {
+				h.logger.Error("ws_presence_renew_failed", slog.Any("error", err))
 			}
 		}
 	}

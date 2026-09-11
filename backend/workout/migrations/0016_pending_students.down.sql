@@ -1,0 +1,1 @@
+DROP FUNCTION find_pending_students(TIMESTAMPTZ, TIMESTAMPTZ);
