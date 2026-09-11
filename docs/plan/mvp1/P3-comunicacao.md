@@ -53,7 +53,7 @@ ordena não revisados primeiro.
 
 **Objetivo:** as duas notificações do MVP (ADR-012): nova mensagem e treino pendente.
 **Passos:**
-1. Setup Firebase (projeto `lyfta-dev`), Admin SDK no comms (`FCM_CREDENTIALS_JSON`
+1. Setup Firebase (projeto `lyfta-a3bd3`), Admin SDK no comms (`FCM_CREDENTIALS_JSON`
    env). `POST /v1/devices` registra token (upsert por user+platform).
 2. Push `message.new` para o destinatário se ele não estiver conectado no WS
    (checagem via registry Redis das conexões ativas). Push de check-in com dor
