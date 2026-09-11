@@ -29,7 +29,7 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
   **pacotes** (MVP 1.0 → 2.0 → 3.0 → 4.0 running → V2 IA → Futuro).
 - **[docs/014-plano-de-documentacao.md](docs/014-plano-de-documentacao.md)** — plano de
   docs + marcos de implementação e de-para marco→pacote.
-- **[docs/adr/](docs/adr/)** — decisões estruturais (ADR-001..014). São normativas.
+- **[docs/adr/](docs/adr/)** — decisões estruturais (ADR-001..015). São normativas.
 - **[docs/plan/mvp1/](docs/plan/mvp1/)** — plano de execução do MVP 1.0 (P0–P4,
   29 tarefas, protocolo do agente). Progresso em `STATUS.md`.
 - **[docs/benchmarking/](docs/benchmarking/)** — auditoria HubFit × Trainerize × Lyfta.
@@ -99,6 +99,8 @@ funcionam em **todas** as plataformas (mobile e web).
   desde já — é pré-requisito do gráfico de carga do MVP 1.0.
 - **Multi-tenant (ADR-001):** banco único + `tenant_id` + RLS. Conta por tenant (ADR-002).
 - **Dinheiro (ADR-007):** centavos inteiros; financeiro provider-agnostic, PIX/manual primeiro.
+- **Distribuição (ADR-015):** cliente valida APK/IPA por build direto; subir em loja
+  é step **opcional e manual** — nunca no CI. `applicationId` só congela no 1º upload.
 
 ## Idioma e commits
 Comunicação, ADRs, guidelines e mensagens de commit em **pt-BR** (doc 000 está em inglês

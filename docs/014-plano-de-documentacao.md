@@ -26,6 +26,8 @@ onde densidade vale mais que volume.
 | [ADR-011](adr/ADR-011-i18n.md) | pt-BR, pt-PT, en desde o lançamento |
 | [ADR-012](adr/ADR-012-escopo-mvp-packs.md) | MVP re-escopado em pacotes centrados no aluno (1.0 = loop diário) |
 | [ADR-013](adr/ADR-013-microservicos-db-por-servico.md) | Microserviços Go com banco Postgres por serviço (supersede ADR-006) |
+| [ADR-014](adr/ADR-014-pastas-de-plataforma-versionadas.md) | `android/` versionada; demais plataformas geradas por `flutter create` |
+| [ADR-015](adr/ADR-015-distribuicao-e-lojas.md) | Validação por APK/IPA direto; publicar em loja é step opcional e manual |
 
 Novas decisões estruturais → novo ADR, nunca edição silenciosa de docs.
 
