@@ -166,97 +166,123 @@ class _SetRowState extends State<_SetRow> {
     final l10n = AppLocalizations.of(context);
     final unit = widget.set.targetUnit ?? TargetUnit.kg;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: 28,
-          child: Text(
-            '${widget.index + 1}',
-            style: LyType.numeric(c.textSecondary, size: 14),
-          ),
-        ),
-        Expanded(
-          flex: 2,
-          child: _NumberField(
-            key: Key('set-${widget.index}-reps-min'),
-            label: l10n.builderRepsMin,
-            controller: _repsMin,
-            onChanged: (raw) {
-              widget.set.repsMin = int.tryParse(raw);
-              widget.onChanged();
-            },
-          ),
-        ),
-        const SizedBox(width: LySpace.x2),
-        Expanded(
-          flex: 2,
-          child: _NumberField(
-            key: Key('set-${widget.index}-reps-max'),
-            label: l10n.builderRepsMax,
-            controller: _repsMax,
-            onChanged: (raw) {
-              widget.set.repsMax = int.tryParse(raw);
-              widget.onChanged();
-            },
-          ),
-        ),
-        const SizedBox(width: LySpace.x2),
-        Expanded(
-          flex: 2,
-          child: _NumberField(
-            key: Key('set-${widget.index}-target'),
-            label: targetUnitLabel(l10n, unit),
-            controller: _target,
-            allowDecimal: true,
-            onChanged: _writeTarget,
-          ),
-        ),
-        SizedBox(
-          width: 40,
-          child: PopupMenuButton<TargetUnit>(
-            key: Key('set-${widget.index}-unit'),
-            tooltip: l10n.builderTargetUnit,
-            icon: Icon(Icons.swap_vert, size: 18, color: c.textSecondary),
-            onSelected: _changeUnit,
-            itemBuilder: (context) => [
-              for (final option in TargetUnit.values)
-                PopupMenuItem(
-                  value: option,
-                  child: Text(targetUnitLabel(l10n, option)),
-                ),
+    final number = SizedBox(
+      width: _indexWidth,
+      child: Text(
+        '${widget.index + 1}',
+        style: LyType.numeric(c.textSecondary, size: 14),
+      ),
+    );
+    final repsMin = Expanded(
+      child: _NumberField(
+        key: Key('set-${widget.index}-reps-min'),
+        label: l10n.builderRepsMin,
+        controller: _repsMin,
+        onChanged: (raw) {
+          widget.set.repsMin = int.tryParse(raw);
+          widget.onChanged();
+        },
+      ),
+    );
+    final repsMax = Expanded(
+      child: _NumberField(
+        key: Key('set-${widget.index}-reps-max'),
+        label: l10n.builderRepsMax,
+        controller: _repsMax,
+        onChanged: (raw) {
+          widget.set.repsMax = int.tryParse(raw);
+          widget.onChanged();
+        },
+      ),
+    );
+    final target = Expanded(
+      child: _NumberField(
+        key: Key('set-${widget.index}-target'),
+        label: targetUnitLabel(l10n, unit),
+        controller: _target,
+        allowDecimal: true,
+        onChanged: _writeTarget,
+      ),
+    );
+    final unitMenu = SizedBox(
+      width: LySpace.x10,
+      child: PopupMenuButton<TargetUnit>(
+        key: Key('set-${widget.index}-unit'),
+        tooltip: l10n.builderTargetUnit,
+        icon: Icon(Icons.swap_vert, size: 18, color: c.textSecondary),
+        onSelected: _changeUnit,
+        itemBuilder: (context) => [
+          for (final option in TargetUnit.values)
+            PopupMenuItem(
+              value: option,
+              child: Text(targetUnitLabel(l10n, option)),
+            ),
+        ],
+      ),
+    );
+    final rest = Expanded(
+      child: _NumberField(
+        key: Key('set-${widget.index}-rest'),
+        label: l10n.builderRestSeconds,
+        controller: _rest,
+        onChanged: (raw) {
+          widget.set.restSeconds = int.tryParse(raw);
+          widget.onChanged();
+        },
+      ),
+    );
+    final duplicate = IconButton(
+      key: Key('set-${widget.index}-duplicate'),
+      tooltip: l10n.builderDuplicateSet,
+      onPressed: widget.onDuplicate,
+      icon: Icon(Icons.copy_outlined, size: 18, color: c.textSecondary),
+    );
+    final remove = IconButton(
+      key: Key('set-${widget.index}-remove'),
+      tooltip: l10n.commonRemove,
+      onPressed: widget.onRemove,
+      icon: Icon(Icons.close, size: 18, color: c.textSecondary),
+    );
+    const gap = SizedBox(width: LySpace.x2);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= _singleRowMinWidth) {
+          return Row(
+            children: [
+              number, repsMin, gap, repsMax, gap, target, unitMenu, gap, rest,
+              duplicate, remove,
             ],
-          ),
-        ),
-        const SizedBox(width: LySpace.x2),
-        Expanded(
-          flex: 2,
-          child: _NumberField(
-            key: Key('set-${widget.index}-rest'),
-            label: l10n.builderRestSeconds,
-            controller: _rest,
-            onChanged: (raw) {
-              widget.set.restSeconds = int.tryParse(raw);
-              widget.onChanged();
-            },
-          ),
-        ),
-        IconButton(
-          key: Key('set-${widget.index}-duplicate'),
-          tooltip: l10n.builderDuplicateSet,
-          onPressed: widget.onDuplicate,
-          icon: Icon(Icons.copy_outlined, size: 18, color: c.textSecondary),
-        ),
-        IconButton(
-          key: Key('set-${widget.index}-remove'),
-          tooltip: l10n.commonRemove,
-          onPressed: widget.onRemove,
-          icon: Icon(Icons.close, size: 18, color: c.textSecondary),
-        ),
-      ],
+          );
+        }
+
+        // Estreito (celular): faixa de reps + ações em cima, alvo e
+        // descanso embaixo — cada campo fica com metade da linha em vez de
+        // um quarto. Duplicar continua à vista: é o gesto mais usado.
+        return Column(
+          children: [
+            Row(children: [number, repsMin, gap, repsMax, duplicate, remove]),
+            const SizedBox(height: LySpace.x2),
+            Row(
+              children: [
+                const SizedBox(width: _indexWidth),
+                target, unitMenu, gap, rest,
+              ],
+            ),
+          ],
+        );
+      },
     );
   }
 }
+
+/// Largura da coluna do número da série.
+const double _indexWidth = 28;
+
+/// Abaixo disto a linha de série quebra em duas fileiras. Numa fileira só,
+/// número + unidade + 3 vãos + 2 botões comem ~188 px; com 520 cada um dos 4
+/// campos ainda fica com ~80 px — o bastante para "52.5" e para o rótulo.
+const double _singleRowMinWidth = 520;
 
 class _NumberField extends StatelessWidget {
   const _NumberField({

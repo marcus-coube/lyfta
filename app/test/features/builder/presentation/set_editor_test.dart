@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lyfta/core/design_system/design_system.dart';
 import 'package:lyfta/core/l10n/gen/app_localizations.dart';
@@ -147,4 +148,84 @@ void main() {
         tester.widget<IconButton>(find.byKey(const Key('set-0-remove')));
     expect(removeButton.onPressed, isNull);
   });
+
+  // Regressão: no celular (coluna única do builder) os 4 campos + 3 botões
+  // numa fileira só deixavam cada campo com ~20 px — "8" virava "ε", "10"
+  // virava "1" e os rótulos sumiam. 360 é a linha isolada num celular
+  // pequeno; 296 é o que sobra dela dentro do card num celular de 360.
+  for (final width in [360.0, 296.0]) {
+    testWidgets('em $width px o valor digitado e o rótulo aparecem inteiros',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: LyTheme.dark(),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.topLeft,
+              child: SizedBox(
+                width: width,
+                child: SetEditor(
+                  sets: [PrescribedSet(targetLoadKg: 40)],
+                  onChanged: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(tester.element(find.byType(SetEditor)));
+      final typed = {
+        'set-0-reps-min': ('8', l10n.builderRepsMin),
+        'set-0-reps-max': ('10', l10n.builderRepsMax),
+        'set-0-target': ('52.5', l10n.builderTargetKg),
+        'set-0-rest': ('120', l10n.builderRestSeconds),
+      };
+
+      for (final MapEntry(key: key, value: (value, _)) in typed.entries) {
+        await tester.enterText(find.byKey(Key(key)), value);
+      }
+      await tester.pumpAndSettle();
+
+      // Nenhum RenderFlex estourou.
+      expect(tester.takeException(), isNull);
+
+      for (final MapEntry(key: key, value: (value, label)) in typed.entries) {
+        final field = find.byKey(Key(key));
+        expect(
+          find.descendant(of: field, matching: find.text(value)),
+          findsOneWidget,
+          reason: '$key deveria mostrar "$value"',
+        );
+
+        // O campo de uma linha rola na horizontal quando o texto não cabe:
+        // extensão de rolagem zero = valor inteiro visível, sem corte.
+        final scroll = tester.state<ScrollableState>(
+          find.descendant(of: field, matching: find.byType(Scrollable)),
+        );
+        expect(
+          scroll.position.maxScrollExtent,
+          0,
+          reason: '"$value" não cabe em $key com $width px',
+        );
+
+        // Rótulo sem reticências: a largura desenhada comporta o texto todo.
+        // Só em 360: a fonte de teste desenha cada glifo como um quadrado de
+        // 1em (~1,8x a Manrope), então em 296 ela acusaria corte que o app
+        // real não tem.
+        if (width < 360) continue;
+        final paragraph = tester.renderObject<RenderParagraph>(
+          find.descendant(of: field, matching: find.text(label)),
+        );
+        expect(
+          paragraph.getMaxIntrinsicWidth(double.infinity),
+          lessThanOrEqualTo(paragraph.size.width + 0.5),
+          reason: 'rótulo "$label" cortado em $key com $width px',
+        );
+      }
+    });
+  }
 }
