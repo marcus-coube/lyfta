@@ -179,6 +179,7 @@ class _FieldValue extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.ly;
+    final locale = Localizations.localeOf(context).toString();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,7 +189,7 @@ class _FieldValue extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              formatMetric(value),
+              formatMetric(value, locale),
               style: LyType.numeric(c.textPrimary, size: 15),
             ),
             if (delta != null) ...[

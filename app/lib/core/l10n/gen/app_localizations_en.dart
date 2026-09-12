@@ -227,6 +227,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonLoadMore => 'Load more';
 
   @override
+  String get commonShowPassword => 'Show password';
+
+  @override
+  String get commonHidePassword => 'Hide password';
+
+  @override
   String get libraryNewExercise => 'New exercise';
 
   @override

@@ -34,7 +34,7 @@ teste de widget da célula de dia (3 estados).
 **Aceite:** números medidos e registrados nas Notas (antes/depois); nenhum jank
 visível ao rolar biblioteca com 40 GIFs.
 
-## - [ ] P4.3 Auditoria i18n + acessibilidade básica
+## - [x] P4.3 Auditoria i18n + acessibilidade básica
 
 **Objetivo:** cumprir ADR-011 de fato e o mínimo de a11y do doc 000.
 **Passos:** varrer ARBs — nenhuma chave faltando em pt-PT/en (script
@@ -267,3 +267,112 @@ pendências restantes listadas e classificadas (bloqueia release × vai pro 2.0)
   novo ainda sem teste de widget dedicado, dívida pequena e aceitável para o
   tamanho da mudança). `go vet`/`go test` não rodou porque nenhum serviço Go
   foi tocado nesta tarefa.
+
+### P4.3 (2026-09-12, Mac)
+
+- **Paridade de ARB, primeiro fato checado antes de qualquer coisa:** o
+  commit anterior ("pt-PT completo — 291 chaves") já tinha fechado a
+  paridade de verdade — `python3` contando chaves (excluindo `@meta`)
+  confirmou **348/348/348** em pt-BR/pt-PT/en, sem chave faltando nem
+  sobrando. O número "291" do commit era as chaves *traduzidas naquela
+  sessão*, não o total do arquivo — só parecia incompleto porque a
+  metadata `@chave` (só existe no template pt-BR para uso do gerador) infla
+  a contagem bruta do arquivo (429 entradas em pt.arb vs 348 chaves reais).
+  Consequência prática: não havia chave faltando para "descobrir" — o
+  trabalho real da tarefa foi construir o *script* que a partir de agora
+  garante isso no CI, e auditar formatação/a11y de verdade.
+- **`app/tool/check_arb_parity.dart` novo** — Dart puro (`dart:io`+
+  `dart:convert`, zero dependência nova), não bash/PowerShell duplicado
+  como o guard de strings: `dart run` funciona igual em Mac/Windows/CI sem
+  manter dois scripts. Compara chaves de `app_pt.arb` (template) contra
+  `app_pt_PT.arb`/`app_en.arb` e falha (`exitCode = 1`) se faltar alguma;
+  também compara os **placeholders declarados em `@chave.placeholders`**
+  contra o texto de cada tradução — um `{count}` que sumiu na tradução (viraria
+  texto solto ou quebraria a interpolação em runtime) não é pego pelo
+  `flutter analyze` nem pelo gerador de l10n, que só valida o template.
+  Testado nos dois sentidos: removi uma chave e um placeholder de
+  `app_en.arb` na mão, confirmei exit code 1 com a mensagem certa, restaurei
+  do git. Plugado no CI (`.github/workflows/ci.yml`, job `app`, depois do
+  guard de strings).
+- **Achado real #1 (formatação de número, ADR-011 §4): `formatLoad`/
+  `formatMetric`/`formatSignedMetric` e a `_formatVolume` duplicada da
+  agenda usavam `toString()` de `double` — que é **sempre** ponto decimal,
+  nunca vírgula, não importa o locale.** Carga/volume/medidas em kg
+  apareciam "42.5" para um aluno pt-BR que só deveria ver "42,5". Corrigido
+  com `NumberFormat('#,##0.##', locale)` do `intl` (já dependência) nas 4
+  funções, threading `locale`/`l10n.localeName` a partir do `context` em
+  cada um dos ~13 call sites (`set_row.dart` — inclusive o campo *editável*
+  de carga, que já aceitava vírgula na entrada mas mostrava ponto no
+  pré-preenchimento, agora os dois lados batem —, `today_screen.dart`,
+  `session_summary_sheet.dart`, `summary_card.dart`, `delta_badge.dart`,
+  `measurement_list.dart`, `bioimpedance_list.dart`, `load_chart_panel.dart`,
+  `agenda_day_details_sheet.dart`). Teste de widget do `set_row_test.dart`
+  que antes **afirmava o bug** (`expect(..., '42.5')`) corrigido para
+  `'42,5'` — é o teste que teria pego isso desde o P1.7 se alguém tivesse
+  olhado com o locale certo. Confirmado com `NumberFormat` real que pt-PT
+  usa separador de milhar diferente de pt-BR (espaço vs ponto) — a mesma
+  razão pela qual ADR-011 não deixa pt-PT herdar cegamente de pt-BR.
+- **Achado real #2 (mesma classe de bug): `ChatBubble._timeLabel` montava
+  "HH:mm" na mão** (`hour.toString().padLeft(2,'0')`), sempre 24h para todo
+  mundo. Trocado por `DateFormat.jm(locale)`, que respeita a convenção do
+  locale (confirmado com script isolado: 24h em pt-BR/pt-PT, 12h com AM/PM
+  em en — "3:05 PM" vs "15:05"). Teste de widget existente
+  (`chat_bubble_test.dart`) já usava `Locale('pt')` e continuou verde sem
+  mudança (pt não muda de formato).
+- **Achado real #3 (a11y — botão de ícone sem rótulo):** de 15 `IconButton`
+  no app, 14 já tinham `tooltip` (que o Flutter também expõe como rótulo de
+  semântica/TalkBack); o único sem era o toggle de mostrar/ocultar senha em
+  `LyTextField` (`core/design_system/`), usado nas 4 telas de auth
+  (login/signup/convite/redefinição). Corrigido com dois parâmetros novos
+  — `showPasswordLabel`/`hidePasswordLabel` — porque o design system não
+  conhece `AppLocalizations` (não é feature, não tem l10n próprio; quem
+  chama já tem `l10n` em mãos) e um `assert` no construtor barra em tempo
+  de desenvolvimento qualquer novo uso de `obscure: true` sem os rótulos.
+  Chaves novas `commonShowPassword`/`commonHidePassword` nas 3 ARBs
+  (pt-PT ganhou "palavra-passe", não "senha" — mesmo critério do resto do
+  arquivo). Teste de widget novo em `ly_text_field_test.dart` cobrindo o
+  toggle do rótulo ao tocar.
+- **Toque ≥48dp: auditado, nenhum achado na área que o Aceite cobre.** Todo
+  `IconButton`/`TextButton`/`ListTile` do fluxo Hoje→executar→finalizar
+  usa os widgets padrão do Material sem `constraints`/`visualDensity`
+  customizados — o mínimo de 48dp é o próprio default do Flutter, não
+  precisou de nada novo. **Achado fora do escopo do Aceite, anotado e não
+  corrigido:** os links "tentar de novo"/"remover" de uma mensagem que
+  falhou no chat (`ChatBubble`, dentro de um `Wrap` com `GestureDetector`
+  em cima de só `Text` caption) têm alvo de toque do tamanho do próprio
+  texto — bem abaixo de 48dp. Não mexi: aumentar a área de toque sem
+  aumentar o texto pede redesenhar a linha de ações da bolha falha (mudaria
+  o layout compacto que a P3.5 desenhou de propósito para caber "não
+  enviada" + duas ações numa bolha estreita), risco maior que o valor de
+  corrigir de passagem numa tarefa de auditoria. Fica pendência.
+- **Contraste WCAG AA: auditado nos dois temas com fórmula de luminância
+  relativa real (não estimativa).** O tema **dark — o único que o app
+  realmente mostra** (`main.dart` força `themeMode: ThemeMode.dark`, sem
+  seguir o tema do sistema) passa AA em todo par texto/fundo testado:
+  pior caso foi `danger` (vermelho) sobre `surface`, 6,56:1, folgado acima
+  do mínimo de 4,5:1 para texto normal. **Achado real, não corrigido:** o
+  tema **light** — definido em `LyColors.light` mas inatingível hoje porque
+  nada liga `ThemeMode.system`/`.light` — falha AA feio para as cores
+  semânticas usadas como *texto* direto (não como badge com fundo tintado):
+  `success`/`warning`/`danger`/`info` sobre branco dão 1,92/1,67/2,77/2,54:1,
+  todos abaixo até do mínimo de 3:1 para texto grande. Como isso não
+  aparece pra nenhum usuário real agora (tema light morto) e mexer na
+  paleta sem poder olhar o resultado (nada renderiza light hoje) é decisão
+  estrutural de token de cor, não ajuste de auditoria, não toquei em
+  `ly_colors.dart` — registrado como dívida técnica para quando (se) o
+  tema light for ligado de verdade.
+- **TalkBack no fluxo Hoje→executar→finalizar: NÃO verificado em device —
+  mesmo bloqueio conhecido desde a P3.4/P3.5/P4.1/P4.2** (`google-services.json`
+  ausente barra todo build Android; nem macOS nem iOS têm pasta de
+  plataforma gerada nesta máquina). Fiz o que dava sem device: auditoria
+  estática do widget tree do fluxo (Hoje → `SetRow`/timer de descanso →
+  resumo do fim de treino) — todo campo tem `label`/`labelText`, todo botão
+  de ícone tem `tooltip`, nenhum `Icon` solto carrega significado sem texto
+  ao lado, e o único uso de `Semantics` explícito no app (`AgendaDayCell`,
+  da P4.1) já está correto. Isso reduz o risco, mas **não substitui** ouvir
+  o TalkBack de verdade — item novo na tabela de pendências do STATUS.md.
+- **Verificado:** `flutter analyze` limpo (0 issues), guard de strings
+  limpo, `dart run tool/check_arb_parity.dart` verde (350 chaves — as 348
+  + as 2 novas de senha), **67 testes verdes** (2 novos: `set_row_test.dart`
+  corrigido para `42,5` e o teste novo do toggle de senha). Nenhum serviço
+  Go tocado nesta tarefa (auditoria é 100% app).

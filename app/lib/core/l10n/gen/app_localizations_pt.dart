@@ -227,6 +227,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get commonLoadMore => 'Carregar mais';
 
   @override
+  String get commonShowPassword => 'Mostrar senha';
+
+  @override
+  String get commonHidePassword => 'Ocultar senha';
+
+  @override
   String get libraryNewExercise => 'Novo exercício';
 
   @override
@@ -1389,6 +1395,12 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get commonLoadMore => 'Carregar mais';
+
+  @override
+  String get commonShowPassword => 'Mostrar palavra-passe';
+
+  @override
+  String get commonHidePassword => 'Ocultar palavra-passe';
 
   @override
   String get libraryNewExercise => 'Novo exercício';

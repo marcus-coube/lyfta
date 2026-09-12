@@ -19,7 +19,14 @@ class LyTextField extends StatefulWidget {
     this.onSubmitted,
     this.onChanged,
     this.autofocus = false,
-  });
+    this.showPasswordLabel,
+    this.hidePasswordLabel,
+  }) : assert(
+          !obscure || (showPasswordLabel != null && hidePasswordLabel != null),
+          'obscure:true precisa de showPasswordLabel/hidePasswordLabel — '
+          'o botão de mostrar/ocultar senha não pode ficar sem rótulo para '
+          'leitor de tela (a11y, P4.3).',
+        );
 
   final String label;
   final String? hint;
@@ -35,6 +42,14 @@ class LyTextField extends StatefulWidget {
   /// Abre o campo já focado. Num diálogo com texto pré-preenchido é o que faz
   /// a seleção inicial valer: sem foco, digitar acrescenta ao valor de fábrica.
   final bool autofocus;
+
+  /// Rótulo do botão de alternar visibilidade quando a senha está oculta —
+  /// obrigatório se `obscure: true` (o DS não conhece l10n, quem chama traz
+  /// a string já traduzida).
+  final String? showPasswordLabel;
+
+  /// Mesmo rótulo, para quando a senha já está visível.
+  final String? hidePasswordLabel;
 
   @override
   State<LyTextField> createState() => _LyTextFieldState();
@@ -70,6 +85,9 @@ class _LyTextFieldState extends State<LyTextField> {
             suffixIcon: widget.obscure
                 ? IconButton(
                     onPressed: () => setState(() => _obscured = !_obscured),
+                    tooltip: _obscured
+                        ? widget.showPasswordLabel
+                        : widget.hidePasswordLabel,
                     icon: Icon(
                       _obscured
                           ? Icons.visibility_outlined

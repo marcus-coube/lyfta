@@ -92,6 +92,8 @@ class _InviteAcceptScreenState extends ConsumerState<InviteAcceptScreen> {
                       prefixIcon: Icons.lock_outline,
                       controller: _passwordController,
                       obscure: true,
+                      showPasswordLabel: l10n.commonShowPassword,
+                      hidePasswordLabel: l10n.commonHidePassword,
                       textInputAction: TextInputAction.done,
                       errorText: _errorMessage,
                       onSubmitted: (_) => _loading ? null : _submit(),

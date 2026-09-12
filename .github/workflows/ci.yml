@@ -175,3 +175,8 @@ jobs:
       # Guard do ADR-011 §5: nenhuma string literal de UI fora do design system.
       - name: Strings hardcoded
         run: tool/check_hardcoded_strings.sh
+
+      # Guard do ADR-011 §1 (P4.3): pt-PT/en não podem perder chave (ou
+      # placeholder) em relação ao template pt-BR.
+      - name: Paridade dos ARBs
+        run: dart run tool/check_arb_parity.dart

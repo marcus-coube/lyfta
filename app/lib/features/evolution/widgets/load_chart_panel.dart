@@ -144,7 +144,7 @@ class _Chart extends StatelessWidget {
               showTitles: true,
               reservedSize: 40,
               getTitlesWidget: (value, meta) => Text(
-                formatMetric(value),
+                formatMetric(value, locale),
                 style: LyType.caption(labelColor),
               ),
             ),
@@ -182,7 +182,7 @@ class _Chart extends StatelessWidget {
             getTooltipItems: (touchedSpots) => [
               for (final spot in touchedSpots)
                 LineTooltipItem(
-                  '${formatMetric(spot.y)}\n${dateFormat.format(series[spot.x.round()].key)}',
+                  '${formatMetric(spot.y, locale)}\n${dateFormat.format(series[spot.x.round()].key)}',
                   LyType.caption(labelColor)
                       .copyWith(fontWeight: FontWeight.w700),
                 ),

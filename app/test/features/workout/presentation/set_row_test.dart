@@ -52,9 +52,11 @@ void main() {
     );
 
     // Reps saem da prescrição (topo da faixa); a carga sai do que ele
-    // levantou da última vez, não do alvo do professor.
+    // levantou da última vez, não do alvo do professor. Vírgula é o
+    // separador decimal em pt-BR (ADR-011 §4) — nunca o ponto de um
+    // `toString()` cru.
     expect(find.widgetWithText(TextField, '12'), findsOneWidget);
-    expect(find.widgetWithText(TextField, '42.5'), findsOneWidget);
+    expect(find.widgetWithText(TextField, '42,5'), findsOneWidget);
   });
 
   testWidgets('registrar série manda o que está nos campos', (tester) async {

@@ -513,6 +513,18 @@ abstract class AppLocalizations {
   /// **'Carregar mais'**
   String get commonLoadMore;
 
+  /// No description provided for @commonShowPassword.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mostrar senha'**
+  String get commonShowPassword;
+
+  /// No description provided for @commonHidePassword.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ocultar senha'**
+  String get commonHidePassword;
+
   /// No description provided for @libraryNewExercise.
   ///
   /// In pt, this message translates to:

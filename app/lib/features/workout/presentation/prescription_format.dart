@@ -1,13 +1,14 @@
+import 'package:intl/intl.dart';
+
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/domain/plan.dart';
 import '../../../shared/l10n/plan_l10n.dart';
 
-/// Carga em texto curto: `40`, `42.5`. O `.0` do double não diz nada para
-/// quem está de pé na frente da barra.
-String formatLoad(double value) {
-  final rounded = (value * 100).round() / 100;
-  if (rounded == rounded.roundToDouble()) return rounded.toInt().toString();
-  return rounded.toString();
+/// Carga em texto curto: `40`, `42,5` (separador decimal do `locale` —
+/// ADR-011 §4, nunca `toString()` cru, que sempre usa `.`). O `.0` do double
+/// não diz nada para quem está de pé na frente da barra.
+String formatLoad(double value, String locale) {
+  return NumberFormat('#,##0.##', locale).format(value);
 }
 
 /// A prescrição de uma série em uma linha: repetições e alvo, do jeito que o
@@ -37,7 +38,7 @@ String? _targetLabel(AppLocalizations l10n, PrescribedSet set) {
   final value = unit == TargetUnit.kg ? set.targetLoadKg : set.targetValue;
   if (value == null) return null;
   return l10n.sessionTargetWithUnit(
-    formatLoad(value),
+    formatLoad(value, l10n.localeName),
     targetUnitLabel(l10n, unit),
   );
 }

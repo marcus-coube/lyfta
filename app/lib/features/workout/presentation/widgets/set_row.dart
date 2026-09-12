@@ -39,7 +39,8 @@ class SetRow extends StatefulWidget {
 
 class _SetRowState extends State<SetRow> {
   late final TextEditingController _reps = TextEditingController(text: _initialReps);
-  late final TextEditingController _load = TextEditingController(text: _initialLoad);
+  late TextEditingController _load;
+  bool _loadInitialized = false;
   bool _saving = false;
 
   /// Reps sai da prescrição: é o que o professor mandou fazer. O topo da
@@ -52,9 +53,22 @@ class _SetRowState extends State<SetRow> {
 
   /// Carga sai da **última vez**, não da prescrição: progressão de carga é o
   /// que o aluno faz na prática, e o alvo em kg pode nem existir (RPE/RIR).
-  String get _initialLoad {
+  /// Precisa do `locale` (ADR-011 §4), só disponível a partir do `context` —
+  /// por isso o controller nasce em [didChangeDependencies], não em
+  /// [initState].
+  String _initialLoad(String locale) {
     final load = widget.previous?.loadKg ?? widget.prescribed.targetLoadKg;
-    return load == null ? '' : formatLoad(load);
+    return load == null ? '' : formatLoad(load, locale);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_loadInitialized) {
+      final locale = Localizations.localeOf(context).toString();
+      _load = TextEditingController(text: _initialLoad(locale));
+      _loadInitialized = true;
+    }
   }
 
   @override
@@ -136,9 +150,14 @@ class _SetRowState extends State<SetRow> {
   /// Correção de uma série já registrada. Não edita o fato: manda outro log
   /// revisando o primeiro (ADR-003 §5).
   Future<void> _openFix(LocalSetLog logged) async {
+    final locale = Localizations.localeOf(context).toString();
     final result = await showDialog<(int?, double?)>(
       context: context,
-      builder: (dialogContext) => _FixSetDialog(setNo: widget.setNo, logged: logged),
+      builder: (dialogContext) => _FixSetDialog(
+        setNo: widget.setNo,
+        logged: logged,
+        locale: locale,
+      ),
     );
     if (result == null) return;
     await _submit(revises: logged.clientId, reps: result.$1, load: result.$2);
@@ -285,7 +304,9 @@ class _LoggedSummary extends StatelessWidget {
         Text(
           l10n.sessionLoggedSet(
             log.repsDone?.toString() ?? l10n.sessionEmptyValue,
-            log.loadKg == null ? l10n.sessionEmptyValue : formatLoad(log.loadKg!),
+            log.loadKg == null
+                ? l10n.sessionEmptyValue
+                : formatLoad(log.loadKg!, l10n.localeName),
           ),
           style: LyType.body(c.textPrimary),
         ),
@@ -296,10 +317,15 @@ class _LoggedSummary extends StatelessWidget {
 }
 
 class _FixSetDialog extends StatefulWidget {
-  const _FixSetDialog({required this.setNo, required this.logged});
+  const _FixSetDialog({
+    required this.setNo,
+    required this.logged,
+    required this.locale,
+  });
 
   final int setNo;
   final LocalSetLog logged;
+  final String locale;
 
   @override
   State<_FixSetDialog> createState() => _FixSetDialogState();
@@ -309,7 +335,9 @@ class _FixSetDialogState extends State<_FixSetDialog> {
   late final TextEditingController _reps =
       TextEditingController(text: widget.logged.repsDone?.toString() ?? '');
   late final TextEditingController _load = TextEditingController(
-    text: widget.logged.loadKg == null ? '' : formatLoad(widget.logged.loadKg!),
+    text: widget.logged.loadKg == null
+        ? ''
+        : formatLoad(widget.logged.loadKg!, widget.locale),
   );
 
   @override

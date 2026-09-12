@@ -88,7 +88,7 @@ class _SessionMetrics extends StatelessWidget {
         ),
         _Metric(
           label: l10n.sessionSummaryVolume,
-          value: _formatVolume(day.totalVolumeKg),
+          value: _formatVolume(day.totalVolumeKg, l10n.localeName),
         ),
         if (minutes > 0)
           _Metric(
@@ -99,13 +99,11 @@ class _SessionMetrics extends StatelessWidget {
     );
   }
 
-  // Mesma regra de `formatLoad`/`formatMetric` (sem `.0` decorativo),
-  // duplicada aqui de propósito: feature não importa feature (guideline
-  // `flutter.md`).
-  String _formatVolume(double value) {
-    final rounded = (value * 100).round() / 100;
-    if (rounded == rounded.roundToDouble()) return rounded.toInt().toString();
-    return rounded.toString();
+  // Mesma regra de `formatLoad`/`formatMetric` (separador decimal do
+  // `locale`, ADR-011 §4), duplicada aqui de propósito: feature não importa
+  // feature (guideline `flutter.md`).
+  String _formatVolume(double value, String locale) {
+    return NumberFormat('#,##0.##', locale).format(value);
   }
 }
 

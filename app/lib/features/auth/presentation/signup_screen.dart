@@ -183,6 +183,8 @@ class _SignupFormState extends ConsumerState<_SignupForm> {
           prefixIcon: Icons.lock_outline,
           controller: _passwordController,
           obscure: true,
+          showPasswordLabel: l10n.commonShowPassword,
+          hidePasswordLabel: l10n.commonHidePassword,
           textInputAction: TextInputAction.done,
           errorText: _errorField == 'password' ? _errorMessage : null,
           onSubmitted: (_) => _loading ? null : _submit(),

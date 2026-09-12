@@ -69,6 +69,8 @@
   "commonCreate": "Criar",
   "commonRemove": "Remover",
   "commonLoadMore": "Carregar mais",
+  "commonShowPassword": "Mostrar palavra-passe",
+  "commonHidePassword": "Ocultar palavra-passe",
   "libraryNewExercise": "Novo exercício",
   "librarySearchLabel": "Procurar exercício",
   "librarySearchHint": "supino, agachamento…",

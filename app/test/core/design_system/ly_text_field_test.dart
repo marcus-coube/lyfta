@@ -35,4 +35,36 @@ void main() {
 
     expect(controller.text, 'Plano do João');
   });
+
+  // P4.3 (a11y): o botão de mostrar/ocultar senha precisa de rótulo para
+  // leitor de tela — sem isso o TalkBack só anuncia "botão".
+  testWidgets('toggle de senha alterna o rótulo de acessibilidade ao tocar',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: LyTheme.dark(),
+        home: const Scaffold(
+          body: LyTextField(
+            label: 'Senha',
+            obscure: true,
+            showPasswordLabel: 'Mostrar senha',
+            hidePasswordLabel: 'Ocultar senha',
+          ),
+        ),
+      ),
+    );
+
+    expect(
+      tester.widget<IconButton>(find.byType(IconButton)).tooltip,
+      'Mostrar senha',
+    );
+
+    await tester.tap(find.byType(IconButton));
+    await tester.pump();
+
+    expect(
+      tester.widget<IconButton>(find.byType(IconButton)).tooltip,
+      'Ocultar senha',
+    );
+  });
 }

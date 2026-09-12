@@ -134,13 +134,14 @@ class _MetricRow extends StatelessWidget {
     final metric = value;
     if (metric == null) return const SizedBox.shrink();
     final c = context.ly;
+    final locale = Localizations.localeOf(context).toString();
 
     return Padding(
       padding: const EdgeInsets.only(top: LySpace.x1),
       child: Row(
         children: [
           Expanded(child: Text(label, style: LyType.body(c.textSecondary))),
-          Text(formatMetric(metric), style: LyType.body(c.textPrimary)),
+          Text(formatMetric(metric, locale), style: LyType.body(c.textPrimary)),
           const SizedBox(width: LySpace.x2),
           DeltaBadge(value: delta),
         ],

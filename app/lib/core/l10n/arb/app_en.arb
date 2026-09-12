@@ -69,6 +69,8 @@
   "commonCreate": "Create",
   "commonRemove": "Remove",
   "commonLoadMore": "Load more",
+  "commonShowPassword": "Show password",
+  "commonHidePassword": "Hide password",
   "libraryNewExercise": "New exercise",
   "librarySearchLabel": "Search exercise",
   "librarySearchHint": "bench press, squat…",

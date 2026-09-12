@@ -45,7 +45,7 @@ class _SessionSummary extends StatelessWidget {
                 ),
                 _Metric(
                   label: l10n.sessionSummaryVolume,
-                  value: formatLoad(state.totalVolumeKg),
+                  value: formatLoad(state.totalVolumeKg, l10n.localeName),
                 ),
                 _Metric(
                   label: l10n.sessionSummaryDuration,

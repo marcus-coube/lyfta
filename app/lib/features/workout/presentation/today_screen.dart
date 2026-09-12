@@ -212,7 +212,7 @@ class _ExerciseRow extends StatelessWidget {
                     _Chip(
                       label: topLoad == null
                           ? l10n.todayNoPreviousLoad
-                          : l10n.todayPreviousLoad(formatLoad(topLoad)),
+                          : l10n.todayPreviousLoad(formatLoad(topLoad, l10n.localeName)),
                       color: topLoad == null ? c.textSecondary : c.accent,
                     ),
                   ],
@@ -248,7 +248,7 @@ class _RecentSessions extends StatelessWidget {
               l10n.todayRecentEntry(
                 session.dayLabel,
                 session.totalSets,
-                formatLoad(session.totalVolumeKg),
+                formatLoad(session.totalVolumeKg, l10n.localeName),
               ),
               style: LyType.bodySm(c.textSecondary),
             ),

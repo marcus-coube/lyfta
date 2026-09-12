@@ -21,6 +21,7 @@ class DeltaBadge extends StatelessWidget {
     if (delta == null || delta == 0) return const SizedBox.shrink();
 
     final c = context.ly;
+    final locale = Localizations.localeOf(context).toString();
     final color = delta < 0 ? c.success : c.danger;
     final icon = delta < 0 ? Icons.arrow_downward : Icons.arrow_upward;
 
@@ -35,7 +36,7 @@ class DeltaBadge extends StatelessWidget {
         children: [
           Icon(icon, size: 11, color: color),
           const SizedBox(width: 2),
-          Text(formatSignedMetric(delta), style: LyType.caption(color)),
+          Text(formatSignedMetric(delta, locale), style: LyType.caption(color)),
         ],
       ),
     );

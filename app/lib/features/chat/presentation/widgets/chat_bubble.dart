@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/design_system/design_system.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
@@ -105,7 +106,7 @@ class ChatBubble extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      _timeLabel(),
+                      _timeLabel(context),
                       style: LyType.caption(
                         isMine ? c.onAccent.withValues(alpha: 0.75) : c.textSecondary,
                       ),
@@ -162,9 +163,10 @@ class ChatBubble extends StatelessWidget {
     );
   }
 
-  String _timeLabel() {
-    final h = timestamp.hour.toString().padLeft(2, '0');
-    final m = timestamp.minute.toString().padLeft(2, '0');
-    return '$h:$m';
+  // `jm` respeita a convenção do locale: 24h em pt-BR/pt-PT, 12h com AM/PM
+  // em en (ADR-011 §4) — `toString()` cru sempre daria 24h para todo mundo.
+  String _timeLabel(BuildContext context) {
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.jm(locale).format(timestamp);
   }
 }
