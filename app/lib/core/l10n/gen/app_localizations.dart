@@ -2090,6 +2090,96 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Marcar como visto'**
   String get checkinMarkReviewed;
+
+  /// No description provided for @agendaLoadError.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível carregar sua agenda.'**
+  String get agendaLoadError;
+
+  /// Streak simples da agenda: semanas consecutivas em que o aluno treinou pelo menos tantas vezes quanto os dias do rodízio (A/B/C).
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 semana seguida batendo a meta de treinos} other{{count} semanas seguidas batendo a meta de treinos}}'**
+  String agendaStreakWeeks(int count);
+
+  /// Intervalo da semana visível na agenda, já formatado pelo intl (ex.: '7 de set – 13 de set').
+  ///
+  /// In pt, this message translates to:
+  /// **'{start} – {end}'**
+  String agendaWeekRange(String start, String end);
+
+  /// No description provided for @agendaPreviousWeek.
+  ///
+  /// In pt, this message translates to:
+  /// **'Semana anterior'**
+  String get agendaPreviousWeek;
+
+  /// No description provided for @agendaNextWeek.
+  ///
+  /// In pt, this message translates to:
+  /// **'Próxima semana'**
+  String get agendaNextWeek;
+
+  /// No description provided for @agendaExpandMonth.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ver mês'**
+  String get agendaExpandMonth;
+
+  /// No description provided for @agendaCollapseMonth.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ver semana'**
+  String get agendaCollapseMonth;
+
+  /// No description provided for @agendaStateDone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Treino feito'**
+  String get agendaStateDone;
+
+  /// No description provided for @agendaStatePredicted.
+  ///
+  /// In pt, this message translates to:
+  /// **'Treino previsto'**
+  String get agendaStatePredicted;
+
+  /// No description provided for @agendaStateRest.
+  ///
+  /// In pt, this message translates to:
+  /// **'Descanso'**
+  String get agendaStateRest;
+
+  /// Título do detalhe de um dia com treino sincronizado.
+  ///
+  /// In pt, this message translates to:
+  /// **'Treino {label}'**
+  String agendaSessionTitle(String label);
+
+  /// Título do detalhe de um dia futuro projetado pela rotação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Treino previsto: {label}'**
+  String agendaPredictedTitle(String label);
+
+  /// No description provided for @agendaPredictedHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Projeção com base no seu rodízio atual — pode mudar conforme você treina.'**
+  String get agendaPredictedHint;
+
+  /// No description provided for @agendaRestTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dia de descanso'**
+  String get agendaRestTitle;
+
+  /// No description provided for @agendaRestHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum treino registrado neste dia.'**
+  String get agendaRestHint;
 }
 
 class _AppLocalizationsDelegate

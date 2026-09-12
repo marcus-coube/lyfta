@@ -1101,6 +1101,66 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get checkinMarkReviewed => 'Marcar como visto';
+
+  @override
+  String get agendaLoadError => 'Não foi possível carregar sua agenda.';
+
+  @override
+  String agendaStreakWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count semanas seguidas batendo a meta de treinos',
+      one: '1 semana seguida batendo a meta de treinos',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String agendaWeekRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String get agendaPreviousWeek => 'Semana anterior';
+
+  @override
+  String get agendaNextWeek => 'Próxima semana';
+
+  @override
+  String get agendaExpandMonth => 'Ver mês';
+
+  @override
+  String get agendaCollapseMonth => 'Ver semana';
+
+  @override
+  String get agendaStateDone => 'Treino feito';
+
+  @override
+  String get agendaStatePredicted => 'Treino previsto';
+
+  @override
+  String get agendaStateRest => 'Descanso';
+
+  @override
+  String agendaSessionTitle(String label) {
+    return 'Treino $label';
+  }
+
+  @override
+  String agendaPredictedTitle(String label) {
+    return 'Treino previsto: $label';
+  }
+
+  @override
+  String get agendaPredictedHint =>
+      'Projeção com base no seu rodízio atual — pode mudar conforme você treina.';
+
+  @override
+  String get agendaRestTitle => 'Dia de descanso';
+
+  @override
+  String get agendaRestHint => 'Nenhum treino registrado neste dia.';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -1314,4 +1374,14 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   @override
   String get checkinQueuedOffline =>
       'Sem ligação — a avaliação será enviada assim que reconectares.';
+
+  @override
+  String get agendaLoadError => 'Não foi possível carregar a tua agenda.';
+
+  @override
+  String get agendaPredictedHint =>
+      'Projeção com base no teu rodízio atual — pode mudar conforme treinares.';
+
+  @override
+  String get agendaRestHint => 'Nenhum treino registado neste dia.';
 }

@@ -593,3 +593,81 @@ func TestTodayExposesRotation(t *testing.T) {
 		t.Fatalf("depois do override o próximo deveria ser o A: dia=%s next=%v", today.Day.Label, today.NextDayID)
 	}
 }
+
+// apiSessions espelha `GET /v1/me/sessions` — a fonte de "treino feito" da
+// agenda semanal do aluno (P4.1).
+type apiSessions struct {
+	Items []struct {
+		ID            string     `json:"id"`
+		DayLabel      string     `json:"day_label"`
+		StartedAt     time.Time  `json:"started_at"`
+		FinishedAt    *time.Time `json:"finished_at"`
+		TotalSets     int        `json:"total_sets"`
+		TotalVolumeKg float64    `json:"total_volume_kg"`
+	} `json:"items"`
+}
+
+func decodeSessions(t *testing.T, rec *httptest.ResponseRecorder) apiSessions {
+	t.Helper()
+	if rec.Code != http.StatusOK {
+		t.Fatalf("GET /v1/me/sessions: %d %s", rec.Code, rec.Body.String())
+	}
+	var out apiSessions
+	if err := json.Unmarshal(rec.Body.Bytes(), &out); err != nil {
+		t.Fatalf("decodificar sessões: %v (%s)", err, rec.Body.String())
+	}
+	return out
+}
+
+// TestSessionsInRange é o Aceite do P4.1 do lado do servidor: a agenda só
+// mostra o que caiu dentro da janela pedida, e sessão sem log nenhum
+// (abriu e não terminou) ainda aparece — o dia foi tentado, mesmo vazio.
+func TestSessionsInRange(t *testing.T) {
+	a := builderFixture(t)
+	createPublishedPlan(t, a)
+
+	today := decodeToday(t, do(t, a.handler, http.MethodGet, "/v1/me/today", a.student, nil))
+	batch := newWorkoutBatch(today.Day.ID, a.exerciseID, 40, 42.5)
+	sync := decodeSync(t, do(t, a.handler, http.MethodPost, "/v1/sync/workout-logs", a.student, batch.body()))
+	if sync.Rejected != 0 {
+		t.Fatalf("lote deveria ser aceito inteiro: %+v", sync)
+	}
+
+	now := time.Now().UTC()
+	from := now.Add(-2 * time.Hour).Format(time.RFC3339)
+	to := now.Add(2 * time.Hour).Format(time.RFC3339)
+	resp := decodeSessions(t, do(t, a.handler, http.MethodGet,
+		"/v1/me/sessions?from="+from+"&to="+to, a.student, nil))
+	if len(resp.Items) != 1 || resp.Items[0].DayLabel != "A" || resp.Items[0].TotalSets != 2 ||
+		resp.Items[0].TotalVolumeKg != 825 {
+		t.Fatalf("a sessão treinada deveria aparecer na janela: %+v", resp.Items)
+	}
+
+	// Janela que não cobre o horário da sessão (newWorkoutBatch começa 1h no
+	// passado): fora da agenda pedida, a lista vem vazia.
+	farFrom := now.Add(24 * time.Hour).Format(time.RFC3339)
+	farTo := now.Add(48 * time.Hour).Format(time.RFC3339)
+	resp = decodeSessions(t, do(t, a.handler, http.MethodGet,
+		"/v1/me/sessions?from="+farFrom+"&to="+farTo, a.student, nil))
+	if len(resp.Items) != 0 {
+		t.Fatalf("janela sem sessão deveria vir vazia: %+v", resp.Items)
+	}
+}
+
+// TestSessionsInRangeValidation cobre o erro relevante: `to` não depois de
+// `from` não é uma janela válida para consultar.
+func TestSessionsInRangeValidation(t *testing.T) {
+	a := builderFixture(t)
+	createPublishedPlan(t, a)
+
+	now := time.Now().UTC().Format(time.RFC3339)
+	rec := do(t, a.handler, http.MethodGet, "/v1/me/sessions?from="+now+"&to="+now, a.student, nil)
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("to igual a from deveria ser 400: %d %s", rec.Code, rec.Body.String())
+	}
+
+	rec = do(t, a.handler, http.MethodGet, "/v1/me/sessions?from=nao-e-data&to="+now, a.student, nil)
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("from malformado deveria ser 400: %d %s", rec.Code, rec.Body.String())
+	}
+}

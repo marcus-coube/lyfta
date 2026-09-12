@@ -1100,4 +1100,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get checkinMarkReviewed => 'Mark as seen';
+
+  @override
+  String get agendaLoadError => 'We couldn\'t load your schedule.';
+
+  @override
+  String agendaStreakWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count weeks in a row hitting your workout goal',
+      one: '1 week in a row hitting your workout goal',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String agendaWeekRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String get agendaPreviousWeek => 'Previous week';
+
+  @override
+  String get agendaNextWeek => 'Next week';
+
+  @override
+  String get agendaExpandMonth => 'View month';
+
+  @override
+  String get agendaCollapseMonth => 'View week';
+
+  @override
+  String get agendaStateDone => 'Workout done';
+
+  @override
+  String get agendaStatePredicted => 'Workout expected';
+
+  @override
+  String get agendaStateRest => 'Rest';
+
+  @override
+  String agendaSessionTitle(String label) {
+    return '$label workout';
+  }
+
+  @override
+  String agendaPredictedTitle(String label) {
+    return 'Expected workout: $label';
+  }
+
+  @override
+  String get agendaPredictedHint =>
+      'Projection based on your current rotation — it can change as you train.';
+
+  @override
+  String get agendaRestTitle => 'Rest day';
+
+  @override
+  String get agendaRestHint => 'No workout logged on this day.';
 }

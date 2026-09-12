@@ -434,6 +434,56 @@ func (r *SessionRepo) RecentSessions(ctx context.Context, tenantID, studentID st
 	return out, nil
 }
 
+// SessionsInRange devolve as sessões do aluno com `started_at` dentro de
+// [from, to) — a leitura da agenda semanal (P4.1).
+//
+// O filtro é por `started_at` (o `performed_at` que o device mandou ao abrir
+// a sessão, ver `startSession`), não por `received_at`: ADR-003 é explícito —
+// "relatórios usam performed_at com sanidade validada" (a sanidade é o
+// clock-skew do sync, P1.5). A agenda precisa mostrar o treino no dia em que
+// ele **aconteceu**, não no dia em que o device conseguiu sincronizar; um
+// aluno que treina offline no sábado e só reconecta na segunda não pode ver
+// o treino cair na segunda-feira. `idx_workout_sessions_student
+// (tenant_id, student_id, started_at DESC)`, já criado na P1.1, cobre esta
+// consulta — nenhuma migration nova foi necessária.
+func (r *SessionRepo) SessionsInRange(ctx context.Context, tenantID, studentID string, from, to time.Time) ([]domain.SessionSummary, error) {
+	var out []domain.SessionSummary
+
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		const q = `
+			SELECT s.id,
+			       COALESCE(s.snapshot -> 'day' ->> 'label', ''),
+			       s.started_at, s.finished_at,
+			       count(l.id),
+			       COALESCE(sum(l.load_kg * l.reps_done), 0)
+			FROM workout_sessions s
+			LEFT JOIN workout_set_logs l
+			       ON l.session_id = s.id AND ` + effectiveLogFilter + `
+			WHERE s.student_id = $1
+			  AND s.started_at >= $2 AND s.started_at < $3
+			GROUP BY s.id
+			ORDER BY s.started_at ASC`
+		rows, err := tx.Query(ctx, q, studentID, from, to)
+		if err != nil {
+			return err
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var s domain.SessionSummary
+			if err := rows.Scan(&s.ID, &s.DayLabel, &s.StartedAt, &s.FinishedAt,
+				&s.TotalSets, &s.TotalVolumeKg); err != nil {
+				return err
+			}
+			out = append(out, s)
+		}
+		return rows.Err()
+	})
+	if err != nil {
+		return nil, fmt.Errorf("repo: listar sessões por período: %w", err)
+	}
+	return out, nil
+}
+
 // SessionSnapshot devolve o snapshot congelado de uma sessão do aluno. É o que
 // permite reabrir uma execução sem depender do template vivo (ADR-004 §2).
 func (r *SessionRepo) SessionSnapshot(ctx context.Context, tenantID, studentID, sessionID string) (json.RawMessage, error) {

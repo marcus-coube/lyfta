@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/auth_controller.dart';
 import '../../../core/auth/auth_state.dart';
-import '../../../core/design_system/design_system.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_shell_scaffold.dart';
 import '../../../shared/widgets/role_context_switcher.dart';
+import '../../agenda/presentation/agenda_screen.dart';
 import '../../chat/presentation/chat_home_screen.dart';
 import '../../chat/presentation/conversations_controller.dart';
 import '../../evolution/presentation/evolution_screen.dart';
@@ -15,7 +15,7 @@ import '../../workout/presentation/today_screen.dart';
 /// Shell do aluno — Hoje, Evolução, Chat e Agenda. Lateral em telas largas
 /// (web/desktop), barra inferior em mobile (`LyShellScaffold`, breakpoint
 /// ~840px). **Hoje** é a tela real do P1.7, **Evolução** é a do P2.4, **Chat**
-/// é a do P3.5 (conversa direta com o professor); agenda chega no P4.
+/// é a do P3.5 (conversa direta com o professor), **Agenda** é a do P4.1.
 class StudentShellScreen extends ConsumerStatefulWidget {
   const StudentShellScreen({super.key});
 
@@ -28,7 +28,6 @@ class _StudentShellScreenState extends ConsumerState<StudentShellScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.ly;
     final l10n = AppLocalizations.of(context);
     final authState = ref.watch(authControllerProvider);
     final unread = ref.watch(unreadTotalProvider);
@@ -68,12 +67,7 @@ class _StudentShellScreenState extends ConsumerState<StudentShellScreen> {
         0 => const TodayScreen(),
         1 => const EvolutionScreen(),
         2 => const ChatHomeScreen(isCoach: false),
-        _ => Center(
-            child: Text(
-              l10n.homePlaceholderBody,
-              style: LyType.body(c.textSecondary),
-            ),
-          ),
+        _ => const AgendaScreen(),
       },
     );
   }

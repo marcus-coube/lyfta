@@ -697,5 +697,46 @@
     }
   },
   "checkinReviewed": "Visto",
-  "checkinMarkReviewed": "Marcar como visto"
+  "checkinMarkReviewed": "Marcar como visto",
+
+  "agendaLoadError": "Não foi possível carregar sua agenda.",
+  "agendaStreakWeeks": "{count, plural, =1{1 semana seguida batendo a meta de treinos} other{{count} semanas seguidas batendo a meta de treinos}}",
+  "@agendaStreakWeeks": {
+    "description": "Streak simples da agenda: semanas consecutivas em que o aluno treinou pelo menos tantas vezes quanto os dias do rodízio (A/B/C).",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "agendaWeekRange": "{start} – {end}",
+  "@agendaWeekRange": {
+    "description": "Intervalo da semana visível na agenda, já formatado pelo intl (ex.: '7 de set – 13 de set').",
+    "placeholders": {
+      "start": {"type": "String"},
+      "end": {"type": "String"}
+    }
+  },
+  "agendaPreviousWeek": "Semana anterior",
+  "agendaNextWeek": "Próxima semana",
+  "agendaExpandMonth": "Ver mês",
+  "agendaCollapseMonth": "Ver semana",
+  "agendaStateDone": "Treino feito",
+  "agendaStatePredicted": "Treino previsto",
+  "agendaStateRest": "Descanso",
+  "agendaSessionTitle": "Treino {label}",
+  "@agendaSessionTitle": {
+    "description": "Título do detalhe de um dia com treino sincronizado.",
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "agendaPredictedTitle": "Treino previsto: {label}",
+  "@agendaPredictedTitle": {
+    "description": "Título do detalhe de um dia futuro projetado pela rotação.",
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "agendaPredictedHint": "Projeção com base no seu rodízio atual — pode mudar conforme você treina.",
+  "agendaRestTitle": "Dia de descanso",
+  "agendaRestHint": "Nenhum treino registrado neste dia."
 }

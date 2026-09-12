@@ -354,5 +354,20 @@
   "checkinCardScores": "Rating {rating} · Difficulty {difficulty}",
   "checkinCardPainWhere": "Pain at: {where}",
   "checkinReviewed": "Seen",
-  "checkinMarkReviewed": "Mark as seen"
+  "checkinMarkReviewed": "Mark as seen",
+  "agendaLoadError": "We couldn't load your schedule.",
+  "agendaStreakWeeks": "{count, plural, =1{1 week in a row hitting your workout goal} other{{count} weeks in a row hitting your workout goal}}",
+  "agendaWeekRange": "{start} – {end}",
+  "agendaPreviousWeek": "Previous week",
+  "agendaNextWeek": "Next week",
+  "agendaExpandMonth": "View month",
+  "agendaCollapseMonth": "View week",
+  "agendaStateDone": "Workout done",
+  "agendaStatePredicted": "Workout expected",
+  "agendaStateRest": "Rest",
+  "agendaSessionTitle": "{label} workout",
+  "agendaPredictedTitle": "Expected workout: {label}",
+  "agendaPredictedHint": "Projection based on your current rotation — it can change as you train.",
+  "agendaRestTitle": "Rest day",
+  "agendaRestHint": "No workout logged on this day."
 }

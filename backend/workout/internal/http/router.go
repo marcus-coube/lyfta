@@ -69,6 +69,11 @@ func NewRouter(
 		r.Post("/sync/workout-logs", syncHandler.PushLogs)
 		r.Get("/sync/pull", syncHandler.Pull)
 
+		// Agenda semanal do aluno (P4.1): sessões sincronizadas por período.
+		// "Treino previsto" é projeção local da rotação no cliente, não uma
+		// leitura de servidor.
+		r.Get("/me/sessions", syncHandler.Sessions)
+
 		// Progresso por exercício (P2.1). O eixo é o `exercise_id`, então a
 		// série atravessa planos e versões; quem lê pelo `/me/` é sempre o
 		// dono da claim.

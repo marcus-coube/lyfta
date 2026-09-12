@@ -634,6 +634,72 @@ func (h *SyncHandler) OverrideDay(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, h.stateFromDomain(r, claims.TenantID, state))
 }
 
+// maxSessionsRangeDays limita a janela de `GET /me/sessions`: a agenda (P4.1)
+// navega semana a semana e mês expandido, nunca o histórico inteiro do aluno.
+const maxSessionsRangeDays = 120
+
+type sessionsResponse struct {
+	Items []sessionSummaryDTO `json:"items"`
+}
+
+// Sessions devolve as sessões do aluno com `started_at` dentro de [from, to) —
+// é a fonte de "treino feito" da agenda semanal (P4.1); "treino previsto" é
+// projeção local da rotação no cliente, sem endpoint próprio (P1.5 já expõe a
+// rotação inteira em `GET /me/today`). O aluno é sempre o `sub` da claim, como
+// as demais rotas de `/me/...`.
+func (h *SyncHandler) Sessions(w http.ResponseWriter, r *http.Request) {
+	claims, ok := ClaimsFromContext(r.Context())
+	if !ok || claims.TenantID == "" {
+		writeError(w, errUnauthenticated())
+		return
+	}
+
+	from, to, apiErr := parseSessionsRange(r)
+	if apiErr != nil {
+		writeError(w, *apiErr)
+		return
+	}
+
+	items, err := h.sessions.SessionsInRange(r.Context(), claims.TenantID, claims.Subject, from, to)
+	if err != nil {
+		h.logger.Error("sessions_range_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
+	}
+
+	resp := sessionsResponse{Items: make([]sessionSummaryDTO, 0, len(items))}
+	for _, s := range items {
+		resp.Items = append(resp.Items, sessionSummaryDTO{
+			ID: s.ID, DayLabel: s.DayLabel, StartedAt: s.StartedAt, FinishedAt: s.FinishedAt,
+			TotalSets: s.TotalSets, TotalVolumeKg: s.TotalVolumeKg,
+		})
+	}
+	writeJSON(w, http.StatusOK, resp)
+}
+
+func parseSessionsRange(r *http.Request) (from, to time.Time, apiErr *APIError) {
+	q := r.URL.Query()
+	from, err := time.Parse(time.RFC3339, q.Get("from"))
+	if err != nil {
+		e := errValidation("from")
+		return time.Time{}, time.Time{}, &e
+	}
+	to, err = time.Parse(time.RFC3339, q.Get("to"))
+	if err != nil {
+		e := errValidation("to")
+		return time.Time{}, time.Time{}, &e
+	}
+	if !to.After(from) {
+		e := errValidation("to")
+		return time.Time{}, time.Time{}, &e
+	}
+	if to.Sub(from) > maxSessionsRangeDays*24*time.Hour {
+		e := errValidation("to")
+		return time.Time{}, time.Time{}, &e
+	}
+	return from, to, nil
+}
+
 // changedPlan devolve o plano ativo do aluno quando algo nele mudou depois do
 // cursor. Cursor vazio (`since` zero) é primeira sincronização: vem sempre.
 func (h *SyncHandler) changedPlan(r *http.Request, tenantID, studentID string, since time.Time, locale domain.Locale) (*planResponse, *APIError) {

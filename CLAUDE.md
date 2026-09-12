@@ -40,7 +40,7 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P4.X").
 **Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
 saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
-**P0, P1, P2 e P3 concluídas, 25/29:** `identity` completo (auth, convites,
+**P0, P1, P2 e P3 concluídas e a P4 começada, 26/29:** `identity` completo (auth, convites,
 reset, lista de usuários do tenant), CI no GitHub Actions
 (`.github/workflows/ci.yml`) e o serviço `workout` completo do lado servidor —
 schema do ADR-004, mídia por URL presignada, biblioteca com seed global de 41
@@ -72,8 +72,12 @@ cair, fila de check-ins como aba do coach na ficha de evolução) fecham a
 comunicação dos dois lados, com `core/push/` registrando o device e abrindo a
 notificação tocada no lugar certo (P3.5) — pendente de verificação manual em
 Android físico enquanto o `google-services.json` não é baixado do Console
-Firebase (bloqueio conhecido, ver `app/README.md` § Firebase).
-Próxima: **P4.1** (calendário/agenda semanal do aluno). Escopo do MVP em
+Firebase (bloqueio conhecido, ver `app/README.md` § Firebase). Na P4, o
+`workout` ganhou `GET /v1/me/sessions?from=&to=` e o aluno tem a aba
+**Agenda**: strip semanal (dom–sáb) com o que já foi treinado e o que a
+rotação projeta localmente para os próximos dias, mês expansível e streak
+simples de semanas seguidas batendo a meta (P4.1).
+Próxima: **P4.2** (performance e robustez). Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor
 funcionam em **todas** as plataformas (mobile e web).

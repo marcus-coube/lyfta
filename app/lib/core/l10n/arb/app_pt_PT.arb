@@ -53,5 +53,8 @@
   "chatStudentNoConversation": "O teu professor ainda não iniciou uma conversa contigo.",
   "checkinSubtitle": "A tua avaliação ajuda o teu professor a ajustar o próximo treino.",
   "checkinSubmitted": "Avaliação enviada ao teu professor.",
-  "checkinQueuedOffline": "Sem ligação — a avaliação será enviada assim que reconectares."
+  "checkinQueuedOffline": "Sem ligação — a avaliação será enviada assim que reconectares.",
+  "agendaLoadError": "Não foi possível carregar a tua agenda.",
+  "agendaPredictedHint": "Projeção com base no teu rodízio atual — pode mudar conforme treinares.",
+  "agendaRestHint": "Nenhum treino registado neste dia."
 }
