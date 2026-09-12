@@ -1171,8 +1171,41 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   AppLocalizationsPtPt() : super('pt_PT');
 
   @override
+  String get appTitle => 'Lyfta';
+
+  @override
+  String get appVersion => 'v0.1.0';
+
+  @override
+  String get loginWelcomeBack => 'Bem-vindo de volta';
+
+  @override
   String get loginSubtitle =>
       'Entra para acompanhares os teus treinos e a tua evolução.';
+
+  @override
+  String get loginEmailLabel => 'E-mail';
+
+  @override
+  String get loginEmailHint => 'nome@exemplo.com';
+
+  @override
+  String get loginPasswordLabel => 'Palavra-passe';
+
+  @override
+  String get loginPasswordHint => '••••••••';
+
+  @override
+  String get loginForgotPassword => 'Esqueci-me da palavra-passe';
+
+  @override
+  String get loginSubmit => 'Entrar';
+
+  @override
+  String get loginOrDivider => 'ou';
+
+  @override
+  String get loginContinueWithGoogle => 'Continuar com Google';
 
   @override
   String get loginNewHerePrefix => 'Novo por aqui? ';
@@ -1181,12 +1214,31 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   String get loginNewHereSuffix => 'Cria a conta do teu ginásio.';
 
   @override
+  String get loginTenantSheetTitle => 'Escolhe uma conta';
+
+  @override
   String get loginTenantSheetSubtitle =>
       'Este e-mail está em mais do que uma conta. Escolhe com qual entrar.';
 
   @override
+  String get forgotPasswordTitle => 'Recuperar palavra-passe';
+
+  @override
   String get forgotPasswordSubtitle =>
       'Indica o teu e-mail para receberes o link de redefinição.';
+
+  @override
+  String get forgotPasswordSubmit => 'Enviar link';
+
+  @override
+  String get forgotPasswordBackToLogin => 'Voltar ao início de sessão';
+
+  @override
+  String get forgotPasswordSuccess =>
+      'Se este e-mail tiver conta, enviámos um link de redefinição.';
+
+  @override
+  String get resetPasswordTitle => 'Definir nova palavra-passe';
 
   @override
   String get resetPasswordSubtitle =>
@@ -1194,6 +1246,9 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get resetPasswordNewLabel => 'Nova palavra-passe';
+
+  @override
+  String get resetPasswordSubmit => 'Guardar nova palavra-passe';
 
   @override
   String get resetPasswordSuccess =>
@@ -1204,20 +1259,81 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
       'Link inválido. Pede uma nova recuperação de palavra-passe.';
 
   @override
+  String get signupTitle => 'Cria a conta do teu ginásio';
+
+  @override
   String get signupSubtitle =>
       'Regista o teu negócio para começares a gerir alunos e treinos.';
+
+  @override
+  String get signupBusinessNameLabel => 'Nome do negócio';
+
+  @override
+  String get signupBusinessNameHint => 'Ginásio Exemplo';
+
+  @override
+  String get signupSlugLabel => 'Identificador';
+
+  @override
+  String get signupSlugHint => 'ginasio-exemplo';
+
+  @override
+  String get signupNameLabel => 'O teu nome';
 
   @override
   String get signupNameHint => 'Como te chamas';
 
   @override
+  String get signupSubmit => 'Criar conta';
+
+  @override
   String get signupBackToLogin => 'Já tenho conta';
 
   @override
-  String get inviteSubtitle => 'Define a tua senha para ativares a tua conta.';
+  String get inviteTitle => 'Aceitar convite';
+
+  @override
+  String get inviteSubtitle =>
+      'Define a tua palavra-passe para ativares a tua conta.';
+
+  @override
+  String get inviteNewPasswordLabel => 'Nova palavra-passe';
+
+  @override
+  String get inviteSubmit => 'Ativar conta';
 
   @override
   String get inviteInvalidLink => 'Link de convite inválido ou expirado.';
+
+  @override
+  String get homeStudentTitle => 'Hoje';
+
+  @override
+  String get homeStudentTabToday => 'Hoje';
+
+  @override
+  String get homeStudentTabEvolution => 'Evolução';
+
+  @override
+  String get homeStudentTabChat => 'Chat';
+
+  @override
+  String get homeStudentTabAgenda => 'Agenda';
+
+  @override
+  String get homeCoachTabStudents => 'Alunos';
+
+  @override
+  String get homeCoachTabChat => 'Chat';
+
+  @override
+  String get homePlaceholderBody => 'Em construção.';
+
+  @override
+  String get roleSwitcherCoach => 'Professor';
+
+  @override
+  String get roleSwitcherStudent => 'Aluno';
 
   @override
   String get errorInvalidCredentials => 'E-mail ou palavra-passe inválidos.';
@@ -1235,23 +1351,190 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   String get errorEmailTaken => 'Este e-mail já está a ser utilizado.';
 
   @override
+  String get errorInvalidToken => 'Link inválido ou expirado.';
+
+  @override
   String get errorUnauthenticated => 'A tua sessão expirou. Entra novamente.';
 
   @override
   String get errorForbidden => 'Não tens permissão para essa ação.';
 
   @override
+  String get errorSlugTaken => 'Este identificador já está a ser utilizado.';
+
+  @override
+  String get errorInternal => 'Algo correu mal. Tenta novamente.';
+
+  @override
   String get errorNetwork =>
-      'Sem ligação ao servidor. Verifica a tua internet.';
+      'Sem ligação ao servidor. Verifica a tua Internet.';
+
+  @override
+  String get homeCoachTabLibrary => 'Biblioteca';
+
+  @override
+  String get commonRetry => 'Tentar novamente';
 
   @override
   String get commonSave => 'Guardar';
 
   @override
+  String get commonCancel => 'Cancelar';
+
+  @override
+  String get commonCreate => 'Criar';
+
+  @override
+  String get commonRemove => 'Remover';
+
+  @override
+  String get commonLoadMore => 'Carregar mais';
+
+  @override
+  String get libraryNewExercise => 'Novo exercício';
+
+  @override
+  String get librarySearchLabel => 'Procurar exercício';
+
+  @override
   String get librarySearchHint => 'supino, agachamento…';
 
   @override
+  String get libraryFilterMuscle => 'Músculo';
+
+  @override
+  String get libraryFilterEquipment => 'Equipamento';
+
+  @override
+  String get libraryFilterAll => 'Todos';
+
+  @override
+  String get libraryGlobalBadge => 'Lyfta';
+
+  @override
+  String get libraryEmpty => 'Nenhum exercício encontrado.';
+
+  @override
+  String get exerciseFormNewTitle => 'Novo exercício';
+
+  @override
+  String get exerciseFormEditTitle => 'Editar exercício';
+
+  @override
+  String get exerciseFormDuplicateTitle => 'Duplicar exercício';
+
+  @override
+  String get exerciseFormDuplicateHint =>
+      'Os exercícios da Lyfta não podem ser editados. Guardar cria uma cópia na biblioteca do teu ginásio.';
+
+  @override
+  String get exerciseFormNameLabel => 'Nome';
+
+  @override
+  String get exerciseFormNameHint => 'Supino plano com barra';
+
+  @override
+  String get exerciseFormNameRequired => 'Indica o nome do exercício.';
+
+  @override
+  String get exerciseFormMuscleLabel => 'Músculo principal';
+
+  @override
+  String get exerciseFormEquipmentLabel => 'Equipamento';
+
+  @override
+  String get exerciseFormLevelLabel => 'Nível';
+
+  @override
+  String get exerciseFormInstructionsLabel => 'Instruções';
+
+  @override
+  String get exerciseFormInstructionsHint => 'Como executar o movimento';
+
+  @override
+  String get exerciseFormMediaLabel => 'Multimédia';
+
+  @override
   String get exerciseFormMediaHint => 'GIF ou vídeo curto até 50 MB.';
+
+  @override
+  String get exerciseFormMediaPick => 'Escolher ficheiro';
+
+  @override
+  String get exerciseFormMediaReplace => 'Trocar ficheiro';
+
+  @override
+  String get builderTitle => 'Montar treino';
+
+  @override
+  String get builderDayTitle => 'Título do dia';
+
+  @override
+  String get builderAddDay => 'Adicionar dia';
+
+  @override
+  String get builderNoDays =>
+      'Este plano ainda não tem qualquer dia. Começa pelo treino A.';
+
+  @override
+  String get builderAddBlock => 'Adicionar bloco';
+
+  @override
+  String get builderAddExercise => 'Adicionar exercício';
+
+  @override
+  String get builderAddSet => 'Adicionar série';
+
+  @override
+  String get builderDuplicateSet => 'Duplicar série';
+
+  @override
+  String get builderPickExercise => 'Escolher exercício';
+
+  @override
+  String get builderUnknownExercise => 'Exercício removido da biblioteca';
+
+  @override
+  String get builderBlockRest => 'Descanso (s)';
+
+  @override
+  String get builderRepsMin => 'Reps mín.';
+
+  @override
+  String get builderRepsMax => 'Reps máx.';
+
+  @override
+  String get builderRestSeconds => 'Descanso (s)';
+
+  @override
+  String get builderTargetUnit => 'Unidade do alvo';
+
+  @override
+  String get builderTargetKg => 'Carga (kg)';
+
+  @override
+  String get builderTargetPercent1rm => '% de 1RM';
+
+  @override
+  String get builderTargetRpe => 'RPE';
+
+  @override
+  String get builderTargetRir => 'RIR';
+
+  @override
+  String get builderBlockStraight => 'Série simples';
+
+  @override
+  String get builderBlockSuperset => 'Bi-set';
+
+  @override
+  String get builderBlockDropset => 'Drop set';
+
+  @override
+  String get builderBlockRestPause => 'Rest-pause';
+
+  @override
+  String get builderBlockCircuit => 'Circuito';
 
   @override
   String get builderSaveDraft => 'Guardar rascunho';
@@ -1263,21 +1546,129 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   String get builderDraftSaved => 'Rascunho guardado.';
 
   @override
+  String get builderPublish => 'Publicar';
+
+  @override
+  String get builderMoveUp => 'Mover para cima';
+
+  @override
+  String get builderMoveDown => 'Mover para baixo';
+
+  @override
+  String get studentsSearchLabel => 'Procurar aluno';
+
+  @override
   String get studentsSearchHint => 'nome ou e-mail';
 
   @override
+  String get studentsEmpty => 'Ainda não há alunos. Convida o primeiro.';
+
+  @override
+  String get studentsNoPlan => 'Sem plano';
+
+  @override
+  String get studentsNewPlan => 'Novo plano';
+
+  @override
+  String get studentsOpenPlan => 'Abrir';
+
+  @override
+  String get studentsNewPlanTitle => 'Novo plano';
+
+  @override
+  String get studentsNewPlanDefaultTitle => 'Treino A/B';
+
+  @override
+  String get studentsPlanTitleLabel => 'Nome do plano';
+
+  @override
+  String get studentsPendingBadge => 'convite pendente';
+
+  @override
+  String get studentsInviteTitle => 'Convidar aluno';
+
+  @override
+  String get studentsInviteNameLabel => 'Nome';
+
+  @override
+  String get studentsInviteEmailLabel => 'E-mail';
+
+  @override
+  String get studentsInviteSubmit => 'Convidar';
+
+  @override
+  String get errorNotFound => 'Não encontrámos o que procuravas.';
+
+  @override
+  String get errorInvalidCursor => 'A lista mudou. Recarrega a página.';
+
+  @override
+  String get errorExerciseIsGlobal =>
+      'Os exercícios da Lyfta não podem ser editados. Duplica para criares o teu.';
+
+  @override
   String get errorUnsupportedMedia =>
-      'Formato não aceite. Use GIF, MP4 ou WebM.';
+      'Formato não aceite. Usa GIF, MP4 ou WebM.';
 
   @override
   String get errorFileTooLarge =>
       'Ficheiro demasiado grande. O limite é 50 MB.';
 
   @override
+  String get errorPlanNoDays =>
+      'Adiciona pelo menos um dia antes de publicares.';
+
+  @override
+  String get errorPlanDayWithoutBlock =>
+      'Há um dia sem qualquer bloco. Completa antes de publicares.';
+
+  @override
+  String get errorPlanBlockWithoutExercise =>
+      'Há um bloco sem exercício. Completa antes de publicares.';
+
+  @override
+  String get errorPlanExerciseWithoutSet =>
+      'Há um exercício sem série prescrita. Completa antes de publicares.';
+
+  @override
+  String get errorNoDraftToPublish => 'Não há alterações novas para publicar.';
+
+  @override
+  String get errorUnknownExercise =>
+      'Um dos exercícios já não está disponível na biblioteca.';
+
+  @override
+  String get muscleChest => 'Peitoral';
+
+  @override
+  String get muscleBack => 'Costas';
+
+  @override
+  String get muscleLats => 'Grande dorsal';
+
+  @override
   String get muscleTraps => 'Trapézio';
 
   @override
+  String get muscleLowerBack => 'Lombar';
+
+  @override
+  String get muscleShoulders => 'Ombros';
+
+  @override
+  String get muscleBiceps => 'Bíceps';
+
+  @override
+  String get muscleTriceps => 'Tríceps';
+
+  @override
+  String get muscleForearms => 'Antebraço';
+
+  @override
   String get muscleAbs => 'Abdominais';
+
+  @override
+  String get muscleObliques => 'Oblíquos';
 
   @override
   String get muscleQuadriceps => 'Quadricípite';
@@ -1286,16 +1677,91 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   String get muscleHamstrings => 'Isquiotibiais';
 
   @override
+  String get muscleGlutes => 'Glúteos';
+
+  @override
   String get muscleCalves => 'Gémeos';
+
+  @override
+  String get muscleAdductors => 'Adutores';
+
+  @override
+  String get muscleAbductors => 'Abdutores';
+
+  @override
+  String get muscleFullBody => 'Corpo inteiro';
+
+  @override
+  String get equipmentBarbell => 'Barra';
 
   @override
   String get equipmentDumbbell => 'Halteres';
 
   @override
+  String get equipmentMachine => 'Máquina';
+
+  @override
+  String get equipmentCable => 'Polia';
+
+  @override
+  String get equipmentSmith => 'Smith';
+
+  @override
   String get equipmentBodyweight => 'Peso corporal';
 
   @override
+  String get equipmentKettlebell => 'Kettlebell';
+
+  @override
   String get equipmentBand => 'Banda elástica';
+
+  @override
+  String get equipmentBench => 'Banco';
+
+  @override
+  String get equipmentOther => 'Outro';
+
+  @override
+  String get levelBeginner => 'Iniciante';
+
+  @override
+  String get levelIntermediate => 'Intermédio';
+
+  @override
+  String get levelAdvanced => 'Avançado';
+
+  @override
+  String builderDraftVersion(int version) {
+    return 'rascunho v$version';
+  }
+
+  @override
+  String builderPublishedVersion(int version) {
+    return 'v$version publicada';
+  }
+
+  @override
+  String builderPublishBody(int version) {
+    return 'Publicar congela esta versão e envia o treino para o aluno. A versão $version não poderá voltar a ser editada.';
+  }
+
+  @override
+  String builderPublished(int version) {
+    return 'Versão $version publicada.';
+  }
+
+  @override
+  String studentsPlanActive(String title, int version) {
+    return '$title · v$version';
+  }
+
+  @override
+  String studentsPlanDraft(String title) {
+    return '$title · rascunho';
+  }
+
+  @override
+  String get builderPublishTitle => 'Publicar treino?';
 
   @override
   String get todayNoPlanTitle =>
@@ -1306,11 +1772,45 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
       'Assim que ele publicar o plano, o treino do dia aparece aqui.';
 
   @override
-  String get todayOffline =>
-      'Sem ligação — este é o treino descarregado no aparelho.';
+  String get todayRestTitle => 'Dia de descanso';
 
   @override
-  String get todayLoadError => 'Não foi possível carregar o teu treino.';
+  String get todayRestBody =>
+      'Nada programado para hoje. O descanso também faz parte do treino.';
+
+  @override
+  String get todayStart => 'Iniciar treino';
+
+  @override
+  String get todayResume => 'Continuar treino';
+
+  @override
+  String get todayOffline =>
+      'Sem ligação — este é o treino transferido para o dispositivo.';
+
+  @override
+  String get todayLoadError => 'Não foi possível carregar o treino.';
+
+  @override
+  String get todayNoPreviousLoad => 'Primeira vez';
+
+  @override
+  String get todayRecentTitle => 'Últimos treinos';
+
+  @override
+  String get todaySyncing => 'A sincronizar…';
+
+  @override
+  String get todaySynced => 'Tudo sincronizado';
+
+  @override
+  String get todayEmptyDay => 'Este treino não tem exercícios.';
+
+  @override
+  String get sessionReps => 'Reps';
+
+  @override
+  String get sessionLoadKg => 'Carga (kg)';
 
   @override
   String get sessionMarkDone => 'Registar série';
@@ -1319,11 +1819,71 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   String get sessionSetDone => 'Registada';
 
   @override
+  String get sessionRestTitle => 'Descanso';
+
+  @override
+  String get sessionRestSkip => 'Saltar descanso';
+
+  @override
+  String get sessionRestOver => 'Descanso concluído';
+
+  @override
+  String get sessionRestNotificationTitle => 'Fim do descanso';
+
+  @override
+  String get sessionFinish => 'Terminar treino';
+
+  @override
+  String get sessionFinishTitle => 'Terminar treino?';
+
+  @override
+  String get sessionSummaryTitle => 'Treino concluído';
+
+  @override
+  String get sessionSummarySets => 'Séries';
+
+  @override
+  String get sessionSummaryVolume => 'Volume';
+
+  @override
+  String get sessionSummaryDuration => 'Duração';
+
+  @override
+  String get sessionSummaryClose => 'Fechar';
+
+  @override
+  String get sessionTargetFreeReps => 'reps livres';
+
+  @override
+  String todayDayHeading(String label) {
+    return 'Treino $label';
+  }
+
+  @override
+  String todayNextWorkout(String label) {
+    return 'Próximo: treino $label';
+  }
+
+  @override
+  String get todaySwitch => 'Trocar o treino de hoje';
+
+  @override
   String get todaySwitchTitle => 'Que treino queres fazer hoje?';
 
   @override
+  String get todaySwitchCurrent => 'Hoje';
+
+  @override
   String get todaySwitchOffline =>
-      'Sem ligação — trocar o treino precisa de internet.';
+      'Sem ligação — trocar o treino precisa de Internet.';
+
+  @override
+  String get todaySwitchError => 'Não foi possível trocar o treino.';
+
+  @override
+  String todayPreviousLoad(String load) {
+    return 'Anterior: $load kg';
+  }
 
   @override
   String todaySetsCount(int count) {
@@ -1334,6 +1894,11 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
       one: '1 série',
     );
     return '$_temp0';
+  }
+
+  @override
+  String todayRecentEntry(String label, int sets, String volume) {
+    return 'Treino $label · $sets séries · $volume kg';
   }
 
   @override
@@ -1348,6 +1913,41 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   }
 
   @override
+  String sessionTitle(String label) {
+    return 'Treino $label';
+  }
+
+  @override
+  String sessionSet(int number) {
+    return 'Série $number';
+  }
+
+  @override
+  String sessionEditSet(int number) {
+    return 'Corrigir a série $number';
+  }
+
+  @override
+  String sessionTargetRepsRange(int min, int max) {
+    return '$min–$max reps';
+  }
+
+  @override
+  String sessionTargetReps(int reps) {
+    return '$reps reps';
+  }
+
+  @override
+  String sessionTargetWithUnit(String value, String unit) {
+    return '$value $unit';
+  }
+
+  @override
+  String sessionRestNotificationBody(String exercise) {
+    return 'Hora da próxima série de $exercise.';
+  }
+
+  @override
   String sessionFinishBody(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -1355,35 +1955,381 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
       other: 'Registaste $count séries. O treino de hoje será concluído.',
       one: 'Registaste 1 série. O treino de hoje será concluído.',
       zero:
-          'Não registaste nenhuma série — o treino de hoje não será marcado como feito.',
+          'Não registaste qualquer série — o treino de hoje não será marcado como feito.',
     );
     return '$_temp0';
   }
+
+  @override
+  String sessionDurationMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String sessionLoggedSet(String reps, String load) {
+    return '$reps reps · $load kg';
+  }
+
+  @override
+  String get sessionEmptyValue => '—';
+
+  @override
+  String get studentsOpenEvolution => 'Evolução';
+
+  @override
+  String get studentsOpenChat => 'Chat';
+
+  @override
+  String get evolutionTabSummary => 'Resumo';
+
+  @override
+  String get evolutionTabLoad => 'Carga';
+
+  @override
+  String get evolutionTabMeasurements => 'Medidas';
+
+  @override
+  String get evolutionTabPhotos => 'Fotos';
+
+  @override
+  String get evolutionTabCheckins => 'Check-ins';
+
+  @override
+  String get evolutionSummaryLatestMeasurement => 'Última medição';
+
+  @override
+  String get evolutionSummaryLatestBioimpedance => 'Última bioimpedância';
+
+  @override
+  String get evolutionSummaryPhotoCount => 'Fotografias de evolução';
+
+  @override
+  String get evolutionStudentTitle => 'Evolução';
+
+  @override
+  String get evolutionMeasurementsSection => 'Medidas corporais';
+
+  @override
+  String get evolutionAddMeasurement => 'Nova medição';
+
+  @override
+  String get evolutionBioimpedanceSection => 'Bioimpedância';
+
+  @override
+  String get evolutionAddBioimpedance => 'Nova leitura';
+
+  @override
+  String get evolutionPhotosSection => 'Fotografias de evolução';
+
+  @override
+  String get evolutionAddPhoto => 'Nova fotografia';
+
+  @override
+  String get evolutionDeleteTitle => 'Apagar registo?';
+
+  @override
+  String get evolutionDeleteBody => 'Esta ação não pode ser anulada.';
+
+  @override
+  String get evolutionPhotosCompareTitle => 'Comparar antes/depois';
+
+  @override
+  String get evolutionDateLabel => 'Data';
+
+  @override
+  String get evolutionValueHint => '0';
+
+  @override
+  String get evolutionNotesLabel => 'Observações';
+
+  @override
+  String get measurementFormEmpty => 'Preenche pelo menos uma medida.';
+
+  @override
+  String get evolutionMeasurementsEmpty => 'Ainda não há medições registadas.';
+
+  @override
+  String get evolutionBioimpedanceEmpty =>
+      'Ainda não há leituras de bioimpedância.';
+
+  @override
+  String get evolutionMetricMaxLoad => 'Carga máxima';
+
+  @override
+  String get evolutionMetricVolume => 'Volume';
+
+  @override
+  String get evolutionRangeOneMonth => '1 mês';
+
+  @override
+  String get evolutionRangeThreeMonths => '3 meses';
+
+  @override
+  String get evolutionRangeSixMonths => '6 meses';
+
+  @override
+  String get evolutionRangeAll => 'Tudo';
+
+  @override
+  String get evolutionNoDataForRange => 'Sem registos neste período.';
+
+  @override
+  String get evolutionNoExercisesYet =>
+      'Ainda não registaste qualquer série. Treina para veres o gráfico aqui.';
+
+  @override
+  String get evolutionPhotosEmpty => 'Ainda não há fotografias.';
+
+  @override
+  String get evolutionPhotosCompareNeedTwo =>
+      'Regista pelo menos duas fotografias para comparares.';
+
+  @override
+  String get evolutionPoseFront => 'Frente';
+
+  @override
+  String get evolutionPoseSide => 'Lado';
+
+  @override
+  String get evolutionPoseBack => 'Costas';
+
+  @override
+  String get evolutionNewMeasurement => 'Nova medição';
+
+  @override
+  String get evolutionNewBioimpedance => 'Nova leitura de bioimpedância';
+
+  @override
+  String get evolutionNewPhoto => 'Nova fotografia';
+
+  @override
+  String get evolutionPhotoFromCamera => 'Câmara';
+
+  @override
+  String get evolutionPhotoFromGallery => 'Galeria';
+
+  @override
+  String get evolutionPhotoEmptyPreview =>
+      'Escolhe uma fotografia para continuares.';
+
+  @override
+  String get evolutionPhotoRequired =>
+      'Escolhe uma fotografia antes de guardares.';
+
+  @override
+  String get evolutionPhotoPickError =>
+      'Não foi possível processar a fotografia. Tenta outra.';
+
+  @override
+  String get measurementFieldWeightKg => 'Peso (kg)';
+
+  @override
+  String get measurementFieldHeightCm => 'Altura (cm)';
+
+  @override
+  String get measurementFieldNeckCm => 'Pescoço (cm)';
+
+  @override
+  String get measurementFieldShoulderCm => 'Ombro (cm)';
+
+  @override
+  String get measurementFieldChestCm => 'Peito (cm)';
+
+  @override
+  String get measurementFieldWaistCm => 'Cintura (cm)';
+
+  @override
+  String get measurementFieldAbdomenCm => 'Abdómen (cm)';
+
+  @override
+  String get measurementFieldHipCm => 'Anca (cm)';
+
+  @override
+  String get measurementFieldArmLCm => 'Braço esq. (cm)';
+
+  @override
+  String get measurementFieldArmRCm => 'Braço dir. (cm)';
+
+  @override
+  String get measurementFieldThighLCm => 'Coxa esq. (cm)';
+
+  @override
+  String get measurementFieldThighRCm => 'Coxa dir. (cm)';
+
+  @override
+  String get measurementFieldCalfLCm => 'Gémeo esq. (cm)';
+
+  @override
+  String get measurementFieldCalfRCm => 'Gémeo dir. (cm)';
+
+  @override
+  String get bioimpedanceFieldBodyFatPct => '% de gordura';
+
+  @override
+  String get bioimpedanceFieldMuscleMassKg => 'Massa muscular (kg)';
+
+  @override
+  String get bioimpedanceFieldVisceralFat => 'Gordura visceral';
+
+  @override
+  String get bioimpedanceFieldBodyWaterPct => '% de água corporal';
+
+  @override
+  String get bioimpedanceFieldBoneMassKg => 'Massa óssea (kg)';
+
+  @override
+  String get bioimpedanceFieldBmrKcal => 'Taxa metabólica basal (kcal)';
+
+  @override
+  String get chatTitleFallback => 'Chat';
+
+  @override
+  String get chatEmpty => 'Ainda não há mensagens. Diz olá!';
+
+  @override
+  String get chatConversationsEmpty => 'Ainda não há conversas.';
 
   @override
   String get chatStudentNoConversation =>
       'O teu professor ainda não iniciou uma conversa contigo.';
 
   @override
+  String get chatNoMessagesYet => 'Ainda não há mensagens';
+
+  @override
+  String get chatImagePreview => '📷 Fotografia';
+
+  @override
   String get chatMessageHint => 'Escreve uma mensagem…';
+
+  @override
+  String get chatAttachImage => 'Anexar fotografia';
+
+  @override
+  String get chatSend => 'Enviar';
+
+  @override
+  String get chatMessageFailed => 'Não enviada.';
+
+  @override
+  String get chatMessageRetry => 'Tentar novamente';
+
+  @override
+  String get checkinTitle => 'Como correu o treino?';
 
   @override
   String get checkinSubtitle =>
       'A tua avaliação ajuda o teu professor a ajustar o próximo treino.';
 
   @override
+  String get checkinRatingLabel => 'Nota geral';
+
+  @override
+  String get checkinDifficultyLabel => 'Dificuldade';
+
+  @override
+  String get checkinPainLabel => 'Sentiste dor?';
+
+  @override
+  String get checkinPainNone => 'Nenhuma';
+
+  @override
+  String get checkinPainMild => 'Ligeira';
+
+  @override
+  String get checkinPainStrong => 'Forte';
+
+  @override
+  String get checkinPainWhereLabel => 'Onde?';
+
+  @override
+  String get checkinCommentLabel => 'Comentário (opcional)';
+
+  @override
+  String get checkinSubmit => 'Enviar avaliação';
+
+  @override
   String get checkinSubmitted => 'Avaliação enviada ao teu professor.';
 
   @override
   String get checkinQueuedOffline =>
-      'Sem ligação — a avaliação será enviada assim que reconectares.';
+      'Sem ligação — a avaliação será enviada assim que voltares a ter rede.';
+
+  @override
+  String get checkinListEmpty => 'Ainda não há avaliações de treino.';
+
+  @override
+  String checkinCardScores(int rating, int difficulty) {
+    return 'Nota $rating · Dificuldade $difficulty';
+  }
+
+  @override
+  String checkinCardPainWhere(String where) {
+    return 'Dor em: $where';
+  }
+
+  @override
+  String get checkinReviewed => 'Visto';
+
+  @override
+  String get checkinMarkReviewed => 'Marcar como visto';
 
   @override
   String get agendaLoadError => 'Não foi possível carregar a tua agenda.';
 
   @override
+  String agendaStreakWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count semanas seguidas a cumprir a meta de treinos',
+      one: '1 semana seguida a cumprir a meta de treinos',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String agendaWeekRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String get agendaPreviousWeek => 'Semana anterior';
+
+  @override
+  String get agendaNextWeek => 'Semana seguinte';
+
+  @override
+  String get agendaExpandMonth => 'Ver mês';
+
+  @override
+  String get agendaCollapseMonth => 'Ver semana';
+
+  @override
+  String get agendaStateDone => 'Treino feito';
+
+  @override
+  String get agendaStatePredicted => 'Treino previsto';
+
+  @override
+  String get agendaStateRest => 'Descanso';
+
+  @override
+  String agendaSessionTitle(String label) {
+    return 'Treino $label';
+  }
+
+  @override
+  String agendaPredictedTitle(String label) {
+    return 'Treino previsto: $label';
+  }
+
+  @override
   String get agendaPredictedHint =>
-      'Projeção com base no teu rodízio atual — pode mudar conforme treinares.';
+      'Projeção com base no teu rodízio atual — pode mudar conforme fores treinando.';
+
+  @override
+  String get agendaRestTitle => 'Dia de descanso';
 
   @override
   String get agendaRestHint => 'Nenhum treino registado neste dia.';
