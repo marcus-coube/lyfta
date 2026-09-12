@@ -46,6 +46,29 @@ exige superusuário — exercício global é `tenant_id NULL`):
 Receita em [app/README.md](../../../app/README.md). Sem isso o P1.8 não fecha o
 Aceite (aluno em Android).
 
+## Verificações manuais pendentes
+
+Aceites que o automatizado não fecha — precisam de humano, device ou ação no
+console de terceiro. Ordem de resolução: o item #1 é o gargalo — resolvê-lo
+destrava #2, #3 e #4 de uma vez; #5 não depende de nada.
+
+| # | Pendência | De onde vem | Bloqueado por |
+|---|---|---|---|
+| 1 | **`app/android/app/google-services.json` ausente** — o plugin Gradle `com.google.gms.google-services` já está aplicado (P3.5), então **o build Android falha** enquanto o arquivo não existir. Baixar no Console Firebase (projeto `lyfta-a3bd3`, app Android `br.com.lyfta.lyfta`) e salvar versionado em `app/android/app/` (ADR-014; não é segredo — ver app/README.md § Firebase). | P3.5 | ação humana (login Google) |
+| 2 | Push chegando em Android com o app fechado; tocar na notificação abre o destino (deep link) | P3.4 + P3.5 | #1 + AVD com Play Services |
+| 3 | Fluxo real coach web × aluno Android: mensagem por WS, push com app fechado, check-in aparecendo pro coach | P3.5 (Aceite) | #1 + AVD com Play Services |
+| 4 | Job diário de treino pendente chegando uma única vez em device real (a lógica de dedupe já é coberta por teste) | P3.4 | #1 + AVD com Play Services |
+| 5 | Aba Agenda com dados reais: semana corrente, navegação entre semanas, mês expansível, streak | P4.1 | nada — **dá para fazer no Chrome agora** |
+
+A AVD `lyfta_pixel` é `google_apis` (sem Play Store), escolhida na P1.8 para
+permitir `adb root` no teste offline — **push não funciona nela**. Para #2–#4:
+criar uma segunda AVD `google_apis_playstore` ou usar aparelho físico
+(app/README.md § Firebase).
+
+Dívidas técnicas de código (sem timezone por tenant, locale dinâmico do
+conteúdo, vínculo coach↔aluno no identity) não estão aqui — vivem nas "Notas
+de execução" da fase onde nasceram.
+
 ## Log de marcos
 
 | Data | Evento |
