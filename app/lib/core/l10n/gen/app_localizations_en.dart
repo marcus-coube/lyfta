@@ -807,6 +807,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get studentsOpenEvolution => 'Progress';
 
   @override
+  String get studentsOpenChat => 'Chat';
+
+  @override
   String get evolutionTabSummary => 'Overview';
 
   @override
@@ -817,6 +820,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get evolutionTabPhotos => 'Photos';
+
+  @override
+  String get evolutionTabCheckins => 'Check-ins';
 
   @override
   String get evolutionSummaryLatestMeasurement => 'Latest measurement';
@@ -1000,4 +1006,98 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bioimpedanceFieldBmrKcal => 'Basal metabolic rate (kcal)';
+
+  @override
+  String get chatTitleFallback => 'Chat';
+
+  @override
+  String get chatEmpty => 'No messages yet. Say hi!';
+
+  @override
+  String get chatConversationsEmpty => 'No conversations yet.';
+
+  @override
+  String get chatStudentNoConversation =>
+      'Your coach hasn\'t started a conversation with you yet.';
+
+  @override
+  String get chatNoMessagesYet => 'No messages yet';
+
+  @override
+  String get chatImagePreview => '📷 Photo';
+
+  @override
+  String get chatMessageHint => 'Type a message…';
+
+  @override
+  String get chatAttachImage => 'Attach photo';
+
+  @override
+  String get chatSend => 'Send';
+
+  @override
+  String get chatMessageFailed => 'Not sent.';
+
+  @override
+  String get chatMessageRetry => 'Try again';
+
+  @override
+  String get checkinTitle => 'How was the workout?';
+
+  @override
+  String get checkinSubtitle =>
+      'Your feedback helps your coach adjust the next workout.';
+
+  @override
+  String get checkinRatingLabel => 'Overall rating';
+
+  @override
+  String get checkinDifficultyLabel => 'Difficulty';
+
+  @override
+  String get checkinPainLabel => 'Any pain?';
+
+  @override
+  String get checkinPainNone => 'None';
+
+  @override
+  String get checkinPainMild => 'Mild';
+
+  @override
+  String get checkinPainStrong => 'Strong';
+
+  @override
+  String get checkinPainWhereLabel => 'Where?';
+
+  @override
+  String get checkinCommentLabel => 'Comment (optional)';
+
+  @override
+  String get checkinSubmit => 'Submit feedback';
+
+  @override
+  String get checkinSubmitted => 'Feedback sent to your coach.';
+
+  @override
+  String get checkinQueuedOffline =>
+      'No connection — feedback will be sent once you reconnect.';
+
+  @override
+  String get checkinListEmpty => 'No workout feedback yet.';
+
+  @override
+  String checkinCardScores(int rating, int difficulty) {
+    return 'Rating $rating · Difficulty $difficulty';
+  }
+
+  @override
+  String checkinCardPainWhere(String where) {
+    return 'Pain at: $where';
+  }
+
+  @override
+  String get checkinReviewed => 'Seen';
+
+  @override
+  String get checkinMarkReviewed => 'Mark as seen';
 }

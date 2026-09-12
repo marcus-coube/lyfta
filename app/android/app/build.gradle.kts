@@ -1,5 +1,9 @@
 plugins {
     id("com.android.application")
+    // Push (P3.4/P3.5): lê google-services.json (bloqueio conhecido — ver
+    // settings.gradle.kts e app/README.md § Firebase, o arquivo ainda não
+    // foi baixado do Console nesta máquina).
+    id("com.google.gms.google-services")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }

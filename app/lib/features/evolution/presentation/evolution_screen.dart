@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
+import '../../checkin/presentation/checkins_controller.dart';
+import '../../checkin/presentation/coach_checkins_tab.dart';
 import '../domain/bioimpedance.dart';
 import '../domain/evolution_scope.dart';
 import '../domain/measurement.dart';
@@ -41,8 +43,11 @@ class EvolutionScreen extends StatefulWidget {
 
 class _EvolutionScreenState extends State<EvolutionScreen>
     with SingleTickerProviderStateMixin {
+  // Check-ins (P3.5 §3) é mais uma aba coach-only, no mesmo espírito do
+  // Resumo (P2.5): quem já vê as três listas do aluno não precisa da
+  // avaliação de treino junto — só o coach.
   late final _tabController = TabController(
-    length: widget.scope.isCoach ? 4 : 3,
+    length: widget.scope.isCoach ? 5 : 3,
     vsync: this,
   );
 
@@ -74,6 +79,8 @@ class _EvolutionScreenState extends State<EvolutionScreen>
               Tab(text: l10n.evolutionTabLoad),
               Tab(text: l10n.evolutionTabMeasurements),
               Tab(text: l10n.evolutionTabPhotos),
+              if (widget.scope.isCoach)
+                Tab(child: _CheckinsTabLabel(studentId: widget.scope.studentId!)),
             ],
           ),
         ),
@@ -85,6 +92,8 @@ class _EvolutionScreenState extends State<EvolutionScreen>
               _LoadTab(scope: widget.scope),
               _MeasurementsTab(scope: widget.scope),
               _PhotosTab(scope: widget.scope),
+              if (widget.scope.isCoach)
+                CoachCheckinsTab(studentId: widget.scope.studentId!),
             ],
           ),
         ),
@@ -409,6 +418,30 @@ class _SectionHeader extends StatelessWidget {
           onPressed: onAction,
         ),
       ],
+    );
+  }
+}
+
+/// Rótulo da aba Check-ins com o badge de não revisados (P3.5 §3, Aceite
+/// literal do P3.3: "não revisados primeiro" na fila — aqui é o mesmo
+/// contador, só que no rótulo em vez da ordenação). `Consumer` isolado em
+/// vez de converter a tela inteira para `ConsumerStatefulWidget`: só este
+/// pedacinho precisa saber da contagem.
+class _CheckinsTabLabel extends ConsumerWidget {
+  const _CheckinsTabLabel({required this.studentId});
+
+  final String studentId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final pending =
+        ref.watch(checkinsProvider(studentId)).valueOrNull?.pendingCount ?? 0;
+
+    if (pending <= 0) return Text(l10n.evolutionTabCheckins);
+    return Badge(
+      label: Text(pending > 99 ? '99+' : pending.toString()),
+      child: Text(l10n.evolutionTabCheckins),
     );
   }
 }

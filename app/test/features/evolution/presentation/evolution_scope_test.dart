@@ -4,6 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lyfta/core/design_system/design_system.dart';
 import 'package:lyfta/core/l10n/gen/app_localizations.dart';
+import 'package:lyfta/core/realtime/comms_socket.dart';
+import 'package:lyfta/core/realtime/comms_socket_provider.dart';
+import 'package:lyfta/features/checkin/data/checkin_repository.dart';
+import 'package:lyfta/features/checkin/domain/checkin.dart';
 import 'package:lyfta/features/evolution/data/evolution_repository.dart';
 import 'package:lyfta/features/evolution/domain/bioimpedance.dart';
 import 'package:lyfta/features/evolution/domain/evolution_scope.dart';
@@ -70,6 +74,24 @@ class _FakeRepository extends EvolutionRepository {
   }
 }
 
+/// Repositório de check-ins de mentira — a aba Check-ins (P3.5 §3) é
+/// coach-only, mas não é o que este teste cobre (isso é
+/// `coach_checkins_tab_test.dart`); aqui só evita bater na rede de verdade
+/// quando a tela monta a aba, para o `pumpAndSettle` não depender do
+/// `comms` estar no ar.
+class _FakeCheckinRepository extends CheckinRepository {
+  _FakeCheckinRepository() : super(Dio());
+
+  @override
+  Future<CheckinPage> list({
+    required String studentId,
+    String? cursor,
+    int? limit,
+  }) async {
+    return const CheckinPage(items: []);
+  }
+}
+
 Future<void> _pump(
   WidgetTester tester,
   EvolutionScope scope,
@@ -79,6 +101,17 @@ Future<void> _pump(
     ProviderScope(
       overrides: [
         evolutionRepositoryProvider.overrideWithValue(repository),
+        checkinRepositoryProvider.overrideWithValue(_FakeCheckinRepository()),
+        // A aba Check-ins escuta o socket do `comms` (P3.5 §3) — sem
+        // sobrescrever, `commsSocketProvider` puxaria `authControllerProvider`
+        // de verdade (`ref.listen` dentro dele) e bateria no secure storage
+        // real, que não tem platform channel neste teste de widget.
+        commsSocketProvider.overrideWithValue(
+          CommsSocketService(
+            readAccessToken: () async => null,
+            refreshAccessToken: () async => null,
+          ),
+        ),
       ],
       child: MaterialApp(
         theme: LyTheme.dark(),
@@ -109,7 +142,9 @@ void main() {
     final repository = _FakeRepository();
     await _pump(tester, scope, repository);
 
-    expect(find.byType(Tab), findsNWidgets(4));
+    // Resumo, Carga, Medidas, Fotos e Check-ins (P3.5 §3) — a quinta aba
+    // coach-only.
+    expect(find.byType(Tab), findsNWidgets(5));
     expect(find.byType(SummaryCard), findsOneWidget);
     expect(repository.summaryCalls, 1);
     // Nenhuma chamada vazou para `/me` — é o ponto do escopo.

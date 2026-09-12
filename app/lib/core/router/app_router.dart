@@ -8,6 +8,7 @@ import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/reset_password_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/builder/presentation/plan_builder_screen.dart';
+import '../../features/chat/presentation/chat_screen.dart';
 import '../../features/coach_shell/presentation/coach_shell_screen.dart';
 import '../../features/evolution/presentation/student_evolution_screen.dart';
 import '../../features/student_shell/presentation/student_shell_screen.dart';
@@ -88,6 +89,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => StudentEvolutionScreen(
           studentId: state.pathParameters['id']!,
           studentName: state.extra as String?,
+        ),
+      ),
+      // Conversa própria pelo mesmo motivo do builder/evolução: recarregar
+      // a página na web não pode perder o chat aberto.
+      GoRoute(
+        path: '/chat/:id',
+        builder: (context, state) => ChatScreen(
+          conversationId: state.pathParameters['id']!,
+          title: state.extra as String?,
         ),
       ),
       // O player é rota própria pelo mesmo motivo do builder: recarregar a

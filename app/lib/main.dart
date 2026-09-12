@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,10 +9,26 @@ import 'core/auth/auth_controller.dart';
 import 'core/auth/auth_state.dart';
 import 'core/design_system/design_system.dart';
 import 'core/l10n/gen/app_localizations.dart';
+import 'core/push/push_provider.dart';
 import 'core/router/app_router.dart';
 import 'features/workout/data/workout_repository.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Push (P3.4/P3.5 §4): só mobile — web fica com o badge in-app da aba Chat
+  // no MVP (ADR-012 §2, web push é 3.0). `Firebase.initializeApp()` sem
+  // `google-services.json` versionado (bloqueio conhecido, ver
+  // app/README.md § Firebase) lança — o app sobe do mesmo jeito, com push
+  // desligado, igual o `comms` sobe sem `FCM_CREDENTIALS_JSON` (P3.4).
+  if (!kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS)) {
+    try {
+      await Firebase.initializeApp();
+    } catch (_) {
+      // Conforto, não requisito — ver comentário acima.
+    }
+  }
   runApp(const ProviderScope(child: LyftaApp()));
 }
 
@@ -20,6 +38,10 @@ class LyftaApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
+    // Só ler o provider já basta para ligar tudo (registro do token no
+    // sign-in, deep link da notificação tocada) — ele se autogerencia via
+    // `ref.listen` interno, mesmo padrão do `commsSocketProvider`.
+    ref.watch(pushServiceProvider);
 
     // Sair da conta apaga a execução guardada no aparelho. O banco local é
     // por aluno (ADR-003 §3), mas o celular pode ser emprestado — treino de

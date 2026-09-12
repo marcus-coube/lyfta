@@ -41,6 +41,16 @@ dependencies:
   fl_chart: ^0.69.2
   image_picker: ^1.1.2
   flutter_image_compress: ^2.3.0
+  # Chat e push (P3.5): WebSocket do `comms` (`GET /ws?token=`, P3.2) é
+  # entrega quente — a mesma reconexão-com-backoff do worker offline do
+  # P1.7, mas para eventos em tempo real em vez de fila de escrita.
+  web_socket_channel: ^3.0.3
+  # Push FCM (P3.4/P3.5): `firebase_messaging` exige `firebase_core`
+  # inicializado primeiro. Só mobile — web fica com badge in-app no MVP
+  # (ADR-012 §2, web push é 3.0), então a inicialização é condicionada a
+  # `!kIsWeb` em `main.dart`.
+  firebase_core: ^4.14.0
+  firebase_messaging: ^16.6.0
 
 dev_dependencies:
   flutter_test:

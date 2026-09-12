@@ -10,6 +10,7 @@ import '../../../shared/domain/plan.dart';
 import '../../../shared/l10n/plan_l10n.dart';
 import '../../../shared/widgets/exercise_media.dart';
 import '../../../shared/widgets/ly_shell_scaffold.dart';
+import '../../checkin/presentation/checkin_sheet.dart';
 import '../domain/today.dart';
 import 'rest_timer_controller.dart';
 import 'session_controller.dart';
@@ -93,6 +94,10 @@ class _SessionPlayerScreenState extends ConsumerState<SessionPlayerScreen> {
     if (finished == null || !context.mounted) return;
 
     await showSessionSummary(context, finished);
+    if (!context.mounted) return;
+    // Avaliação estruturada do treino (P3.5 §2) — sempre depois do resumo,
+    // nunca no lugar dele: o aluno primeiro vê o que fez, só depois avalia.
+    await showCheckinSheet(context, sessionClientId: finished.session.clientId);
     if (context.mounted) Navigator.of(context).pop();
   }
 }

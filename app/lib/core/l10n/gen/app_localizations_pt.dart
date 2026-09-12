@@ -807,6 +807,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get studentsOpenEvolution => 'Evolução';
 
   @override
+  String get studentsOpenChat => 'Chat';
+
+  @override
   String get evolutionTabSummary => 'Resumo';
 
   @override
@@ -817,6 +820,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get evolutionTabPhotos => 'Fotos';
+
+  @override
+  String get evolutionTabCheckins => 'Check-ins';
 
   @override
   String get evolutionSummaryLatestMeasurement => 'Última medida';
@@ -1001,6 +1007,100 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get bioimpedanceFieldBmrKcal => 'Taxa metabólica basal (kcal)';
+
+  @override
+  String get chatTitleFallback => 'Chat';
+
+  @override
+  String get chatEmpty => 'Nenhuma mensagem ainda. Diga oi!';
+
+  @override
+  String get chatConversationsEmpty => 'Nenhuma conversa ainda.';
+
+  @override
+  String get chatStudentNoConversation =>
+      'Seu professor ainda não iniciou uma conversa com você.';
+
+  @override
+  String get chatNoMessagesYet => 'Nenhuma mensagem ainda';
+
+  @override
+  String get chatImagePreview => '📷 Foto';
+
+  @override
+  String get chatMessageHint => 'Escreva uma mensagem…';
+
+  @override
+  String get chatAttachImage => 'Anexar foto';
+
+  @override
+  String get chatSend => 'Enviar';
+
+  @override
+  String get chatMessageFailed => 'Não enviada.';
+
+  @override
+  String get chatMessageRetry => 'Tentar de novo';
+
+  @override
+  String get checkinTitle => 'Como foi o treino?';
+
+  @override
+  String get checkinSubtitle =>
+      'Sua avaliação ajuda seu professor a ajustar o próximo treino.';
+
+  @override
+  String get checkinRatingLabel => 'Nota geral';
+
+  @override
+  String get checkinDifficultyLabel => 'Dificuldade';
+
+  @override
+  String get checkinPainLabel => 'Sentiu dor?';
+
+  @override
+  String get checkinPainNone => 'Nenhuma';
+
+  @override
+  String get checkinPainMild => 'Leve';
+
+  @override
+  String get checkinPainStrong => 'Forte';
+
+  @override
+  String get checkinPainWhereLabel => 'Onde?';
+
+  @override
+  String get checkinCommentLabel => 'Comentário (opcional)';
+
+  @override
+  String get checkinSubmit => 'Enviar avaliação';
+
+  @override
+  String get checkinSubmitted => 'Avaliação enviada ao seu professor.';
+
+  @override
+  String get checkinQueuedOffline =>
+      'Sem conexão — a avaliação será enviada assim que você reconectar.';
+
+  @override
+  String get checkinListEmpty => 'Nenhuma avaliação de treino ainda.';
+
+  @override
+  String checkinCardScores(int rating, int difficulty) {
+    return 'Nota $rating · Dificuldade $difficulty';
+  }
+
+  @override
+  String checkinCardPainWhere(String where) {
+    return 'Dor em: $where';
+  }
+
+  @override
+  String get checkinReviewed => 'Visto';
+
+  @override
+  String get checkinMarkReviewed => 'Marcar como visto';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -1196,4 +1296,22 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
     );
     return '$_temp0';
   }
+
+  @override
+  String get chatStudentNoConversation =>
+      'O teu professor ainda não iniciou uma conversa contigo.';
+
+  @override
+  String get chatMessageHint => 'Escreve uma mensagem…';
+
+  @override
+  String get checkinSubtitle =>
+      'A tua avaliação ajuda o teu professor a ajustar o próximo treino.';
+
+  @override
+  String get checkinSubmitted => 'Avaliação enviada ao teu professor.';
+
+  @override
+  String get checkinQueuedOffline =>
+      'Sem ligação — a avaliação será enviada assim que reconectares.';
 }

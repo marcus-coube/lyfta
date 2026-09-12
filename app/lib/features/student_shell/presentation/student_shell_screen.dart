@@ -7,13 +7,15 @@ import '../../../core/design_system/design_system.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_shell_scaffold.dart';
 import '../../../shared/widgets/role_context_switcher.dart';
+import '../../chat/presentation/chat_home_screen.dart';
+import '../../chat/presentation/conversations_controller.dart';
 import '../../evolution/presentation/evolution_screen.dart';
 import '../../workout/presentation/today_screen.dart';
 
 /// Shell do aluno — Hoje, Evolução, Chat e Agenda. Lateral em telas largas
 /// (web/desktop), barra inferior em mobile (`LyShellScaffold`, breakpoint
-/// ~840px). **Hoje** é a tela real do P1.7, **Evolução** é a do P2.4; chat
-/// chega no P3 e agenda no P4.
+/// ~840px). **Hoje** é a tela real do P1.7, **Evolução** é a do P2.4, **Chat**
+/// é a do P3.5 (conversa direta com o professor); agenda chega no P4.
 class StudentShellScreen extends ConsumerStatefulWidget {
   const StudentShellScreen({super.key});
 
@@ -29,6 +31,7 @@ class _StudentShellScreenState extends ConsumerState<StudentShellScreen> {
     final c = context.ly;
     final l10n = AppLocalizations.of(context);
     final authState = ref.watch(authControllerProvider);
+    final unread = ref.watch(unreadTotalProvider);
 
     final destinations = [
       LyShellDestination(
@@ -42,6 +45,7 @@ class _StudentShellScreenState extends ConsumerState<StudentShellScreen> {
       LyShellDestination(
         icon: Icons.chat_bubble_outline,
         label: l10n.homeStudentTabChat,
+        badgeCount: unread,
       ),
       LyShellDestination(
         icon: Icons.calendar_month_outlined,
@@ -63,6 +67,7 @@ class _StudentShellScreenState extends ConsumerState<StudentShellScreen> {
       body: switch (_index) {
         0 => const TodayScreen(),
         1 => const EvolutionScreen(),
+        2 => const ChatHomeScreen(isCoach: false),
         _ => Center(
             child: Text(
               l10n.homePlaceholderBody,

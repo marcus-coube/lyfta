@@ -3,17 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/auth_controller.dart';
 import '../../../core/auth/auth_state.dart';
-import '../../../core/design_system/design_system.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_shell_scaffold.dart';
 import '../../../shared/widgets/role_context_switcher.dart';
+import '../../chat/presentation/chat_home_screen.dart';
+import '../../chat/presentation/conversations_controller.dart';
 import '../../library/presentation/library_screen.dart';
 import '../../students/presentation/students_screen.dart';
 
 /// Shell do professor — Alunos, Biblioteca e Chat. Lateral em telas largas
 /// (web/desktop), barra inferior em mobile (`LyShellScaffold`, breakpoint
-/// ~840px). Alunos e Biblioteca são as telas reais do P1.6; o chat chega no
-/// P3.
+/// ~840px). Alunos e Biblioteca são as telas reais do P1.6; o Chat é a do
+/// P3.5 (lista de conversas com o badge de não lidas na própria aba).
 class CoachShellScreen extends ConsumerStatefulWidget {
   const CoachShellScreen({super.key});
 
@@ -26,14 +27,18 @@ class _CoachShellScreenState extends ConsumerState<CoachShellScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.ly;
     final l10n = AppLocalizations.of(context);
     final authState = ref.watch(authControllerProvider);
+    final unread = ref.watch(unreadTotalProvider);
 
     final destinations = [
       LyShellDestination(icon: Icons.groups_outlined, label: l10n.homeCoachTabStudents),
       LyShellDestination(icon: Icons.fitness_center_outlined, label: l10n.homeCoachTabLibrary),
-      LyShellDestination(icon: Icons.chat_bubble_outline, label: l10n.homeCoachTabChat),
+      LyShellDestination(
+        icon: Icons.chat_bubble_outline,
+        label: l10n.homeCoachTabChat,
+        badgeCount: unread,
+      ),
     ];
 
     return LyShellScaffold(
@@ -50,12 +55,7 @@ class _CoachShellScreenState extends ConsumerState<CoachShellScreen> {
       body: switch (_index) {
         0 => const StudentsScreen(),
         1 => const LibraryScreen(),
-        _ => Center(
-            child: Text(
-              l10n.homePlaceholderBody,
-              style: LyType.body(c.textSecondary),
-            ),
-          ),
+        _ => const ChatHomeScreen(isCoach: true),
       },
     );
   }

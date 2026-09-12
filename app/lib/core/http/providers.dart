@@ -55,3 +55,15 @@ final assessmentApiClientProvider = Provider<ApiClient>((ref) {
     onSessionExpired: () => ref.read(authControllerProvider.notifier).signOut(),
   );
 });
+
+/// Cliente HTTP do serviço `comms` (chat, check-in de treino, devices —
+/// P3.2/P3.3/P3.4). Mesma sessão dos demais.
+final commsApiClientProvider = Provider<ApiClient>((ref) {
+  return ApiClient(
+    baseUrl: AppConfig.commsBaseUrl,
+    tokenStorage: ref.watch(tokenStorageProvider),
+    refreshTokens: (refreshToken) =>
+        ref.read(authControllerProvider.notifier).refreshSession(refreshToken),
+    onSessionExpired: () => ref.read(authControllerProvider.notifier).signOut(),
+  );
+});

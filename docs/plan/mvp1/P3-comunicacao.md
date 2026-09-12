@@ -67,7 +67,7 @@ ordena não revisados primeiro.
 **Aceite:** push chega no Android físico/emulador com Play Services; job não
 duplica no mesmo dia; log de notificações consultável.
 
-## - [ ] P3.5 Flutter — chat, avaliação e notificações
+## - [x] P3.5 Flutter — chat, avaliação e notificações
 
 **Objetivo:** fechar a comunicação no app, nos dois papéis.
 **Passos:**
@@ -423,3 +423,132 @@ device para simular passar das 18h sem ter treinado, e conferir a chegada
 de "Treino pendente" uma única vez (repetir no mesmo dia não deve gerar
 segunda notificação — o automatizado já cobre a lógica, isto é só a
 confirmação visual em device real).
+
+**P3.5:** Flutter — chat, avaliação e notificações. **Fase P3 fechada.**
+
+`core/realtime/` é novo e nasceu de propósito fora de `features/chat/`:
+tanto o chat quanto a fila de check-ins do coach (P3.5 §3) precisam do mesmo
+WebSocket do `comms` (`GET /ws?token=`), e `docs/guidelines/flutter.md` é
+explícito ("feature não importa outra feature; o que for comum sobe para
+shared/ ou core/"). `CommsSocketService` só entrega JSON cru decodificado
+(`Map<String, dynamic>`, sempre com `type`) — não conhece `ChatMessage` nem
+nenhum outro tipo de domínio; cada feature tem seu próprio parser
+(`features/chat/data/chat_event.dart` para `message.*`,
+`features/checkin/data/checkin_event.dart` para `checkin.pain_strong`), e um
+`type` que uma feature não reconhece só devolve `null` em vez de quebrar.
+Reconexão com backoff exponencial é o mesmo desenho do `SyncWorker` do P1.7,
+adaptado para entrada em vez de fila de saída; `onReconnected` dispara o
+resync via REST das telas abertas (Aceite do P3.2: "queda de WS não perde
+mensagem"). `commsApiClientProvider` novo em `core/http/providers.dart`,
+mesmo padrão dos outros três serviços.
+
+**Chat** (`features/chat/`): `ConversationsController` (lista + soma de não
+lidas para o badge da aba) e `ChatMessagesController` (histórico paginado +
+envio otimista, por conversa, `autoDispose.family`). Envio otimista não tem
+`client_id` de servidor — mensagem não é execução de treino, ADR-003 não
+cobre isto — então o dedupe entre a resposta do `POST` e o eco do próprio
+evento `message.new` pelo WS (o `comms` publica para os dois participantes,
+inclusive o remetente) é só por `id` da mensagem confirmada. Falha de envio
+vira estado `failed` na bolha com "tentar de novo"/"remover" — sem fila
+offline: chat exige conexão, ADR-003 restringe offline à execução.
+
+Duas decisões fora do texto literal do plano, registradas aqui em vez de
+travar a tarefa (mesmo critério do `POST /v1/conversations` da P3.2):
+1. **`participant_directory.dart`**: nem `comms` nem o app tinham como
+   nomear "o outro participante" de uma conversa — o `comms` só guarda ids
+   (ADR-013 §2). Resolvido com duas chamadas a `GET /v1/users` do `identity`
+   (papéis `student`/`coach`/`owner`, já existente desde o P1.6) montando um
+   mapa id→nome, sem endpoint novo. Não pagina além de 200 por papel — dívida
+   da mesma classe do N+1 da lista de alunos (P1.6), aceitável no volume do
+   MVP.
+2. **Aba Check-ins como quinta aba de `EvolutionScreen`** (P3.5 §3: "aba de
+   check-ins na ficha do aluno"): em vez de uma tela nova, virou mais uma aba
+   coach-only ao lado do Resumo (P2.5) — mesma tela, mesmo padrão de esconder
+   por `scope.isCoach`, badge de pendentes no rótulo (`_CheckinsTabLabel`).
+   O aluno nunca vê essa aba: ele registra o check-in pelo bottom sheet
+   pós-treino, nunca revisa a própria fila.
+
+**Avaliação pós-treino** (`features/checkin/`): `showCheckinSheet` abre logo
+depois de `showSessionSummary` em `SessionPlayerScreen._confirmFinish` —
+resumo primeiro, avaliação depois, nunca no lugar um do outro.
+`sessionClientId` é o mesmo `client_id` da sessão finalizada (`LocalSession.
+clientId`), sem inventar outra chave. `CheckinController.submit` tenta
+online primeiro; só em `network_error` grava um rascunho local — não é a
+fila `pending_events` do ADR-003 (o plano é explícito: "não: check-in é
+online, ADR-003 restringe offline à execução"), é bem mais simples:
+`CheckinDraftStorage` guarda uma lista pequena em `flutter_secure_storage`
+(reuso do mesmo pacote do `TokenStorage`, sem dependência nova) e
+`CheckinController` drena sozinho no boot e a cada volta de conectividade
+(`connectivity_plus`, já dependência). Idempotência de verdade continua
+sendo do servidor (`session_client_id`), então reenviar o mesmo rascunho
+depois de reconectar nunca duplica.
+
+**Badge de não lidas** (P3.5 §1): `LyShellDestination` ganhou `badgeCount`
+opcional e `LyShellScaffold` embrulha o ícone num `Badge` do Material 3
+quando `badgeCount > 0` — nenhuma dependência nova, o widget já vem com o
+Flutter desde a versão pinada deste projeto.
+
+**Push** (`core/push/`, P3.5 §4): `PushService` (permissão, token, upsert em
+`POST /v1/devices`, exibição em primeiro plano via `flutter_local_notifications`
+— canal `lyfta_push`, separado do `lyfta_rest_timer` do P1.7 — e deep link de
+quem tocou a notificação) e `PushProvider` (nasce lendo o `GoRouter` para
+saber aonde navegar, se registra sozinho a cada sessão autenticada, mesmo
+padrão de autogestão do `commsSocketProvider`). `device_locale.dart` resolve
+o locale efetivo do app com `basicLocaleListResolution` (a mesma função que
+o `MaterialApp.router` usaria, já que `main.dart` não passa
+`localeListResolutionCallback`) em vez do locale cru do sistema — fecha,
+só para o registro de device, parte da dívida do P1.8 ("o app não manda
+`?locale=`"); o resto do conteúdo dinâmico ainda segue a conta, não a tela.
+Tudo isolado atrás de `PushService.isSupported` (`!kIsWeb` +
+`defaultTargetPlatform` android/iOS, mesmo guard do `RestTimerService`,
+evita `dart:io` que não compila para web) e `try/catch` — sem Firebase
+configurado no device, o app sobe normalmente com push desligado, mesmo
+critério do `Notifier` do comms sem `FCM_CREDENTIALS_JSON` (P3.4).
+Dependências novas, ambas inerentes ao escopo do passo 1/4 do plano
+(pré-aprovadas na sessão): `firebase_core`+`firebase_messaging`; e
+`web_socket_channel`, que já era transitiva (via outro pacote) e virou
+direta.
+
+**Gradle do Android** ganhou o plugin `com.google.gms.google-services`
+(`android/settings.gradle.kts` declara a versão, `android/app/build.gradle.kts`
+aplica) — é o que processa o `google-services.json`. **Bloqueio conhecido,
+não contornado**: o arquivo não existe nesta máquina (só o humano consegue
+baixá-lo do Console Firebase, projeto `lyfta-a3bd3`, ver `app/README.md`
+§ Firebase) e o plugin recusa configurar o projeto sem ele — todo build
+Android fica bloqueado até lá, não só o `firebase_messaging`. Nenhum
+placeholder foi commitado; `flutter analyze`/`flutter test` não tocam
+Gradle, então a verificação desta tarefa não depende disso.
+
+**Verificação:** `flutter analyze` e o guard de strings limpos, **53 testes
+verdes** (7 novos: 5 de `ChatBubble` — lida/não lida/mensagem do outro/envio
+em voo/falha com tentar-de-novo-e-remover — e 2 do bottom sheet de check-in
+— valores de fábrica sem dor, e nota/dificuldade/dor forte com "onde"
+preenchido). O teste da bolha achou um bug de verdade: a linha de ações de
+"falha no envio" (texto + tentar de novo + remover) estourava a largura da
+bolha num `Row`; virou `Wrap`. `evolution_scope_test.dart` (P2.5) precisou de
+três ajustes por causa da aba nova: contagem de abas do escopo do coach
+(4→5), `checkinRepositoryProvider` sobrescrito com um fake (senão bateria no
+`comms` de verdade) e `commsSocketProvider` também sobrescrito com uma
+instância sem `connect()` chamado (senão o `ref.listen(authControllerProvider)`
+de dentro dele acionaria o `TokenStorage` real sem platform channel no
+teste de widget). Sem backend tocado nesta tarefa — os cinco serviços já
+estavam prontos desde a P3.1–P3.4.
+
+**Pendente de verificação manual** (fora do alcance desta sessão, e é o
+mesmo roteiro que a P3.4 já deixou escrito): o Aceite literal "fluxo real
+entre 2 devices (coach web + aluno Android): mensagem chega via WS, push
+chega com app fechado, check-in aparece pro coach" depende de (a) o
+`google-services.json` estar em `android/app/` e (b) o app instalado num
+Android com Play Services. Passo a passo: (1) coach loga no Chrome, aluno
+loga no Android; (2) coach abre o chat do aluno pelo ícone novo na lista de
+alunos, manda uma mensagem — confirmar que ela chega no Android via WS sem
+precisar puxar para atualizar; (3) fechar o app do aluno, coach manda outra
+mensagem — confirmar que a notificação chega pelo FCM e que tocar nela abre
+a conversa certa (deep link); (4) aluno termina um treino, preenche o
+bottom sheet de avaliação com dor forte — confirmar que o coach recebe o
+push imediato mesmo com o app do aluno fechado, e que a avaliação aparece na
+aba Check-ins da ficha do aluno com o badge de pendente; (5) derrubar a rede
+do aluno no meio de um envio de mensagem/check-in e confirmar o
+comportamento de cada um (mensagem falha e oferece tentar de novo; check-in
+enfileira local e sai sozinho ao reconectar, com o aviso da tela). iOS segue
+fora do escopo desta máquina (Xcode não configurado, ver `STATUS.md`).

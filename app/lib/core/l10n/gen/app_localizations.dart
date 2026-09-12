@@ -1521,6 +1521,12 @@ abstract class AppLocalizations {
   /// **'Evolução'**
   String get studentsOpenEvolution;
 
+  /// Botão da lista de alunos que abre (ou cria) a conversa com o aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Chat'**
+  String get studentsOpenChat;
+
   /// Aba de resumo na ficha de evolução do aluno (só o professor vê).
   ///
   /// In pt, this message translates to:
@@ -1544,6 +1550,12 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Fotos'**
   String get evolutionTabPhotos;
+
+  /// Aba com a fila de avaliações de treino do aluno (só o professor vê).
+  ///
+  /// In pt, this message translates to:
+  /// **'Check-ins'**
+  String get evolutionTabCheckins;
 
   /// Título do cartão com a medida corporal mais recente do aluno.
   ///
@@ -1904,6 +1916,180 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Taxa metabólica basal (kcal)'**
   String get bioimpedanceFieldBmrKcal;
+
+  /// Título da tela de conversa quando o nome do outro participante não está disponível.
+  ///
+  /// In pt, this message translates to:
+  /// **'Chat'**
+  String get chatTitleFallback;
+
+  /// No description provided for @chatEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma mensagem ainda. Diga oi!'**
+  String get chatEmpty;
+
+  /// No description provided for @chatConversationsEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma conversa ainda.'**
+  String get chatConversationsEmpty;
+
+  /// Estado vazio da aba Chat do aluno quando nenhum professor abriu conversa ainda.
+  ///
+  /// In pt, this message translates to:
+  /// **'Seu professor ainda não iniciou uma conversa com você.'**
+  String get chatStudentNoConversation;
+
+  /// No description provided for @chatNoMessagesYet.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma mensagem ainda'**
+  String get chatNoMessagesYet;
+
+  /// Prévia da última mensagem na lista de conversas quando ela é uma imagem.
+  ///
+  /// In pt, this message translates to:
+  /// **'📷 Foto'**
+  String get chatImagePreview;
+
+  /// No description provided for @chatMessageHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escreva uma mensagem…'**
+  String get chatMessageHint;
+
+  /// No description provided for @chatAttachImage.
+  ///
+  /// In pt, this message translates to:
+  /// **'Anexar foto'**
+  String get chatAttachImage;
+
+  /// No description provided for @chatSend.
+  ///
+  /// In pt, this message translates to:
+  /// **'Enviar'**
+  String get chatSend;
+
+  /// No description provided for @chatMessageFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não enviada.'**
+  String get chatMessageFailed;
+
+  /// No description provided for @chatMessageRetry.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tentar de novo'**
+  String get chatMessageRetry;
+
+  /// No description provided for @checkinTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Como foi o treino?'**
+  String get checkinTitle;
+
+  /// No description provided for @checkinSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sua avaliação ajuda seu professor a ajustar o próximo treino.'**
+  String get checkinSubtitle;
+
+  /// No description provided for @checkinRatingLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nota geral'**
+  String get checkinRatingLabel;
+
+  /// No description provided for @checkinDifficultyLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dificuldade'**
+  String get checkinDifficultyLabel;
+
+  /// No description provided for @checkinPainLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sentiu dor?'**
+  String get checkinPainLabel;
+
+  /// No description provided for @checkinPainNone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma'**
+  String get checkinPainNone;
+
+  /// No description provided for @checkinPainMild.
+  ///
+  /// In pt, this message translates to:
+  /// **'Leve'**
+  String get checkinPainMild;
+
+  /// No description provided for @checkinPainStrong.
+  ///
+  /// In pt, this message translates to:
+  /// **'Forte'**
+  String get checkinPainStrong;
+
+  /// No description provided for @checkinPainWhereLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Onde?'**
+  String get checkinPainWhereLabel;
+
+  /// No description provided for @checkinCommentLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Comentário (opcional)'**
+  String get checkinCommentLabel;
+
+  /// No description provided for @checkinSubmit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Enviar avaliação'**
+  String get checkinSubmit;
+
+  /// No description provided for @checkinSubmitted.
+  ///
+  /// In pt, this message translates to:
+  /// **'Avaliação enviada ao seu professor.'**
+  String get checkinSubmitted;
+
+  /// No description provided for @checkinQueuedOffline.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem conexão — a avaliação será enviada assim que você reconectar.'**
+  String get checkinQueuedOffline;
+
+  /// No description provided for @checkinListEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma avaliação de treino ainda.'**
+  String get checkinListEmpty;
+
+  /// Cabeçalho do card de check-in com as duas notas (1 a 5) que o aluno deu.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nota {rating} · Dificuldade {difficulty}'**
+  String checkinCardScores(int rating, int difficulty);
+
+  /// No description provided for @checkinCardPainWhere.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dor em: {where}'**
+  String checkinCardPainWhere(String where);
+
+  /// No description provided for @checkinReviewed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Visto'**
+  String get checkinReviewed;
+
+  /// No description provided for @checkinMarkReviewed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Marcar como visto'**
+  String get checkinMarkReviewed;
 }
 
 class _AppLocalizationsDelegate

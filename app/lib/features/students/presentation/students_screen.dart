@@ -6,6 +6,7 @@ import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../builder/data/plan_repository.dart';
+import '../../chat/presentation/conversations_controller.dart';
 import 'students_controller.dart';
 
 /// Lista de alunos do professor (P1.6): quem está na academia, qual plano
@@ -33,6 +34,26 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
       '/students/${row.student.id}/evolution',
       extra: row.student.name,
     );
+  }
+
+  /// Abre (ou recupera) a conversa com o aluno e navega para ela — mesmo
+  /// get-or-create do `POST /v1/conversations` (P3.2), então tocar de novo
+  /// no mesmo aluno nunca cria uma segunda conversa. Passa pelo
+  /// `ConversationsController` (não o repositório direto) para a lista de
+  /// conversas já nascer atualizada da próxima vez que a aba Chat abrir.
+  Future<void> _openChat(StudentRow row) async {
+    try {
+      final conversation =
+          await ref.read(conversationsProvider.notifier).start(row.student.id);
+      if (!mounted) return;
+      await context.push<void>(
+        '/chat/${conversation.id}',
+        extra: row.student.name,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      _showError(describeApiError(context, error));
+    }
   }
 
   Future<void> _openPlan(String planId) async {
@@ -216,6 +237,7 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                     onOpenPlan: _openPlan,
                     onNewPlan: () => _newPlan(rows[index]),
                     onOpenEvolution: () => _openEvolution(rows[index]),
+                    onOpenChat: () => _openChat(rows[index]),
                   ),
                 );
               },
@@ -233,12 +255,14 @@ class _StudentTile extends StatelessWidget {
     required this.onOpenPlan,
     required this.onNewPlan,
     required this.onOpenEvolution,
+    required this.onOpenChat,
   });
 
   final StudentRow row;
   final ValueChanged<String> onOpenPlan;
   final VoidCallback onNewPlan;
   final VoidCallback onOpenEvolution;
+  final VoidCallback onOpenChat;
 
   @override
   Widget build(BuildContext context) {
@@ -299,6 +323,15 @@ class _StudentTile extends StatelessWidget {
             icon: const Icon(Icons.show_chart),
             color: c.textSecondary,
             tooltip: l10n.studentsOpenEvolution,
+          ),
+          // Chat fica ao lado da Evolução pelo mesmo motivo (P3.5 §1): abrir
+          // conversa é algo que o professor faz com o aluno sem substituir
+          // as outras ações do card.
+          IconButton(
+            onPressed: onOpenChat,
+            icon: const Icon(Icons.chat_bubble_outline),
+            color: c.textSecondary,
+            tooltip: l10n.studentsOpenChat,
           ),
           const SizedBox(width: LySpace.x2),
           LyButton(

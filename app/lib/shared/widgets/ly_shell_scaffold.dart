@@ -4,10 +4,18 @@ import '../../core/design_system/design_system.dart';
 
 /// Destino de navegação de um shell (professor/aluno).
 class LyShellDestination {
-  const LyShellDestination({required this.icon, required this.label});
+  const LyShellDestination({
+    required this.icon,
+    required this.label,
+    this.badgeCount = 0,
+  });
 
   final IconData icon;
   final String label;
+
+  /// Não lidas a mostrar sobre o ícone (P3.5 §1 — a aba Chat). `0` não
+  /// desenha nada.
+  final int badgeCount;
 }
 
 /// Breakpoint acima do qual o shell usa navegação lateral (web/desktop) em
@@ -37,6 +45,17 @@ class LyShellScaffold extends StatelessWidget {
   final Widget body;
   final List<Widget>? actions;
 
+  /// Ícone do destino, com o `Badge` do Material 3 por cima quando há não
+  /// lidas (P3.5 §1) — nenhuma dependência nova, o widget já vem com o
+  /// Flutter.
+  Widget _badged(LyShellDestination d) {
+    if (d.badgeCount <= 0) return Icon(d.icon);
+    return Badge(
+      label: Text(d.badgeCount > 99 ? '99+' : d.badgeCount.toString()),
+      child: Icon(d.icon),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.ly;
@@ -54,7 +73,10 @@ class LyShellScaffold extends StatelessWidget {
               onDestinationSelected: onDestinationSelected,
               destinations: [
                 for (final d in destinations)
-                  NavigationDestination(icon: Icon(d.icon), label: d.label),
+                  NavigationDestination(
+                    icon: _badged(d),
+                    label: d.label,
+                  ),
               ],
             ),
           );
@@ -72,7 +94,7 @@ class LyShellScaffold extends StatelessWidget {
                 destinations: [
                   for (final d in destinations)
                     NavigationRailDestination(
-                      icon: Icon(d.icon),
+                      icon: _badged(d),
                       label: Text(d.label),
                     ),
                 ],

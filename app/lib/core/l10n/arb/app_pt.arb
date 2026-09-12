@@ -561,6 +561,10 @@
   "@studentsOpenEvolution": {
     "description": "Botão da lista de alunos que abre a ficha de evolução."
   },
+  "studentsOpenChat": "Chat",
+  "@studentsOpenChat": {
+    "description": "Botão da lista de alunos que abre (ou cria) a conversa com o aluno."
+  },
   "evolutionTabSummary": "Resumo",
   "@evolutionTabSummary": {
     "description": "Aba de resumo na ficha de evolução do aluno (só o professor vê)."
@@ -568,6 +572,10 @@
   "evolutionTabLoad": "Carga",
   "evolutionTabMeasurements": "Medidas",
   "evolutionTabPhotos": "Fotos",
+  "evolutionTabCheckins": "Check-ins",
+  "@evolutionTabCheckins": {
+    "description": "Aba com a fila de avaliações de treino do aluno (só o professor vê)."
+  },
   "evolutionSummaryLatestMeasurement": "Última medida",
   "@evolutionSummaryLatestMeasurement": {
     "description": "Título do cartão com a medida corporal mais recente do aluno."
@@ -639,5 +647,55 @@
   "bioimpedanceFieldVisceralFat": "Gordura visceral",
   "bioimpedanceFieldBodyWaterPct": "% de água corporal",
   "bioimpedanceFieldBoneMassKg": "Massa óssea (kg)",
-  "bioimpedanceFieldBmrKcal": "Taxa metabólica basal (kcal)"
+  "bioimpedanceFieldBmrKcal": "Taxa metabólica basal (kcal)",
+  "chatTitleFallback": "Chat",
+  "@chatTitleFallback": {
+    "description": "Título da tela de conversa quando o nome do outro participante não está disponível."
+  },
+  "chatEmpty": "Nenhuma mensagem ainda. Diga oi!",
+  "chatConversationsEmpty": "Nenhuma conversa ainda.",
+  "chatStudentNoConversation": "Seu professor ainda não iniciou uma conversa com você.",
+  "@chatStudentNoConversation": {
+    "description": "Estado vazio da aba Chat do aluno quando nenhum professor abriu conversa ainda."
+  },
+  "chatNoMessagesYet": "Nenhuma mensagem ainda",
+  "chatImagePreview": "📷 Foto",
+  "@chatImagePreview": {
+    "description": "Prévia da última mensagem na lista de conversas quando ela é uma imagem."
+  },
+  "chatMessageHint": "Escreva uma mensagem…",
+  "chatAttachImage": "Anexar foto",
+  "chatSend": "Enviar",
+  "chatMessageFailed": "Não enviada.",
+  "chatMessageRetry": "Tentar de novo",
+  "checkinTitle": "Como foi o treino?",
+  "checkinSubtitle": "Sua avaliação ajuda seu professor a ajustar o próximo treino.",
+  "checkinRatingLabel": "Nota geral",
+  "checkinDifficultyLabel": "Dificuldade",
+  "checkinPainLabel": "Sentiu dor?",
+  "checkinPainNone": "Nenhuma",
+  "checkinPainMild": "Leve",
+  "checkinPainStrong": "Forte",
+  "checkinPainWhereLabel": "Onde?",
+  "checkinCommentLabel": "Comentário (opcional)",
+  "checkinSubmit": "Enviar avaliação",
+  "checkinSubmitted": "Avaliação enviada ao seu professor.",
+  "checkinQueuedOffline": "Sem conexão — a avaliação será enviada assim que você reconectar.",
+  "checkinListEmpty": "Nenhuma avaliação de treino ainda.",
+  "checkinCardScores": "Nota {rating} · Dificuldade {difficulty}",
+  "@checkinCardScores": {
+    "description": "Cabeçalho do card de check-in com as duas notas (1 a 5) que o aluno deu.",
+    "placeholders": {
+      "rating": {"type": "int"},
+      "difficulty": {"type": "int"}
+    }
+  },
+  "checkinCardPainWhere": "Dor em: {where}",
+  "@checkinCardPainWhere": {
+    "placeholders": {
+      "where": {"type": "String"}
+    }
+  },
+  "checkinReviewed": "Visto",
+  "checkinMarkReviewed": "Marcar como visto"
 }

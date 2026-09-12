@@ -48,5 +48,10 @@
   "todaySyncPending": "{count, plural, =1{1 registo por enviar} other{{count} registos por enviar}}",
   "sessionMarkDone": "Registar série",
   "sessionSetDone": "Registada",
-  "sessionFinishBody": "{count, plural, =0{Não registaste nenhuma série — o treino de hoje não será marcado como feito.} =1{Registaste 1 série. O treino de hoje será concluído.} other{Registaste {count} séries. O treino de hoje será concluído.}}"
+  "sessionFinishBody": "{count, plural, =0{Não registaste nenhuma série — o treino de hoje não será marcado como feito.} =1{Registaste 1 série. O treino de hoje será concluído.} other{Registaste {count} séries. O treino de hoje será concluído.}}",
+  "chatMessageHint": "Escreve uma mensagem…",
+  "chatStudentNoConversation": "O teu professor ainda não iniciou uma conversa contigo.",
+  "checkinSubtitle": "A tua avaliação ajuda o teu professor a ajustar o próximo treino.",
+  "checkinSubmitted": "Avaliação enviada ao teu professor.",
+  "checkinQueuedOffline": "Sem ligação — a avaliação será enviada assim que reconectares."
 }

@@ -35,38 +35,45 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 - **[docs/benchmarking/](docs/benchmarking/)** — auditoria HubFit × Trainerize × Lyfta.
 - `docs/guidelines/` — convenções de código (ex.: `flutter.md`).
 
-## Estado atual (2026-09-08)
+## Estado atual (2026-09-11)
 **Executando o plano do MVP 1.0** ([docs/plan/mvp1/](docs/plan/mvp1/)) na ordem
-P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P3.X").
+P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P4.X").
 **Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
 saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
-**P0, P1 e P2 concluídas e a P3 começada, 21/29:** `identity` completo (auth,
-convites, reset, lista de usuários do tenant), CI no GitHub Actions (`.github/workflows/ci.yml`) e o
-serviço `workout` completo do lado servidor — schema do ADR-004, mídia por URL
-presignada, biblioteca com seed global de 41 exercícios em 3 locales, builder
-versionado e o contrato offline do ADR-003 (treino do dia, push idempotente da
-fila, pull incremental, rotação A→B→C) (P1.1–P1.5). No app Flutter, o
-**professor** tem biblioteca e builder completo (P1.6) e o **aluno** tem o
-treino do dia offline: banco local por plataforma (SQLite via drift no celular,
-memória na web — ver Notas do P1.7), tela Hoje com carga anterior, player com
-timer de descanso e correção append-only, e worker que drena a fila com backoff
-e reconexão (P1.7). O loop A→B→C fecha ponta a ponta: o roteiro E2E de
-[e2e-p1.md](docs/plan/mvp1/e2e-p1.md) foi executado nos 22 passos com coach no
-Chrome e aluno em emulador Android com a rede cortada de verdade (P1.8) — é o
-teste de fumaça a repetir antes de cada release. No P2, o `workout` já serve o
-histórico por exercício que vira o gráfico de carga (P2.1), o serviço
-`assessment` serve medidas, bioimpedância digitada e fotos (P2.2/P2.3) e a
-**fase P2 está fechada**: aluno e professor veem a mesma tela Evolução —
-gráfico de carga (`fl_chart`), medidas e bioimpedância com deltas, fotos com
-comparador antes/depois —, parametrizada por `EvolutionScope` (`me()` ou
-`student(id)`), com a aba Resumo a mais no lado do professor (P2.4/P2.5).
-Na P3, o quinto serviço, `comms`, está de pé com o schema inteiro da fase
-(conversas, mensagens, check-ins, tokens de device, log de notificação) (P3.1)
-e já serve o chat: REST com cursor e não lidas, imagem por presign e
-`GET /ws?token=` entregando `message.new`/`message.read`, com fan-out entre
-instâncias pelo Redis (P3.2), mais o check-in de treino do aluno — idempotente
-por sessão, com a fila do coach ordenada por não revisados (P3.3).
-Próxima: **P3.4** (push FCM + job de treino pendente). Escopo do MVP em
+**P0, P1, P2 e P3 concluídas, 25/29:** `identity` completo (auth, convites,
+reset, lista de usuários do tenant), CI no GitHub Actions
+(`.github/workflows/ci.yml`) e o serviço `workout` completo do lado servidor —
+schema do ADR-004, mídia por URL presignada, biblioteca com seed global de 41
+exercícios em 3 locales, builder versionado e o contrato offline do ADR-003
+(treino do dia, push idempotente da fila, pull incremental, rotação A→B→C)
+(P1.1–P1.5). No app Flutter, o **professor** tem biblioteca e builder completo
+(P1.6) e o **aluno** tem o treino do dia offline: banco local por plataforma
+(SQLite via drift no celular, memória na web — ver Notas do P1.7), tela Hoje
+com carga anterior, player com timer de descanso e correção append-only, e
+worker que drena a fila com backoff e reconexão (P1.7). O loop A→B→C fecha
+ponta a ponta: o roteiro E2E de [e2e-p1.md](docs/plan/mvp1/e2e-p1.md) foi
+executado nos 22 passos com coach no Chrome e aluno em emulador Android com a
+rede cortada de verdade (P1.8) — é o teste de fumaça a repetir antes de cada
+release. No P2, o `workout` já serve o histórico por exercício que vira o
+gráfico de carga (P2.1), o serviço `assessment` serve medidas, bioimpedância
+digitada e fotos (P2.2/P2.3) e a fase fechou com aluno e professor vendo a
+mesma tela Evolução — gráfico de carga (`fl_chart`), medidas e bioimpedância
+com deltas, fotos com comparador antes/depois —, parametrizada por
+`EvolutionScope` (`me()` ou `student(id)`), com a aba Resumo a mais no lado do
+professor (P2.4/P2.5). **A P3 (comunicação) está fechada**: o quinto serviço,
+`comms`, serve chat (REST com cursor e não lidas, imagem por presign,
+`GET /ws?token=` com fan-out entre instâncias pelo Redis, P3.1/P3.2),
+check-in de treino idempotente por sessão com a fila do coach ordenada por
+não revisados (P3.3) e push FCM + job diário de treino pendente (P3.4). No
+app, `features/chat/` (lista de conversas com badge de não lidas, conversa
+direta com envio otimista texto/imagem, reconexão de WS transparente) e
+`features/checkin/` (bottom sheet pós-treino com rascunho local se a rede
+cair, fila de check-ins como aba do coach na ficha de evolução) fecham a
+comunicação dos dois lados, com `core/push/` registrando o device e abrindo a
+notificação tocada no lugar certo (P3.5) — pendente de verificação manual em
+Android físico enquanto o `google-services.json` não é baixado do Console
+Firebase (bloqueio conhecido, ver `app/README.md` § Firebase).
+Próxima: **P4.1** (calendário/agenda semanal do aluno). Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor
 funcionam em **todas** as plataformas (mobile e web).

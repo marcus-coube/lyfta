@@ -61,6 +61,14 @@ Push exige emulador com **Play Services**. A AVD da receita acima usa
 testar push, crie uma segunda AVD com `google_apis_playstore`, ou use um
 aparelho físico.
 
+O Gradle já está preparado para o `google-services.json` (P3.5): o plugin
+`com.google.gms.google-services` está declarado em `android/settings.gradle.kts`
+e aplicado em `android/app/build.gradle.kts`. **Sem o arquivo, todo build
+Android falha** — o plugin recusa configurar o projeto sem ele (é assim que
+o Gradle avisa que falta o passo manual, em vez de compilar silenciosamente
+sem push). Basta soltar o `google-services.json` baixado do Console Firebase
+em `android/app/` para destravar.
+
 > **`applicationId` é provisório (ADR-015).** `br.com.lyfta.lyfta` só pode mudar
 > **antes** do primeiro upload em loja: o Play Console reserva o package na conta para
 > sempre (mesmo apagando o rascunho) e o bundle ID no App Store Connect idem.
@@ -92,10 +100,14 @@ não é versionada) — o porquê está em `MemoryWorkoutStore` e nas notas do P
 lib/
   core/
     design_system/   # tokens, tema e componentes Ly* (barrel: design_system.dart)
+    realtime/         # CommsSocketService — WS único do `comms`, chat + check-ins
+    push/             # FCM: permissão, registro de token, deep link (P3.5)
   shared/            # domínio, widgets e rótulos usados por 2+ features
   features/
     auth/ library/ builder/ students/   # professor
     workout/                            # aluno: treino do dia + execução
+    evolution/                          # aluno e professor: gráfico, medidas, fotos
+    chat/ checkin/                      # aluno e professor: conversa e avaliação de treino
 ```
 
 Guidelines: `docs/guidelines/flutter.md`.
