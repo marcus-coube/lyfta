@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
+import '../../../shared/widgets/ly_skeleton.dart';
 import '../domain/evolution_scope.dart';
 import '../widgets/summary_card.dart';
 import 'summary_controller.dart';
@@ -21,7 +22,18 @@ class SummaryTab extends ConsumerWidget {
     final summary = ref.watch(evolutionSummaryProvider(scope));
 
     return summary.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Padding(
+        padding: EdgeInsets.all(LySpace.x4),
+        child: Column(
+          children: [
+            LySkeletonListTile(),
+            SizedBox(height: LySpace.x4),
+            LySkeletonListTile(),
+            SizedBox(height: LySpace.x4),
+            LySkeletonListTile(),
+          ],
+        ),
+      ),
       error: (error, _) => Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

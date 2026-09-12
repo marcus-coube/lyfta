@@ -68,6 +68,7 @@
   "commonCancel": "Cancel",
   "commonCreate": "Create",
   "commonRemove": "Remove",
+  "commonLoadMore": "Load more",
   "libraryNewExercise": "New exercise",
   "librarySearchLabel": "Search exercise",
   "librarySearchHint": "bench press, squat…",

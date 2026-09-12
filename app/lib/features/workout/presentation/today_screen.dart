@@ -10,6 +10,7 @@ import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/domain/plan.dart';
 import '../../../shared/l10n/plan_l10n.dart';
 import '../../../shared/widgets/exercise_media.dart';
+import '../../../shared/widgets/ly_skeleton.dart';
 import '../data/workout_repository.dart';
 import '../domain/today.dart';
 import 'prescription_format.dart';
@@ -31,7 +32,7 @@ class TodayScreen extends ConsumerWidget {
     final state = ref.watch(todayControllerProvider);
 
     return state.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const _TodaySkeleton(),
       error: (error, _) => _ErrorState(
         message: l10n.todayLoadError,
         onRetry: () => ref.read(todayControllerProvider.notifier).refresh(),
@@ -41,6 +42,31 @@ class TodayScreen extends ConsumerWidget {
         color: c.accent,
         child: _TodayBody(view: view),
       ),
+    );
+  }
+}
+
+/// Silhueta da tela Hoje enquanto o banco local ainda não respondeu
+/// (P4.2 §2) — cabeçalho do dia + 3 blocos de exercício, na mesma medida do
+/// `_DayCard`/`_ExerciseBlock` reais logo abaixo.
+class _TodaySkeleton extends StatelessWidget {
+  const _TodaySkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(LySpace.x4),
+      physics: const NeverScrollableScrollPhysics(),
+      children: [
+        const LySkeletonLine(width: 180, height: 24),
+        const SizedBox(height: LySpace.x2),
+        const LySkeletonLine(width: 120),
+        const SizedBox(height: LySpace.x6),
+        for (var i = 0; i < 3; i++) ...[
+          const LySkeletonListTile(avatarSize: 56),
+          const SizedBox(height: LySpace.x4),
+        ],
+      ],
     );
   }
 }

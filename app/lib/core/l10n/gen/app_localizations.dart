@@ -507,6 +507,12 @@ abstract class AppLocalizations {
   /// **'Remover'**
   String get commonRemove;
 
+  /// No description provided for @commonLoadMore.
+  ///
+  /// In pt, this message translates to:
+  /// **'Carregar mais'**
+  String get commonLoadMore;
+
   /// No description provided for @libraryNewExercise.
   ///
   /// In pt, this message translates to:

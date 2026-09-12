@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
+import '../../../shared/widgets/ly_error_state.dart';
+import '../../../shared/widgets/ly_skeleton.dart';
 import '../domain/checkin.dart';
 import 'checkins_controller.dart';
 
@@ -22,16 +24,21 @@ class CoachCheckinsTab extends ConsumerWidget {
     final checkins = ref.watch(checkinsProvider(studentId));
 
     return checkins.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(LySpace.x6),
-          child: Text(
-            describeApiError(context, error),
-            textAlign: TextAlign.center,
-            style: LyType.body(c.textSecondary),
-          ),
+      loading: () => const Padding(
+        padding: EdgeInsets.all(LySpace.x4),
+        child: Column(
+          children: [
+            LySkeletonListTile(),
+            SizedBox(height: LySpace.x4),
+            LySkeletonListTile(),
+            SizedBox(height: LySpace.x4),
+            LySkeletonListTile(),
+          ],
         ),
+      ),
+      error: (error, _) => LyErrorState(
+        message: describeApiError(context, error),
+        onRetry: () => ref.read(checkinsProvider(studentId).notifier).refresh(),
       ),
       data: (state) {
         if (state.items.isEmpty) {

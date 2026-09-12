@@ -19,7 +19,7 @@ gamificação real é 3.0).
 **Aceite:** semana corrente reflete execuções reais do P1; navegação entre semanas;
 teste de widget da célula de dia (3 estados).
 
-## - [ ] P4.2 Performance e robustez ("app leve, sem travar")
+## - [x] P4.2 Performance e robustez ("app leve, sem travar")
 
 **Objetivo:** metas mensuráveis, não sensação.
 **Passos:**
@@ -150,3 +150,120 @@ pendências restantes listadas e classificadas (bloqueia release × vai pro 2.0)
   Chrome ou iOS servem para este roteiro) confirmando visualmente a semana
   corrente, a navegação entre semanas, o mês expansível e o streak com dados
   de verdade.
+
+### P4.2 (2026-09-11, Mac)
+
+- **Cold start (§1): mudança estrutural feita, número do Aceite NÃO medido —
+  registrado como pendência, não estimado.** `main.dart` fazia `await
+  Firebase.initializeApp()` antes de `runApp()`, bloqueando o primeiro frame
+  em todo boot mobile. Virou fire-and-forget depois de `runApp()`
+  (`WidgetsBinding.instance.addPostFrameCallback`): o app pinta a tela de
+  login sem esperar o I/O nativo do Firebase. Seguro porque
+  `PushService.init()`/`ensureRegistered()` (`core/push/push_service.dart`)
+  já tratavam Firebase ausente com try/catch (era assim mesmo sem
+  `google-services.json`, bloqueio conhecido desde a P3.5); o único efeito
+  colateral possível é o registro de push do boot autenticado correr
+  levemente mais cedo que o Firebase estar pronto, mas
+  `_restoreSession()` (`auth_controller.dart`) sempre faz um refresh de rede
+  antes de autenticar, o que dá tempo de sobra ao `postFrameCallback` (1
+  frame, ~16 ms) rodar primeiro — não há caminho de regressão observável.
+  **Não consegui medir o número do Aceite** (`flutter run --profile` +
+  timeline em Android): o bloqueio #1 do STATUS.md (`google-services.json`
+  ausente) barra qualquer build Android, e nem macOS nem iOS têm a pasta de
+  plataforma gerada nesta máquina (`flutter devices` só lista `macOS` e
+  `Chrome`, mas a pasta `macos/` não existe — ver Toolchain do STATUS.md).
+  Web/Chrome não serve de proxy porque o próprio guard do Firebase é
+  `!kIsWeb && (Android || iOS)` — a mudança tem efeito **zero** em não-mobile,
+  então medir lá não provaria nada sobre o ganho real. Adicionei a pendência
+  #6 na tabela do STATUS.md em vez de inventar um número.
+- **Skeleton loaders (§2):** `shared/widgets/ly_skeleton.dart` novo
+  (`LySkeletonBox`/`LySkeletonLine`/`LySkeletonListTile`, pulso de opacidade
+  via `AnimationController`, sem dependência nova) substituindo
+  `CircularProgressIndicator` cru em Hoje (`_TodaySkeleton`), nas 4 abas de
+  Evolução (carga com área de gráfico, medidas/bioimpedância como linhas,
+  fotos como grade 3×3, resumo do coach) e nas 3 telas de Chat (lista de
+  conversas, mensagens — `features/chat/presentation/widgets/chat_skeletons.dart`).
+  Também apliquei nas duas telas fora da lista original que têm o mesmo
+  problema e são visitadas o tempo todo (lista de alunos do coach, aba
+  Check-ins) — a auditoria do §3 achou os dois casos e a correção é a mesma
+  peça.
+- **`cached_network_image` sem placeholder (§2): achado real em
+  `ChatBubble`** (`features/chat/presentation/widgets/chat_bubble.dart`) — a
+  imagem de mensagem usava `Image.network` cru, sem cache de disco, sem
+  placeholder de carregamento e sem fallback de erro (a única mídia do app
+  nessa situação; biblioteca/fotos de evolução já usavam
+  `CachedNetworkImage` com os dois desde a P1.6/P2.4). Trocado pelo mesmo
+  padrão de `ExerciseMedia`/`PhotoGrid`.
+- **Paginação incremental (§2): biblioteca e chat já paginam de verdade**
+  (scroll listener + `loadMore()`, conferido lendo `library_screen.dart` e
+  `chat_screen.dart` — nada a fazer). **Achado real: medidas, bioimpedância
+  e fotos da aba Evolução tinham `hasMore`/`loadMore()` prontos nos
+  controllers (cursor keyset do servidor, P2.3) mas a tela nunca chamava —
+  a lista sempre parava na primeira página e não tinha como saber que
+  faltava mais.** Como as três seções vivem dentro de um único `ListView`
+  maior (não são elas mesmas o scroll principal), o gatilho escolhido foi um
+  botão "Carregar mais" (`_LoadMoreButton`, chave nova `commonLoadMore` nas
+  ARBs pt-BR/en — pt-PT cai no fallback, mesma wording) em vez de scroll
+  infinito aninhado, que competiria com o scroll da aba inteira.
+  **Descoberta anotada, não corrigida (fora do escopo desta tarefa):** a
+  lista de alunos do coach (`StudentsController`) busca só a primeira página
+  (20 alunos, `pageSize` fixo) e não tem cursor nem `loadMore` nenhum — acima
+  de 20 alunos o resto fica invisível. Não é scroll incremental faltando
+  como o caso acima, é paginação inexistente; consertar direito pede mudar o
+  shape do estado do controller (hoje é só `List<StudentRow>`, precisaria
+  virar algo como `StudentListState(items, hasMore, cursor)`), escopo maior
+  do que um ajuste de UI. Registrado como pendência.
+- **Erro cru / retry (§3): auditoria em todo `.when(error: ...)` do app.**
+  A tradução por `code` (`describeApiError`) já estava correta em toda
+  tela — nenhuma stack/erro cru em lugar nenhum, ADR-011 §3 já cumprido
+  antes desta tarefa. **Achado real: 5 telas mostravam a mensagem traduzida
+  mas sem nenhuma ação de tentar de novo** (`ChatHomeScreen`,
+  `ConversationListScreen`, `ChatScreen`, `StudentsScreen`,
+  `CoachCheckinsTab`) — usuário preso precisando fechar e reabrir a tela.
+  Corrigido com `shared/widgets/ly_error_state.dart` (`LyErrorState`,
+  mensagem + `LyButton` de retry) chamando o `refresh()` que cada controller
+  já expunha (todos tinham, nenhum precisou ganhar método novo). Telas mais
+  antigas com o próprio `_ErrorState` local (Hoje/Biblioteca/Agenda) não
+  foram tocadas — já tinham retry, mexer nelas seria puro churn.
+- **Crash-safe / zona guardada (§3):** não achei `runZonedGuarded` nem
+  handler de `FlutterError.onError` em `main.dart` — não implementado aqui
+  (o passo fala de "crash-safe... e log", mas não há um backend de log de
+  erro definido em nenhum ADR/plano para mandar isso; adicionar a zona sem
+  um destino faria logging morto). Registrado como pendência para decisão
+  futura, não implementado por falta de destino definido, não por descuido.
+- **Web (§4):** `flutter build web --wasm --release` **falha** — dependência
+  transitiva `flutter_secure_storage_web` usa `CryptoKey`/`dart:html` sem
+  porte para `dart:js_interop`, incompatível com `dart2wasm`
+  (`flutter build web --release` confirma via *wasm dry run* a mesma lista:
+  `dart:html`, `dart:js_util`, `package:js` não suportados). O próprio texto
+  do passo já previa esse desvio ("`--wasm` se estável, senão canvaskit") —
+  build canvaskit padrão (`flutter build web --release`) passou limpo.
+  Métricas **medidas de verdade** nesse build, servido localmente
+  (`python3 -m http.server`) e auditado com Lighthouse CLI real
+  (`npx lighthouse`, Chrome headless, categoria performance) contra
+  `/#/login`:
+  - `main.dart.js`: 4,19 MB brutos → **1,14 MB gzip** (`gzip -c | wc -c`) —
+    dentro da meta de <3 MB gzip do doc 015 com folga.
+  - Lighthouse (localhost, sem throttling de rede/CPU — não é o dispositivo
+    médio do Aceite, é a bancada de build): performance 100/100, First
+    Contentful Paint 0,4 s, Largest Contentful Paint 1,3 s, Total Blocking
+    Time 0 ms, CLS 0. Peso total transferido 6,05 MB — inclui o motor
+    CanvasKit, que por padrão vem do CDN da Google
+    (`gstatic.com/flutter-canvaskit`, cacheado pelo navegador entre visitas,
+    não pela primeira), não da pasta `canvaskit/` de 37 MB que o build
+    também gera localmente (só serve de fallback se `useLocalCanvasKit`).
+  - Rodei visualmente a tela de login no build servido (screenshot via
+    Browser tool) para confirmar que o CanvasKit renderiza igual ao dev —
+    sim, idêntico.
+  - **Não fiz**: lighthouse mobile-emulado com throttling 4G/CPU (só rodei
+    desktop sem throttle, que é o que deu para fazer rápido nesta sessão) —
+    registrado como pendência, não uma medida de "boa o suficiente para
+    mobile real".
+- **Sem dependência nova**, como o contexto pedia — `cached_network_image`
+  já era dependência (P1.6); skeleton é `AnimationController` puro.
+- **Verificado:** `flutter analyze` limpo (0 issues), guard de strings
+  limpo, **66 testes verdes** (nenhum teste cobria os `CircularProgressIndicator`/
+  `Image.network` trocados, então nada teve que ser reescrito — comportamento
+  novo ainda sem teste de widget dedicado, dívida pequena e aceitável para o
+  tamanho da mudança). `go vet`/`go test` não rodou porque nenhum serviço Go
+  foi tocado nesta tarefa.

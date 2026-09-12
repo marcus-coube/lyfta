@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/design_system/design_system.dart';
@@ -80,7 +81,19 @@ class ChatBubble extends StatelessWidget {
                       height: 220,
                       child: imageBytes != null
                           ? Image.memory(imageBytes!, fit: BoxFit.cover)
-                          : Image.network(imageUrl!, fit: BoxFit.cover),
+                          : CachedNetworkImage(
+                              imageUrl: imageUrl!,
+                              fit: BoxFit.cover,
+                              placeholder: (context, _) =>
+                                  ColoredBox(color: c.surfaceElevated),
+                              errorWidget: (context, _, __) => ColoredBox(
+                                color: c.surfaceElevated,
+                                child: Icon(
+                                  Icons.broken_image_outlined,
+                                  color: c.textSecondary,
+                                ),
+                              ),
+                            ),
                     ),
                   ),
                   if (body.isNotEmpty) const SizedBox(height: LySpace.x2),

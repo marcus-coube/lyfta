@@ -6,10 +6,12 @@ import '../../../core/auth/auth_controller.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
+import '../../../shared/widgets/ly_error_state.dart';
 import '../data/participant_directory.dart';
 import '../domain/conversation.dart';
 import '../domain/message.dart';
 import 'conversations_controller.dart';
+import 'widgets/chat_skeletons.dart';
 
 /// Lista de conversas (P3.5 §1) — o coach vê uma por aluno; um aluno com
 /// mais de um professor também cai aqui (o caso comum dele, um professor só,
@@ -26,16 +28,10 @@ class ConversationListScreen extends ConsumerWidget {
     final directory = ref.watch(participantDirectoryProvider).valueOrNull ?? const {};
 
     return conversations.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(LySpace.x6),
-          child: Text(
-            describeApiError(context, error),
-            textAlign: TextAlign.center,
-            style: LyType.body(c.textSecondary),
-          ),
-        ),
+      loading: () => const ConversationListSkeleton(),
+      error: (error, _) => LyErrorState(
+        message: describeApiError(context, error),
+        onRetry: () => ref.read(conversationsProvider.notifier).refresh(),
       ),
       data: (items) {
         if (items.isEmpty) {

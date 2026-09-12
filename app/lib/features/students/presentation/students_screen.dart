@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
+import '../../../shared/widgets/ly_error_state.dart';
+import '../../../shared/widgets/ly_skeleton.dart';
 import '../../builder/data/plan_repository.dart';
 import '../../chat/presentation/conversations_controller.dart';
 import 'students_controller.dart';
@@ -203,16 +205,16 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
           ),
           Expanded(
             child: students.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(LySpace.x6),
-                  child: Text(
-                    describeApiError(context, error),
-                    textAlign: TextAlign.center,
-                    style: LyType.body(c.textSecondary),
-                  ),
-                ),
+              loading: () => ListView.separated(
+                padding: const EdgeInsets.all(LySpace.x4),
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: 6,
+                separatorBuilder: (_, __) => const SizedBox(height: LySpace.x3),
+                itemBuilder: (context, index) => const LySkeletonListTile(),
+              ),
+              error: (error, _) => LyErrorState(
+                message: describeApiError(context, error),
+                onRetry: () => ref.read(studentsProvider.notifier).refresh(),
               ),
               data: (rows) {
                 if (rows.isEmpty) {

@@ -7,9 +7,11 @@ import '../../../core/auth/auth_controller.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
+import '../../../shared/widgets/ly_error_state.dart';
 import '../domain/message.dart';
 import 'chat_message_controller.dart';
 import 'widgets/chat_bubble.dart';
+import 'widgets/chat_skeletons.dart';
 import 'widgets/message_input_bar.dart';
 
 /// Tela de uma conversa (P3.5 §1): histórico paginado, envio otimista de
@@ -130,13 +132,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           children: [
             Expanded(
               child: state.when(
-                loading: () =>
-                    const Center(child: CircularProgressIndicator()),
-                error: (error, _) => Center(
-                  child: Text(
-                    describeApiError(context, error),
-                    style: LyType.body(c.textSecondary),
-                  ),
+                loading: () => const ChatMessagesSkeleton(),
+                error: (error, _) => LyErrorState(
+                  message: describeApiError(context, error),
+                  onRetry: () => ref
+                      .read(chatMessagesProvider(widget.conversationId).notifier)
+                      .refresh(),
                 ),
                 data: (chat) {
                   final entries = _mergedEntries(chat);

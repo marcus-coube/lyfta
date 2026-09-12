@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
+import '../../../shared/widgets/ly_skeleton.dart';
 import '../../checkin/presentation/checkins_controller.dart';
 import '../../checkin/presentation/coach_checkins_tab.dart';
 import '../domain/bioimpedance.dart';
@@ -109,11 +112,10 @@ class _LoadTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final c = context.ly;
     final logged = ref.watch(loggedExercisesProvider(scope));
 
     return logged.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const _LoadTabSkeleton(),
       error: (error, _) => _TabError(
         message: describeApiError(context, error),
         onRetry: () => ref.invalidate(loggedExercisesProvider(scope)),
@@ -148,12 +150,20 @@ class _LoadTab extends ConsumerWidget {
                   );
                   return history.when(
                     loading: () => const Padding(
-                      padding: EdgeInsets.symmetric(vertical: LySpace.x8),
-                      child: Center(child: CircularProgressIndicator()),
+                      padding: EdgeInsets.symmetric(vertical: LySpace.x4),
+                      child: LySkeletonBox(width: double.infinity, height: 220),
                     ),
-                    error: (error, _) => Text(
-                      describeApiError(context, error),
-                      style: LyType.bodySm(c.danger),
+                    error: (error, _) => _TabError(
+                      message: describeApiError(context, error),
+                      onRetry: () => ref.invalidate(
+                        exerciseHistoryProvider(
+                          (
+                            scope: scope,
+                            exerciseId: effectiveId,
+                            since: selection.range.since(DateTime.now())
+                          ),
+                        ),
+                      ),
                     ),
                     data: (points) => LoadChartPanel(
                       points: points,
@@ -202,14 +212,24 @@ class _MeasurementsTab extends ConsumerWidget {
         ),
         const SizedBox(height: LySpace.x3),
         measurements.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Text(
-            describeApiError(context, error),
-            style: LyType.bodySm(context.ly.danger),
+          loading: () => const _ListRowsSkeleton(),
+          error: (error, _) => _TabError(
+            message: describeApiError(context, error),
+            onRetry: () => ref.invalidate(measurementsProvider(scope)),
           ),
-          data: (state) => MeasurementList(
-            items: state.items,
-            onDelete: (item) => _confirmDeleteMeasurement(context, ref, item),
+          data: (state) => Column(
+            children: [
+              MeasurementList(
+                items: state.items,
+                onDelete: (item) => _confirmDeleteMeasurement(context, ref, item),
+              ),
+              if (state.hasMore)
+                _LoadMoreButton(
+                  onTap: () => unawaited(
+                      ref.read(measurementsProvider(scope).notifier).loadMore(),
+                    ),
+                ),
+            ],
           ),
         ),
         const SizedBox(height: LySpace.x8),
@@ -220,14 +240,24 @@ class _MeasurementsTab extends ConsumerWidget {
         ),
         const SizedBox(height: LySpace.x3),
         bioimpedance.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Text(
-            describeApiError(context, error),
-            style: LyType.bodySm(context.ly.danger),
+          loading: () => const _ListRowsSkeleton(),
+          error: (error, _) => _TabError(
+            message: describeApiError(context, error),
+            onRetry: () => ref.invalidate(bioimpedanceProvider(scope)),
           ),
-          data: (state) => BioimpedanceList(
-            items: state.items,
-            onDelete: (item) => _confirmDeleteBioimpedance(context, ref, item),
+          data: (state) => Column(
+            children: [
+              BioimpedanceList(
+                items: state.items,
+                onDelete: (item) => _confirmDeleteBioimpedance(context, ref, item),
+              ),
+              if (state.hasMore)
+                _LoadMoreButton(
+                  onTap: () => unawaited(
+                      ref.read(bioimpedanceProvider(scope).notifier).loadMore(),
+                    ),
+                ),
+            ],
           ),
         ),
       ],
@@ -334,10 +364,10 @@ class _PhotosTab extends ConsumerWidget {
         ),
         const SizedBox(height: LySpace.x3),
         photos.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Text(
-            describeApiError(context, error),
-            style: LyType.bodySm(context.ly.danger),
+          loading: () => const _PhotoGridSkeleton(),
+          error: (error, _) => _TabError(
+            message: describeApiError(context, error),
+            onRetry: () => ref.invalidate(photosProvider(scope)),
           ),
           data: (state) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -346,6 +376,10 @@ class _PhotosTab extends ConsumerWidget {
                 items: state.items,
                 onTap: (photo) => _openViewer(context, ref, photo),
               ),
+              if (state.hasMore)
+                _LoadMoreButton(
+                  onTap: () => unawaited(ref.read(photosProvider(scope).notifier).loadMore()),
+                ),
               const SizedBox(height: LySpace.x8),
               Text(
                 l10n.evolutionPhotosCompareTitle,
@@ -422,6 +456,34 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
+/// Botão de paginação incremental (P4.2 §2) — medidas, bioimpedância e fotos
+/// já vêm do servidor por cursor keyset (`evolution_repository.dart`), mas
+/// os widgets "burros" (`MeasurementList`/`BioimpedanceList`/`PhotoGrid`)
+/// não sabem paginar sozinhos; ficam dentro de um `ListView` maior junto de
+/// outras seções, então um botão — não scroll infinito — é o gatilho mais
+/// simples de "buscar a próxima página" sem competir com o scroll da aba
+/// inteira.
+class _LoadMoreButton extends StatelessWidget {
+  const _LoadMoreButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: LySpace.x3),
+      child: LyButton(
+        label: l10n.commonLoadMore,
+        variant: LyButtonVariant.secondary,
+        expanded: false,
+        onPressed: onTap,
+      ),
+    );
+  }
+}
+
 /// Rótulo da aba Check-ins com o badge de não revisados (P3.5 §3, Aceite
 /// literal do P3.3: "não revisados primeiro" na fila — aqui é o mesmo
 /// contador, só que no rótulo em vez da ordenação). `Consumer` isolado em
@@ -442,6 +504,70 @@ class _CheckinsTabLabel extends ConsumerWidget {
     return Badge(
       label: Text(pending > 99 ? '99+' : pending.toString()),
       child: Text(l10n.evolutionTabCheckins),
+    );
+  }
+}
+
+/// Silhueta da aba Carga (P4.2 §2): seletor de exercício + área do gráfico.
+class _LoadTabSkeleton extends StatelessWidget {
+  const _LoadTabSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.all(LySpace.x4),
+      child: Column(
+        children: [
+          LySkeletonLine(width: double.infinity, height: 48),
+          SizedBox(height: LySpace.x4),
+          LySkeletonBox(width: double.infinity, height: 220),
+        ],
+      ),
+    );
+  }
+}
+
+/// Silhueta de uma lista curta (P4.2 §2): medidas e bioimpedância são só
+/// algumas linhas por vez, então um bloco fixo de 3 já preenche a área sem
+/// piscar o layout quando os dados de verdade chegam.
+class _ListRowsSkeleton extends StatelessWidget {
+  const _ListRowsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      children: [
+        LySkeletonListTile(avatarSize: 40),
+        SizedBox(height: LySpace.x3),
+        LySkeletonListTile(avatarSize: 40),
+        SizedBox(height: LySpace.x3),
+        LySkeletonListTile(avatarSize: 40),
+      ],
+    );
+  }
+}
+
+/// Silhueta da grade de fotos (P4.2 §2) — mesma proporção do `PhotoGrid`
+/// (3 colunas, quadrado).
+class _PhotoGridSkeleton extends StatelessWidget {
+  const _PhotoGridSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.count(
+      crossAxisCount: 3,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: LySpace.x2,
+      crossAxisSpacing: LySpace.x2,
+      children: List.generate(
+        6,
+        (_) => const LySkeletonBox(
+          width: double.infinity,
+          height: double.infinity,
+          borderRadius: LyRadius.sm,
+        ),
+      ),
     );
   }
 }

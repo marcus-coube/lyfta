@@ -15,11 +15,23 @@ import 'features/workout/data/workout_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  runApp(const ProviderScope(child: LyftaApp()));
   // Push (P3.4/P3.5 §4): só mobile — web fica com o badge in-app da aba Chat
-  // no MVP (ADR-012 §2, web push é 3.0). `Firebase.initializeApp()` sem
-  // `google-services.json` versionado (bloqueio conhecido, ver
-  // app/README.md § Firebase) lança — o app sobe do mesmo jeito, com push
-  // desligado, igual o `comms` sobe sem `FCM_CREDENTIALS_JSON` (P3.4).
+  // no MVP (ADR-012 §2, web push é 3.0). Adiado para depois do primeiro
+  // frame (P4.2 §1, "app leve"): `Firebase.initializeApp()` faz I/O nativo
+  // e, com `await` antes de `runApp`, atrasava a pintura da tela de login
+  // em todo boot mobile — inclusive nos devices sem `google-services.json`
+  // versionado (bloqueio conhecido, ver app/README.md § Firebase), onde a
+  // chamada nem chega a valer a pena. `PushService.init`/`ensureRegistered`
+  // (`core/push/push_service.dart`) já toleram Firebase ainda não pronto —
+  // cada chamada ao SDK está em try/catch — então adiar aqui não muda o
+  // comportamento em caso de falha, só quando ele começa.
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(_initFirebase());
+  });
+}
+
+Future<void> _initFirebase() async {
   if (!kIsWeb &&
       (defaultTargetPlatform == TargetPlatform.android ||
           defaultTargetPlatform == TargetPlatform.iOS)) {
@@ -29,7 +41,6 @@ Future<void> main() async {
       // Conforto, não requisito — ver comentário acima.
     }
   }
-  runApp(const ProviderScope(child: LyftaApp()));
 }
 
 class LyftaApp extends ConsumerWidget {

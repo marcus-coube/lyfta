@@ -224,6 +224,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonRemove => 'Remove';
 
   @override
+  String get commonLoadMore => 'Load more';
+
+  @override
   String get libraryNewExercise => 'New exercise';
 
   @override
