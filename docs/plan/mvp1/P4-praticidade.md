@@ -376,3 +376,68 @@ pendências restantes listadas e classificadas (bloqueia release × vai pro 2.0)
   + as 2 novas de senha), **67 testes verdes** (2 novos: `set_row_test.dart`
   corrigido para `42,5` e o teste novo do toggle de senha). Nenhum serviço
   Go tocado nesta tarefa (auditoria é 100% app).
+
+### P4.4 (2026-11-07, Mac) — parcial: a tarefa NÃO fecha
+
+Feita só a parte que não depende de humano. Checkbox segue aberto e o total
+do STATUS segue 28/29.
+
+- **Varredura (passo 3).** `flutter analyze`: 104 erros, **todos** em
+  `app/build/ios/SourcePackages/` (artefato do build iOS no simulador, fora do
+  git); em `lib/` e `test/` zero. Corrigido excluindo `build/**` em
+  `analysis_options.yaml`: agora **0 issues**. `flutter test`: **67 verdes**.
+  `check_arb_parity`: OK, 350 chaves nos 3 idiomas. `go vet` limpo e
+  `go test` verde nos 4 serviços (identity 2 pacotes, workout 3,
+  assessment 3, comms 6; todos ok).
+- **Secrets.** Nenhum `.env` real, chave, keystore ou token versionado; só
+  `.env.example` com defaults de dev (`minioadmin`, `dev-internal-token`) e
+  campos sensíveis vazios. `key.properties`, `*.jks` e `*.keystore` já estão
+  no `.gitignore` do `android/`. `google-services.json` é versionado por
+  decisão (ADR-014, não é segredo). **Achado:** o buildType `release` do
+  Android ainda assina com a chave debug (`TODO` em
+  `android/app/build.gradle.kts`): precisa do keystore antes do appbundle.
+- **LGPD mínima (ADR-008): AUSENTE.** Não existe tabela/endpoint de
+  consentimento (`consents`) no `identity`, nem etapa de consentimento na tela
+  de aceite do convite, nem fluxo de exclusão de conta (nenhum
+  `DELETE /v1/me` ou equivalente no identity/workout/assessment/comms; nada no
+  app). Conforme o plano, **não implementado nesta rodada**: vira tarefa que
+  **bloqueia o release** (sugestão: P4.5, full-stack em 5 serviços, com
+  exclusão física de saúde/fotos e anonimização das execuções, mais teste de
+  exclusão como feature de primeira classe).
+- **Build web.** `flutter build web --release` (canvaskit; wasm segue
+  inviável, ver P4.2) passou: `build/web` 42 MB (inclui `canvaskit/` local),
+  `main.dart.js` 1,19 MB gzip. Versão do app: `1.0.0+1`.
+- **Roteiro E2E.** [e2e-final.md](e2e-final.md) escrito (roteiro + checklist
+  de smoke por plataforma). **Nenhuma execução completa**: depende dos
+  bloqueios humanos abaixo.
+- **Não feito por bloqueio humano (não contornado):** appbundle assinado
+  (sem `google-services.json`, o build Android inteiro falha; sem keystore),
+  iOS archive (sem conta/assinatura Apple), convite com Resend real e
+  staging, push em Android/iOS (AVD sem Play Store, sem
+  `GoogleService-Info.plist`/APNs).
+
+#### Pendências classificadas
+
+**Bloqueia release**
+1. LGPD: consentimento no aceite do convite + exclusão de conta (ADR-008). Tarefa nova.
+2. `google-services.json` ausente: build Android falha (STATUS #1). Ação humana.
+3. Keystore de release Android (hoje assina com debug) e appbundle.
+4. iOS: conta/assinatura Apple, `GoogleService-Info.plist`, APNs, archive.
+5. Resend com chave real + staging para o passo do convite.
+6. Push em device real e deep link (STATUS #2, #3, #4; depende de #2 e AVD com Play Services).
+7. Cold start Android medido (STATUS #6, meta 2,5 s).
+8. TalkBack real no fluxo Hoje→executar→finalizar (STATUS #7, Aceite literal da P4.3).
+9. Aba Agenda com dados reais (STATUS #5): dá para fazer no Chrome/iOS agora.
+10. Executar o E2E final nas 3 plataformas (Aceite da P4.4).
+11. Crash handler: não há `runZonedGuarded`/`FlutterError.onError` nem destino de log (nota da P4.2). Precisa de decisão (ADR) sobre o destino; o mínimo para release é capturar e logar localmente, e o ideal é um backend de erros.
+12. Rate limit no lookup de e-mail entre tenants (login/forgot, dívida do P0.4): exposição pública no release.
+
+**Vai pro 2.0**
+- Vínculo coach↔aluno no identity (hoje qualquer coach do tenant vê qualquer aluno; `created_by` fora das tabelas; push de "treino pendente" a todos os tenants).
+- Timezone por tenant; locale dinâmico do conteúdo (conteúdo dinâmico ignora o idioma da tela).
+- Contraste: tokens semânticos de cor usados como texto abaixo de 4,5:1 no tema dark (P4.3).
+- Alvos de toque abaixo de 48 dp em itens já anotados na P4.3.
+- Lighthouse mobile com throttling 4G/CPU e build `--wasm` (depende de `flutter_secure_storage_web`).
+- Paginação do Check-ins/alunos acima de 200 por papel; header da lista de alunos em janela muito baixa (P1.8).
+- Testes de widget dos skeletons/retry (P4.2); fila offline persistente na web (hoje memória).
+- Verificação do `docker compose` e Android/Windows do P0 (Toolchain Windows).
