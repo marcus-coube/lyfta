@@ -110,7 +110,7 @@ serviço; teste de widget da tela de consentimento. Strings nos 3 idiomas.
 
 ---
 
-## - [ ] P4.6 Tratamento de crash e erros (Flutter + 4 serviços)
+## - [x] P4.6 Tratamento de crash e erros (Flutter + 4 serviços)
 
 **Objetivo:** observabilidade mínima de erros do ADR-009 §5 (Sentry ou
 GlitchTip, que fala o mesmo protocolo). Fecha a pendência da P4.2.
@@ -611,3 +611,49 @@ LGPD mínima do ADR-008 (§1, §2, §6) ponta a ponta. Backend em
 - Nenhuma dependência nova (Go e Flutter); só `assets:` no `pubspec.yaml`.
 - `dart format` no repo inteiro **não** é o estilo do projeto (reformata ~70
   arquivos); formatar só arquivo novo.
+
+### P4.6 (2026-11-07, Mac)
+
+- **Versões pinadas:** `sentry_flutter 10.3.0` (exata no `pubspec.yaml`; traz
+  `sentry 10.3.0`) e `github.com/getsentry/sentry-go v0.50.0` nos 4 serviços
+  (Go 1.26.4; a série `1.0.0-alpha` foi ignorada). O `go get` subiu
+  `golang.org/x/sync`, `x/sys` e `x/text` como transitivas. Registrado em
+  `backend/README.md` § Stack pinada.
+- **Go, duplicado por serviço (ADR-013):** `internal/obs` (`Init` +
+  `ScrubEvent`/`ScrubBreadcrumb`) e `internal/http/sentry.go`
+  (`SentryScope`, `Recover`, `ReportServerErrors`, `setSentryUser`). O
+  `Recover` saiu do `middleware.go` para o `sentry.go`; mesma resposta de antes
+  (500 `internal_error`) e agora reporta o panic. Ordem no router:
+  `RequestID → SentryScope → StructuredLogging → Recover →
+  ReportServerErrors`. `RequireAuth` põe `user_id` (sub) e `tenant_id` no
+  escopo da requisição. `SENTRY_DSN`/`SENTRY_RELEASE` no `config`, `APP_ENV`
+  vira o `environment`; flush de 2 s no shutdown.
+- **Privacidade:** `SendDefaultPII` falso; `ScrubEvent` deixa só `user.id` e a
+  rota sem query (método + URL), tira corpo, headers, cookies, env; breadcrumbs
+  perdem query/headers/corpo. No Flutter o filtro também limpa e-mail, query
+  string e `Bearer` de mensagens de exceção, e desliga screenshot, view
+  hierarchy, captura de request falho e breadcrumb de toque em widget.
+- **Desvio/limite (5xx):** o evento de 5xx leva rota (padrão do chi, não o path
+  com ids), `request_id`, `user_id`/`tenant_id` e a mensagem
+  `http Internal Server Error: GET /rota` — não o erro que causou. A causa está
+  no log estruturado do mesmo `request_id` (os handlers já logam). Capturar o
+  erro de dentro do handler exigiria mexer em todos os `writeError`. O texto do
+  valor de um panic vai no evento (só e-mail/query são filtrados no Flutter; no
+  Go o valor do panic não é reescrito) — não colocar dado pessoal em `panic()`.
+- **Flutter:** `core/observability/error_reporting.dart`; `main.dart` chama
+  `ErrorReporting.run(_start)`. DSN vazio: zona guardada + `FlutterError.onError`
+  + `PlatformDispatcher.onError` só escrevem no console (`debugPrint`). DSN
+  presente: `SentryFlutter.init(appRunner:)`. Variáveis `SENTRY_DSN`,
+  `SENTRY_ENVIRONMENT` (padrão `development`) e `APP_RELEASE` (padrão
+  `1.0.0+1`; manter igual ao `version:` do pubspec ao virar release).
+  `setSession` (id+tenant) é chamado na raiz quando o usuário muda.
+- **Testes:** Go, por serviço, `obs_test` (Init sem DSN é no-op; filtro remove
+  PII via cliente com transporte falso) e `http/sentry_test` (panic vira 500 JSON
+  sem derrubar o processo, com e sem cliente Sentry; panic gera 1 evento, 5xx
+  gera 1 com `request_id`, 4xx/2xx nenhum). Flutter: 8 testes (DSN vazio, travas
+  de `configure`, filtro de user/request/mensagem/exceção/breadcrumb, zona
+  guardada captura erro assíncrono, de framework e de plataforma).
+- **Pendente (humano):** criar o projeto Sentry/GlitchTip, preencher
+  `SENTRY_DSN` (serviços) e `--dart-define=SENTRY_DSN` (app) e conferir um
+  evento real chegando sem PII. Fecha também o item "crash handler sem destino
+  de log" da P4.4.

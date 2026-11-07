@@ -41,6 +41,10 @@ de código entre serviços — só HTTP).
   pensada pra todo o produto Firebase (Firestore, Storage, Auth...) pra usar
   uma fração mínima (mandar 1 mensagem por token); a chamada direta ao v1 é o
   que o SDK faz por baixo dos panos, então não perde nada essencial ao MVP.
+- Erros/crash (P4.6, ADR-009 §5): **github.com/getsentry/sentry-go v0.50.0**
+  nos 4 serviços (protocolo compatível com GlitchTip). Duplicado em cada
+  serviço (`internal/obs` + `internal/http/sentry.go`, ADR-013). `SENTRY_DSN`
+  vazio = desligado. Evento só com `user_id`/`tenant_id` (ADR-008).
 
 ## Layout padrão de cada serviço
 

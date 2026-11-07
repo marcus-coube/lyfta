@@ -88,6 +88,7 @@ func RequireAuth(signer *security.JWTSigner) func(http.Handler) http.Handler {
 				return
 			}
 
+			setSentryUser(r, claims.Subject, claims.TenantID)
 			ctx := context.WithValue(r.Context(), ctxKeyClaims, claims)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
@@ -136,27 +137,6 @@ func RequireInternalToken(token string) func(http.Handler) http.Handler {
 				writeError(w, errUnauthenticated())
 				return
 			}
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
-// Recover captura panics e responde 500 sem derrubar o processo, logando o
-// erro com o request-id da requisição.
-func Recover(logger *slog.Logger) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			defer func() {
-				if rec := recover(); rec != nil {
-					logger.Error("panic_recovered",
-						slog.String("request_id", RequestIDFromContext(r.Context())),
-						slog.Any("error", rec),
-					)
-					w.Header().Set("Content-Type", "application/json")
-					w.WriteHeader(http.StatusInternalServerError)
-					_, _ = w.Write([]byte(`{"code":"internal_error","params":{}}`))
-				}
-			}()
 			next.ServeHTTP(w, r)
 		})
 	}

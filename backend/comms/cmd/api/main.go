@@ -18,6 +18,7 @@ import (
 	chttp "github.com/marcus-coube/lyfta/comms/internal/http"
 	"github.com/marcus-coube/lyfta/comms/internal/job"
 	"github.com/marcus-coube/lyfta/comms/internal/media"
+	"github.com/marcus-coube/lyfta/comms/internal/obs"
 	"github.com/marcus-coube/lyfta/comms/internal/pubsub"
 	"github.com/marcus-coube/lyfta/comms/internal/push"
 	"github.com/marcus-coube/lyfta/comms/internal/repo"
@@ -45,6 +46,16 @@ func run(logger *slog.Logger) error {
 	cfg, err := config.Load()
 	if err != nil {
 		return err
+	}
+
+	// DSN vazio = desligado (P4.6): nenhum evento sai do processo.
+	flushErrors, err := obs.Init("comms", cfg.SentryDSN, cfg.AppEnv, cfg.SentryRelease)
+	if err != nil {
+		return err
+	}
+	defer flushErrors()
+	if cfg.SentryDSN == "" {
+		logger.Info("error_reporting_disabled", slog.String("reason", "SENTRY_DSN vazio"))
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

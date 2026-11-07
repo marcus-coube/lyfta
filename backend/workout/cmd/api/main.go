@@ -15,6 +15,7 @@ import (
 	"github.com/marcus-coube/lyfta/workout/internal/config"
 	whttp "github.com/marcus-coube/lyfta/workout/internal/http"
 	"github.com/marcus-coube/lyfta/workout/internal/media"
+	"github.com/marcus-coube/lyfta/workout/internal/obs"
 	"github.com/marcus-coube/lyfta/workout/internal/repo"
 	"github.com/marcus-coube/lyfta/workout/internal/security"
 )
@@ -33,6 +34,16 @@ func run(logger *slog.Logger) error {
 	cfg, err := config.Load()
 	if err != nil {
 		return err
+	}
+
+	// DSN vazio = desligado (P4.6): nenhum evento sai do processo.
+	flushErrors, err := obs.Init("workout", cfg.SentryDSN, cfg.AppEnv, cfg.SentryRelease)
+	if err != nil {
+		return err
+	}
+	defer flushErrors()
+	if cfg.SentryDSN == "" {
+		logger.Info("error_reporting_disabled", slog.String("reason", "SENTRY_DSN vazio"))
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

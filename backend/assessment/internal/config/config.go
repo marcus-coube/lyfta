@@ -27,6 +27,9 @@ type Config struct {
 	S3PublicBaseURL string
 	CORSOrigins     []string
 	AppEnv          string
+	// SentryDSN liga o relato de erros (ADR-009 §5, P4.6); vazio = desligado.
+	SentryDSN     string
+	SentryRelease string
 	// IdentityURL é onde o assessment consulta o consentimento de OUTRA
 	// pessoa (coach lendo fotos do aluno, P4.5) — M2M com INTERNAL_TOKEN.
 	IdentityURL string
@@ -51,6 +54,8 @@ func Load() (Config, error) {
 		S3PublicBaseURL: os.Getenv("S3_PUBLIC_BASE_URL"),
 		CORSOrigins:     splitAndTrim(getEnv("CORS_ORIGINS", "http://localhost:*")),
 		AppEnv:          getEnv("APP_ENV", "development"),
+		SentryDSN:       os.Getenv("SENTRY_DSN"),
+		SentryRelease:   os.Getenv("SENTRY_RELEASE"),
 		IdentityURL:     getEnv("IDENTITY_URL", "http://localhost:8081"),
 	}
 

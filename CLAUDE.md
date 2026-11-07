@@ -40,7 +40,7 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P4.X").
 **Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
 saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
-**P0, P1, P2 e P3 concluídas e a P4 em andamento, 29/31:** `identity` completo (auth, convites,
+**P0, P1, P2 e P3 concluídas e a P4 quase fechada, 30/31 (só a P4.4 falta):** `identity` completo (auth, convites,
 reset, lista de usuários do tenant), CI no GitHub Actions
 (`.github/workflows/ci.yml`) e o serviço `workout` completo do lado servidor —
 schema do ADR-004, mídia por URL presignada, biblioteca com seed global de 41
@@ -86,8 +86,11 @@ app, textos em `app/assets/legal/` com `TERMS_VERSION`), tela Conta
 (privacidade, sair, excluir conta) e `DELETE /v1/me`, que orquestra a exclusão
 nos outros serviços via `DELETE /internal/v1/users/{id}` (exclusão física de
 saúde/fotos, anonimização de execuções e mensagens) — falta só a revisão
-jurídica dos textos (humano). Próxima: **P4.6** (crash com Sentry/GlitchTip,
-ADR-009 §5). iOS roda no
+jurídica dos textos (humano). A **P4.6** fechou o relato de
+erros (Sentry/GlitchTip, ADR-009 §5): `sentry_flutter` no app e `sentry-go` nos 4
+serviços, DSN vazio = desligado, evento só com `user_id`/`tenant_id` — falta só
+o projeto com DSN (humano). Próxima: **fechar a P4.4** (E2E final e roteiro de
+release; parcial, depende de bloqueios humanos). iOS roda no
 simulador com Xcode 27 (receita em [app/README.md](app/README.md) § iOS). Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor

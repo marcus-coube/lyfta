@@ -29,6 +29,9 @@ type Config struct {
 	S3PublicBaseURL string
 	CORSOrigins     []string
 	AppEnv          string
+	// SentryDSN liga o relato de erros (ADR-009 §5, P4.6); vazio = desligado.
+	SentryDSN     string
+	SentryRelease string
 
 	// Push FCM (P3.4). FCMCredentialsJSON aceita caminho de arquivo .json ou
 	// o JSON inline (ver backend/comms/.env.example); vazia é uma opção
@@ -65,6 +68,8 @@ func Load() (Config, error) {
 		S3PublicBaseURL: os.Getenv("S3_PUBLIC_BASE_URL"),
 		CORSOrigins:     splitAndTrim(getEnv("CORS_ORIGINS", "http://localhost:*")),
 		AppEnv:          getEnv("APP_ENV", "development"),
+		SentryDSN:       os.Getenv("SENTRY_DSN"),
+		SentryRelease:   os.Getenv("SENTRY_RELEASE"),
 
 		FCMCredentialsJSON:   os.Getenv("FCM_CREDENTIALS_JSON"),
 		WorkoutBaseURL:       getEnv("WORKOUT_BASE_URL", "http://localhost:8082"),

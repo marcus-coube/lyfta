@@ -9,11 +9,19 @@ import 'core/auth/auth_controller.dart';
 import 'core/auth/auth_state.dart';
 import 'core/design_system/design_system.dart';
 import 'core/l10n/gen/app_localizations.dart';
+import 'core/observability/error_reporting.dart';
 import 'core/push/push_provider.dart';
 import 'core/router/app_router.dart';
 import 'features/workout/data/workout_repository.dart';
 
 Future<void> main() async {
+  // Zona guardada + FlutterError.onError + PlatformDispatcher.onError (P4.6).
+  // `ensureInitialized` e `runApp` têm de ficar na mesma zona, por isso dentro
+  // do runner. Sem SENTRY_DSN só loga no console.
+  await ErrorReporting.run(_start);
+}
+
+Future<void> _start() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: LyftaApp()));
   // Push (P3.4/P3.5 §4): só mobile — web fica com o badge in-app da aba Chat
@@ -59,6 +67,15 @@ class LyftaApp extends ConsumerWidget {
     // um não pode sobrar para o outro. Fica aqui, na raiz de composição,
     // porque `core/` não conhece feature (guideline flutter.md).
     ref.listen<AuthState>(authControllerProvider, (previous, next) {
+      // Erro reportado leva só user_id/tenant_id (ADR-008, P4.6).
+      if (previous?.userId != next.userId) {
+        unawaited(
+          ErrorReporting.setSession(
+            userId: next.userId,
+            tenantId: next.tenantId,
+          ),
+        );
+      }
       final signedOut = previous?.status == AuthStatus.authenticated &&
           next.status == AuthStatus.unauthenticated;
       if (signedOut) {

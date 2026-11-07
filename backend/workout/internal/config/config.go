@@ -26,6 +26,9 @@ type Config struct {
 	S3PublicBaseURL string
 	CORSOrigins     []string
 	AppEnv          string
+	// SentryDSN liga o relato de erros (ADR-009 §5, P4.6); vazio = desligado.
+	SentryDSN     string
+	SentryRelease string
 }
 
 // Load lê as variáveis de ambiente do processo e valida as obrigatórias.
@@ -49,6 +52,8 @@ func Load() (Config, error) {
 		S3PublicBaseURL: os.Getenv("S3_PUBLIC_BASE_URL"),
 		CORSOrigins:     splitAndTrim(getEnv("CORS_ORIGINS", "http://localhost:*")),
 		AppEnv:          getEnv("APP_ENV", "development"),
+		SentryDSN:       os.Getenv("SENTRY_DSN"),
+		SentryRelease:   os.Getenv("SENTRY_RELEASE"),
 	}
 
 	if cfg.DatabaseURL == "" {

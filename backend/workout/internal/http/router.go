@@ -29,8 +29,10 @@ func NewRouter(
 	r := chi.NewRouter()
 
 	r.Use(RequestID)
+	r.Use(SentryScope)
 	r.Use(StructuredLogging(logger))
 	r.Use(Recover(logger))
+	r.Use(ReportServerErrors)
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   corsOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},

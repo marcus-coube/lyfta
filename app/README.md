@@ -107,6 +107,21 @@ xcrun simctl spawn booted defaults write -g AppleLanguages -array pt-BR en-BR
 Push no iOS ainda não está configurado (falta o `GoogleService-Info.plist` e a
 chave APNs no Firebase); o app tolera a ausência e roda sem push.
 
+## Relato de erros (Sentry/GlitchTip, P4.6)
+
+Desligado por padrão: com `SENTRY_DSN` vazio (dev e CI) nada sai do aparelho e
+o erro só aparece no console. Para ligar:
+
+```
+flutter run -d chrome \
+  --dart-define=SENTRY_DSN=https://<chave>@<host>/<projeto> \
+  --dart-define=SENTRY_ENVIRONMENT=production \
+  --dart-define=APP_RELEASE=1.0.0+1
+```
+
+`APP_RELEASE` deve repetir o `version:` do `pubspec.yaml`. O evento leva só
+`user_id`/`tenant_id` (ADR-008); filtro em `lib/core/observability/`.
+
 ## Firebase (push, P3.4/P3.5)
 
 Projeto de dev: **`lyfta-a3bd3`**. O app Android é registrado lá com o package

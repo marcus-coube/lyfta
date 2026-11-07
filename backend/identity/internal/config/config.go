@@ -20,6 +20,9 @@ type Config struct {
 	AppURL        string
 	CORSOrigins   []string
 	AppEnv        string
+	// SentryDSN liga o relato de erros (ADR-009 §5, P4.6); vazio = desligado.
+	SentryDSN     string
+	SentryRelease string
 	// TermsVersion é a versão vigente dos termos de uso e da política de
 	// privacidade (ADR-008 §6, P4.5). O app embarca a mesma versão em
 	// assets/legal/; mudar aqui obriga todo mundo a consentir de novo.
@@ -45,6 +48,8 @@ func Load() (Config, error) {
 		AppURL:        getEnv("APP_URL", "http://localhost:5173"),
 		CORSOrigins:   splitAndTrim(getEnv("CORS_ORIGINS", "http://localhost:*")),
 		AppEnv:        getEnv("APP_ENV", "development"),
+		SentryDSN:     os.Getenv("SENTRY_DSN"),
+		SentryRelease: os.Getenv("SENTRY_RELEASE"),
 		TermsVersion:  getEnv("TERMS_VERSION", "2026-11-v1"),
 		WorkoutURL:    getEnv("WORKOUT_URL", "http://localhost:8082"),
 		AssessmentURL: getEnv("ASSESSMENT_URL", "http://localhost:8083"),
