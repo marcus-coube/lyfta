@@ -47,6 +47,60 @@ flutter run -d emulator-5554 \
   --dart-define=WORKOUT_BASE_URL=http://10.0.2.2:8082
 ```
 
+## iOS (simulador, Mac)
+
+Exige Xcode completo (não só Command Line Tools), CocoaPods
+(`brew install cocoapods`) e terminal em UTF-8 (`export LANG=en_US.UTF-8`, senão
+o `pod` reclama). Validado com Xcode 27.2 + runtime iOS 27.2, macOS 27.2,
+Flutter 3.44.4.
+
+Depois do `flutter create` da receita acima, dois ajustes **locais** (a pasta
+`ios/` não é versionada — refazer sempre que ela for recriada):
+
+1. **Mínimo iOS 15** — o Firebase exige e o Xcode 27 não aceita menos. Em
+   `ios/Runner.xcodeproj/project.pbxproj`, as três ocorrências de
+   `IPHONEOS_DEPLOYMENT_TARGET = 13.0;` viram `15.0`. No `ios/Podfile`,
+   descomentar `platform :ios, '15.0'` e forçar o mesmo nos pods:
+
+   ```ruby
+   post_install do |installer|
+     installer.pods_project.targets.each do |target|
+       flutter_additional_ios_build_settings(target)
+       target.build_configurations.each do |config|
+         config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "15.0"
+       end
+     end
+   end
+   ```
+
+2. **Apagar `test/widget_test.dart`** — o `flutter create` gera o teste de
+   contador do template, que quebra o `flutter test` (não existe `MyApp`).
+
+Rodar **num simulador específico**, não com build genérico:
+
+```bash
+xcrun simctl list devices available        # pegar o UDID
+flutter run -d <UDID>
+```
+
+`flutter build ios --simulator` falha no Xcode 27: o `lipo -verify_arch` passou
+a aceitar uma arquitetura só, e o Flutter 3.44 passa `arm64 x86_64`. O
+`flutter run -d <UDID>` compila só a arquitetura do aparelho e passa. Plugins
+como `connectivity_plus` e `device_info_plus` já usam APIs do SDK iOS 26 —
+Xcode ≤ 16 não compila o projeto.
+
+O simulador usa a rede do Mac: `localhost` funciona direto, sem
+`--dart-define` (diferente do `10.0.2.2` do Android). No Xcode 27 o app
+Simulator virou **DeviceHub** (`Xcode.app/Contents/Applications/`). O app
+segue o idioma do aparelho; para pt-BR:
+
+```bash
+xcrun simctl spawn booted defaults write -g AppleLanguages -array pt-BR en-BR
+```
+
+Push no iOS ainda não está configurado (falta o `GoogleService-Info.plist` e a
+chave APNs no Firebase); o app tolera a ausência e roda sem push.
+
 ## Firebase (push, P3.4/P3.5)
 
 Projeto de dev: **`lyfta-a3bd3`**. O app Android é registrado lá com o package
