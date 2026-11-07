@@ -70,6 +70,7 @@ class AuthController extends Notifier<AuthState> {
           roles: userRolesFrom(stored.roles),
           tenantId: stored.tenantId,
           userId: stored.userId,
+          isOwner: stored.roles.contains('owner'),
         );
         return;
       }
@@ -162,9 +163,14 @@ class AuthController extends Notifier<AuthState> {
 
   /// Usado apenas em testes de widget que não sobem o backend real (ex.:
   /// exercitar o roteamento por papel sem depender de HTTP).
-  void signInStub(Set<UserRole> roles, {bool consentPending = false}) {
+  void signInStub(
+    Set<UserRole> roles, {
+    bool isOwner = false,
+    bool consentPending = false,
+  }) {
     state = AuthState.authenticated(
       roles: roles,
+      isOwner: isOwner,
       tenantId: 'stub-tenant',
       userId: 'stub-user',
       consentPending: consentPending,
@@ -245,6 +251,7 @@ class AuthController extends Notifier<AuthState> {
       tenantId: session.tenantId,
       userId: session.userId,
       activeContext: previousContext,
+      isOwner: session.roles.contains('owner'),
       consentPending: session.needsConsent,
     );
   }

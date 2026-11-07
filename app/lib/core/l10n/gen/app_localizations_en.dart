@@ -1290,4 +1290,29 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return 'Too many attempts. Wait $_temp0 and try again.';
   }
+
+  @override
+  String get errorStudentNotFound =>
+      'This student is not on your student list.';
+
+  @override
+  String studentsCoachLabel(String name) {
+    return 'Coach: $name';
+  }
+
+  @override
+  String get studentsChangeCoach => 'Change coach';
+
+  @override
+  String studentsChangeCoachTitle(String student) {
+    return 'Coach for $student';
+  }
+
+  @override
+  String studentsCoachChanged(String name) {
+    return 'Coach changed to $name.';
+  }
+
+  @override
+  String get studentsCoachesEmpty => 'No coaches available.';
 }

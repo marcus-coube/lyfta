@@ -783,5 +783,41 @@
         "type": "int"
       }
     }
+  },
+  "errorStudentNotFound": "Este aluno não está na sua lista de alunos.",
+  "studentsCoachLabel": "Professor: {name}",
+  "@studentsCoachLabel": {
+    "description": "Professor responsável pelo aluno, mostrado ao dono da academia no cartão do aluno.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "studentsChangeCoach": "Trocar professor",
+  "@studentsChangeCoach": {
+    "description": "Ação do dono da academia no cartão do aluno: reatribuir o professor."
+  },
+  "studentsChangeCoachTitle": "Professor de {student}",
+  "@studentsChangeCoachTitle": {
+    "description": "Título do seletor de professor; `student` = nome do aluno.",
+    "placeholders": {
+      "student": {
+        "type": "String"
+      }
+    }
+  },
+  "studentsCoachChanged": "Professor trocado para {name}.",
+  "@studentsCoachChanged": {
+    "description": "Confirmação após reatribuir o professor do aluno.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "studentsCoachesEmpty": "Nenhum professor disponível.",
+  "@studentsCoachesEmpty": {
+    "description": "Seletor de professor sem opções."
   }
 }

@@ -3,7 +3,7 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** `P4.7` (vínculo professor↔aluno, ADR-016). Depois, fechar a `P4.4` (E2E final + roteiro de release), que segue **parcial** e depende de bloqueios humanos (ver Notas da P4.4 e a tabela abaixo). A `P4.6` (crash/erros, Sentry) fechou em 2026-11-07; falta só o projeto Sentry/GlitchTip com DSN (humano). A `P4.5` (LGPD) fechou em 2026-11-07; falta a revisão jurídica dos textos de `assets/legal/` (humano).
+**Próxima tarefa:** fechar a `P4.4` (E2E final + roteiro de release), que segue **parcial** e depende de bloqueios humanos (ver Notas da P4.4 e a tabela abaixo; o roteiro final deve incluir a troca de professor da P4.7). A `P4.7` (vínculo professor↔aluno, ADR-016) fechou em 2026-11-07. A `P4.6` (crash/erros, Sentry) fechou em 2026-11-07; falta só o projeto Sentry/GlitchTip com DSN (humano). A `P4.5` (LGPD) fechou em 2026-11-07; falta a revisão jurídica dos textos de `assets/legal/` (humano).
 
 | Fase | Progresso | Situação |
 |---|---|---|
@@ -11,8 +11,8 @@
 | P1 — Treino | 8/8 | concluída |
 | P2 — Evolução | 5/5 | concluída |
 | P3 — Comunicação | 5/5 | concluída |
-| P4 — Praticidade | 5/7 | em andamento |
-| **Total** | **30/32** | |
+| P4 — Praticidade | 6/7 | em andamento |
+| **Total** | **31/32** | |
 
 ## Bancos locais
 
@@ -115,3 +115,5 @@ de execução" da fase onde nasceram.
 | 2026-11-07 | **P4.6 concluída (Mac):** crash e erros (ADR-009 §5). `sentry_flutter 10.3.0` no app e `sentry-go v0.50.0` nos 4 serviços (duplicado, ADR-013). DSN vazio = desligado (console só). Go: `Recover` agora reporta o panic e responde 500 como antes, 5xx reportado com `request_id`, user_id/tenant_id no escopo; filtro remove corpo/query/headers/e-mail/nome. App: zona guardada + `FlutterError.onError` + `PlatformDispatcher.onError`, mesmo filtro. Envio real pendente de projeto Sentry (#10) |
 | 2026-11-07 | Dívida do P0.4 fechada (ADR-002 §2c): limite de tentativas no identity com bloqueio de 5 min (Redis; memória em dev) em login, forgot/reset de senha, aceite de convite e signup; login só lista academias depois de conferir a senha. App traduz o 429. `TRUST_PROXY=true` obrigatório no deploy atrás de proxy |
 | 2026-11-07 | Tarefa nova no plano: P4.7 (vínculo professor↔aluno, ADR-008 §3) com o [ADR-016](../../adr/ADR-016-vinculo-professor-aluno.md): 1 coach principal por aluno, owner vê todos e reatribui, checagem por M2M ao identity com cache de 30 s. Sai do "vai pro 2.0" da P4.4. Total passa a 32 |
+| 2026-11-07 | **P4.7 concluída (Mac):** vínculo professor↔aluno (ADR-016, ADR-008 §3). identity: `coach_students` (migration 0012 com backfill), convite de aluno vincula a quem convidou, lista de alunos escopada ao coach (owner vê todos com `coach_id`/`coach_name`), `PUT /v1/students/{id}/coach` (só owner) e M2M `/internal/v1/coaches/{id}/students` e `/students/{id}/coach`; excluir coach devolve os alunos ao owner. `internal/coachlink` duplicado em workout, assessment e comms (cache de 30 s, identity fora do ar = 500); aluno não vinculado = 404 `student_not_found` em todo serviço, incluindo conversa, presign, fila e revisão de check-in; push de dor forte só ao coach atual. App: `AuthState.isOwner`, tile mostra o professor e "Trocar professor" só ao owner, `student_not_found` traduzido sem retry. Testes cross-coach por serviço com identity fake. Reiniciar os serviços de dev com o código novo (ver Notas em P4-praticidade.md) |
+

@@ -1292,6 +1292,31 @@ class AppLocalizationsPt extends AppLocalizations {
     );
     return 'Muitas tentativas. Aguarde $_temp0 e tente de novo.';
   }
+
+  @override
+  String get errorStudentNotFound =>
+      'Este aluno não está na sua lista de alunos.';
+
+  @override
+  String studentsCoachLabel(String name) {
+    return 'Professor: $name';
+  }
+
+  @override
+  String get studentsChangeCoach => 'Trocar professor';
+
+  @override
+  String studentsChangeCoachTitle(String student) {
+    return 'Professor de $student';
+  }
+
+  @override
+  String studentsCoachChanged(String name) {
+    return 'Professor trocado para $name.';
+  }
+
+  @override
+  String get studentsCoachesEmpty => 'Nenhum professor disponível.';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -2589,4 +2614,29 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
     );
     return 'Demasiadas tentativas. Aguarde $_temp0 e tente novamente.';
   }
+
+  @override
+  String get errorStudentNotFound =>
+      'Este aluno não está na sua lista de alunos.';
+
+  @override
+  String studentsCoachLabel(String name) {
+    return 'Professor: $name';
+  }
+
+  @override
+  String get studentsChangeCoach => 'Trocar professor';
+
+  @override
+  String studentsChangeCoachTitle(String student) {
+    return 'Professor de $student';
+  }
+
+  @override
+  String studentsCoachChanged(String name) {
+    return 'Professor alterado para $name.';
+  }
+
+  @override
+  String get studentsCoachesEmpty => 'Nenhum professor disponível.';
 }

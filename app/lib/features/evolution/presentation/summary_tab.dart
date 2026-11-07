@@ -42,13 +42,16 @@ class SummaryTab extends ConsumerWidget {
               describeApiError(context, error),
               style: LyType.body(c.textSecondary),
             ),
-            const SizedBox(height: LySpace.x3),
-            LyButton(
-              label: l10n.commonRetry,
-              variant: LyButtonVariant.secondary,
-              expanded: false,
-              onPressed: () => ref.invalidate(evolutionSummaryProvider(scope)),
-            ),
+            if (isRetryableError(error)) ...[
+              const SizedBox(height: LySpace.x3),
+              LyButton(
+                label: l10n.commonRetry,
+                variant: LyButtonVariant.secondary,
+                expanded: false,
+                onPressed: () =>
+                    ref.invalidate(evolutionSummaryProvider(scope)),
+              ),
+            ],
           ],
         ),
       ),

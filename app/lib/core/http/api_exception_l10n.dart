@@ -59,6 +59,10 @@ extension ApiExceptionL10n on ApiException {
         return l10n.errorOwnerCannotDelete;
       case 'erasure_failed':
         return l10n.errorErasureFailed;
+      // Vínculo professor↔aluno (ADR-016): aluno de outro professor, excluído
+      // ou inexistente respondem o mesmo 404.
+      case 'student_not_found':
+        return l10n.errorStudentNotFound;
       // Limite de tentativas (ADR-002 §2c): o backend manda os segundos até
       // liberar; a mensagem fala em minutos inteiros, arredondando para cima.
       case 'too_many_requests':
@@ -79,4 +83,11 @@ extension ApiExceptionL10n on ApiException {
 String describeApiError(BuildContext context, Object error) {
   final l10n = AppLocalizations.of(context);
   return error is ApiException ? error.message(l10n) : l10n.errorInternal;
+}
+
+/// Repetir a chamada só adianta quando o erro é transitório. Aluno que não é
+/// do professor (`student_not_found`) continua não sendo na próxima tentativa:
+/// a tela mostra a mensagem sem o botão de tentar de novo.
+bool isRetryableError(Object error) {
+  return !(error is ApiException && error.code == 'student_not_found');
 }

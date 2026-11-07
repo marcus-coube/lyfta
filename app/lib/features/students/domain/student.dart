@@ -9,6 +9,8 @@ class Student {
     required this.name,
     required this.email,
     required this.status,
+    this.coachId,
+    this.coachName,
   });
 
   factory Student.fromJson(Map<String, dynamic> json) {
@@ -17,6 +19,8 @@ class Student {
       name: json['name'] as String? ?? '',
       email: json['email'] as String? ?? '',
       status: json['status'] as String? ?? 'active',
+      coachId: json['coach_id'] as String?,
+      coachName: json['coach_name'] as String?,
     );
   }
 
@@ -27,6 +31,11 @@ class Student {
   /// `invited` enquanto o aluno não aceitou o convite: ainda dá para montar
   /// plano, ele só não consegue entrar.
   final String status;
+
+  /// Professor vinculado ao aluno (ADR-016). O identity devolve ao coach só os
+  /// alunos dele; o nome só é exibido ao owner, que vê todos.
+  final String? coachId;
+  final String? coachName;
 
   bool get isPending => status == 'invited';
 }
@@ -49,4 +58,20 @@ class StudentPage {
   final String? nextCursor;
 
   bool get hasMore => nextCursor != null;
+}
+
+/// Um professor que pode receber alunos: usuário ativo com papel coach ou
+/// owner (ADR-016 §2) — as opções do "Trocar professor".
+class CoachOption {
+  const CoachOption({required this.id, required this.name});
+
+  factory CoachOption.fromJson(Map<String, dynamic> json) {
+    return CoachOption(
+      id: json['id'] as String,
+      name: json['name'] as String? ?? '',
+    );
+  }
+
+  final String id;
+  final String name;
 }

@@ -406,5 +406,11 @@
   "errorInvalidPassword": "Wrong password.",
   "errorOwnerCannotDelete": "The account owner cannot delete the account here. Closing the gym is a separate process — contact support.",
   "errorErasureFailed": "We could not finish the deletion right now. Try again in a moment.",
-  "errorTooManyRequests": "Too many attempts. Wait {minutes, plural, =1{1 minute} other{{minutes} minutes}} and try again."
+  "errorTooManyRequests": "Too many attempts. Wait {minutes, plural, =1{1 minute} other{{minutes} minutes}} and try again.",
+  "errorStudentNotFound": "This student is not on your student list.",
+  "studentsCoachLabel": "Coach: {name}",
+  "studentsChangeCoach": "Change coach",
+  "studentsChangeCoachTitle": "Coach for {student}",
+  "studentsCoachChanged": "Coach changed to {name}.",
+  "studentsCoachesEmpty": "No coaches available."
 }

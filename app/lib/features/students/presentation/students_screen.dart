@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/auth/auth_controller.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
@@ -9,6 +10,7 @@ import '../../../shared/widgets/ly_error_state.dart';
 import '../../../shared/widgets/ly_skeleton.dart';
 import '../../builder/data/plan_repository.dart';
 import '../../chat/presentation/conversations_controller.dart';
+import '../domain/student.dart';
 import 'students_controller.dart';
 
 /// Lista de alunos do professor (P1.6): quem está na academia, qual plano
@@ -170,6 +172,73 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
     }
   }
 
+  /// "Trocar professor" (só owner, ADR-016): lista os coaches e owners ativos
+  /// e reatribui o aluno. Valer em até 30 s nos outros serviços é a
+  /// consistência eventual aceita no ADR.
+  Future<void> _changeCoach(StudentRow row) async {
+    final l10n = AppLocalizations.of(context);
+    final repository = ref.read(studentRepositoryProvider);
+
+    final List<CoachOption> coaches;
+    try {
+      coaches = await repository.listCoaches();
+    } catch (error) {
+      if (!mounted) return;
+      _showError(describeApiError(context, error));
+      return;
+    }
+    if (!mounted) return;
+
+    final chosen = await showModalBottomSheet<CoachOption>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(LySpace.x4),
+              child: Text(
+                l10n.studentsChangeCoachTitle(row.student.name),
+                style: LyType.label(sheetContext.ly.textPrimary),
+              ),
+            ),
+            if (coaches.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(LySpace.x4),
+                child: Text(
+                  l10n.studentsCoachesEmpty,
+                  style: LyType.body(sheetContext.ly.textSecondary),
+                ),
+              ),
+            for (final coach in coaches)
+              ListTile(
+                title: Text(coach.name),
+                trailing: coach.id == row.student.coachId
+                    ? const Icon(Icons.check)
+                    : null,
+                onTap: () => Navigator.of(sheetContext).pop(coach),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (chosen == null || chosen.id == row.student.coachId || !mounted) return;
+
+    try {
+      await repository.reassignCoach(
+        studentId: row.student.id,
+        coachId: chosen.id,
+      );
+      if (!mounted) return;
+      ref.read(studentsProvider.notifier).refresh();
+      _showError(l10n.studentsCoachChanged(chosen.name));
+    } catch (error) {
+      if (!mounted) return;
+      _showError(describeApiError(context, error));
+    }
+  }
+
   void _showError(String message) {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
@@ -180,6 +249,7 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
     final c = context.ly;
     final l10n = AppLocalizations.of(context);
     final students = ref.watch(studentsProvider);
+    final isOwner = ref.watch(authControllerProvider.select((s) => s.isOwner));
 
     return Scaffold(
       backgroundColor: c.background,
@@ -214,6 +284,7 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
               ),
               error: (error, _) => LyErrorState(
                 message: describeApiError(context, error),
+                retryable: isRetryableError(error),
                 onRetry: () => ref.read(studentsProvider.notifier).refresh(),
               ),
               data: (rows) {
@@ -233,13 +304,17 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
                     LySpace.x16,
                   ),
                   itemCount: rows.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: LySpace.x2),
+                  separatorBuilder: (_, __) =>
+                      const SizedBox(height: LySpace.x2),
                   itemBuilder: (context, index) => _StudentTile(
                     row: rows[index],
                     onOpenPlan: _openPlan,
                     onNewPlan: () => _newPlan(rows[index]),
                     onOpenEvolution: () => _openEvolution(rows[index]),
                     onOpenChat: () => _openChat(rows[index]),
+                    // Só o owner vê o professor e troca (ADR-016 §2).
+                    onChangeCoach:
+                        isOwner ? () => _changeCoach(rows[index]) : null,
                   ),
                 );
               },
@@ -258,6 +333,7 @@ class _StudentTile extends StatelessWidget {
     required this.onNewPlan,
     required this.onOpenEvolution,
     required this.onOpenChat,
+    this.onChangeCoach,
   });
 
   final StudentRow row;
@@ -266,11 +342,16 @@ class _StudentTile extends StatelessWidget {
   final VoidCallback onOpenEvolution;
   final VoidCallback onOpenChat;
 
+  /// Nulo para o coach comum: a ação "Trocar professor" e o nome do professor
+  /// são só do owner.
+  final VoidCallback? onChangeCoach;
+
   @override
   Widget build(BuildContext context) {
     final c = context.ly;
     final l10n = AppLocalizations.of(context);
     final plan = row.activePlan;
+    final coachName = row.student.coachName;
 
     return LyCard(
       padding: const EdgeInsets.all(LySpace.x4),
@@ -312,6 +393,14 @@ class _StudentTile extends StatelessWidget {
                   style: LyType.caption(c.textSecondary),
                   overflow: TextOverflow.ellipsis,
                 ),
+                if (onChangeCoach != null && (coachName ?? '').isNotEmpty) ...[
+                  const SizedBox(height: LySpace.x1),
+                  Text(
+                    l10n.studentsCoachLabel(coachName!),
+                    style: LyType.caption(c.textSecondary),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ],
             ),
           ),
@@ -335,6 +424,13 @@ class _StudentTile extends StatelessWidget {
             color: c.textSecondary,
             tooltip: l10n.studentsOpenChat,
           ),
+          if (onChangeCoach != null)
+            IconButton(
+              onPressed: onChangeCoach,
+              icon: const Icon(Icons.swap_horiz),
+              color: c.textSecondary,
+              tooltip: l10n.studentsChangeCoach,
+            ),
           const SizedBox(width: LySpace.x2),
           LyButton(
             label: plan == null ? l10n.studentsNewPlan : l10n.studentsOpenPlan,

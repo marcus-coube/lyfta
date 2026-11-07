@@ -12,10 +12,19 @@ import '../../core/l10n/gen/app_localizations.dart';
 /// existindo em telas mais antigas (Hoje/Biblioteca/Agenda) — não são
 /// tocadas aqui para não regredir o que já está testado.
 class LyErrorState extends StatelessWidget {
-  const LyErrorState({required this.message, required this.onRetry, super.key});
+  const LyErrorState({
+    required this.message,
+    required this.onRetry,
+    this.retryable = true,
+    super.key,
+  });
 
   final String message;
   final VoidCallback onRetry;
+
+  /// Falso para erro que repetir não resolve (ex.: `student_not_found`): some
+  /// o botão e fica só a mensagem.
+  final bool retryable;
 
   @override
   Widget build(BuildContext context) {
@@ -33,13 +42,15 @@ class LyErrorState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: LyType.body(c.textSecondary),
             ),
-            const SizedBox(height: LySpace.x4),
-            LyButton(
-              label: l10n.commonRetry,
-              variant: LyButtonVariant.secondary,
-              expanded: false,
-              onPressed: onRetry,
-            ),
+            if (retryable) ...[
+              const SizedBox(height: LySpace.x4),
+              LyButton(
+                label: l10n.commonRetry,
+                variant: LyButtonVariant.secondary,
+                expanded: false,
+                onPressed: onRetry,
+              ),
+            ],
           ],
         ),
       ),

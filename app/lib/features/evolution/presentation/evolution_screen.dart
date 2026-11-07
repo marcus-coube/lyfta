@@ -83,7 +83,9 @@ class _EvolutionScreenState extends State<EvolutionScreen>
               Tab(text: l10n.evolutionTabMeasurements),
               Tab(text: l10n.evolutionTabPhotos),
               if (widget.scope.isCoach)
-                Tab(child: _CheckinsTabLabel(studentId: widget.scope.studentId!)),
+                Tab(
+                  child: _CheckinsTabLabel(studentId: widget.scope.studentId!),
+                ),
             ],
           ),
         ),
@@ -118,6 +120,7 @@ class _LoadTab extends ConsumerWidget {
       loading: () => const _LoadTabSkeleton(),
       error: (error, _) => _TabError(
         message: describeApiError(context, error),
+        retryable: isRetryableError(error),
         onRetry: () => ref.invalidate(loggedExercisesProvider(scope)),
       ),
       data: (items) {
@@ -155,6 +158,7 @@ class _LoadTab extends ConsumerWidget {
                     ),
                     error: (error, _) => _TabError(
                       message: describeApiError(context, error),
+                      retryable: isRetryableError(error),
                       onRetry: () => ref.invalidate(
                         exerciseHistoryProvider(
                           (
@@ -215,19 +219,21 @@ class _MeasurementsTab extends ConsumerWidget {
           loading: () => const _ListRowsSkeleton(),
           error: (error, _) => _TabError(
             message: describeApiError(context, error),
+            retryable: isRetryableError(error),
             onRetry: () => ref.invalidate(measurementsProvider(scope)),
           ),
           data: (state) => Column(
             children: [
               MeasurementList(
                 items: state.items,
-                onDelete: (item) => _confirmDeleteMeasurement(context, ref, item),
+                onDelete: (item) =>
+                    _confirmDeleteMeasurement(context, ref, item),
               ),
               if (state.hasMore)
                 _LoadMoreButton(
                   onTap: () => unawaited(
-                      ref.read(measurementsProvider(scope).notifier).loadMore(),
-                    ),
+                    ref.read(measurementsProvider(scope).notifier).loadMore(),
+                  ),
                 ),
             ],
           ),
@@ -243,19 +249,21 @@ class _MeasurementsTab extends ConsumerWidget {
           loading: () => const _ListRowsSkeleton(),
           error: (error, _) => _TabError(
             message: describeApiError(context, error),
+            retryable: isRetryableError(error),
             onRetry: () => ref.invalidate(bioimpedanceProvider(scope)),
           ),
           data: (state) => Column(
             children: [
               BioimpedanceList(
                 items: state.items,
-                onDelete: (item) => _confirmDeleteBioimpedance(context, ref, item),
+                onDelete: (item) =>
+                    _confirmDeleteBioimpedance(context, ref, item),
               ),
               if (state.hasMore)
                 _LoadMoreButton(
                   onTap: () => unawaited(
-                      ref.read(bioimpedanceProvider(scope).notifier).loadMore(),
-                    ),
+                    ref.read(bioimpedanceProvider(scope).notifier).loadMore(),
+                  ),
                 ),
             ],
           ),
@@ -367,6 +375,7 @@ class _PhotosTab extends ConsumerWidget {
           loading: () => const _PhotoGridSkeleton(),
           error: (error, _) => _TabError(
             message: describeApiError(context, error),
+            retryable: isRetryableError(error),
             onRetry: () => ref.invalidate(photosProvider(scope)),
           ),
           data: (state) => Column(
@@ -378,7 +387,9 @@ class _PhotosTab extends ConsumerWidget {
               ),
               if (state.hasMore)
                 _LoadMoreButton(
-                  onTap: () => unawaited(ref.read(photosProvider(scope).notifier).loadMore()),
+                  onTap: () => unawaited(
+                    ref.read(photosProvider(scope).notifier).loadMore(),
+                  ),
                 ),
               const SizedBox(height: LySpace.x8),
               Text(
@@ -573,10 +584,17 @@ class _PhotoGridSkeleton extends StatelessWidget {
 }
 
 class _TabError extends StatelessWidget {
-  const _TabError({required this.message, required this.onRetry});
+  const _TabError({
+    required this.message,
+    required this.onRetry,
+    this.retryable = true,
+  });
 
   final String message;
   final VoidCallback onRetry;
+
+  /// Falso para erro que repetir não resolve (`student_not_found`, ADR-016).
+  final bool retryable;
 
   @override
   Widget build(BuildContext context) {
@@ -588,13 +606,15 @@ class _TabError extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(message, style: LyType.body(c.textSecondary)),
-          const SizedBox(height: LySpace.x3),
-          LyButton(
-            label: l10n.commonRetry,
-            variant: LyButtonVariant.secondary,
-            expanded: false,
-            onPressed: onRetry,
-          ),
+          if (retryable) ...[
+            const SizedBox(height: LySpace.x3),
+            LyButton(
+              label: l10n.commonRetry,
+              variant: LyButtonVariant.secondary,
+              expanded: false,
+              onPressed: onRetry,
+            ),
+          ],
         ],
       ),
     );

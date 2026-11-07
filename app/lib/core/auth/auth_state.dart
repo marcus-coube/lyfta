@@ -34,6 +34,7 @@ class AuthState {
     this.activeContext,
     this.tenantId,
     this.userId,
+    this.isOwner = false,
     this.consentPending = false,
   });
 
@@ -45,6 +46,7 @@ class AuthState {
     required String tenantId,
     required String userId,
     ActiveContext? activeContext,
+    bool isOwner = false,
     bool consentPending = false,
   }) {
     final resolvedContext = activeContext ??
@@ -57,6 +59,7 @@ class AuthState {
       activeContext: resolvedContext,
       tenantId: tenantId,
       userId: userId,
+      isOwner: isOwner,
       consentPending: consentPending,
     );
   }
@@ -66,6 +69,12 @@ class AuthState {
   final ActiveContext? activeContext;
   final String? tenantId;
   final String? userId;
+
+  /// O usuário é owner do tenant (`owner` na claim). `userRolesFrom` junta
+  /// owner e coach no mesmo [UserRole.coach] para o shell, mas o vínculo
+  /// professor↔aluno (ADR-016) distingue: só o owner vê todos os alunos e troca
+  /// o professor deles.
+  final bool isOwner;
 
   /// Falta consentimento obrigatório (versão nova dos termos, conta anterior
   /// ao P4.5): o router prende o usuário na tela de consentimento (ADR-008 §1).
@@ -82,6 +91,7 @@ class AuthState {
       activeContext: activeContext ?? this.activeContext,
       tenantId: tenantId,
       userId: userId,
+      isOwner: isOwner,
       consentPending: consentPending ?? this.consentPending,
     );
   }

@@ -25,18 +25,23 @@ class ConversationListScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final conversations = ref.watch(conversationsProvider);
     final selfId = ref.watch(authControllerProvider).userId ?? '';
-    final directory = ref.watch(participantDirectoryProvider).valueOrNull ?? const {};
+    final directory =
+        ref.watch(participantDirectoryProvider).valueOrNull ?? const {};
 
     return conversations.when(
       loading: () => const ConversationListSkeleton(),
       error: (error, _) => LyErrorState(
         message: describeApiError(context, error),
+        retryable: isRetryableError(error),
         onRetry: () => ref.read(conversationsProvider.notifier).refresh(),
       ),
       data: (items) {
         if (items.isEmpty) {
           return Center(
-            child: Text(l10n.chatConversationsEmpty, style: LyType.body(c.textSecondary)),
+            child: Text(
+              l10n.chatConversationsEmpty,
+              style: LyType.body(c.textSecondary),
+            ),
           );
         }
         return RefreshIndicator(
@@ -118,9 +123,7 @@ class _ConversationTile extends StatelessWidget {
 
   String _previewText(AppLocalizations l10n, ChatMessage? last) {
     if (last == null) return l10n.chatNoMessagesYet;
-    return last.type == MessageType.image
-        ? l10n.chatImagePreview
-        : last.body;
+    return last.type == MessageType.image ? l10n.chatImagePreview : last.body;
   }
 }
 

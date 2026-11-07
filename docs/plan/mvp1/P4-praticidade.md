@@ -134,7 +134,7 @@ manualmente quando houver projeto Sentry/GlitchTip (pendência humana).
 
 ---
 
-## - [ ] P4.7 Vínculo professor↔aluno (identity, workout, assessment, comms, Flutter)
+## - [x] P4.7 Vínculo professor↔aluno (identity, workout, assessment, comms, Flutter)
 
 **Objetivo:** cumprir o ADR-008 §3 antes do release. O coach só vê dados (saúde,
 treino, chat, check-in) dos alunos vinculados a ele; o owner vê todos e
@@ -774,3 +774,63 @@ LGPD mínima do ADR-008 (§1, §2, §6) ponta a ponta. Backend em
   `SENTRY_DSN` (serviços) e `--dart-define=SENTRY_DSN` (app) e conferir um
   evento real chegando sem PII. Fecha também o item "crash handler sem destino
   de log" da P4.4.
+
+### P4.7 (2026-11-07, Mac)
+
+Vínculo professor↔aluno do ADR-016 (ADR-008 §3) ponta a ponta. Backend em
+`9e4d66f`, app no commit seguinte.
+
+- **identity.** Migration `0012_coach_students` (RLS, índice
+  `(tenant_id, coach_id)`, `down` reversível) com o backfill pedido: o primeiro
+  `invited_by` do e-mail se for coach|owner ativo, senão o owner ativo mais
+  antigo; rodou contra o banco de dev (167 alunos vinculados; os 9 sem vínculo
+  são fixtures de teste de tenant sem owner). `POST /v1/invitations` de aluno
+  cria usuário e vínculo na mesma transação (`UserRepo.CreateStudent`).
+  `DELETE /v1/me`: `MarkDeleting` já devolve os alunos do coach ao owner ativo
+  mais antigo (na mesma transação do status) e `Anonymize` apaga a linha do
+  aluno. `GET /v1/users`: owner vê todos, com `coach_id`/`coach_name`, e filtra
+  por `?coach_id=`; coach sem owner recebe só os alunos dele.
+  `PUT /v1/students/{id}/coach` (só owner; 422 `validation_error` para aluno/
+  coach inválido) e M2M `GET /internal/v1/coaches/{id}/students` e
+  `/students/{id}/coach` (404 `student_not_found` sem vínculo).
+- **coachlink** duplicado em workout, assessment e comms (cache de 30 s por
+  tenant+coach, `COACH_LINK_CACHE_TTL`, TTL 0 desliga; falha do identity vira
+  erro e **não é cacheada**). `CoachOf` só no comms, sem cache. `IDENTITY_URL`
+  nova no workout e no comms (`.env.example`, README do backend).
+- **workout.** `RequireStudentLink` em `/students/{id}/...`; `GET /plans/{id}`,
+  `PUT .../draft` e `POST .../publish` checam `plan.StudentID`; `authorizeWrite`
+  saiu (agora é o vínculo, então o coach reatribuído edita); `POST /plans` checa
+  o aluno e o `coach_id` do owner precisa ser o vinculado (400
+  `validation_error`).
+- **assessment.** Middleware no `Route("/students/{id}")`, antes do
+  consentimento. **comms.** `Start`, conversa (`authorizeParticipant`: o coach
+  da conversa precisa ser o atual do aluno; o aluno e o owner não dependem),
+  presign, lista de conversas (omite ex-alunos), `GET /checkins` (sem
+  `student_id` filtra por `ANY(conjunto)` via `ListForStudents`), `Review` e o
+  push de dor forte só para o `CoachOf`.
+- **app.** `AuthState.isOwner`; o tile do aluno mostra "Professor: X" e a ação
+  "Trocar professor" (bottom sheet com coaches/owners ativos) só para o owner;
+  `student_not_found` traduzido nas 3 ARBs e sem botão de tentar de novo em
+  evolução (4 abas + resumo), check-ins e chat.
+- **Testes.** identity: lista escopada, reatribuição, M2M, exclusão de coach e
+  de aluno, isolamento cross-tenant e backfill (como superusuário,
+  `SUPERUSER_DATABASE_URL`, que o CI agora exporta). Por serviço, um teste
+  cross-coach com identity fake sobre o cliente `coachlink` real: coach B recebe
+  404 `student_not_found`, owner acessa, reatribuição troca quem acessa,
+  identity fora do ar dá 500. coachlink: cache, TTL, falha, owner sem chamada.
+  Flutter: tile como owner e como coach, `student_not_found` sem retry.
+- **Desvios/decisões.** (1) `GET /v1/users?role=coach|owner` segue aberto ao
+  coach comum: é o diretório de nomes que o chat (`participantDirectory`) usa e
+  não é dado de aluno; só a lista de alunos (ou sem filtro) é escopada.
+  (2) `OverrideDay` com `student_id` de outro aluno (`/me/plan/override-day`)
+  também checa o vínculo; o plano não listava. (3) Exclusão de coach devolve os
+  alunos no `MarkDeleting` e não só no `Anonymize`: se o erase de algum serviço
+  falhar, os alunos já ficaram com o owner. (4) Após reatribuir, o coach novo
+  abre uma conversa nova (a unique é por par aluno+coach); o aluno passa a ter
+  duas conversas e o app já cai na lista quando há mais de uma.
+- **Pendências.** O cache de 30 s é por instância: reatribuição leva até 30 s
+  para valer. Os binários dos 4 serviços que estavam rodando em dev são
+  anteriores a esta tarefa — reiniciar com o código novo (a migration 0012 já
+  está aplicada no banco local). Fora de escopo seguem N:N, histórico de
+  vínculos, escolher o coach no convite e arquivar a conversa do ex-coach.
+

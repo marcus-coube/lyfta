@@ -38,16 +38,21 @@ class CoachCheckinsTab extends ConsumerWidget {
       ),
       error: (error, _) => LyErrorState(
         message: describeApiError(context, error),
+        retryable: isRetryableError(error),
         onRetry: () => ref.read(checkinsProvider(studentId).notifier).refresh(),
       ),
       data: (state) {
         if (state.items.isEmpty) {
           return Center(
-            child: Text(l10n.checkinListEmpty, style: LyType.body(c.textSecondary)),
+            child: Text(
+              l10n.checkinListEmpty,
+              style: LyType.body(c.textSecondary),
+            ),
           );
         }
         return RefreshIndicator(
-          onRefresh: () => ref.read(checkinsProvider(studentId).notifier).refresh(),
+          onRefresh: () =>
+              ref.read(checkinsProvider(studentId).notifier).refresh(),
           child: ListView.separated(
             padding: const EdgeInsets.fromLTRB(
               LySpace.x4,

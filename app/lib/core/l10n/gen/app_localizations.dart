@@ -2402,6 +2402,42 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Muitas tentativas. Aguarde {minutes, plural, =1{1 minuto} other{{minutes} minutos}} e tente de novo.'**
   String errorTooManyRequests(int minutes);
+
+  /// No description provided for @errorStudentNotFound.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este aluno não está na sua lista de alunos.'**
+  String get errorStudentNotFound;
+
+  /// Professor responsável pelo aluno, mostrado ao dono da academia no cartão do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Professor: {name}'**
+  String studentsCoachLabel(String name);
+
+  /// Ação do dono da academia no cartão do aluno: reatribuir o professor.
+  ///
+  /// In pt, this message translates to:
+  /// **'Trocar professor'**
+  String get studentsChangeCoach;
+
+  /// Título do seletor de professor; `student` = nome do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Professor de {student}'**
+  String studentsChangeCoachTitle(String student);
+
+  /// Confirmação após reatribuir o professor do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Professor trocado para {name}.'**
+  String studentsCoachChanged(String name);
+
+  /// Seletor de professor sem opções.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum professor disponível.'**
+  String get studentsCoachesEmpty;
 }
 
 class _AppLocalizationsDelegate

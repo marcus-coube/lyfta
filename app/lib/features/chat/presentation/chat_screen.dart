@@ -54,9 +54,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     // Lista invertida (mais recente embaixo): "carregar mais antigas" é
     // chegar perto do fim do scroll, não do início.
     if (position.pixels >= position.maxScrollExtent - 240) {
-      ref
-          .read(chatMessagesProvider(widget.conversationId).notifier)
-          .loadMore();
+      ref.read(chatMessagesProvider(widget.conversationId).notifier).loadMore();
     }
   }
 
@@ -135,8 +133,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 loading: () => const ChatMessagesSkeleton(),
                 error: (error, _) => LyErrorState(
                   message: describeApiError(context, error),
+                  retryable: isRetryableError(error),
                   onRetry: () => ref
-                      .read(chatMessagesProvider(widget.conversationId).notifier)
+                      .read(
+                        chatMessagesProvider(widget.conversationId).notifier,
+                      )
                       .refresh(),
                 ),
                 data: (chat) {

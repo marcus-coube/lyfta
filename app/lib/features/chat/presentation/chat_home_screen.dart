@@ -32,6 +32,7 @@ class ChatHomeScreen extends ConsumerWidget {
       loading: () => const ConversationListSkeleton(),
       error: (error, _) => LyErrorState(
         message: describeApiError(context, error),
+        retryable: isRetryableError(error),
         onRetry: () => ref.read(conversationsProvider.notifier).refresh(),
       ),
       data: (items) {
