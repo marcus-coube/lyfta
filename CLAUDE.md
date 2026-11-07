@@ -31,16 +31,16 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
   docs + marcos de implementação e de-para marco→pacote.
 - **[docs/adr/](docs/adr/)** — decisões estruturais (ADR-001..015). São normativas.
 - **[docs/plan/mvp1/](docs/plan/mvp1/)** — plano de execução do MVP 1.0 (P0–P4,
-  29 tarefas, protocolo do agente). Progresso em `STATUS.md`.
+  31 tarefas, protocolo do agente). Progresso em `STATUS.md`.
 - **[docs/benchmarking/](docs/benchmarking/)** — auditoria HubFit × Trainerize × Lyfta.
 - `docs/guidelines/` — convenções de código (ex.: `flutter.md`).
 
-## Estado atual (2026-09-11)
+## Estado atual (2026-11-07)
 **Executando o plano do MVP 1.0** ([docs/plan/mvp1/](docs/plan/mvp1/)) na ordem
 P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P4.X").
 **Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
 saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
-**P0, P1, P2 e P3 concluídas e a P4 começada, 26/29:** `identity` completo (auth, convites,
+**P0, P1, P2 e P3 concluídas e a P4 em andamento, 28/31:** `identity` completo (auth, convites,
 reset, lista de usuários do tenant), CI no GitHub Actions
 (`.github/workflows/ci.yml`) e o serviço `workout` completo do lado servidor —
 schema do ADR-004, mídia por URL presignada, biblioteca com seed global de 41
@@ -77,7 +77,12 @@ Firebase (bloqueio conhecido, ver `app/README.md` § Firebase). Na P4, o
 **Agenda**: strip semanal (dom–sáb) com o que já foi treinado e o que a
 rotação projeta localmente para os próximos dias, mês expansível e streak
 simples de semanas seguidas batendo a meta (P4.1).
-Próxima: **P4.2** (performance e robustez). Escopo do MVP em
+P4.2 (performance) e P4.3 (i18n + acessibilidade) fechadas; a P4.4 (E2E final +
+release) está **parcial**: varredura verde, app `1.0.0+1`, build web e
+[e2e-final.md](docs/plan/mvp1/e2e-final.md) prontos, mas a varredura achou a
+LGPD do ADR-008 ausente. Próxima: **P4.5** (LGPD: consentimento + exclusão de
+conta), depois **P4.6** (crash com Sentry/GlitchTip, ADR-009 §5). iOS roda no
+simulador com Xcode 27 (receita em [app/README.md](app/README.md) § iOS). Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor
 funcionam em **todas** as plataformas (mobile e web).

@@ -66,6 +66,74 @@ pendências restantes listadas e classificadas (bloqueia release × vai pro 2.0)
 
 ---
 
+## - [ ] P4.5 LGPD mínima — consentimento + exclusão de conta (identity, workout, assessment, comms, Flutter)
+
+**Objetivo:** cumprir ADR-008 §1, §2 e §6 antes do release (achado da P4.4).
+**Passos:**
+1. **Termos versionados (§6):** política de privacidade + termos de uso em
+   `app/assets/legal/` (pt-BR fonte, pt-PT, en), com versão explícita
+   (`TERMS_VERSION`, ex. `2026-11-v1`) compartilhada por app e identity via env.
+2. **identity — `consents`** (`tenant_id`, `user_id`, `purpose`, `granted_at`,
+   `revoked_at`, `terms_version`; RLS + índice por `tenant_id`). Finalidades no
+   MVP: `health_data` (obrigatória para usar o app como aluno) e
+   `progress_photos` (opcional). GPS fica para o running (4.0).
+   `GET /v1/me/consents`, `PUT /v1/me/consents` (concede/revoga, append-only:
+   revogar grava `revoked_at`, nunca apaga linha). Claims do JWT ganham as
+   finalidades vigentes, para os outros serviços checarem sem chamada síncrona.
+3. **Coleta:** aceite do convite (aluno) mostra os termos e as duas finalidades
+   separadas, `health_data` obrigatória; `POST /v1/invitations/accept` passa a
+   exigir os consentimentos. Signup do owner exige aceite dos termos (sem
+   finalidades de saúde). **Gate:** aluno logado sem consentimento vigente na
+   versão atual dos termos (usuários antigos, termo novo) cai na tela de
+   consentimento antes do app.
+4. **Revogação:** tela de privacidade no perfil (aluno) para ver/revogar
+   `progress_photos`. Sem ela, o `assessment` recusa upload de foto (403) e o
+   coach deixa de ver as fotos do aluno.
+5. **Exclusão de conta (§2), self-service** para aluno e coach; owner recebe
+   erro explicativo (encerrar tenant é outro fluxo, fora do MVP).
+   `DELETE /v1/me` no identity orquestra, com confirmação por senha:
+   marca o usuário `deleting` (login bloqueado) → chama
+   `DELETE /internal/v1/users/{id}` (`INTERNAL_TOKEN`, idempotente) em
+   `assessment` (medidas, bioimpedância e fotos: **exclusão física**, inclusive
+   objetos no S3), `workout` (execuções: **anonimizar**, sem titular; planos
+   atribuídos: excluir) e `comms` (mensagens e check-ins: anonimizar autor;
+   devices de push: excluir) → por fim anonimiza o usuário no identity
+   (e-mail/nome/hash substituídos, tokens e convites invalidados). Falha num
+   serviço = 502, usuário segue `deleting` e a chamada pode ser repetida.
+6. **App:** "Excluir minha conta" no perfil, com aviso do que é apagado e
+   confirmação por senha; ao concluir, logout e limpeza do banco local.
+**Aceite:** aluno novo não entra sem consentir `health_data`; revogar fotos
+bloqueia upload; exclusão apaga saúde/fotos (incluindo objetos no MinIO),
+anonimiza execuções e mensagens, e o login do excluído falha; teste de handler
+da orquestração (feliz + serviço fora do ar) e do endpoint interno de cada
+serviço; teste de widget da tela de consentimento. Strings nos 3 idiomas.
+
+---
+
+## - [ ] P4.6 Tratamento de crash e erros (Flutter + 4 serviços)
+
+**Objetivo:** observabilidade mínima de erros do ADR-009 §5 (Sentry ou
+GlitchTip, que fala o mesmo protocolo). Fecha a pendência da P4.2.
+**Passos:**
+1. **Flutter:** `sentry_flutter` (pinar). `runZonedGuarded` +
+   `FlutterError.onError` + `PlatformDispatcher.instance.onError` em `main.dart`.
+   DSN por `--dart-define=SENTRY_DSN`; vazio = desligado, erro só no console
+   (dev e CI não mandam nada). `environment` e `release` (`1.0.0+N`) no evento.
+2. **Go:** `sentry-go` (pinar no `backend/README.md`) em cada serviço,
+   duplicado (ADR-013, sem pacote compartilhado). Middleware de `recover` que
+   reporta panic e responde 500 JSON; 5xx reportados com `request_id`. DSN por
+   env `SENTRY_DSN`, vazio = desligado.
+3. **Privacidade (ADR-008):** `sendDefaultPii` desligado; evento leva só
+   `user_id`/`tenant_id`, nunca e-mail, nome, corpo de requisição, medidas ou
+   mensagens. Breadcrumbs HTTP sem query string nem headers de auth.
+4. `.env.example` e app/README documentam as variáveis.
+**Aceite:** com DSN vazio nada é enviado e o app/serviços se comportam como
+hoje; teste do middleware de recover (panic vira 500 e não derruba o
+processo); teste que o filtro de evento remove PII. Envio real verificado
+manualmente quando houver projeto Sentry/GlitchTip (pendência humana).
+
+---
+
 ## Notas de execução
 
 (o agente anota aqui descobertas, dívidas e desvios aprovados)

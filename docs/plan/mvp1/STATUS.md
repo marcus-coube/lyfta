@@ -3,7 +3,7 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** `P4.4` (E2E final + roteiro de release) — **parcial, não fechada** (2026-11-07): varredura, versão `1.0.0+1`, build web e [e2e-final.md](e2e-final.md) prontos. **Antes de fechar:** criar a tarefa de LGPD (consentimento + exclusão de conta, ADR-008, ausente hoje) e resolver os bloqueios humanos classificados nas Notas da P4.4.
+**Próxima tarefa:** `P4.5` (LGPD mínima: consentimento + exclusão de conta), depois `P4.6` (tratamento de crash). A `P4.4` segue **parcial, não fechada** (2026-11-07): varredura, versão `1.0.0+1`, build web e [e2e-final.md](e2e-final.md) prontos; fecha depois da P4.5/P4.6 e dos bloqueios humanos classificados nas Notas da P4.4.
 
 | Fase | Progresso | Situação |
 |---|---|---|
@@ -11,8 +11,8 @@
 | P1 — Treino | 8/8 | concluída |
 | P2 — Evolução | 5/5 | concluída |
 | P3 — Comunicação | 5/5 | concluída |
-| P4 — Praticidade | 3/4 | em andamento |
-| **Total** | **28/29** | |
+| P4 — Praticidade | 3/6 | em andamento |
+| **Total** | **28/31** | |
 
 ## Bancos locais
 
@@ -109,3 +109,4 @@ de execução" da fase onde nasceram.
 | 2026-09-11 | P4.2 concluída (Mac): app — performance e robustez. `main.dart` parou de bloquear o primeiro frame no `await Firebase.initializeApp()` (virou pós-`runApp`, `postFrameCallback`); número do Aceite (cold start Android) não medido — bloqueio #1 continua de pé e nem macOS nem iOS têm plataforma gerada nesta máquina, virou a pendência #6 acima. Skeleton loaders novos (`shared/widgets/ly_skeleton.dart`, sem dependência nova) substituindo spinner cru em Hoje, nas 4 abas de Evolução e no Chat. Achados reais da auditoria: `ChatBubble` usava `Image.network` sem cache/placeholder (única mídia do app nessa situação, corrigida para `CachedNetworkImage`); medidas/bioimpedância/fotos da Evolução tinham `loadMore()` pronto no controller mas a tela nunca chamava (ganhou botão "Carregar mais", chave `commonLoadMore` nova nas ARBs); 5 telas mostravam erro traduzido sem ação de retry (`shared/widgets/ly_error_state.dart` novo, chamando o `refresh()` que cada controller já tinha). Lista de alunos do coach só busca a primeira página (sem cursor/loadMore nenhum) ficou anotada como pendência, não corrigida — muda o shape do estado do controller, escopo maior que ajuste de UI. Web: `--wasm` falha de verdade (`flutter_secure_storage_web` incompatível com dart2wasm, dry-run confirma) — build canvaskit padrão medido com Lighthouse real: `main.dart.js` 1,14 MB gzip (meta <3 MB), performance 100/100, LCP 1,3 s (localhost, sem throttling — não é o dispositivo médio do Aceite). `flutter analyze` limpo, guard limpo, 66 testes verdes; nenhum serviço Go tocado (ver Notas de execução em P4-praticidade.md) |
 | 2026-09-12 | **P4.3 concluída (Mac):** app — auditoria i18n + a11y básica. Paridade de ARB já estava fechada de verdade (348/348/348 chaves, confirmado antes de qualquer suposição) — o trabalho foi o script `app/tool/check_arb_parity.dart` (Dart puro, sem dependência nova, roda igual em Mac/Windows via `dart run`) que agora garante isso no CI (falha com chave faltando **ou** placeholder `{count}`-like perdido na tradução) e o step novo em `.github/workflows/ci.yml`. Achado real de formatação (ADR-011 §4): `formatLoad`/`formatMetric`/`_formatVolume` usavam `toString()` de `double`, que é sempre ponto decimal — carga/volume em kg mostrava "42.5" para aluno pt-BR em vez de "42,5"; corrigido com `NumberFormat` do `intl` nas 4 funções e ~13 call sites (inclusive um teste que **afirmava o bug**, corrigido). Mesma classe de bug no horário do chat (`ChatBubble` montava "HH:mm" na mão, sempre 24h) — trocado por `DateFormat.jm(locale)` (24h pt-BR/pt-PT, 12h AM/PM em en). a11y: único `IconButton` sem `tooltip` (toggle de senha do `LyTextField`) corrigido com 2 chaves novas (`commonShowPassword`/`commonHidePassword`) e `assert` no construtor prevenindo regressão; toque ≥48dp e contraste WCAG AA auditados (dark — único tema que o app mostra de verdade — passa em tudo; achados sem correção por estarem fora do Aceite ou serem dívida em código morto: tap target pequeno no retry/remover do chat, e paleta do tema light — inatingível hoje, `ThemeMode.dark` fixo — falharia AA para cor semântica como texto). TalkBack real não verificado (bloqueio #1 de sempre) — virou pendência #7. `flutter analyze`/guard/parity verdes, **67 testes verdes** (2 novos); nenhum serviço Go tocado (ver Notas de execução em P4-praticidade.md) |
 | 2026-11-07 | P4.4 parcial (não fechada): analyzer 0 issues, 67 testes, vet/test verdes nos 4 serviços, app 1.0.0+1, build web release ok, e2e-final.md escrito; LGPD ausente e bloqueios humanos classificados nas Notas da P4 |
+| 2026-11-07 | Tarefas novas no plano: P4.5 (LGPD mínima do ADR-008, achado da P4.4) e P4.6 (tratamento de crash com Sentry/GlitchTip, ADR-009 §5; pendência da P4.2). Total passa a 31 |
