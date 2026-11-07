@@ -31,6 +31,13 @@ type Config struct {
 	WorkoutURL    string
 	AssessmentURL string
 	CommsURL      string
+	// RedisURL guarda os contadores do limite de tentativas (ADR-002 §2c).
+	// Vazio em dev/teste = contadores em memória; obrigatória em produção,
+	// onde há mais de uma instância.
+	RedisURL string
+	// TrustProxy: atrás de proxy reverso, o IP do cliente é o último do
+	// X-Forwarded-For. Sem proxy, false — senão o IP é forjável.
+	TrustProxy bool
 }
 
 // Load lê as variáveis de ambiente do processo e valida as obrigatórias.
@@ -54,10 +61,15 @@ func Load() (Config, error) {
 		WorkoutURL:    getEnv("WORKOUT_URL", "http://localhost:8082"),
 		AssessmentURL: getEnv("ASSESSMENT_URL", "http://localhost:8083"),
 		CommsURL:      getEnv("COMMS_URL", "http://localhost:8084"),
+		RedisURL:      os.Getenv("REDIS_URL"),
+		TrustProxy:    os.Getenv("TRUST_PROXY") == "true",
 	}
 
 	if cfg.DatabaseURL == "" {
 		return Config{}, fmt.Errorf("config: DATABASE_URL é obrigatória")
+	}
+	if cfg.AppEnv == "production" && cfg.RedisURL == "" {
+		return Config{}, fmt.Errorf("config: REDIS_URL é obrigatória em produção (limite de tentativas)")
 	}
 
 	return cfg, nil

@@ -1279,4 +1279,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorErasureFailed =>
       'We could not finish the deletion right now. Try again in a moment.';
+
+  @override
+  String errorTooManyRequests(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutes',
+      one: '1 minute',
+    );
+    return 'Too many attempts. Wait $_temp0 and try again.';
+  }
 }

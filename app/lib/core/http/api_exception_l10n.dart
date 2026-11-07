@@ -59,6 +59,11 @@ extension ApiExceptionL10n on ApiException {
         return l10n.errorOwnerCannotDelete;
       case 'erasure_failed':
         return l10n.errorErasureFailed;
+      // Limite de tentativas (ADR-002 §2c): o backend manda os segundos até
+      // liberar; a mensagem fala em minutos inteiros, arredondando para cima.
+      case 'too_many_requests':
+        final seconds = (params['retry_after_seconds'] as num?)?.toInt() ?? 300;
+        return l10n.errorTooManyRequests(((seconds + 59) ~/ 60).clamp(1, 60));
       case 'network_error':
         return l10n.errorNetwork;
       case 'internal_error':

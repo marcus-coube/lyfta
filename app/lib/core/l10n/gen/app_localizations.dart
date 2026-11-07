@@ -2396,6 +2396,12 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Não conseguimos concluir a exclusão agora. Tente de novo em instantes.'**
   String get errorErasureFailed;
+
+  /// Limite de tentativas atingido (429): login, recuperação de senha, convite. `minutes` = tempo até liberar, arredondado para cima.
+  ///
+  /// In pt, this message translates to:
+  /// **'Muitas tentativas. Aguarde {minutes, plural, =1{1 minuto} other{{minutes} minutos}} e tente de novo.'**
+  String errorTooManyRequests(int minutes);
 }
 
 class _AppLocalizationsDelegate

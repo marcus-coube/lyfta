@@ -80,11 +80,11 @@ jobs:
             sleep 2
           done
 
-      # Redis só é necessário pro comms — pub/sub do fan-out de WS (P3.1).
-      # Mesmo raciocínio do MinIO acima: `services:` não aceita condicional
-      # por matrix, então sobe como step.
+      # Redis: pub/sub do fan-out de WS no comms (P3.1) e contadores do limite
+      # de tentativas no identity (ADR-002 §2c). Mesmo raciocínio do MinIO
+      # acima: `services:` não aceita condicional por matrix, então sobe como step.
       - name: Subir Redis
-        if: matrix.service == 'comms'
+        if: matrix.service == 'comms' || matrix.service == 'identity'
         run: |
           docker run -d --name redis -p 6379:6379 redis:7-alpine
           for i in $(seq 1 30); do
@@ -138,7 +138,8 @@ jobs:
           S3_ENDPOINT: http://localhost:9000
           S3_ACCESS_KEY: minioadmin
           S3_SECRET_KEY: minioadmin
-          # Pub/sub do comms (P3.1). Ignorado pelos demais serviços.
+          # Pub/sub do comms (P3.1) e limite de tentativas do identity.
+          # Ignorado pelos demais serviços.
           REDIS_URL: redis://localhost:6379/0
         run: go test ./...
 

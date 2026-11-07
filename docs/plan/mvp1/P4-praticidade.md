@@ -498,7 +498,28 @@ do STATUS segue 28/31.
 9. Aba Agenda com dados reais (STATUS #5): dá para fazer no Chrome/iOS agora.
 10. Executar o E2E final nas 3 plataformas (Aceite da P4.4).
 11. Crash handler: não há `runZonedGuarded`/`FlutterError.onError` nem destino de log (nota da P4.2). Precisa de decisão (ADR) sobre o destino; o mínimo para release é capturar e logar localmente, e o ideal é um backend de erros.
-12. Rate limit no lookup de e-mail entre tenants (login/forgot, dívida do P0.4): exposição pública no release.
+12. ~~Rate limit no lookup de e-mail entre tenants (login/forgot, dívida do P0.4): exposição pública no release.~~ **Resolvido em 2026-11-07** — ver "Limite de tentativas" abaixo.
+
+**Limite de tentativas (2026-11-07, Mac — fecha a dívida do P0.4 / ADR-002 §2c)**
+- `identity/internal/ratelimit`: `Store` com `RedisStore` (INCR+PEXPIRE num
+  script Lua, atômico) e `MemoryStore` (dev/teste, `REDIS_URL` vazio).
+  `go-redis v9.22.0`, mesma versão do comms. `APP_ENV=production` sem
+  `REDIS_URL` não sobe.
+- Middleware por rota, janela e bloqueio de **5 min** (`RateLimitCooldown`):
+  login 5 falhas por e-mail / 30 por IP (login certo zera o e-mail);
+  forgot-password 3 por e-mail / 10 por IP (conta todo pedido); reset-password
+  e aceite de convite 10 falhas por IP; signup 10 por IP. Resposta
+  `429 too_many_requests` + `Retry-After` + `params.retry_after_seconds`.
+  E-mail entra na chave só como hash. Redis fora = libera e loga (login no ar
+  vale mais que o limite). Limite por IP folgado: academia sai por um IP só.
+- **Enumeração fechada:** o login confere a senha antes de devolver
+  `409 multiple_tenants`, e a lista só traz as academias onde a senha bateu;
+  senha certa em uma só entra direto. E-mail sem conta gasta o mesmo argon2
+  (tempo de resposta não denuncia).
+- `TRUST_PROXY=true` só atrás de proxy reverso (IP = último do
+  `X-Forwarded-For`) — **ligar no deploy**, senão todo mundo divide o IP do proxy.
+- App: `errorTooManyRequests` em 3 idiomas ("aguarde N minutos"). CI sobe
+  Redis também para o identity (`TestRedisStoreCooldown`).
 
 **Vai pro 2.0**
 - Vínculo coach↔aluno no identity (hoje qualquer coach do tenant vê qualquer aluno; `created_by` fora das tabelas; push de "treino pendente" a todos os tenants).

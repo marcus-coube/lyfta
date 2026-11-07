@@ -20,6 +20,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	ihttp "github.com/marcus-coube/lyfta/identity/internal/http"
+	"github.com/marcus-coube/lyfta/identity/internal/ratelimit"
 	"github.com/marcus-coube/lyfta/identity/internal/repo"
 	"github.com/marcus-coube/lyfta/identity/internal/security"
 )
@@ -135,7 +136,7 @@ func newTestServerWithEraser(t *testing.T) (*httptest.Server, *security.JWTSigne
 	passwordResetHandler := ihttp.NewPasswordResetHandler(logger, authRepo, users, passwordResetRepo, mailer, "http://localhost:5173")
 
 	userHandler := ihttp.NewUserHandler(logger, users)
-	router := ihttp.NewRouter(logger, []string{"*"}, signer, testInternalToken, authHandler, invitationHandler, passwordResetHandler, userHandler, accountHandler)
+	router := ihttp.NewRouter(logger, []string{"*"}, signer, testInternalToken, authHandler, invitationHandler, passwordResetHandler, userHandler, accountHandler, ihttp.NewRateLimiter(ratelimit.NewMemoryStore(), logger, false))
 	server := httptest.NewServer(router)
 	t.Cleanup(server.Close)
 	return server, signer, mailer, eraser

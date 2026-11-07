@@ -17,6 +17,7 @@ import (
 	ihttp "github.com/marcus-coube/lyfta/identity/internal/http"
 	"github.com/marcus-coube/lyfta/identity/internal/mail"
 	"github.com/marcus-coube/lyfta/identity/internal/obs"
+	"github.com/marcus-coube/lyfta/identity/internal/ratelimit"
 	"github.com/marcus-coube/lyfta/identity/internal/repo"
 	"github.com/marcus-coube/lyfta/identity/internal/security"
 )
@@ -91,8 +92,24 @@ func run(logger *slog.Logger) error {
 	accountHandler := ihttp.NewAccountHandler(logger, users, authRepo, consentRepo, issuer, eraser, cfg.TermsVersion)
 	passwordResetHandler := ihttp.NewPasswordResetHandler(logger, authRepo, users, passwordResetRepo, mailer, cfg.AppURL)
 
+	// Limite de tentativas dos endpoints públicos (ADR-002 §2c). Sem
+	// REDIS_URL (dev): contadores em memória, válidos só nesta instância.
+	var limitStore ratelimit.Store
+	if cfg.RedisURL == "" {
+		logger.Warn("rate_limit_using_memory_store", slog.String("reason", "REDIS_URL vazio"))
+		limitStore = ratelimit.NewMemoryStore()
+	} else {
+		redisStore, err := ratelimit.NewRedisStore(ctx, cfg.RedisURL)
+		if err != nil {
+			return err
+		}
+		defer func() { _ = redisStore.Close() }()
+		limitStore = redisStore
+	}
+	limiter := ihttp.NewRateLimiter(limitStore, logger, cfg.TrustProxy)
+
 	userHandler := ihttp.NewUserHandler(logger, users)
-	router := ihttp.NewRouter(logger, cfg.CORSOrigins, jwtSigner, cfg.InternalToken, authHandler, invitationHandler, passwordResetHandler, userHandler, accountHandler)
+	router := ihttp.NewRouter(logger, cfg.CORSOrigins, jwtSigner, cfg.InternalToken, authHandler, invitationHandler, passwordResetHandler, userHandler, accountHandler, limiter)
 
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,

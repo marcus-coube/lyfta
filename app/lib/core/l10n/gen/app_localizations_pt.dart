@@ -1281,6 +1281,17 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get errorErasureFailed =>
       'Não conseguimos concluir a exclusão agora. Tente de novo em instantes.';
+
+  @override
+  String errorTooManyRequests(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutos',
+      one: '1 minuto',
+    );
+    return 'Muitas tentativas. Aguarde $_temp0 e tente de novo.';
+  }
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -2567,4 +2578,15 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   @override
   String get errorErasureFailed =>
       'Não conseguimos concluir a eliminação agora. Tente novamente dentro de instantes.';
+
+  @override
+  String errorTooManyRequests(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes minutos',
+      one: '1 minuto',
+    );
+    return 'Demasiadas tentativas. Aguarde $_temp0 e tente novamente.';
+  }
 }

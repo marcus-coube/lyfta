@@ -382,5 +382,6 @@
   "errorTermsVersionMismatch": "Os termos foram atualizados. Reabra a app para ler a nova versão.",
   "errorInvalidPassword": "Palavra-passe incorreta.",
   "errorOwnerCannotDelete": "O dono da conta não a pode eliminar aqui. Encerrar o ginásio é outro processo — contacte o suporte.",
-  "errorErasureFailed": "Não conseguimos concluir a eliminação agora. Tente novamente dentro de instantes."
+  "errorErasureFailed": "Não conseguimos concluir a eliminação agora. Tente novamente dentro de instantes.",
+  "errorTooManyRequests": "Demasiadas tentativas. Aguarde {minutes, plural, =1{1 minuto} other{{minutes} minutos}} e tente novamente."
 }

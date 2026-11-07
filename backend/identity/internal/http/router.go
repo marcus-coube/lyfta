@@ -24,6 +24,7 @@ func NewRouter(
 	passwordReset *PasswordResetHandler,
 	users *UserHandler,
 	account *AccountHandler,
+	limiter *RateLimiter,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -50,13 +51,15 @@ func NewRouter(
 	})
 
 	r.Route("/v1", func(r chi.Router) {
-		r.Post("/tenants", auth.Signup)
+		// Endpoints públicos com limite de tentativas (ADR-002 §2c): cooldown
+		// de RateLimitCooldown por IP e, onde há e-mail no corpo, por e-mail.
+		r.With(limiter.middleware(ruleSignup)).Post("/tenants", auth.Signup)
 		r.Route("/auth", func(r chi.Router) {
-			r.Post("/login", auth.Login)
+			r.With(limiter.middleware(ruleLogin)).Post("/login", auth.Login)
 			r.Post("/refresh", auth.Refresh)
 			r.Post("/logout", auth.Logout)
-			r.Post("/forgot-password", passwordReset.ForgotPassword)
-			r.Post("/reset-password", passwordReset.ResetPassword)
+			r.With(limiter.middleware(ruleForgotPassword)).Post("/forgot-password", passwordReset.ForgotPassword)
+			r.With(limiter.middleware(ruleResetPassword)).Post("/reset-password", passwordReset.ResetPassword)
 		})
 		// Conta do próprio usuário (P4.5): consentimentos (ADR-008 §1) e
 		// exclusão de conta (ADR-008 §2). Qualquer papel autenticado.
@@ -78,7 +81,7 @@ func NewRouter(
 
 		r.Route("/invitations", func(r chi.Router) {
 			// Aceite é público: o convidado só tem o token, ainda não tem sessão.
-			r.Post("/accept", invitations.Accept)
+			r.With(limiter.middleware(ruleAcceptInvite)).Post("/accept", invitations.Accept)
 
 			// Criar e reenviar convite exigem sessão de owner|coach.
 			r.Group(func(r chi.Router) {

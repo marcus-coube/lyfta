@@ -774,5 +774,14 @@
   "errorTermsVersionMismatch": "Os termos foram atualizados. Reabra o app para ler a nova versão.",
   "errorInvalidPassword": "Senha incorreta.",
   "errorOwnerCannotDelete": "O dono da conta não pode excluí-la por aqui. Encerrar a academia é outro processo — fale com o suporte.",
-  "errorErasureFailed": "Não conseguimos concluir a exclusão agora. Tente de novo em instantes."
+  "errorErasureFailed": "Não conseguimos concluir a exclusão agora. Tente de novo em instantes.",
+  "errorTooManyRequests": "Muitas tentativas. Aguarde {minutes, plural, =1{1 minuto} other{{minutes} minutos}} e tente de novo.",
+  "@errorTooManyRequests": {
+    "description": "Limite de tentativas atingido (429): login, recuperação de senha, convite. `minutes` = tempo até liberar, arredondado para cima.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }

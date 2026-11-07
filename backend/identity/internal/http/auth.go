@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/marcus-coube/lyfta/identity/internal/domain"
 	"github.com/marcus-coube/lyfta/identity/internal/repo"
@@ -141,9 +142,9 @@ type loginRequest struct {
 	TenantID string `json:"tenant_id"`
 }
 
-// Login autentica por e-mail+senha. Se o e-mail existir em vários tenants e
-// tenant_id não vier no corpo, devolve 409 multiple_tenants (ADR-002 §2c)
-// com a lista para o cliente escolher e reenviar.
+// Login autentica por e-mail+senha. Se a senha bater em contas de mais de um
+// tenant e tenant_id não vier no corpo, devolve 409 multiple_tenants (ADR-002
+// §2c) só com essas academias, para o cliente escolher e reenviar.
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req loginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -164,50 +165,54 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		writeError(w, errInternal())
 		return
 	}
+	if req.TenantID != "" {
+		matches = filterTenant(matches, req.TenantID)
+	}
 	if len(matches) == 0 {
+		// Mesmo custo de argon2 de um e-mail existente: o tempo de resposta
+		// não pode dizer se o e-mail tem conta.
+		burnPasswordCheck(req.Password)
 		writeError(w, errInvalidCredentials())
 		return
 	}
 
-	var chosen *domain.TenantMatch
-	if req.TenantID != "" {
-		for i := range matches {
-			if matches[i].TenantID == req.TenantID {
-				chosen = &matches[i]
-				break
+	// A senha é conferida ANTES de qualquer resposta que dependa das contas
+	// do e-mail: a lista de academias do 409 só sai para quem acertou a
+	// senha de pelo menos uma delas (ADR-002 §2c) — senão qualquer um
+	// descobriria onde um e-mail tem conta digitando uma senha qualquer.
+	var authenticated []domain.User
+	var options []tenantOption
+	for _, m := range matches {
+		user, err := h.users.FindByEmailInTenant(ctx, m.TenantID, req.Email)
+		if err != nil {
+			if err == repo.ErrNotFound {
+				burnPasswordCheck(req.Password)
+				continue
 			}
-		}
-		if chosen == nil {
-			writeError(w, errInvalidCredentials())
+			h.logger.Error("login_find_user_failed", slog.Any("error", err))
+			writeError(w, errInternal())
 			return
 		}
-	} else if len(matches) == 1 {
-		chosen = &matches[0]
-	} else {
-		options := make([]tenantOption, 0, len(matches))
-		for _, m := range matches {
-			options = append(options, tenantOption{TenantID: m.TenantID, TenantName: m.TenantName})
+		ok, err := security.VerifyPassword(req.Password, user.PasswordHash)
+		if err != nil || !ok {
+			continue
 		}
+		authenticated = append(authenticated, user)
+		options = append(options, tenantOption{TenantID: m.TenantID, TenantName: m.TenantName})
+	}
+
+	switch len(authenticated) {
+	case 0:
+		writeError(w, errInvalidCredentials())
+		return
+	case 1:
+		// Uma conta só com essa senha: entra direto, mesmo que o e-mail
+		// exista em outras academias com outra senha.
+	default:
 		writeError(w, errMultipleTenants(options))
 		return
 	}
-
-	user, err := h.users.FindByEmailInTenant(ctx, chosen.TenantID, req.Email)
-	if err != nil {
-		if err == repo.ErrNotFound {
-			writeError(w, errInvalidCredentials())
-			return
-		}
-		h.logger.Error("login_find_user_failed", slog.Any("error", err))
-		writeError(w, errInternal())
-		return
-	}
-
-	ok, err := security.VerifyPassword(req.Password, user.PasswordHash)
-	if err != nil || !ok {
-		writeError(w, errInvalidCredentials())
-		return
-	}
+	user := authenticated[0]
 
 	resp, apiErr := h.issuer.Issue(ctx, user)
 	if apiErr != nil {
@@ -215,6 +220,32 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, resp)
+}
+
+// filterTenant mantém só a conta do tenant escolhido no 409.
+func filterTenant(matches []domain.TenantMatch, tenantID string) []domain.TenantMatch {
+	for _, m := range matches {
+		if m.TenantID == tenantID {
+			return []domain.TenantMatch{m}
+		}
+	}
+	return nil
+}
+
+var (
+	dummyHashOnce sync.Once
+	dummyHash     string
+)
+
+// burnPasswordCheck gasta o mesmo argon2 de uma verificação real contra um
+// hash descartável.
+func burnPasswordCheck(password string) {
+	dummyHashOnce.Do(func() {
+		dummyHash, _ = security.HashPassword("lyfta-dummy-password")
+	})
+	if dummyHash != "" {
+		_, _ = security.VerifyPassword(password, dummyHash)
+	}
 }
 
 // --- POST /v1/auth/refresh ------------------------------------------------
