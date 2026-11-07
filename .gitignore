@@ -33,3 +33,7 @@ app/android/local.properties
 app/ios/Pods/
 app/ios/.symlinks/
 app/*.g.dart.bak
+
+# Ferramentas de IA de terceiros (Codex) — locais, não versionadas
+.codex/
+AGENTS.md
