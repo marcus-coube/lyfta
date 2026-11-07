@@ -27,4 +27,13 @@ class AppConfig {
     'COMMS_BASE_URL',
     defaultValue: 'http://localhost:8084',
   );
+
+  /// Versão vigente dos termos de uso e da política de privacidade
+  /// (ADR-008 §6). Tem de ser a mesma do `TERMS_VERSION` do `identity` e a que
+  /// consta nos textos de `assets/legal/` — o backend recusa o aceite com
+  /// outra versão (`terms_version_mismatch`).
+  static const String termsVersion = String.fromEnvironment(
+    'TERMS_VERSION',
+    defaultValue: '2026-11-v1',
+  );
 }

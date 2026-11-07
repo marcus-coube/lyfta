@@ -51,6 +51,10 @@ class CheckinDraftStorage {
     );
   }
 
+  /// Apaga todos os rascunhos — exclusão de conta (ADR-008 §2): nada do
+  /// usuário fica no device.
+  Future<void> clear() => _storage.delete(key: _key);
+
   Future<void> _writeAll(List<CheckinDraft> drafts) async {
     await _storage.write(
       key: _key,

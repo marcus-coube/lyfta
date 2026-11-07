@@ -7,6 +7,7 @@ import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
+import '../../../core/legal/legal_document.dart';
 
 /// Tela de signup do professor/academia — cria o tenant + usuário owner
 /// (`POST /v1/tenants`, ligado no P0.6).
@@ -68,6 +69,7 @@ class _SignupFormState extends ConsumerState<_SignupForm> {
 
   bool _loading = false;
   bool _slugEditedManually = false;
+  bool _termsAccepted = false;
   String? _errorMessage;
   String? _errorField;
 
@@ -193,11 +195,34 @@ class _SignupFormState extends ConsumerState<_SignupForm> {
           const SizedBox(height: LySpace.x3),
           Text(_errorMessage!, style: LyType.bodySm(c.danger)),
         ],
-        const SizedBox(height: LySpace.x6),
+        const SizedBox(height: LySpace.x4),
+        // Aceite dos termos e da política de privacidade (ADR-008 §6): o
+        // signup do dono não coleta finalidades de saúde.
+        CheckboxListTile(
+          key: const Key('signup_terms'),
+          value: _termsAccepted,
+          onChanged: (v) => setState(() => _termsAccepted = v ?? false),
+          contentPadding: EdgeInsets.zero,
+          controlAffinity: ListTileControlAffinity.leading,
+          title: Text(l10n.consentTermsAccept, style: LyType.bodySm(c.textPrimary)),
+        ),
+        Wrap(
+          children: [
+            TextButton(
+              onPressed: () => showLegalDocument(context, LegalDocument.terms),
+              child: Text(l10n.consentReadTerms),
+            ),
+            TextButton(
+              onPressed: () => showLegalDocument(context, LegalDocument.privacy),
+              child: Text(l10n.consentReadPrivacy),
+            ),
+          ],
+        ),
+        const SizedBox(height: LySpace.x4),
         LyButton(
           label: l10n.signupSubmit,
           loading: _loading,
-          onPressed: _loading ? null : _submit,
+          onPressed: _loading || !_termsAccepted ? null : _submit,
         ),
         const SizedBox(height: LySpace.x4),
         Center(

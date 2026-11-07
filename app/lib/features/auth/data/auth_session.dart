@@ -10,6 +10,7 @@ class AuthSession {
     required this.tenantId,
     required this.userId,
     required this.roles,
+    this.needsConsent = false,
   });
 
   factory AuthSession.fromJson(Map<String, dynamic> json) {
@@ -19,6 +20,7 @@ class AuthSession {
       tenantId: json['tenant_id'] as String,
       userId: json['user_id'] as String,
       roles: (json['roles'] as List<dynamic>).map((r) => r.toString()).toSet(),
+      needsConsent: json['needs_consent'] as bool? ?? false,
     );
   }
 
@@ -27,6 +29,11 @@ class AuthSession {
   final String tenantId;
   final String userId;
   final Set<String> roles;
+
+  /// O usuário ainda não consentiu na versão atual dos termos (ou numa
+  /// finalidade obrigatória do papel dele) — o app mostra a tela de
+  /// consentimento antes de liberar o resto (ADR-008 §1, P4.5).
+  final bool needsConsent;
 
   /// Papéis desta sessão no enum de UI (ver `userRolesFrom`).
   Set<UserRole> get userRoles => userRolesFrom(roles);

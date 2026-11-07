@@ -1170,6 +1170,117 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get agendaRestHint => 'Nenhum treino registrado neste dia.';
+
+  @override
+  String get consentTitle => 'Antes de continuar';
+
+  @override
+  String get consentSubtitle =>
+      'Para usar o Lyfta precisamos do seu consentimento. Você decide sobre cada item e pode mudar de ideia depois, em Conta.';
+
+  @override
+  String get consentTermsAccept =>
+      'Li e aceito os Termos de Uso e a Política de Privacidade';
+
+  @override
+  String get consentReadTerms => 'Ler os Termos de Uso';
+
+  @override
+  String get consentReadPrivacy => 'Ler a Política de Privacidade';
+
+  @override
+  String get consentHealthDataTitle => 'Dados de saúde (obrigatório)';
+
+  @override
+  String get consentHealthDataBody =>
+      'Autorizo o tratamento dos meus dados de saúde — treinos, cargas, medidas e bioimpedância — para a prescrição e o acompanhamento do meu treino.';
+
+  @override
+  String get consentPhotosTitle => 'Fotos de evolução (opcional)';
+
+  @override
+  String get consentPhotosBody =>
+      'Autorizo guardar minhas fotos de evolução e mostrá-las ao meu professor. Sem isso o app funciona normalmente, só não envia fotos.';
+
+  @override
+  String get consentSubmit => 'Continuar';
+
+  @override
+  String get consentRequiredHint =>
+      'Aceite os itens obrigatórios para continuar.';
+
+  @override
+  String get consentSignOut => 'Sair';
+
+  @override
+  String get legalClose => 'Fechar';
+
+  @override
+  String get legalLoadError => 'Não foi possível carregar o documento.';
+
+  @override
+  String get accountTooltip => 'Conta';
+
+  @override
+  String get accountTitle => 'Conta';
+
+  @override
+  String get accountPrivacySection => 'Privacidade';
+
+  @override
+  String get accountPhotosTitle => 'Fotos de evolução';
+
+  @override
+  String get accountPhotosSubtitle =>
+      'Permite guardar suas fotos e mostrá-las ao seu professor. Ao desligar, o envio de fotos é bloqueado e seu professor deixa de ver as que já enviou.';
+
+  @override
+  String get accountLegalSection => 'Documentos';
+
+  @override
+  String get accountSignOut => 'Sair da conta';
+
+  @override
+  String get accountDeleteSection => 'Excluir conta';
+
+  @override
+  String get accountDeleteTitle => 'Excluir minha conta';
+
+  @override
+  String get accountDeleteSubtitle =>
+      'Apaga seus dados de saúde e suas fotos, anonimiza seus treinos e mensagens e encerra seu acesso. Não dá para desfazer.';
+
+  @override
+  String get accountDeleteDialogTitle => 'Excluir a conta definitivamente?';
+
+  @override
+  String get accountDeleteDialogBody =>
+      'Serão apagados: medidas, bioimpedância e fotos de evolução, inclusive os arquivos. Serão anonimizados: seus treinos executados e suas mensagens, que ficam sem o seu nome. Seu acesso será encerrado e isso não pode ser desfeito.';
+
+  @override
+  String get accountDeletePasswordLabel => 'Confirme sua senha';
+
+  @override
+  String get accountDeleteConfirm => 'Excluir definitivamente';
+
+  @override
+  String get errorConsentRequired =>
+      'Você não autorizou esse uso dos seus dados. Ajuste em Conta > Privacidade.';
+
+  @override
+  String get errorTermsVersionMismatch =>
+      'Os termos foram atualizados. Reabra o app para ler a nova versão.';
+
+  @override
+  String get errorInvalidPassword => 'Senha incorreta.';
+
+  @override
+  String get errorOwnerCannotDelete =>
+      'O dono da conta não pode excluí-la por aqui. Encerrar a academia é outro processo — fale com o suporte.';
+
+  @override
+  String get errorErasureFailed =>
+      'Não conseguimos concluir a exclusão agora. Tente de novo em instantes.';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -2345,4 +2456,115 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get agendaRestHint => 'Nenhum treino registado neste dia.';
+
+  @override
+  String get consentTitle => 'Antes de continuar';
+
+  @override
+  String get consentSubtitle =>
+      'Para utilizar o Lyfta precisamos do seu consentimento. Decide sobre cada item e pode mudar de ideias mais tarde, em Conta.';
+
+  @override
+  String get consentTermsAccept =>
+      'Li e aceito os Termos de Utilização e a Política de Privacidade';
+
+  @override
+  String get consentReadTerms => 'Ler os Termos de Utilização';
+
+  @override
+  String get consentReadPrivacy => 'Ler a Política de Privacidade';
+
+  @override
+  String get consentHealthDataTitle => 'Dados de saúde (obrigatório)';
+
+  @override
+  String get consentHealthDataBody =>
+      'Autorizo o tratamento dos meus dados de saúde — treinos, cargas, medidas e bioimpedância — para a prescrição e o acompanhamento do meu treino.';
+
+  @override
+  String get consentPhotosTitle => 'Fotografias de evolução (opcional)';
+
+  @override
+  String get consentPhotosBody =>
+      'Autorizo guardar as minhas fotografias de evolução e mostrá-las ao meu treinador. Sem isto a app funciona normalmente, apenas não envia fotografias.';
+
+  @override
+  String get consentSubmit => 'Continuar';
+
+  @override
+  String get consentRequiredHint =>
+      'Aceite os itens obrigatórios para continuar.';
+
+  @override
+  String get consentSignOut => 'Terminar sessão';
+
+  @override
+  String get legalClose => 'Fechar';
+
+  @override
+  String get legalLoadError => 'Não foi possível carregar o documento.';
+
+  @override
+  String get accountTooltip => 'Conta';
+
+  @override
+  String get accountTitle => 'Conta';
+
+  @override
+  String get accountPrivacySection => 'Privacidade';
+
+  @override
+  String get accountPhotosTitle => 'Fotografias de evolução';
+
+  @override
+  String get accountPhotosSubtitle =>
+      'Permite guardar as suas fotografias e mostrá-las ao seu treinador. Ao desligar, o envio de fotografias fica bloqueado e o seu treinador deixa de ver as que já enviou.';
+
+  @override
+  String get accountLegalSection => 'Documentos';
+
+  @override
+  String get accountSignOut => 'Terminar sessão';
+
+  @override
+  String get accountDeleteSection => 'Eliminar conta';
+
+  @override
+  String get accountDeleteTitle => 'Eliminar a minha conta';
+
+  @override
+  String get accountDeleteSubtitle =>
+      'Apaga os seus dados de saúde e as suas fotografias, anonimiza os seus treinos e mensagens e termina o seu acesso. Não é possível desfazer.';
+
+  @override
+  String get accountDeleteDialogTitle => 'Eliminar a conta definitivamente?';
+
+  @override
+  String get accountDeleteDialogBody =>
+      'Serão apagados: medidas, bioimpedância e fotografias de evolução, incluindo os ficheiros. Serão anonimizados: os seus treinos executados e as suas mensagens, que ficam sem o seu nome. O seu acesso terminará e isto não pode ser desfeito.';
+
+  @override
+  String get accountDeletePasswordLabel => 'Confirme a sua palavra-passe';
+
+  @override
+  String get accountDeleteConfirm => 'Eliminar definitivamente';
+
+  @override
+  String get errorConsentRequired =>
+      'Não autorizou esta utilização dos seus dados. Ajuste em Conta > Privacidade.';
+
+  @override
+  String get errorTermsVersionMismatch =>
+      'Os termos foram atualizados. Reabra a app para ler a nova versão.';
+
+  @override
+  String get errorInvalidPassword => 'Palavra-passe incorreta.';
+
+  @override
+  String get errorOwnerCannotDelete =>
+      'O dono da conta não a pode eliminar aqui. Encerrar o ginásio é outro processo — contacte o suporte.';
+
+  @override
+  String get errorErasureFailed =>
+      'Não conseguimos concluir a eliminação agora. Tente novamente dentro de instantes.';
 }

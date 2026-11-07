@@ -1169,4 +1169,114 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get agendaRestHint => 'No workout logged on this day.';
+
+  @override
+  String get consentTitle => 'Before you continue';
+
+  @override
+  String get consentSubtitle =>
+      'To use Lyfta we need your consent. You decide on each item and can change your mind later, under Account.';
+
+  @override
+  String get consentTermsAccept =>
+      'I have read and accept the Terms of Use and the Privacy Policy';
+
+  @override
+  String get consentReadTerms => 'Read the Terms of Use';
+
+  @override
+  String get consentReadPrivacy => 'Read the Privacy Policy';
+
+  @override
+  String get consentHealthDataTitle => 'Health data (required)';
+
+  @override
+  String get consentHealthDataBody =>
+      'I authorize the processing of my health data — workouts, loads, measurements and body composition — to prescribe and follow my training.';
+
+  @override
+  String get consentPhotosTitle => 'Progress photos (optional)';
+
+  @override
+  String get consentPhotosBody =>
+      'I authorize storing my progress photos and showing them to my coach. Without this the app works normally, it just does not upload photos.';
+
+  @override
+  String get consentSubmit => 'Continue';
+
+  @override
+  String get consentRequiredHint => 'Accept the required items to continue.';
+
+  @override
+  String get consentSignOut => 'Sign out';
+
+  @override
+  String get legalClose => 'Close';
+
+  @override
+  String get legalLoadError => 'Could not load the document.';
+
+  @override
+  String get accountTooltip => 'Account';
+
+  @override
+  String get accountTitle => 'Account';
+
+  @override
+  String get accountPrivacySection => 'Privacy';
+
+  @override
+  String get accountPhotosTitle => 'Progress photos';
+
+  @override
+  String get accountPhotosSubtitle =>
+      'Lets us store your photos and show them to your coach. Turning it off blocks photo uploads and your coach stops seeing the ones you already sent.';
+
+  @override
+  String get accountLegalSection => 'Documents';
+
+  @override
+  String get accountSignOut => 'Sign out';
+
+  @override
+  String get accountDeleteSection => 'Delete account';
+
+  @override
+  String get accountDeleteTitle => 'Delete my account';
+
+  @override
+  String get accountDeleteSubtitle =>
+      'Erases your health data and photos, anonymizes your workouts and messages and ends your access. This cannot be undone.';
+
+  @override
+  String get accountDeleteDialogTitle => 'Delete the account for good?';
+
+  @override
+  String get accountDeleteDialogBody =>
+      'Erased: measurements, body composition and progress photos, including the files. Anonymized: your completed workouts and your messages, which lose your name. Your access ends and this cannot be undone.';
+
+  @override
+  String get accountDeletePasswordLabel => 'Confirm your password';
+
+  @override
+  String get accountDeleteConfirm => 'Delete for good';
+
+  @override
+  String get errorConsentRequired =>
+      'You have not authorized this use of your data. Change it under Account > Privacy.';
+
+  @override
+  String get errorTermsVersionMismatch =>
+      'The terms were updated. Reopen the app to read the new version.';
+
+  @override
+  String get errorInvalidPassword => 'Wrong password.';
+
+  @override
+  String get errorOwnerCannotDelete =>
+      'The account owner cannot delete the account here. Closing the gym is a separate process — contact support.';
+
+  @override
+  String get errorErasureFailed =>
+      'We could not finish the deletion right now. Try again in a moment.';
 }

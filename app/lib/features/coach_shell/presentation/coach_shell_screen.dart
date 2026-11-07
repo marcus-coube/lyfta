@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/auth/auth_controller.dart';
 import '../../../core/auth/auth_state.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
+import '../../../shared/widgets/account_button.dart';
 import '../../../shared/widgets/ly_shell_scaffold.dart';
 import '../../../shared/widgets/role_context_switcher.dart';
 import '../../chat/presentation/chat_home_screen.dart';
@@ -49,6 +50,7 @@ class _CoachShellScreenState extends ConsumerState<CoachShellScreen> {
       selectedIndex: _index,
       onDestinationSelected: (i) => setState(() => _index = i),
       actions: [
+        const AccountButton(),
         if (authState.hasBothRoles)
           const RoleContextSwitcher(current: ActiveContext.coach),
       ],

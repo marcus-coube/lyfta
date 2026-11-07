@@ -2198,6 +2198,204 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Nenhum treino registrado neste dia.'**
   String get agendaRestHint;
+
+  /// No description provided for @consentTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Antes de continuar'**
+  String get consentTitle;
+
+  /// No description provided for @consentSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Para usar o Lyfta precisamos do seu consentimento. Você decide sobre cada item e pode mudar de ideia depois, em Conta.'**
+  String get consentSubtitle;
+
+  /// No description provided for @consentTermsAccept.
+  ///
+  /// In pt, this message translates to:
+  /// **'Li e aceito os Termos de Uso e a Política de Privacidade'**
+  String get consentTermsAccept;
+
+  /// No description provided for @consentReadTerms.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ler os Termos de Uso'**
+  String get consentReadTerms;
+
+  /// No description provided for @consentReadPrivacy.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ler a Política de Privacidade'**
+  String get consentReadPrivacy;
+
+  /// No description provided for @consentHealthDataTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dados de saúde (obrigatório)'**
+  String get consentHealthDataTitle;
+
+  /// No description provided for @consentHealthDataBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Autorizo o tratamento dos meus dados de saúde — treinos, cargas, medidas e bioimpedância — para a prescrição e o acompanhamento do meu treino.'**
+  String get consentHealthDataBody;
+
+  /// No description provided for @consentPhotosTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fotos de evolução (opcional)'**
+  String get consentPhotosTitle;
+
+  /// No description provided for @consentPhotosBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Autorizo guardar minhas fotos de evolução e mostrá-las ao meu professor. Sem isso o app funciona normalmente, só não envia fotos.'**
+  String get consentPhotosBody;
+
+  /// No description provided for @consentSubmit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Continuar'**
+  String get consentSubmit;
+
+  /// No description provided for @consentRequiredHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aceite os itens obrigatórios para continuar.'**
+  String get consentRequiredHint;
+
+  /// No description provided for @consentSignOut.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sair'**
+  String get consentSignOut;
+
+  /// No description provided for @legalClose.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fechar'**
+  String get legalClose;
+
+  /// No description provided for @legalLoadError.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível carregar o documento.'**
+  String get legalLoadError;
+
+  /// No description provided for @accountTooltip.
+  ///
+  /// In pt, this message translates to:
+  /// **'Conta'**
+  String get accountTooltip;
+
+  /// No description provided for @accountTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Conta'**
+  String get accountTitle;
+
+  /// No description provided for @accountPrivacySection.
+  ///
+  /// In pt, this message translates to:
+  /// **'Privacidade'**
+  String get accountPrivacySection;
+
+  /// No description provided for @accountPhotosTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fotos de evolução'**
+  String get accountPhotosTitle;
+
+  /// No description provided for @accountPhotosSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Permite guardar suas fotos e mostrá-las ao seu professor. Ao desligar, o envio de fotos é bloqueado e seu professor deixa de ver as que já enviou.'**
+  String get accountPhotosSubtitle;
+
+  /// No description provided for @accountLegalSection.
+  ///
+  /// In pt, this message translates to:
+  /// **'Documentos'**
+  String get accountLegalSection;
+
+  /// No description provided for @accountSignOut.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sair da conta'**
+  String get accountSignOut;
+
+  /// No description provided for @accountDeleteSection.
+  ///
+  /// In pt, this message translates to:
+  /// **'Excluir conta'**
+  String get accountDeleteSection;
+
+  /// No description provided for @accountDeleteTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Excluir minha conta'**
+  String get accountDeleteTitle;
+
+  /// No description provided for @accountDeleteSubtitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apaga seus dados de saúde e suas fotos, anonimiza seus treinos e mensagens e encerra seu acesso. Não dá para desfazer.'**
+  String get accountDeleteSubtitle;
+
+  /// No description provided for @accountDeleteDialogTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Excluir a conta definitivamente?'**
+  String get accountDeleteDialogTitle;
+
+  /// No description provided for @accountDeleteDialogBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Serão apagados: medidas, bioimpedância e fotos de evolução, inclusive os arquivos. Serão anonimizados: seus treinos executados e suas mensagens, que ficam sem o seu nome. Seu acesso será encerrado e isso não pode ser desfeito.'**
+  String get accountDeleteDialogBody;
+
+  /// No description provided for @accountDeletePasswordLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Confirme sua senha'**
+  String get accountDeletePasswordLabel;
+
+  /// No description provided for @accountDeleteConfirm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Excluir definitivamente'**
+  String get accountDeleteConfirm;
+
+  /// No description provided for @errorConsentRequired.
+  ///
+  /// In pt, this message translates to:
+  /// **'Você não autorizou esse uso dos seus dados. Ajuste em Conta > Privacidade.'**
+  String get errorConsentRequired;
+
+  /// No description provided for @errorTermsVersionMismatch.
+  ///
+  /// In pt, this message translates to:
+  /// **'Os termos foram atualizados. Reabra o app para ler a nova versão.'**
+  String get errorTermsVersionMismatch;
+
+  /// No description provided for @errorInvalidPassword.
+  ///
+  /// In pt, this message translates to:
+  /// **'Senha incorreta.'**
+  String get errorInvalidPassword;
+
+  /// No description provided for @errorOwnerCannotDelete.
+  ///
+  /// In pt, this message translates to:
+  /// **'O dono da conta não pode excluí-la por aqui. Encerrar a academia é outro processo — fale com o suporte.'**
+  String get errorOwnerCannotDelete;
+
+  /// No description provided for @errorErasureFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não conseguimos concluir a exclusão agora. Tente de novo em instantes.'**
+  String get errorErasureFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/account/presentation/account_screen.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/invite_accept_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
@@ -10,6 +11,7 @@ import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/builder/presentation/plan_builder_screen.dart';
 import '../../features/chat/presentation/chat_screen.dart';
 import '../../features/coach_shell/presentation/coach_shell_screen.dart';
+import '../../features/consent/presentation/consent_screen.dart';
 import '../../features/evolution/presentation/student_evolution_screen.dart';
 import '../../features/student_shell/presentation/student_shell_screen.dart';
 import '../../features/workout/presentation/session_player_screen.dart';
@@ -23,6 +25,7 @@ const _publicPaths = {'/login', '/signup', '/invite', '/forgot', '/reset'};
 /// - sem sessão (ou status ainda desconhecido) fora de rota pública → `/login`;
 /// - sessão ativa em rota pública (ex.: usuário volta para `/login` já
 ///   logado) → `/home`;
+/// - autenticado sem consentimento vigente → `/consent` (ADR-008 §1);
 /// - `/home` escolhe o shell pelo [ActiveContext] atual (coach × student).
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -34,6 +37,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isPublic = _publicPaths.contains(state.matchedLocation);
 
       if (authState.status == AuthStatus.authenticated) {
+        // Gate de consentimento (ADR-008 §1, P4.5): sem consentimento vigente
+        // na versão atual dos termos o usuário só enxerga a tela de
+        // consentimento — nem o app, nem rota pública.
+        final onConsent = state.matchedLocation == '/consent';
+        if (authState.consentPending) return onConsent ? null : '/consent';
+        if (onConsent) return '/home';
         return isPublic ? '/home' : null;
       }
 
@@ -44,6 +53,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/consent',
+        builder: (context, state) => const ConsentScreen(),
+      ),
+      GoRoute(
+        path: '/account',
+        builder: (context, state) => const AccountScreen(),
       ),
       GoRoute(
         path: '/signup',

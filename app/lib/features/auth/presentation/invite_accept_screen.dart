@@ -6,6 +6,8 @@ import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
+import '../../account/data/account_repository.dart';
+import '../../consent/presentation/consent_choices.dart';
 
 /// Tela de aceite de convite — ligada a `POST /v1/invitations/accept`
 /// (P0.6), com auto-login. O token chega via query param da rota `/invite`
@@ -26,6 +28,15 @@ class _InviteAcceptScreenState extends ConsumerState<InviteAcceptScreen> {
   final _passwordController = TextEditingController();
   bool _loading = false;
   String? _errorMessage;
+  bool _terms = false;
+  bool _healthData = false;
+  bool _photos = false;
+
+  /// O aceite exige os termos e, para o aluno, os dados de saúde (ADR-008
+  /// §1). O link do convite não revela o papel, então a tela pede as duas
+  /// coisas a todo convidado; o servidor só grava as finalidades de saúde de
+  /// quem é aluno.
+  bool get _canSubmit => _terms && _healthData;
 
   @override
   void dispose() {
@@ -47,6 +58,10 @@ class _InviteAcceptScreenState extends ConsumerState<InviteAcceptScreen> {
       await ref.read(authControllerProvider.notifier).acceptInvite(
             token: token,
             password: _passwordController.text,
+            consents: {
+              ConsentPurpose.healthData: _healthData,
+              ConsentPurpose.progressPhotos: _photos,
+            },
           );
       // Sucesso: auto-login já atualizou AuthState; o redirect do go_router
       // leva ao shell certo — nada a fazer aqui.
@@ -99,10 +114,19 @@ class _InviteAcceptScreenState extends ConsumerState<InviteAcceptScreen> {
                       onSubmitted: (_) => _loading ? null : _submit(),
                     ),
                     const SizedBox(height: LySpace.x6),
+                    ConsentChoices(
+                      termsAccepted: _terms,
+                      healthData: _healthData,
+                      progressPhotos: _photos,
+                      onTermsChanged: (v) => setState(() => _terms = v),
+                      onHealthDataChanged: (v) => setState(() => _healthData = v),
+                      onProgressPhotosChanged: (v) => setState(() => _photos = v),
+                    ),
+                    const SizedBox(height: LySpace.x6),
                     LyButton(
                       label: l10n.inviteSubmit,
                       loading: _loading,
-                      onPressed: _loading ? null : _submit,
+                      onPressed: _loading || !_canSubmit ? null : _submit,
                     ),
                   ],
                 ],

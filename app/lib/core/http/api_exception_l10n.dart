@@ -48,6 +48,17 @@ extension ApiExceptionL10n on ApiException {
         return l10n.errorNoDraftToPublish;
       case 'unknown_exercise':
         return l10n.errorUnknownExercise;
+      // Consentimento e exclusão de conta (ADR-008, P4.5).
+      case 'consent_required':
+        return l10n.errorConsentRequired;
+      case 'terms_version_mismatch':
+        return l10n.errorTermsVersionMismatch;
+      case 'invalid_password':
+        return l10n.errorInvalidPassword;
+      case 'owner_cannot_delete':
+        return l10n.errorOwnerCannotDelete;
+      case 'erasure_failed':
+        return l10n.errorErasureFailed;
       case 'network_error':
         return l10n.errorNetwork;
       case 'internal_error':

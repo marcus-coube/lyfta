@@ -65,3 +65,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
+  # Termos de uso e política de privacidade versionados (ADR-008 §6, P4.5).
+  assets:
+    - assets/legal/

@@ -109,17 +109,24 @@ class AuthController extends Notifier<AuthState> {
       name: name,
       email: email,
       password: password,
+      // O formulário só deixa chegar aqui com o aceite marcado (ADR-008 §6).
+      termsVersion: AppConfig.termsVersion,
     );
     await _applySession(session);
   }
 
+  /// [consents] são as finalidades marcadas no aceite (`health_data`
+  /// obrigatória para o aluno, `progress_photos` opcional — ADR-008 §1).
   Future<void> acceptInvite({
     required String token,
     required String password,
+    required Map<String, bool> consents,
   }) async {
     final session = await _authRepository.acceptInvite(
       token: token,
       password: password,
+      termsVersion: AppConfig.termsVersion,
+      consents: consents,
     );
     await _applySession(session);
   }
@@ -155,11 +162,12 @@ class AuthController extends Notifier<AuthState> {
 
   /// Usado apenas em testes de widget que não sobem o backend real (ex.:
   /// exercitar o roteamento por papel sem depender de HTTP).
-  void signInStub(Set<UserRole> roles) {
+  void signInStub(Set<UserRole> roles, {bool consentPending = false}) {
     state = AuthState.authenticated(
       roles: roles,
       tenantId: 'stub-tenant',
       userId: 'stub-user',
+      consentPending: consentPending,
     );
   }
 
@@ -191,6 +199,34 @@ class AuthController extends Notifier<AuthState> {
     );
   }
 
+  /// Aplica o resultado de `PUT /v1/me/consents`: o access token novo (com as
+  /// finalidades atualizadas nas claims, para os outros serviços enxergarem a
+  /// mudança já) e se o gate de consentimento ainda vale.
+  Future<void> applyConsentResult({
+    required String? accessToken,
+    required bool needsConsent,
+  }) async {
+    final stored = await _tokenStorage.readSession();
+    if (stored != null && accessToken != null && accessToken.isNotEmpty) {
+      await _tokenStorage.save(
+        AuthTokens(
+          accessToken: accessToken,
+          refreshToken: stored.tokens.refreshToken,
+        ),
+      );
+    }
+    if (state.isAuthenticated) {
+      state = state.copyWith(consentPending: needsConsent);
+    }
+  }
+
+  /// Fim da exclusão de conta (ADR-008 §2): os tokens já foram revogados pelo
+  /// servidor, então só limpamos a sessão local — sem chamar logout.
+  Future<void> completeAccountDeletion() async {
+    await _tokenStorage.clear();
+    state = const AuthState.unauthenticated();
+  }
+
   Future<void> _applySession(AuthSession session) async {
     await _tokenStorage.saveSession(
       StoredSession(
@@ -209,6 +245,7 @@ class AuthController extends Notifier<AuthState> {
       tenantId: session.tenantId,
       userId: session.userId,
       activeContext: previousContext,
+      consentPending: session.needsConsent,
     );
   }
 

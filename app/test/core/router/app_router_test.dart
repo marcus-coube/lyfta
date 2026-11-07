@@ -124,4 +124,25 @@ void main() {
         container.read(appRouterProvider).routerDelegate.currentConfiguration.uri.toString();
     expect(location, '/home');
   });
+
+  testWidgets('autenticado sem consentimento só enxerga /consent (gate do ADR-008)', (tester) async {
+    final container = _container();
+    addTearDown(container.dispose);
+
+    container
+        .read(authControllerProvider.notifier)
+        .signInStub({UserRole.student}, consentPending: true);
+    container.read(appRouterProvider).go('/home');
+    await tester.pumpWidget(_app(container));
+    await tester.pumpAndSettle();
+
+    String location() =>
+        container.read(appRouterProvider).routerDelegate.currentConfiguration.uri.toString();
+    expect(location(), '/consent');
+
+    // Rota pública também não escapa do gate.
+    container.read(appRouterProvider).go('/login');
+    await tester.pumpAndSettle();
+    expect(location(), '/consent');
+  });
 }

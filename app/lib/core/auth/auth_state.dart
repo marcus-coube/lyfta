@@ -34,6 +34,7 @@ class AuthState {
     this.activeContext,
     this.tenantId,
     this.userId,
+    this.consentPending = false,
   });
 
   const AuthState.unknown() : this(status: AuthStatus.unknown);
@@ -44,6 +45,7 @@ class AuthState {
     required String tenantId,
     required String userId,
     ActiveContext? activeContext,
+    bool consentPending = false,
   }) {
     final resolvedContext = activeContext ??
         (roles.contains(UserRole.coach)
@@ -55,6 +57,7 @@ class AuthState {
       activeContext: resolvedContext,
       tenantId: tenantId,
       userId: userId,
+      consentPending: consentPending,
     );
   }
 
@@ -64,17 +67,22 @@ class AuthState {
   final String? tenantId;
   final String? userId;
 
+  /// Falta consentimento obrigatório (versão nova dos termos, conta anterior
+  /// ao P4.5): o router prende o usuário na tela de consentimento (ADR-008 §1).
+  final bool consentPending;
+
   bool get isAuthenticated => status == AuthStatus.authenticated;
   bool get hasBothRoles =>
       roles.contains(UserRole.coach) && roles.contains(UserRole.student);
 
-  AuthState copyWith({ActiveContext? activeContext}) {
+  AuthState copyWith({ActiveContext? activeContext, bool? consentPending}) {
     return AuthState(
       status: status,
       roles: roles,
       activeContext: activeContext ?? this.activeContext,
       tenantId: tenantId,
       userId: userId,
+      consentPending: consentPending ?? this.consentPending,
     );
   }
 }

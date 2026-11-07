@@ -23,6 +23,7 @@ class AuthRepository {
     required String name,
     required String email,
     required String password,
+    required String termsVersion,
   }) async {
     final response = await _post(
       '/v1/tenants',
@@ -32,6 +33,7 @@ class AuthRepository {
         'name': name,
         'email': email,
         'password': password,
+        'terms_version': termsVersion,
       },
     );
     return AuthSession.fromJson(response!);
@@ -81,10 +83,17 @@ class AuthRepository {
   Future<AuthSession> acceptInvite({
     required String token,
     required String password,
+    required String termsVersion,
+    required Map<String, bool> consents,
   }) async {
     final response = await _post(
       '/v1/invitations/accept',
-      data: {'token': token, 'password': password},
+      data: {
+        'token': token,
+        'password': password,
+        'terms_version': termsVersion,
+        'consents': consents,
+      },
     );
     return AuthSession.fromJson(response!);
   }
