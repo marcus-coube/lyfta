@@ -3,7 +3,7 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** `P4.5` (LGPD mínima: consentimento + exclusão de conta), depois `P4.6` (tratamento de crash). A `P4.4` segue **parcial, não fechada** (2026-11-07): varredura, versão `1.0.0+1`, build web e [e2e-final.md](e2e-final.md) prontos; fecha depois da P4.5/P4.6 e dos bloqueios humanos classificados nas Notas da P4.4.
+**Próxima tarefa:** `P4.6` (tratamento de crash e erros). A `P4.4` segue **parcial, não fechada** (2026-11-07): varredura, versão `1.0.0+1`, build web e [e2e-final.md](e2e-final.md) prontos; fecha depois da P4.6 e dos bloqueios humanos classificados nas Notas da P4.4. A `P4.5` (LGPD) fechou em 2026-11-07; falta a revisão jurídica dos textos de `assets/legal/` (humano).
 
 | Fase | Progresso | Situação |
 |---|---|---|
@@ -11,8 +11,8 @@
 | P1 — Treino | 8/8 | concluída |
 | P2 — Evolução | 5/5 | concluída |
 | P3 — Comunicação | 5/5 | concluída |
-| P4 — Praticidade | 3/6 | em andamento |
-| **Total** | **28/31** | |
+| P4 — Praticidade | 4/6 | em andamento |
+| **Total** | **29/31** | |
 
 ## Bancos locais
 
@@ -61,7 +61,7 @@ destrava #2, #3 e #4 de uma vez; #5 não depende de nada.
 | 5 | Aba Agenda com dados reais: semana corrente, navegação entre semanas, mês expansível, streak | P4.1 | nada — **dá para fazer no Chrome agora** |
 | 6 | Cold start ≤ 2,5 s em device Android médio (`flutter run --profile` + timeline) — a mudança estrutural (Firebase adiado pro pós-primeiro-frame) já foi feita, só falta medir o número do Aceite | P4.2 | #1 |
 | 7 | TalkBack de verdade no fluxo Hoje→executar→finalizar (Aceite literal do P4.3) — feita auditoria estática do widget tree (labels, tooltips, `Semantics`) sem device, mas isso não substitui ouvir o leitor de tela real | P4.3 | #1 |
-| 8 | **LGPD ausente (ADR-008):** consentimento no aceite do convite e exclusão de conta não existem. Bloqueia release; precisa virar tarefa (P4.5) | P4.4 | decisão/implementação |
+| 8 | ~~LGPD ausente~~ implementada na P4.5. **Falta a revisão jurídica** dos textos em `app/assets/legal/` (controlador, contato `privacidade@lyfta.app`) e a decisão sobre um job de reconciliação de exclusões paradas em `deleting` (Notas da P4.5) | P4.5 | ação humana (advogado) |
 | 9 | Keystore de release Android (build assina com debug), conta/assinatura Apple + APNs, Resend real + staging, crash handler sem destino de log | P4.4 | ação humana / ADR |
 
 A AVD `lyfta_pixel` é `google_apis` (sem Play Store), escolhida na P1.8 para
@@ -110,3 +110,4 @@ de execução" da fase onde nasceram.
 | 2026-09-12 | **P4.3 concluída (Mac):** app — auditoria i18n + a11y básica. Paridade de ARB já estava fechada de verdade (348/348/348 chaves, confirmado antes de qualquer suposição) — o trabalho foi o script `app/tool/check_arb_parity.dart` (Dart puro, sem dependência nova, roda igual em Mac/Windows via `dart run`) que agora garante isso no CI (falha com chave faltando **ou** placeholder `{count}`-like perdido na tradução) e o step novo em `.github/workflows/ci.yml`. Achado real de formatação (ADR-011 §4): `formatLoad`/`formatMetric`/`_formatVolume` usavam `toString()` de `double`, que é sempre ponto decimal — carga/volume em kg mostrava "42.5" para aluno pt-BR em vez de "42,5"; corrigido com `NumberFormat` do `intl` nas 4 funções e ~13 call sites (inclusive um teste que **afirmava o bug**, corrigido). Mesma classe de bug no horário do chat (`ChatBubble` montava "HH:mm" na mão, sempre 24h) — trocado por `DateFormat.jm(locale)` (24h pt-BR/pt-PT, 12h AM/PM em en). a11y: único `IconButton` sem `tooltip` (toggle de senha do `LyTextField`) corrigido com 2 chaves novas (`commonShowPassword`/`commonHidePassword`) e `assert` no construtor prevenindo regressão; toque ≥48dp e contraste WCAG AA auditados (dark — único tema que o app mostra de verdade — passa em tudo; achados sem correção por estarem fora do Aceite ou serem dívida em código morto: tap target pequeno no retry/remover do chat, e paleta do tema light — inatingível hoje, `ThemeMode.dark` fixo — falharia AA para cor semântica como texto). TalkBack real não verificado (bloqueio #1 de sempre) — virou pendência #7. `flutter analyze`/guard/parity verdes, **67 testes verdes** (2 novos); nenhum serviço Go tocado (ver Notas de execução em P4-praticidade.md) |
 | 2026-11-07 | P4.4 parcial (não fechada): analyzer 0 issues, 67 testes, vet/test verdes nos 4 serviços, app 1.0.0+1, build web release ok, e2e-final.md escrito; LGPD ausente e bloqueios humanos classificados nas Notas da P4 |
 | 2026-11-07 | Tarefas novas no plano: P4.5 (LGPD mínima do ADR-008, achado da P4.4) e P4.6 (tratamento de crash com Sentry/GlitchTip, ADR-009 §5; pendência da P4.2). Total passa a 31 |
+| 2026-11-07 | **P4.5 concluída (Mac):** LGPD mínima (ADR-008). identity: `consents` append-only (migration 0010) + status `deleting`/`deleted` (0011), `GET/PUT /v1/me/consents`, claims do JWT com as finalidades vigentes na `TERMS_VERSION`, termos obrigatórios no signup e no aceite (aluno: `health_data` obrigatória), `DELETE /v1/me` com senha orquestrando a exclusão nos 3 serviços (502 e repetível) e anonimizando o usuário. workout/assessment/comms: `DELETE /internal/v1/users/{id}` idempotente — assessment apaga medidas, bioimpedância, fotos e a pasta do aluno no MinIO; workout anonimiza execuções e desatribui planos (versão publicada é imutável); comms anonimiza mensagens/check-ins e apaga devices. assessment recusa foto sem consentimento e o coach não vê as de quem revogou (consulta M2M ao identity). App: termos em 3 idiomas, gate `/consent`, tela Conta (privacidade, sair, excluir conta). Verificado à mão contra o backend local, inclusive o objeto sumindo do MinIO e o 502 com serviço parado. Sem dependência nova |

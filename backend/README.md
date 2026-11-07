@@ -77,7 +77,11 @@ cd identity && go run ./cmd/api
 Env por serviço: `.env.example` versionado; `.env` local nunca commitado.
 Variáveis comuns: `DATABASE_URL`, `PORT`, `JWT_PUBLIC_KEY` (+ `JWT_PRIVATE_KEY` só
 no identity), `INTERNAL_TOKEN`, `S3_*` (workout/assessment/comms),
-`RESEND_API_KEY` (identity), `REDIS_URL` (comms).
+`RESEND_API_KEY` (identity), `REDIS_URL` (comms). LGPD (P4.5): `TERMS_VERSION`
+(identity; mesma versão dos textos em `app/assets/legal/`), `WORKOUT_URL`,
+`ASSESSMENT_URL` e `COMMS_URL` (identity, para a exclusão de conta) e
+`IDENTITY_URL` (assessment, para o consentimento de outra pessoa) — M2M com
+`INTERNAL_TOKEN`.
 
 ## Bancos locais
 

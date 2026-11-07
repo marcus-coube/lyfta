@@ -66,7 +66,7 @@ pendências restantes listadas e classificadas (bloqueia release × vai pro 2.0)
 
 ---
 
-## - [ ] P4.5 LGPD mínima — consentimento + exclusão de conta (identity, workout, assessment, comms, Flutter)
+## - [x] P4.5 LGPD mínima — consentimento + exclusão de conta (identity, workout, assessment, comms, Flutter)
 
 **Objetivo:** cumprir ADR-008 §1, §2 e §6 antes do release (achado da P4.4).
 **Passos:**
@@ -448,7 +448,7 @@ manualmente quando houver projeto Sentry/GlitchTip (pendência humana).
 ### P4.4 (2026-11-07, Mac) — parcial: a tarefa NÃO fecha
 
 Feita só a parte que não depende de humano. Checkbox segue aberto e o total
-do STATUS segue 28/29.
+do STATUS segue 28/31.
 
 - **Varredura (passo 3).** `flutter analyze`: 104 erros, **todos** em
   `app/build/ios/SourcePackages/` (artefato do build iOS no simulador, fora do
@@ -509,3 +509,105 @@ do STATUS segue 28/29.
 - Paginação do Check-ins/alunos acima de 200 por papel; header da lista de alunos em janela muito baixa (P1.8).
 - Testes de widget dos skeletons/retry (P4.2); fila offline persistente na web (hoje memória).
 - Verificação do `docker compose` e Android/Windows do P0 (Toolchain Windows).
+
+### P4.5 (2026-11-07, Mac)
+
+LGPD mínima do ADR-008 (§1, §2, §6) ponta a ponta. Backend em
+`a7ff105`, app em `43b7b2d`.
+
+- **Finalidades.** `terms` (aceite dos termos e da política, todo papel),
+  `health_data` (obrigatória do aluno) e `progress_photos` (opcional). O
+  `terms` é uma finalidade a mais que o plano não listava: sem uma linha em
+  `consents` o aceite dos termos do coach/owner não teria onde ser registrado
+  (§3 exige o aceite no signup). O gate exige `terms` de todos e `health_data`
+  do aluno.
+- **identity.** Migrations `0010_consents` (tabela append-only, RLS, índice por
+  `tenant_id`, índice único parcial `revoked_at IS NULL`) e
+  `0011_user_deletion_status` (`deleting`/`deleted` no CHECK de `users.status`).
+  `GET/PUT /v1/me/consents` (PUT devolve também um access token já com as
+  claims novas); claims do JWT ganharam `consents` (só as vigentes na
+  `TERMS_VERSION` atual, então termo novo derruba tudo e cai no gate); respostas
+  de signup/login/refresh/accept trazem `consents`, `needs_consent` e
+  `terms_version`. `POST /v1/tenants` e `POST /v1/invitations/accept` exigem
+  `terms_version` (400 `consent_required`, 409 `terms_version_mismatch`), e o
+  aceite do aluno exige `health_data: true`. `DELETE /v1/me` (senha) →
+  `deleting` + refresh tokens revogados → `DELETE /internal/v1/users/{id}` nos 3
+  serviços (todos são tentados; falha vira 502 `erasure_failed` com a lista) →
+  anonimização (e-mail `deleted+<id>@deleted.invalid`, nome `deleted`, hash
+  vazio, papéis/tokens/resets/convites do e-mail apagados). Owner recebe 403
+  `owner_cannot_delete`; senha errada, 403 `invalid_password` (não 401, que o
+  app trata como sessão morta). `GET /internal/v1/users/{id}/consents` (M2M) existe
+  para o assessment. Usuários `deleting`/`deleted` somem da lista do professor e
+  não renovam sessão (o refresh agora exige `active`; antes `disabled` ainda
+  renovava). Código novo: `internal/erasure` (cliente M2M, duplicável),
+  `SessionIssuer` (substitui `issueTokens`). Variáveis novas: `TERMS_VERSION`,
+  `WORKOUT_URL`, `ASSESSMENT_URL`, `COMMS_URL`.
+- **assessment.** `DELETE /internal/v1/users/{id}`: apaga medidas,
+  bioimpedância e fotos **e todos os objetos da pasta do aluno no storage**
+  (lista pelo prefixo `tenants/{t}/students/{s}/`, então pega até upload que
+  nunca virou linha); objetos primeiro, banco depois, para a repetição sempre
+  achar o que falta. Foto: o aluno age pelas claims (`progress_photos` vigente;
+  presign e cadastro dão 403 `consent_required`), mas o **coach age sobre OUTRA
+  pessoa**, e as claims dele não dizem nada do aluno — por isso o assessment
+  ganhou um cliente M2M do identity (`IDENTITY_URL`, `internal/consent`) usado
+  só nas rotas do coach: sem consentimento, a lista de fotos vem vazia com
+  `consent_revoked: true`, presign/cadastro dão 403 e o `photo_count` do resumo
+  zera. Falha ao consultar o identity é 500 (na dúvida, não grava foto).
+- **workout.** Execuções: `student_id` vira o UUID nulo (os logs de série são
+  append-only e nem são tocados). Estado de rotação: excluído. **Desvio do
+  plano:** planos atribuídos são **desatribuídos** (student_id nulo, título
+  limpo), não deletados — a versão publicada é imutável (ADR-004 §1, trigger no
+  banco) e as sessões anonimizadas ainda referenciam o snapshot dela.
+- **comms.** Mensagens: autor vira UUID nulo (a conversa permanece para o outro
+  participante); check-ins: aluno/revisor nulos e `pain_notes`/`comment`
+  apagados (texto livre de saúde); `device_tokens` e `notification_log`
+  excluídos.
+- **app.** Termos em `assets/legal/` (`terms_*`/`privacy_*` × pt-BR, pt-PT, en;
+  versão `2026-11-v1` dentro de cada texto, conferida por teste contra
+  `AppConfig.termsVersion` = `--dart-define=TERMS_VERSION`). Signup com
+  checkbox dos termos; aceite de convite com `ConsentChoices` (termos +
+  `health_data` + `progress_photos`); `/consent` é o gate (o router prende o
+  usuário lá enquanto `AuthState.consentPending`); `/account` (ícone no app bar
+  dos dois shells) com interruptor das fotos, documentos, sair e "Excluir minha
+  conta" (senha); ao concluir limpa o banco local do treino, os rascunhos de
+  check-in e a sessão. **Não existia tela de perfil nem botão de sair**: a tela
+  Conta nasceu aqui e é o primeiro logout visível do app.
+- **Verificado à mão** contra o backend local (4 serviços reiniciados com o
+  código novo, MinIO real): signup sem termos 400; aceite sem `health_data` 400;
+  foto subida no MinIO por URL assinada e cadastrada; revogar fotos → presign
+  403 com o token novo, coach vê lista vazia com `consent_revoked`, contagem 0;
+  reconceder volta a mostrar; owner 403; senha errada 403; com o assessment
+  parado o DELETE deu 502 `erasure_failed` ["assessment"], usuário ficou
+  `deleting`, login bloqueado, workout e comms já tinham apagado; repetir com o
+  assessment de volta deu 204. Depois: fotos e medidas 0, **pasta do aluno
+  ausente no MinIO**, mensagem do aluno anônima e a do coach intacta, check-in
+  anônimo sem textos, device excluído, plano desatribuído, usuário `deleted`
+  com e-mail/nome/hash anonimizados, consentimentos mantidos, login falha.
+
+**Dívidas e limites anotados**
+- **Sem reconciliação.** Se a exclusão parar em 502 e o access token (15 min)
+  expirar, o usuário fica `deleting` sem como repetir (login bloqueado). Hoje
+  só dá para concluir à mão (reenviar `DELETE /internal/v1/users/{id}` aos 3
+  serviços e anonimizar). Um job que varre `deleting` antigos resolve; não
+  coube no MVP.
+- Access token do usuário excluído segue válido até 15 min: um sync offline
+  tardio pode recriar uma sessão sob o UUID dele. Mesma janela vale para
+  revogar fotos nos serviços que só leem claims (o app troca o token no PUT, mas
+  outro device só vê a mudança no próximo refresh).
+- O link de convite não revela o papel, então o aceite pede `health_data` a todo
+  convidado (coach incluso); o servidor só grava as finalidades de saúde de
+  aluno. Um `GET` público do papel do convite resolveria.
+- Imagens do chat do usuário excluído continuam no storage do comms
+  (anonimizadas só no autor); apagar objeto exige presigner com delete no comms.
+- O coach não ganhou aviso na UI para `consent_revoked` (a ficha mostra o
+  estado vazio de fotos). Texto do estado vazio específico fica para depois.
+- **Revisão jurídica dos textos de `assets/legal/` pendente (humano):** o
+  conteúdo é razoável para o MVP, mas foi escrito sem advogado; o contato
+  `privacidade@lyfta.app` e a identificação do controlador precisam ser
+  confirmados antes do release.
+- Migrations só rodam com superusuário/dono: com `DATABASE_URL` da role
+  `lyfta_app` o `migrate` falha no `TRUNCATE schema_migrations`. Usei
+  `postgres://postgres@localhost:5432/<banco>` (trust local).
+- Nenhuma dependência nova (Go e Flutter); só `assets:` no `pubspec.yaml`.
+- `dart format` no repo inteiro **não** é o estilo do projeto (reformata ~70
+  arquivos); formatar só arquivo novo.

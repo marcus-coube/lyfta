@@ -47,6 +47,12 @@ flutter run -d emulator-5554 \
   --dart-define=WORKOUT_BASE_URL=http://10.0.2.2:8082
 ```
 
+`TERMS_VERSION` (`--dart-define=TERMS_VERSION=...`, padrão `2026-11-v1`) é a
+versão dos termos de uso e da política de privacidade em `assets/legal/`
+(ADR-008 §6). Tem de ser a mesma do `TERMS_VERSION` do `identity` e a que consta
+dentro de cada texto (um teste confere); o backend recusa o aceite com outra
+versão. Mudar a versão obriga todo usuário a consentir de novo.
+
 ## iOS (simulador, Mac)
 
 Exige Xcode completo (não só Command Line Tools), CocoaPods
