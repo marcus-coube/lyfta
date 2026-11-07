@@ -76,9 +76,11 @@ func NewRouter(
 		// Usuários do tenant (P1.6): a lista de alunos do professor. É do
 		// identity porque o vínculo aluno↔tenant vive aqui — nenhum serviço
 		// lê o banco do outro (ADR-013 §2).
+		// O aluno entra só para o diretório da equipe (nome do professor no
+		// chat); o handler barra o resto (ver UserHandler.List).
 		r.Route("/users", func(r chi.Router) {
 			r.Use(RequireAuth(signer))
-			r.Use(RequireRole(string(domain.RoleOwner), string(domain.RoleCoach)))
+			r.Use(RequireRole(string(domain.RoleOwner), string(domain.RoleCoach), string(domain.RoleStudent)))
 			r.Get("/", users.List)
 		})
 

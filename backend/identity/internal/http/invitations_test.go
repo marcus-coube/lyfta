@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"regexp"
+	"strings"
 	"sync"
 	"testing"
 
@@ -128,6 +129,10 @@ func TestInvitationFlow(t *testing.T) {
 	msg, ok := mailer.lastTo(inviteeEmail)
 	if !ok {
 		t.Fatalf("esperava e-mail de convite para %s", inviteeEmail)
+	}
+	// Quem convida é a academia, não o produto (E2E da P4.4).
+	if !strings.Contains(msg.HTML, "Academia Convite") {
+		t.Fatalf("e-mail de convite deveria trazer o nome da academia: %s", msg.HTML)
 	}
 	token := tokenFromMail(t, msg)
 

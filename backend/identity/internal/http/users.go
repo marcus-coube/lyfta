@@ -92,6 +92,14 @@ func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 		}
 		filter.Status = status
 	}
+	// Aluno (sem papel de equipe): só o diretório da equipe — professores e
+	// owner, para o chat mostrar o nome do professor. Nunca outros alunos
+	// (ADR-008 §3) e sem e-mail na resposta (minimização).
+	staffOnly := !hasRole(claims, domain.RoleOwner) && !hasRole(claims, domain.RoleCoach)
+	if staffOnly && filter.Role != domain.RoleCoach && filter.Role != domain.RoleOwner {
+		writeError(w, errForbidden())
+		return
+	}
 	// Escopo do vínculo (ADR-016 §2): owner vê todos e pode filtrar por
 	// professor; coach sem owner só vê os alunos dele.
 	if hasRole(claims, domain.RoleOwner) {
@@ -102,7 +110,7 @@ func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 			}
 			filter.CoachID = raw
 		}
-	} else if filter.Role == "" || filter.Role == domain.RoleStudent {
+	} else if !staffOnly && (filter.Role == "" || filter.Role == domain.RoleStudent) {
 		// Lista de alunos (ou sem filtro, que devolveria alunos): só os dele.
 		// A lista de professores/owners segue aberta ao coach — é o diretório
 		// de nomes que o chat usa e não é dado de aluno.
@@ -142,6 +150,9 @@ func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 		item := userResponse{
 			ID: u.ID, Name: u.Name, Email: u.Email, Roles: roles,
 			Status: string(u.Status), Locale: u.Locale, CreatedAt: u.CreatedAt,
+		}
+		if staffOnly {
+			item.Email = ""
 		}
 		if u.CoachID != nil {
 			item.CoachID = *u.CoachID

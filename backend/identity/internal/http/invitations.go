@@ -22,6 +22,7 @@ import (
 type InvitationHandler struct {
 	logger      *slog.Logger
 	invitations *repo.InvitationRepo
+	tenants     *repo.TenantRepo
 	users       *repo.UserRepo
 	consents    *repo.ConsentRepo
 	issuer      *SessionIssuer
@@ -37,6 +38,7 @@ type InvitationHandler struct {
 func NewInvitationHandler(
 	logger *slog.Logger,
 	invitations *repo.InvitationRepo,
+	tenants *repo.TenantRepo,
 	users *repo.UserRepo,
 	consents *repo.ConsentRepo,
 	issuer *SessionIssuer,
@@ -47,6 +49,7 @@ func NewInvitationHandler(
 	return &InvitationHandler{
 		logger:       logger,
 		invitations:  invitations,
+		tenants:      tenants,
 		users:        users,
 		consents:     consents,
 		issuer:       issuer,
@@ -180,9 +183,6 @@ func (h *InvitationHandler) createAndSendInvitation(ctx context.Context, tenantI
 		return domain.Invitation{}, &errAPI
 	}
 
-	// tenantName só é usada no corpo do e-mail; buscamos via find_tenants_by_email
-	// seria excessivo aqui, então usamos o e-mail como identificação simples do
-	// convite — suficiente para o template pt-BR do plano (não é dado sensível).
 	inv, err := h.invitations.Create(ctx, domain.Invitation{
 		TenantID:  tenantID,
 		Email:     email,
@@ -197,7 +197,15 @@ func (h *InvitationHandler) createAndSendInvitation(ctx context.Context, tenantI
 		return domain.Invitation{}, &errAPI
 	}
 
-	msg := mail.InvitationMessage(email, h.appURL, tokenPlain, "Lyfta")
+	// O e-mail diz quem convidou: o nome da academia. Falha na busca não
+	// impede o convite — cai no nome do produto.
+	tenantName := "Lyfta"
+	if t, err := h.tenants.FindByID(ctx, tenantID); err == nil && t.Name != "" {
+		tenantName = t.Name
+	} else if err != nil {
+		h.logger.Warn("invitation_tenant_lookup_failed", slog.Any("error", err))
+	}
+	msg := mail.InvitationMessage(email, h.appURL, tokenPlain, tenantName)
 	if err := h.mailer.Send(ctx, msg); err != nil {
 		h.logger.Error("invitation_send_mail_failed", slog.Any("error", err))
 		// Não falha a criação do convite por erro de e-mail (fica pendente de

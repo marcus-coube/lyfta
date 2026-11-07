@@ -211,3 +211,37 @@ func TestListUsersPaginates(t *testing.T) {
 		t.Fatalf("cursor inválido deveria dar 400 invalid_cursor: %d %+v", bad.status, bad.body)
 	}
 }
+
+// O aluno lê só o diretório da equipe — é o nome do professor no chat (E2E
+// da P4.4) — sem e-mail, e nunca a lista de alunos.
+func TestStudentSeesStaffDirectoryOnly(t *testing.T) {
+	f := newUsersFixture(t)
+	session, _ := inviteStudentSession(t, f, map[string]bool{"terms": true, "health_data": true})
+	token, _ := session["access_token"].(string)
+
+	for _, role := range []string{"owner", "coach"} {
+		resp := doGetAuth(t, f.client, f.url+"/v1/users?role="+role, token)
+		if resp.status != http.StatusOK {
+			t.Fatalf("role=%s: esperava 200, obtive %d %v", role, resp.status, resp.body)
+		}
+		items, _ := resp.body["items"].([]any)
+		if role == "owner" && len(items) == 0 {
+			t.Fatalf("role=owner: esperava o dono da academia, lista vazia")
+		}
+		for _, raw := range items {
+			item := raw.(map[string]any)
+			if item["name"] == "" {
+				t.Fatalf("role=%s: item sem nome: %v", role, item)
+			}
+			if item["email"] != "" {
+				t.Fatalf("role=%s: aluno não pode ver e-mail da equipe: %v", role, item)
+			}
+		}
+	}
+
+	for _, query := range []string{"?role=student", ""} {
+		if resp := doGetAuth(t, f.client, f.url+"/v1/users"+query, token); resp.status != http.StatusForbidden {
+			t.Fatalf("GET /v1/users%s pelo aluno: esperava 403, obtive %d %v", query, resp.status, resp.body)
+		}
+	}
+}
