@@ -541,6 +541,16 @@ testes que passarem disso no mesmo servidor de teste tomam 429.
   corrigido para `42,5` e o teste novo do toggle de senha). Nenhum serviço
   Go tocado nesta tarefa (auditoria é 100% app).
 
+### P4.4 — decisão de escopo (2026-11-07)
+
+O pós-MVP segue só com emulador/simulador/Chrome. A P4.4 fecha com o roteiro
+de `e2e-final.md` nas três plataformas em emulador (E1–E3 do STATUS); tudo o
+que depende de loja, conta Apple/Google, Resend, Sentry, advogado ou aparelho
+físico virou a lista **pré-loja** (L1–L8 do STATUS) e não bloqueia a tarefa.
+Para isso o plugin do Firebase passou a ser condicional ao
+`google-services.json` (build sem push) e o `minSdk` subiu para 26
+(`sentry_flutter`).
+
 ### P4.4 (2026-11-07, Mac) — parcial: a tarefa NÃO fecha
 
 Feita só a parte que não depende de humano. Checkbox segue aberto e o total

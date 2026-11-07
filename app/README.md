@@ -136,13 +136,12 @@ Push exige emulador com **Play Services**. A AVD da receita acima usa
 testar push, crie uma segunda AVD com `google_apis_playstore`, ou use um
 aparelho físico.
 
-O Gradle já está preparado para o `google-services.json` (P3.5): o plugin
-`com.google.gms.google-services` está declarado em `android/settings.gradle.kts`
-e aplicado em `android/app/build.gradle.kts`. **Sem o arquivo, todo build
-Android falha** — o plugin recusa configurar o projeto sem ele (é assim que
-o Gradle avisa que falta o passo manual, em vez de compilar silenciosamente
-sem push). Basta soltar o `google-services.json` baixado do Console Firebase
-em `android/app/` para destravar.
+O plugin `com.google.gms.google-services` (P3.5) está declarado em
+`android/settings.gradle.kts` e só é aplicado em `android/app/build.gradle.kts`
+**se o `google-services.json` existir**. Sem o arquivo o build segue, com um
+aviso, e o app roda sem push (pós-MVP em emulador; baixar o arquivo é a
+pendência pré-loja L1 do STATUS). `minSdk` é 26 (Android 8.0), exigência do
+`sentry_flutter`.
 
 > **`applicationId` é provisório (ADR-015).** `br.com.lyfta.lyfta` só pode mudar
 > **antes** do primeiro upload em loja: o Play Console reserva o package na conta para

@@ -94,8 +94,10 @@ o projeto com DSN (humano). A **P4.7** fechou o vínculo professor↔aluno
 nasce no convite, owner reatribui), checagem por M2M com cache de 30 s no
 `internal/coachlink` de workout, assessment e comms, e 404 `student_not_found`
 para aluno que não é do coach — owner vê tudo, e só ele troca o professor no app.
-Próxima: **fechar a P4.4** (E2E final e roteiro de
-release; parcial, depende de bloqueios humanos). iOS roda no
+Próxima: **fechar a P4.4** com o E2E em emulador Android, simulador iOS e
+Chrome (E1–E3 do STATUS). O pós-MVP segue **só em emulador**: o que depende de
+loja, conta ou aparelho virou a lista **pré-loja** (L1–L8 do STATUS) — Android
+compila sem `google-services.json` (sem push). iOS roda no
 simulador com Xcode 27 (receita em [app/README.md](app/README.md) § iOS). Escopo do MVP em
 [ADR-012](docs/adr/ADR-012-escopo-mvp-packs.md); arquitetura de serviços em
 [ADR-013](docs/adr/ADR-013-microservicos-db-por-servico.md). Aluno e professor

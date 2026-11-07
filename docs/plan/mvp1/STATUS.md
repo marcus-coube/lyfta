@@ -3,7 +3,7 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** fechar a `P4.4` (E2E final + roteiro de release), que segue **parcial** e depende de bloqueios humanos (ver Notas da P4.4 e a tabela abaixo; o roteiro final deve incluir a troca de professor da P4.7). A `P4.7` (vínculo professor↔aluno, ADR-016) fechou em 2026-11-07. A `P4.6` (crash/erros, Sentry) fechou em 2026-11-07; falta só o projeto Sentry/GlitchTip com DSN (humano). A `P4.5` (LGPD) fechou em 2026-11-07; falta a revisão jurídica dos textos de `assets/legal/` (humano).
+**Próxima tarefa:** fechar a `P4.4` com as verificações em emulador (E1–E3 abaixo). Decisão de 2026-11-07: o que depende de loja, conta ou aparelho físico virou **pendência pré-loja** (L1–L8) e não bloqueia o MVP nem o pós-MVP. A `P4.7` (vínculo professor↔aluno, ADR-016) fechou em 2026-11-07. A `P4.6` (crash/erros, Sentry) fechou em 2026-11-07; falta só o projeto Sentry/GlitchTip com DSN (humano). A `P4.5` (LGPD) fechou em 2026-11-07; falta a revisão jurídica dos textos de `assets/legal/` (humano).
 
 | Fase | Progresso | Situação |
 |---|---|---|
@@ -46,29 +46,33 @@ exige superusuário — exercício global é `tenant_id NULL`):
 Receita em [app/README.md](../../../app/README.md). Sem isso o P1.8 não fecha o
 Aceite (aluno em Android).
 
-## Verificações manuais pendentes
+## Pendências pré-loja
 
-Aceites que o automatizado não fecha — precisam de humano, device ou ação no
-console de terceiro. Ordem de resolução: o item #1 é o gargalo — resolvê-lo
-destrava #2, #3 e #4 de uma vez; #5 não depende de nada.
+Decisão de 2026-11-07: o pós-MVP segue **só com emulador/simulador/Chrome**.
+Estes itens não bloqueiam o fechamento do MVP nem o trabalho pós-MVP — só a
+subida para Play Store/App Store (ADR-015: loja é step opcional e manual).
 
 | # | Pendência | De onde vem | Bloqueado por |
 |---|---|---|---|
-| 1 | **`app/android/app/google-services.json` ausente** — o plugin Gradle `com.google.gms.google-services` já está aplicado (P3.5), então **o build Android falha** enquanto o arquivo não existir. Baixar no Console Firebase (projeto `lyfta-a3bd3`, app Android `br.com.lyfta.lyfta`) e salvar versionado em `app/android/app/` (ADR-014; não é segredo — ver app/README.md § Firebase). | P3.5 | ação humana (login Google) |
-| 2 | Push chegando em Android com o app fechado; tocar na notificação abre o destino (deep link) | P3.4 + P3.5 | #1 + AVD com Play Services |
-| 3 | Fluxo real coach web × aluno Android: mensagem por WS, push com app fechado, check-in aparecendo pro coach | P3.5 (Aceite) | #1 + AVD com Play Services |
-| 4 | Job diário de treino pendente chegando uma única vez em device real (a lógica de dedupe já é coberta por teste) | P3.4 | #1 + AVD com Play Services |
-| 5 | Aba Agenda com dados reais: semana corrente, navegação entre semanas, mês expansível, streak | P4.1 | nada — **dá para fazer no Chrome agora** |
-| 6 | Cold start ≤ 2,5 s em device Android médio (`flutter run --profile` + timeline) — a mudança estrutural (Firebase adiado pro pós-primeiro-frame) já foi feita, só falta medir o número do Aceite | P4.2 | #1 |
-| 7 | TalkBack de verdade no fluxo Hoje→executar→finalizar (Aceite literal do P4.3) — feita auditoria estática do widget tree (labels, tooltips, `Semantics`) sem device, mas isso não substitui ouvir o leitor de tela real | P4.3 | #1 |
-| 8 | ~~LGPD ausente~~ implementada na P4.5. **Falta a revisão jurídica** dos textos em `app/assets/legal/` (controlador, contato `privacidade@lyfta.app`) e a decisão sobre um job de reconciliação de exclusões paradas em `deleting` (Notas da P4.5) | P4.5 | ação humana (advogado) |
-| 9 | Keystore de release Android (build assina com debug), conta/assinatura Apple + APNs, Resend real + staging (crash handler: código pronto na P4.6, falta o projeto Sentry, #10) | P4.4 | ação humana / ADR |
-| 10 | Projeto Sentry/GlitchTip: criar, preencher `SENTRY_DSN` nos 4 serviços e `--dart-define=SENTRY_DSN` no app, provocar um erro e conferir o evento sem PII | P4.6 | ação humana (criar projeto) |
+| L1 | **Firebase Android:** baixar `app/android/app/google-services.json` (projeto `lyfta-a3bd3`, app `br.com.lyfta.lyfta`) e versionar (ADR-014). Sem ele o build compila **sem push** (plugin condicional). Depois: push com app fechado + deep link, fluxo coach web × aluno Android com push, job diário de treino pendente — em AVD `google_apis_playstore` ou aparelho | P3.4/P3.5 | ação humana (login Google) |
+| L2 | Keystore de release Android (hoje o release assina com a chave de debug) e appbundle | P4.4 | ação humana |
+| L3 | iOS: conta Apple, assinatura, `GoogleService-Info.plist`, chave APNs no Firebase, archive | P4.4 | ação humana (conta Apple) |
+| L4 | Resend com chave real + ambiente de staging (convite e reset chegando por e-mail) | P0.4/P4.4 | ação humana |
+| L5 | Projeto Sentry/GlitchTip: `SENTRY_DSN` nos 4 serviços e `--dart-define=SENTRY_DSN` no app; provocar erro e conferir o evento sem PII | P4.6 | ação humana (criar projeto) |
+| L6 | Revisão jurídica de `app/assets/legal/` (controlador, `privacidade@lyfta.app`) e decisão sobre job de reconciliação de exclusões paradas em `deleting` | P4.5 | ação humana (advogado) |
+| L7 | Cold start ≤ 2,5 s em **aparelho** Android médio (`flutter run --profile` + timeline); emulador não serve para o número do Aceite | P4.2 | aparelho físico |
+| L8 | Deploy: `REDIS_URL` obrigatória no identity em produção e `TRUST_PROXY=true` atrás de proxy reverso | limite de tentativas | infra |
+
+## Verificações em emulador (fecham a P4.4)
+
+| # | Verificação | De onde vem |
+|---|---|---|
+| E1 | Roteiro de [e2e-final.md](e2e-final.md) no emulador Android, no simulador iOS e no Chrome, incluindo a troca de professor da P4.7 | P4.4 |
+| E2 | Aba Agenda com dados reais: semana corrente, navegação, mês expansível, streak | P4.1 |
+| E3 | TalkBack no emulador no fluxo Hoje→executar→finalizar (Aceite literal da P4.3) | P4.3 |
 
 A AVD `lyfta_pixel` é `google_apis` (sem Play Store), escolhida na P1.8 para
-permitir `adb root` no teste offline — **push não funciona nela**. Para #2–#4:
-criar uma segunda AVD `google_apis_playstore` ou usar aparelho físico
-(app/README.md § Firebase).
+permitir `adb root` no teste offline — push não funciona nela (L1).
 
 Dívidas técnicas de código (sem timezone por tenant, locale dinâmico do
 conteúdo, vínculo coach↔aluno no identity) não estão aqui — vivem nas "Notas
@@ -112,8 +116,9 @@ de execução" da fase onde nasceram.
 | 2026-11-07 | P4.4 parcial (não fechada): analyzer 0 issues, 67 testes, vet/test verdes nos 4 serviços, app 1.0.0+1, build web release ok, e2e-final.md escrito; LGPD ausente e bloqueios humanos classificados nas Notas da P4 |
 | 2026-11-07 | Tarefas novas no plano: P4.5 (LGPD mínima do ADR-008, achado da P4.4) e P4.6 (tratamento de crash com Sentry/GlitchTip, ADR-009 §5; pendência da P4.2). Total passa a 31 |
 | 2026-11-07 | **P4.5 concluída (Mac):** LGPD mínima (ADR-008). identity: `consents` append-only (migration 0010) + status `deleting`/`deleted` (0011), `GET/PUT /v1/me/consents`, claims do JWT com as finalidades vigentes na `TERMS_VERSION`, termos obrigatórios no signup e no aceite (aluno: `health_data` obrigatória), `DELETE /v1/me` com senha orquestrando a exclusão nos 3 serviços (502 e repetível) e anonimizando o usuário. workout/assessment/comms: `DELETE /internal/v1/users/{id}` idempotente — assessment apaga medidas, bioimpedância, fotos e a pasta do aluno no MinIO; workout anonimiza execuções e desatribui planos (versão publicada é imutável); comms anonimiza mensagens/check-ins e apaga devices. assessment recusa foto sem consentimento e o coach não vê as de quem revogou (consulta M2M ao identity). App: termos em 3 idiomas, gate `/consent`, tela Conta (privacidade, sair, excluir conta). Verificado à mão contra o backend local, inclusive o objeto sumindo do MinIO e o 502 com serviço parado. Sem dependência nova |
-| 2026-11-07 | **P4.6 concluída (Mac):** crash e erros (ADR-009 §5). `sentry_flutter 10.3.0` no app e `sentry-go v0.50.0` nos 4 serviços (duplicado, ADR-013). DSN vazio = desligado (console só). Go: `Recover` agora reporta o panic e responde 500 como antes, 5xx reportado com `request_id`, user_id/tenant_id no escopo; filtro remove corpo/query/headers/e-mail/nome. App: zona guardada + `FlutterError.onError` + `PlatformDispatcher.onError`, mesmo filtro. Envio real pendente de projeto Sentry (#10) |
+| 2026-11-07 | **P4.6 concluída (Mac):** crash e erros (ADR-009 §5). `sentry_flutter 10.3.0` no app e `sentry-go v0.50.0` nos 4 serviços (duplicado, ADR-013). DSN vazio = desligado (console só). Go: `Recover` agora reporta o panic e responde 500 como antes, 5xx reportado com `request_id`, user_id/tenant_id no escopo; filtro remove corpo/query/headers/e-mail/nome. App: zona guardada + `FlutterError.onError` + `PlatformDispatcher.onError`, mesmo filtro. Envio real pendente de projeto Sentry (L5) |
 | 2026-11-07 | Dívida do P0.4 fechada (ADR-002 §2c): limite de tentativas no identity com bloqueio de 5 min (Redis; memória em dev) em login, forgot/reset de senha, aceite de convite e signup; login só lista academias depois de conferir a senha. App traduz o 429. `TRUST_PROXY=true` obrigatório no deploy atrás de proxy |
+| 2026-11-07 | Pós-MVP só em emulador: pendências de loja/conta/aparelho viram a lista pré-loja (L1–L8); P4.4 fecha com E2E em emulador/simulador/Chrome. Build Android destravado sem `google-services.json` (plugin do Firebase condicional; sem push) e `minSdk` 26 — o `sentry_flutter` da P4.6 exigia e o build Android quebrava sem ninguém ver |
 | 2026-11-07 | Tarefa nova no plano: P4.7 (vínculo professor↔aluno, ADR-008 §3) com o [ADR-016](../../adr/ADR-016-vinculo-professor-aluno.md): 1 coach principal por aluno, owner vê todos e reatribui, checagem por M2M ao identity com cache de 30 s. Sai do "vai pro 2.0" da P4.4. Total passa a 32 |
 | 2026-11-07 | **P4.7 concluída (Mac):** vínculo professor↔aluno (ADR-016, ADR-008 §3). identity: `coach_students` (migration 0012 com backfill), convite de aluno vincula a quem convidou, lista de alunos escopada ao coach (owner vê todos com `coach_id`/`coach_name`), `PUT /v1/students/{id}/coach` (só owner) e M2M `/internal/v1/coaches/{id}/students` e `/students/{id}/coach`; excluir coach devolve os alunos ao owner. `internal/coachlink` duplicado em workout, assessment e comms (cache de 30 s, identity fora do ar = 500); aluno não vinculado = 404 `student_not_found` em todo serviço, incluindo conversa, presign, fila e revisão de check-in; push de dor forte só ao coach atual. App: `AuthState.isOwner`, tile mostra o professor e "Trocar professor" só ao owner, `student_not_found` traduzido sem retry. Testes cross-coach por serviço com identity fake. Reiniciar os serviços de dev com o código novo (ver Notas em P4-praticidade.md) |
 

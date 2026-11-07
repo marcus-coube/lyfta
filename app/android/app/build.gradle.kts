@@ -1,11 +1,17 @@
 plugins {
     id("com.android.application")
-    // Push (P3.4/P3.5): lê google-services.json (bloqueio conhecido — ver
-    // settings.gradle.kts e app/README.md § Firebase, o arquivo ainda não
-    // foi baixado do Console nesta máquina).
-    id("com.google.gms.google-services")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// Push (P3.4/P3.5): o plugin do Firebase só entra se o google-services.json
+// existir. Sem ele (emulador, pós-MVP), o build segue sem push — o app já
+// tolera Firebase ausente (main.dart). Baixar o arquivo é pendência pré-loja
+// (STATUS.md e app/README.md § Firebase).
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+} else {
+    logger.warn("google-services.json ausente: build Android sem push (FCM).")
 }
 
 android {
@@ -26,7 +32,9 @@ android {
         applicationId = "br.com.lyfta.lyfta"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // Android 8.0+: o sentry_flutter 10.3 (P4.6) declara minSdk 26 e o
+        // merge do manifest recusa menos.
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
