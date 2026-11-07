@@ -3,7 +3,7 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** fechar a `P4.4` (E2E final + roteiro de release), que segue **parcial** e depende de bloqueios humanos (ver Notas da P4.4 e a tabela abaixo). A `P4.6` (crash/erros, Sentry) fechou em 2026-11-07; falta só o projeto Sentry/GlitchTip com DSN (humano). A `P4.5` (LGPD) fechou em 2026-11-07; falta a revisão jurídica dos textos de `assets/legal/` (humano).
+**Próxima tarefa:** `P4.7` (vínculo professor↔aluno, ADR-016). Depois, fechar a `P4.4` (E2E final + roteiro de release), que segue **parcial** e depende de bloqueios humanos (ver Notas da P4.4 e a tabela abaixo). A `P4.6` (crash/erros, Sentry) fechou em 2026-11-07; falta só o projeto Sentry/GlitchTip com DSN (humano). A `P4.5` (LGPD) fechou em 2026-11-07; falta a revisão jurídica dos textos de `assets/legal/` (humano).
 
 | Fase | Progresso | Situação |
 |---|---|---|
@@ -11,8 +11,8 @@
 | P1 — Treino | 8/8 | concluída |
 | P2 — Evolução | 5/5 | concluída |
 | P3 — Comunicação | 5/5 | concluída |
-| P4 — Praticidade | 5/6 | em andamento |
-| **Total** | **30/31** | |
+| P4 — Praticidade | 5/7 | em andamento |
+| **Total** | **30/32** | |
 
 ## Bancos locais
 
@@ -114,3 +114,4 @@ de execução" da fase onde nasceram.
 | 2026-11-07 | **P4.5 concluída (Mac):** LGPD mínima (ADR-008). identity: `consents` append-only (migration 0010) + status `deleting`/`deleted` (0011), `GET/PUT /v1/me/consents`, claims do JWT com as finalidades vigentes na `TERMS_VERSION`, termos obrigatórios no signup e no aceite (aluno: `health_data` obrigatória), `DELETE /v1/me` com senha orquestrando a exclusão nos 3 serviços (502 e repetível) e anonimizando o usuário. workout/assessment/comms: `DELETE /internal/v1/users/{id}` idempotente — assessment apaga medidas, bioimpedância, fotos e a pasta do aluno no MinIO; workout anonimiza execuções e desatribui planos (versão publicada é imutável); comms anonimiza mensagens/check-ins e apaga devices. assessment recusa foto sem consentimento e o coach não vê as de quem revogou (consulta M2M ao identity). App: termos em 3 idiomas, gate `/consent`, tela Conta (privacidade, sair, excluir conta). Verificado à mão contra o backend local, inclusive o objeto sumindo do MinIO e o 502 com serviço parado. Sem dependência nova |
 | 2026-11-07 | **P4.6 concluída (Mac):** crash e erros (ADR-009 §5). `sentry_flutter 10.3.0` no app e `sentry-go v0.50.0` nos 4 serviços (duplicado, ADR-013). DSN vazio = desligado (console só). Go: `Recover` agora reporta o panic e responde 500 como antes, 5xx reportado com `request_id`, user_id/tenant_id no escopo; filtro remove corpo/query/headers/e-mail/nome. App: zona guardada + `FlutterError.onError` + `PlatformDispatcher.onError`, mesmo filtro. Envio real pendente de projeto Sentry (#10) |
 | 2026-11-07 | Dívida do P0.4 fechada (ADR-002 §2c): limite de tentativas no identity com bloqueio de 5 min (Redis; memória em dev) em login, forgot/reset de senha, aceite de convite e signup; login só lista academias depois de conferir a senha. App traduz o 429. `TRUST_PROXY=true` obrigatório no deploy atrás de proxy |
+| 2026-11-07 | Tarefa nova no plano: P4.7 (vínculo professor↔aluno, ADR-008 §3) com o [ADR-016](../../adr/ADR-016-vinculo-professor-aluno.md): 1 coach principal por aluno, owner vê todos e reatribui, checagem por M2M ao identity com cache de 30 s. Sai do "vai pro 2.0" da P4.4. Total passa a 32 |

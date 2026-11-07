@@ -134,6 +134,102 @@ manualmente quando houver projeto Sentry/GlitchTip (pendência humana).
 
 ---
 
+## - [ ] P4.7 Vínculo professor↔aluno (identity, workout, assessment, comms, Flutter)
+
+**Objetivo:** cumprir o ADR-008 §3 antes do release. O coach só vê dados (saúde,
+treino, chat, check-in) dos alunos vinculados a ele; o owner vê todos e
+reatribui. Mecanismo e cardinalidade no
+[ADR-016](../../adr/ADR-016-vinculo-professor-aluno.md). Fecha a dívida aberta
+desde o P1.4.
+**Passos:**
+1. **identity, tabela `coach_students`** (migration `0012`):
+   - colunas `tenant_id`, `student_id` (PK com o tenant), `coach_id NOT NULL`,
+     `assigned_by`, `assigned_at`; RLS e índice `(tenant_id, coach_id)`;
+   - **1 coach principal por aluno**;
+   - backfill na migration: o primeiro `invitations.invited_by` do e-mail, se for
+     um usuário ativo coach|owner; senão o owner ativo mais antigo;
+   - o convite de aluno (`POST /v1/invitations`, que já cria o usuário
+     `invited`) grava o vínculo com quem convidou;
+   - `DELETE /v1/me` de coach move os alunos dele para o owner ativo mais antigo
+     antes de anonimizar; de aluno, apaga a linha.
+2. **identity, API:**
+   - `GET /v1/users?role=student`: o coach sem `owner` só vê os seus; o owner vê
+     todos, com `coach_id` por aluno e filtro `?coach_id=`;
+   - `PUT /v1/students/{id}/coach` `{coach_id}`, só owner. O alvo precisa ser um
+     aluno não excluído e o coach um usuário `active` com papel coach|owner;
+     senão 422 `validation_error`;
+   - M2M com `X-Internal-Token`: `GET /internal/v1/coaches/{id}/students?tenant_id=`
+     devolve `{student_ids}` e `GET /internal/v1/students/{id}/coach?tenant_id=`
+     devolve `{coach_id}`.
+3. **Cliente `internal/coachlink`**, duplicado em workout, assessment e comms
+   (ADR-013 §2), no modelo do `assessment/internal/consent`:
+   - `StudentsOf(tenant, coach)` com cache em memória de TTL 30 s
+     (`COACH_LINK_CACHE_TTL`); `CoachOf` só no comms;
+   - helper `CanAccessStudent(claims, studentID)`: owner na claim libera sem
+     chamada; senão, o aluno precisa estar no conjunto do coach;
+   - falha do identity responde 500 (fecha o acesso);
+   - `IDENTITY_URL` nova no workout e no comms (`.env.example`).
+4. **workout:**
+   - middleware `RequireStudentLink` no `Route("/students/{id}")` (plans,
+     exercises/logged, history);
+   - as rotas por plano (`GET /plans/{id}`, `PUT .../draft`, `POST .../publish`)
+     checam `plan.StudentID`;
+   - `authorizeWrite` passa a ser owner ou coach vinculado ao aluno, não mais o
+     dono do plano: o coach reatribuído edita;
+   - `POST /plans` checa o `student_id`, e o `coach_id` informado pelo owner
+     precisa ser o coach vinculado.
+5. **assessment:** o mesmo middleware no `Route("/students/{id}")` (medidas,
+   bioimpedância, fotos, presign, summary), antes da checagem de
+   consentimento.
+6. **comms:**
+   - `Start` checa o vínculo;
+   - `loadParticipantConversation` e o presign de mídia exigem, quando o ator é o
+     coach da conversa e não é owner, que ele seja o coach atual do aluno; o
+     aluno segue lendo o próprio histórico;
+   - `GET /conversations` do coach omite ex-alunos;
+   - `GET /checkins` sem `student_id` filtra por `student_id = ANY(conjunto)`;
+     com `student_id`, checa o vínculo;
+   - `Review` carrega o check-in e checa o vínculo;
+   - o push de dor forte vai só para o coach atual (`CoachOf`), não para todo
+     coach com conversa aberta.
+7. **Contrato de erro:** aluno não vinculado responde **404
+   `student_not_found`** em todo serviço, indistinguível de aluno inexistente ou
+   de outro tenant.
+8. **App:**
+   - `AuthState.isOwner` (hoje `owner` e `coach` viram o mesmo `UserRole.coach`);
+   - só para o owner, o tile de aluno mostra o professor e a ação "Trocar
+     professor": bottom sheet com coaches e owners que chama o `PUT`;
+   - `student_not_found` vira mensagem i18n em evolução, check-ins e chat, com
+     estado de erro sem retry;
+   - strings nas 3 ARBs.
+
+**Aceite:**
+- o coach B recebe 404 em todo dado do aluno de A nos 3 serviços (teste
+  cross-coach por serviço, com identity fake) e não vê o aluno na lista nem na
+  fila de check-ins;
+- o owner acessa tudo e reatribui; o novo coach passa a ver em até 30 s e o
+  antigo perde o acesso;
+- o backfill está testado;
+- a exclusão de um coach não deixa aluno sem professor;
+- o cliente `coachlink` tem testes de cache, de TTL e de identity fora do ar
+  (vira erro);
+- teste de widget do tile como owner e como coach.
+
+**Limite de tentativas (ponto 1, commit `53588b7`):** o signup tem 10 por IP a
+cada 5 min, e o aceite de convite e a troca de senha têm 10 falhas por IP. Os
+testes que passarem disso no mesmo servidor de teste tomam 429.
+
+**Fora de escopo:**
+- N:N (coach assistente);
+- histórico de vínculos (só `assigned_by` e `assigned_at`);
+- escolher o coach no convite;
+- desativar coach (`disabled` não tem endpoint);
+- papel reception (não existe; o ADR-016 já o exclui de dado de aluno);
+- arquivar a conversa do aluno com o ex-coach;
+- invalidação ativa do cache por evento.
+
+---
+
 ## Notas de execução
 
 (o agente anota aqui descobertas, dívidas e desvios aprovados)
@@ -522,7 +618,7 @@ do STATUS segue 28/31.
   Redis também para o identity (`TestRedisStoreCooldown`).
 
 **Vai pro 2.0**
-- Vínculo coach↔aluno no identity (hoje qualquer coach do tenant vê qualquer aluno; `created_by` fora das tabelas; push de "treino pendente" a todos os tenants).
+- ~~Vínculo coach↔aluno no identity~~ → virou a **P4.7** (ADR-016, decisão de 2026-11-07: o ADR-008 §3 é do MVP). Seguem para o 2.0: `created_by` fora das tabelas e o push de "treino pendente" a todos os tenants.
 - Timezone por tenant; locale dinâmico do conteúdo (conteúdo dinâmico ignora o idioma da tela).
 - Contraste: tokens semânticos de cor usados como texto abaixo de 4,5:1 no tema dark (P4.3).
 - Alvos de toque abaixo de 48 dp em itens já anotados na P4.3.

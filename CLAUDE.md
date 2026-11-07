@@ -29,9 +29,9 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
   **pacotes** (MVP 1.0 → 2.0 → 3.0 → 4.0 running → V2 IA → Futuro).
 - **[docs/014-plano-de-documentacao.md](docs/014-plano-de-documentacao.md)** — plano de
   docs + marcos de implementação e de-para marco→pacote.
-- **[docs/adr/](docs/adr/)** — decisões estruturais (ADR-001..015). São normativas.
+- **[docs/adr/](docs/adr/)** — decisões estruturais (ADR-001..016). São normativas.
 - **[docs/plan/mvp1/](docs/plan/mvp1/)** — plano de execução do MVP 1.0 (P0–P4,
-  31 tarefas, protocolo do agente). Progresso em `STATUS.md`.
+  32 tarefas, protocolo do agente). Progresso em `STATUS.md`.
 - **[docs/benchmarking/](docs/benchmarking/)** — auditoria HubFit × Trainerize × Lyfta.
 - `docs/guidelines/` — convenções de código (ex.: `flutter.md`).
 
@@ -40,7 +40,7 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P4.X").
 **Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
 saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
-**P0, P1, P2 e P3 concluídas e a P4 quase fechada, 30/31 (só a P4.4 falta):** `identity` completo (auth, convites,
+**P0, P1, P2 e P3 concluídas e a P4 quase fechada, 30/32 (faltam a P4.7 — vínculo professor↔aluno, ADR-016 — e a P4.4):** `identity` completo (auth, convites,
 reset, lista de usuários do tenant), CI no GitHub Actions
 (`.github/workflows/ci.yml`) e o serviço `workout` completo do lado servidor —
 schema do ADR-004, mídia por URL presignada, biblioteca com seed global de 41
