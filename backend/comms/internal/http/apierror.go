@@ -76,6 +76,10 @@ var (
 	errInvalidMediaKey = func() APIError {
 		return newAPIError(http.StatusUnprocessableEntity, "invalid_media_key")
 	}
+	// Aluno sem professor vinculado tentando abrir conversa (ADR-016).
+	errNoCoach = func() APIError {
+		return newAPIError(http.StatusConflict, "no_coach")
+	}
 	errInternal = func() APIError {
 		return newAPIError(http.StatusInternalServerError, "internal_error")
 	}

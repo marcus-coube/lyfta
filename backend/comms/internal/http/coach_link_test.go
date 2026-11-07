@@ -223,3 +223,53 @@ func TestCoachLinkCrossCoach(t *testing.T) {
 		t.Errorf("owner não depende do identity: %d", status)
 	}
 }
+
+// TestStudentStartsConversationWithOwnCoach: o aluno abre (ou recupera) a
+// conversa com o professor vinculado — o corpo é ignorado, então ele não
+// escolhe com quem fala; sem professor, 409 no_coach; identity fora, 500.
+func TestStudentStartsConversationWithOwnCoach(t *testing.T) {
+	identity := newFakeIdentity(t)
+	server, priv, _ := newServerWithLinker(t, coachlink.NewClient(identity.server.URL, "interno", 0))
+
+	tenant := uuid.NewString()
+	coach, other, student := uuid.NewString(), uuid.NewString(), uuid.NewString()
+	tokStudent := signToken(t, priv, tenant, student, []string{"student"})
+	tokCoach := signToken(t, priv, tenant, coach, []string{"coach"})
+
+	if status, code, _ := doRaw(t, server, http.MethodPost, "/v1/conversations", tokStudent, nil); status != http.StatusConflict || code != "no_coach" {
+		t.Fatalf("aluno sem professor: esperava 409 no_coach, obtive %d %s", status, code)
+	}
+
+	identity.assign(student, coach)
+	// Tentar escolher outro professor no corpo não muda nada.
+	status, _, raw := doRaw(t, server, http.MethodPost, "/v1/conversations", tokStudent, map[string]string{"student_id": other})
+	if status != http.StatusOK {
+		t.Fatalf("aluno abrindo conversa: esperava 200, obtive %d %s", status, raw)
+	}
+	var conv struct {
+		ID        string `json:"id"`
+		StudentID string `json:"student_id"`
+		CoachID   string `json:"coach_id"`
+	}
+	if err := json.Unmarshal(raw, &conv); err != nil {
+		t.Fatal(err)
+	}
+	if conv.StudentID != student || conv.CoachID != coach {
+		t.Fatalf("conversa com os participantes errados: %+v", conv)
+	}
+
+	// O coach recupera a mesma conversa (GetOrCreate idempotente).
+	_, _, raw = doRaw(t, server, http.MethodPost, "/v1/conversations", tokCoach, map[string]string{"student_id": student})
+	var again struct {
+		ID string `json:"id"`
+	}
+	_ = json.Unmarshal(raw, &again)
+	if again.ID != conv.ID {
+		t.Fatalf("coach deveria recuperar a conversa %s, obteve %s", conv.ID, again.ID)
+	}
+
+	identity.setDown(true)
+	if status, _, _ := doRaw(t, server, http.MethodPost, "/v1/conversations", tokStudent, nil); status != http.StatusInternalServerError {
+		t.Fatalf("identity fora: esperava 500, obtive %d", status)
+	}
+}

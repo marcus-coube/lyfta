@@ -166,6 +166,18 @@ type StudentLinker interface {
 	CoachOf(ctx context.Context, tenantID, studentID string) (coachID string, found bool, err error)
 }
 
+// hasAnyRole diz se as claims trazem algum dos papéis.
+func hasAnyRole(claims *security.Claims, roles ...string) bool {
+	for _, have := range claims.Roles {
+		for _, want := range roles {
+			if have == want {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // isOwner diz se as claims trazem o papel owner (vê todos os alunos).
 func isOwner(claims *security.Claims) bool {
 	for _, role := range claims.Roles {

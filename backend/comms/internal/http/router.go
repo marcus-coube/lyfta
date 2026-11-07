@@ -77,12 +77,10 @@ func NewRouter(
 		r.Post("/conversations/{id}/read", conversationHandler.MarkRead)
 		r.Post("/conversations/{id}/media/presign", mediaHandler.Presign)
 
-		// Só o coach abre uma conversa nova, e só com aluno dele (ADR-016):
-		// o vínculo é checado no handler.
-		r.Group(func(r chi.Router) {
-			r.Use(RequireRole("owner", "coach"))
-			r.Post("/conversations", conversationHandler.Start)
-		})
+		// Abrir conversa: o coach com aluno dele (ADR-016), o owner com
+		// qualquer aluno, e o aluno só com o próprio professor — o handler
+		// resolve e checa os três casos.
+		r.Post("/conversations", conversationHandler.Start)
 
 		// Check-in de treino (P3.3): o aluno escreve o próprio (student_id vem
 		// da claim, ver CheckinHandler.Create) — sem restrição de papel aqui,

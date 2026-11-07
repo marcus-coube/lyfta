@@ -416,10 +416,12 @@ func TestChatAuthorizationAndValidation(t *testing.T) {
 	doJSON(t, server, http.MethodPost, "/v1/conversations", coachToken,
 		map[string]string{"student_id": studentID}, &conv)
 
-	// Só coach/owner pode abrir conversa nova.
+	// Aluno abre conversa só com o próprio professor; este servidor de teste
+	// não tem vínculo cadastrado, então é 409 no_coach. O caminho feliz está
+	// em TestStudentStartsConversationWithOwnCoach.
 	if status := doJSONStatus(t, server, http.MethodPost, "/v1/conversations", studentToken,
-		map[string]string{"student_id": studentID}); status != http.StatusForbidden {
-		t.Fatalf("aluno abrindo conversa deveria ser 403, veio %d", status)
+		map[string]string{"student_id": studentID}); status != http.StatusConflict {
+		t.Fatalf("aluno sem professor abrindo conversa deveria ser 409, veio %d", status)
 	}
 
 	// Tipo de mensagem desconhecido.

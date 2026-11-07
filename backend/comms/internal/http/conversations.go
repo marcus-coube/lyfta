@@ -137,12 +137,33 @@ func (h *ConversationHandler) List(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, resp)
 }
 
-// Start abre (ou recupera) a conversa entre o coach autenticado e um aluno
-// dele — o owner abre com qualquer aluno do tenant (ADR-016).
+// Start abre (ou recupera) uma conversa. Coach: com um aluno dele; owner:
+// com qualquer aluno do tenant (ADR-016). Aluno: só com o professor
+// vinculado a ele — o corpo é ignorado e o coach vem do identity, então o
+// aluno nunca escolhe com quem fala. Sem professor: 409 `no_coach`.
 func (h *ConversationHandler) Start(w http.ResponseWriter, r *http.Request) {
 	claims, ok := ClaimsFromContext(r.Context())
 	if !ok || claims.TenantID == "" {
 		writeError(w, errUnauthenticated())
+		return
+	}
+
+	if !hasAnyRole(claims, "owner", "coach") {
+		if !hasAnyRole(claims, "student") {
+			writeError(w, errForbidden())
+			return
+		}
+		coachID, found, err := h.linker.CoachOf(r.Context(), claims.TenantID, claims.Subject)
+		if err != nil {
+			h.logger.Error("conversation_coach_lookup_failed", slog.Any("error", err))
+			writeError(w, errInternal())
+			return
+		}
+		if !found {
+			writeError(w, errNoCoach())
+			return
+		}
+		h.startConversation(w, r, claims.TenantID, claims.Subject, coachID)
 		return
 	}
 
@@ -163,8 +184,11 @@ func (h *ConversationHandler) Start(w http.ResponseWriter, r *http.Request) {
 		writeError(w, *apiErr)
 		return
 	}
+	h.startConversation(w, r, claims.TenantID, studentID, claims.Subject)
+}
 
-	conv, err := h.conversations.GetOrCreate(r.Context(), claims.TenantID, studentID, claims.Subject)
+func (h *ConversationHandler) startConversation(w http.ResponseWriter, r *http.Request, tenantID, studentID, coachID string) {
+	conv, err := h.conversations.GetOrCreate(r.Context(), tenantID, studentID, coachID)
 	if err != nil {
 		h.logger.Error("conversation_start_failed", slog.Any("error", err))
 		writeError(w, errInternal())
