@@ -68,22 +68,24 @@ Rodar antes de cada release, em cada alvo. Marcar com data.
 
 | # | Verificação | Android | iOS | Web |
 |---|---|---|---|---|
-| 1 | App abre sem tela vermelha; login com conta existente | ⬜ | ⬜ | ⬜ |
-| 2 | Signup do professor e aceite de convite (com consentimento) | ⬜ | ⬜ | ⬜ |
-| 3 | Hoje carrega treino; skeleton some | ⬜ | ⬜ | ⬜ |
-| 4 | Executar treino, timer de descanso, correção, encerrar | ⬜ | ⬜ | ⬜ |
-| 5 | Offline: executar, reabrir, sincronizar (só mobile) | ⬜ | ⬜ | n/a |
-| 6 | Evolução: gráfico, medidas, bioimp, foto | ⬜ | ⬜ | ⬜ |
-| 7 | Chat: texto, imagem, WS reconecta após queda | ⬜ | ⬜ | ⬜ |
-| 8 | Push com app fechado abre o destino | ⬜ | ⬜ | n/a |
-| 9 | Check-in enviado e visto pelo professor | ⬜ | ⬜ | ⬜ |
-| 10 | Agenda: semana, mês, streak | ⬜ | ⬜ | ⬜ |
-| 11 | Idiomas pt-BR, pt-PT e en trocam sem string crua | ⬜ | ⬜ | ⬜ |
-| 12 | Logout e relogin; refresh de sessão após reabrir | ⬜ | ⬜ | ⬜ |
-| 13 | Exclusão de conta (quando implementada) | ⬜ | ⬜ | ⬜ |
+| 1 | App abre sem tela vermelha; login com conta existente | ✅ 11-07 | ✅ 11-07 | ✅ 11-07 |
+| 2 | Signup do professor e aceite de convite (com consentimento) | ✅ 11-07 | ⬜ | ✅ 11-07 (professor) |
+| 3 | Hoje carrega treino; skeleton some | ✅ 11-07 | ⬜ | ✅ 11-07 |
+| 4 | Executar treino, timer de descanso, correção, encerrar | ✅ 11-07 | ⬜ | ⬜ |
+| 5 | Offline: executar, reabrir, sincronizar (só mobile) | ✅ 11-07 | ⬜ | n/a |
+| 6 | Evolução: gráfico, medidas, bioimp, foto | ✅ 11-07 | ⬜ | ✅ 11-07 (professor) |
+| 7 | Chat: texto, imagem, WS reconecta após queda | ✅ 11-07 | ⬜ | ✅ 11-07 (professor) |
+| 8 | Push com app fechado abre o destino | pré-loja (L1) | pré-loja (L3) | n/a |
+| 9 | Check-in enviado e visto pelo professor | ✅ 11-07 | ⬜ | ✅ 11-07 (professor) |
+| 10 | Agenda: semana, mês, streak | ✅ 11-07 (mês corrigido) | ⬜ | ⬜ |
+| 11 | Idiomas pt-BR, pt-PT e en trocam sem string crua | ✅ pt-BR | ✅ pt-BR (gate) | ✅ en |
+| 12 | Logout e relogin; refresh de sessão após reabrir | ✅ 11-07 | ⬜ | ⬜ |
+| 13 | Exclusão de conta (quando implementada) | ✅ 11-07 | ⬜ | ⬜ |
 
 ## Registro da execução
 
 | Data | Plataforma do aluno | Resultado |
 |---|---|---|
-| (nenhuma execução completa ainda: bloqueios humanos listados nas Notas da P4.4) | | |
+| 2026-11-07 | Android (emulador `lyfta_pixel`, pt-BR, `adb reverse` + modo avião) | **Passos 1–12 e 15–19 verdes** (13–14 push = pré-loja L1). Professor na web (en). 5 defeitos corrigidos no caminho — ver Notas da P4.4 |
+| 2026-11-07 | iOS (simulador iPhone 17) | **Parcial**: app abre em pt-BR e o gate de consentimento funciona; roteiro interrompido — o simulador passou a levar até 15 min por ação |
+| 2026-11-07 | Web (aluno) | **Parcial**: aceite de convite com consentimento ok; roteiro interrompido — painel do navegador oculto não renderiza |

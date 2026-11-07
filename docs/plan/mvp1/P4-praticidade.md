@@ -551,6 +551,36 @@ Para isso o plugin do Firebase passou a ser condicional ao
 `google-services.json` (build sem push) e o `minSdk` subiu para 26
 (`sentry_flutter`).
 
+### P4.4 — execução do E2E em emulador (2026-11-07, Mac)
+
+Android completo (passos 1–12, 15–19; push é pré-loja). iOS e aluno web
+parciais (ver Registro em `e2e-final.md`). Achados:
+
+**Corrigidos** (commits `a565133`, `7f71c8b`):
+- Check-in feito sem rede nunca saía se o app reiniciasse offline (o
+  controller só nascia no envio) — shell do aluno agora o mantém vivo.
+- E-mail de convite dizia "Lyfta te convidou": nome do tenant fixo.
+- Chat do aluno sem o nome do professor: `GET /v1/users` dava 403 ao aluno;
+  agora ele lê só a equipe (coach/owner), sem e-mail.
+- Versão do login fixa em "v0.1.0" e sobre o botão com teclado aberto.
+- Grade do mês da Agenda sem número/dia da semana e com indicador esticado.
+- Data do check-in em `dd/MM` fixo (en lia 11 de julho).
+- Diálogo "Novo plano" com a altura da tela.
+
+**Abertos (decisão ou pré-loja):**
+- Aluno não consegue iniciar o chat ("seu professor ainda não iniciou") —
+  decisão de produto: com o vínculo da P4.7 o aluno poderia abrir conversa
+  com o próprio professor.
+- Convite no celular abre a web (não há `lyfta://` nem App Links) — o aluno
+  aceita no navegador e entra no app; App Links/Universal Links exigem
+  domínio próprio (pré-loja).
+- Abrir link de convite logado como outra pessoa ignora o convite e vai a
+  Hoje; `/invite` reaproveita o estado do formulário entre tokens.
+- Seed da biblioteca sem GIF (conteúdo, não código).
+- Treino concluído offline continua oferecido em Hoje até sincronizar.
+- Comparador de fotos mostra a mesma foto dos dois lados quando as duas têm
+  a mesma data.
+
 ### P4.4 (2026-11-07, Mac) — parcial: a tarefa NÃO fecha
 
 Feita só a parte que não depende de humano. Checkbox segue aberto e o total
