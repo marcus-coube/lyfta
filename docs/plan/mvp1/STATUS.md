@@ -3,7 +3,7 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** fechar a `P4.4` com as verificações em emulador (E1–E3 abaixo). Decisão de 2026-11-07: o que depende de loja, conta ou aparelho físico virou **pendência pré-loja** (L1–L8) e não bloqueia o MVP nem o pós-MVP. A `P4.7` (vínculo professor↔aluno, ADR-016) fechou em 2026-11-07. A `P4.6` (crash/erros, Sentry) fechou em 2026-11-07; falta só o projeto Sentry/GlitchTip com DSN (humano). A `P4.5` (LGPD) fechou em 2026-11-07; falta a revisão jurídica dos textos de `assets/legal/` (humano).
+**Próxima tarefa:** fechar a `P4.4` com as verificações em emulador (E1–E3 abaixo). Decisão de 2026-11-07: o que depende de loja, conta ou aparelho físico virou **pendência pré-loja** (L1–L10) e não bloqueia o MVP nem o pós-MVP. A `P4.7` (vínculo professor↔aluno, ADR-016) fechou em 2026-11-07. A `P4.6` (crash/erros, Sentry) fechou em 2026-11-07; falta só o projeto Sentry/GlitchTip com DSN (humano). A `P4.5` (LGPD) fechou em 2026-11-07; falta a revisão jurídica dos textos de `assets/legal/` (humano).
 
 | Fase | Progresso | Situação |
 |---|---|---|
@@ -62,6 +62,8 @@ subida para Play Store/App Store (ADR-015: loja é step opcional e manual).
 | L6 | Revisão jurídica de `app/assets/legal/` (controlador, `privacidade@lyfta.app`) e decisão sobre job de reconciliação de exclusões paradas em `deleting` | P4.5 | ação humana (advogado) |
 | L7 | Cold start ≤ 2,5 s em **aparelho** Android médio (`flutter run --profile` + timeline); emulador não serve para o número do Aceite | P4.2 | aparelho físico |
 | L8 | Deploy: `REDIS_URL` obrigatória no identity em produção e `TRUST_PROXY=true` atrás de proxy reverso | limite de tentativas | infra |
+| L9 | **Convite abrindo o app direto:** hoje o link do e-mail é web e no celular abre o navegador (o aluno aceita ali e depois entra no app). Para abrir o app: domínio próprio + Android App Links (`assetlinks.json`) e iOS Universal Links (`apple-app-site-association`), com `intent-filter`/Associated Domains no app | E2E P4.4 | domínio de produção + assinatura de release (L2/L3) |
+| L10 | **Mídia da biblioteca global:** os 41 exercícios do seed não têm GIF/vídeo. Precisa de conteúdo licenciado (produção própria ou banco com licença comercial) subido ao storage e referenciado no seed | E2E P4.4 | conteúdo (humano) |
 
 ## Verificações em emulador (fecham a P4.4)
 

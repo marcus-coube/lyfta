@@ -546,7 +546,7 @@ testes que passarem disso no mesmo servidor de teste tomam 429.
 O pós-MVP segue só com emulador/simulador/Chrome. A P4.4 fecha com o roteiro
 de `e2e-final.md` nas três plataformas em emulador (E1–E3 do STATUS); tudo o
 que depende de loja, conta Apple/Google, Resend, Sentry, advogado ou aparelho
-físico virou a lista **pré-loja** (L1–L8 do STATUS) e não bloqueia a tarefa.
+físico virou a lista **pré-loja** (L1–L10 do STATUS) e não bloqueia a tarefa.
 Para isso o plugin do Firebase passou a ser condicional ao
 `google-services.json` (build sem push) e o `minSdk` subiu para 26
 (`sentry_flutter`).
@@ -567,19 +567,22 @@ parciais (ver Registro em `e2e-final.md`). Achados:
 - Data do check-in em `dd/MM` fixo (en lia 11 de julho).
 - Diálogo "Novo plano" com a altura da tela.
 
-**Abertos (decisão ou pré-loja):**
-- Aluno não consegue iniciar o chat ("seu professor ainda não iniciou") —
-  decisão de produto: com o vínculo da P4.7 o aluno poderia abrir conversa
-  com o próprio professor.
-- Convite no celular abre a web (não há `lyfta://` nem App Links) — o aluno
-  aceita no navegador e entra no app; App Links/Universal Links exigem
-  domínio próprio (pré-loja).
-- Abrir link de convite logado como outra pessoa ignora o convite e vai a
-  Hoje; `/invite` reaproveita o estado do formulário entre tokens.
-- Seed da biblioteca sem GIF (conteúdo, não código).
-- Treino concluído offline continua oferecido em Hoje até sincronizar.
-- Comparador de fotos mostra a mesma foto dos dois lados quando as duas têm
-  a mesma data.
+**Resolvidos depois, com decisão do usuário (2026-11-07):**
+- O aluno abre a conversa com o próprio professor: `POST /v1/conversations`
+  pelo aluno ignora o corpo e usa o coach do vínculo (ADR-016); sem
+  professor, `409 no_coach`. No app, o estado vazio do chat do aluno virou
+  o botão "Falar com meu professor".
+- Convite aberto com outra conta logada mostra o convite (com aviso de troca
+  de conta) em vez de ir a Hoje; a tela é chaveada pelo token.
+- Rascunhos de check-in separados por usuário — antes uma lista única no
+  aparelho podia sair com a sessão de outra conta.
+- Hoje não oferece de novo o treino concluído offline: mostra "treino de hoje
+  concluído" até a fila chegar ao servidor.
+- Comparador de fotos abre o par mais antiga × mais recente quando a segunda
+  foto chega (antes ficava a mesma dos dois lados).
+
+**Pré-loja:** convite abrindo o app (L9) e mídia da biblioteca (L10) — ver
+STATUS.
 
 ### P4.4 (2026-11-07, Mac) — parcial: a tarefa NÃO fecha
 
