@@ -4,21 +4,49 @@
     {
       "name": "app-web",
       "runtimeExecutable": "flutter",
-      "runtimeArgs": ["run", "-d", "chrome", "--web-port", "5678"],
+      "runtimeArgs": [
+        "run",
+        "-d",
+        "chrome",
+        "--web-port",
+        "5678"
+      ],
       "port": 5678,
       "cwd": "app"
     },
     {
       "name": "app-web-release",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "5700", "--directory", "build/web"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5700",
+        "--directory",
+        "build/web"
+      ],
       "port": 5700,
+      "cwd": "app"
+    },
+    {
+      "name": "app-web-release-2",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5701",
+        "--directory",
+        "build/web"
+      ],
+      "port": 5701,
       "cwd": "app"
     },
     {
       "name": "identity",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "set -a; . ./.env; set +a; go run ./cmd/api"],
+      "runtimeArgs": [
+        "-c",
+        "set -a; . ./.env; set +a; go run ./cmd/api"
+      ],
       "port": 8081,
       "url": "http://localhost:8081",
       "cwd": "backend/identity"
@@ -26,7 +54,10 @@
     {
       "name": "workout",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "set -a; . ./.env; set +a; go run ./cmd/api"],
+      "runtimeArgs": [
+        "-c",
+        "set -a; . ./.env; set +a; go run ./cmd/api"
+      ],
       "port": 8082,
       "url": "http://localhost:8082",
       "cwd": "backend/workout"
@@ -34,7 +65,10 @@
     {
       "name": "assessment",
       "runtimeExecutable": "sh",
-      "runtimeArgs": ["-c", "set -a; . ./.env; set +a; go run ./cmd/api"],
+      "runtimeArgs": [
+        "-c",
+        "set -a; . ./.env; set +a; go run ./cmd/api"
+      ],
       "port": 8083,
       "url": "http://localhost:8083",
       "cwd": "backend/assessment"

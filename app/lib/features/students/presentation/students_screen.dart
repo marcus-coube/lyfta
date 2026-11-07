@@ -102,10 +102,17 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.studentsNewPlanTitle),
-        content: LyTextField(
-          label: l10n.studentsPlanTitleLabel,
-          controller: controller,
-          autofocus: true,
+        // Column mínimo como no convite: o LyTextField sozinho esticava o
+        // diálogo até a altura da tela (E2E P4.4).
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            LyTextField(
+              label: l10n.studentsPlanTitleLabel,
+              controller: controller,
+              autofocus: true,
+            ),
+          ],
         ),
         actions: [
           TextButton(

@@ -78,13 +78,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/invite',
-        // Web: token chega como query string (`/invite?token=...`), lido
-        // acima. Mobile: deep link `lyfta://invite?token=...` é registrado
-        // nas plataformas nativas (AndroidManifest/Info.plist, geradas por
-        // `flutter create .` — fora do que este repo versiona, ver
-        // app/README.md) e o go_router resolve o mesmo `state.uri` a partir
-        // do link recebido pelo SO, então nenhuma lógica extra é necessária
-        // aqui além de configurar o esquema nas plataformas.
+        // Token chega como query string (`/invite?token=...`). O link do
+        // e-mail é web (APP_URL), então no celular ele abre o navegador: o
+        // aluno aceita ali e depois entra no app com e-mail e senha. O
+        // esquema `lyfta://` NÃO está registrado no AndroidManifest nem no
+        // Info.plist — abrir o app direto pelo convite pede App Links /
+        // Universal Links com domínio próprio (pendência pré-loja).
         builder: (context, state) => InviteAcceptScreen(
           token: state.uri.queryParameters['token'],
         ),

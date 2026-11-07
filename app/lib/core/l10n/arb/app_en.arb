@@ -1,7 +1,7 @@
 {
   "@@locale": "en",
   "appTitle": "Lyfta",
-  "appVersion": "v0.1.0",
+  "appVersion": "v{version}",
   "loginWelcomeBack": "Welcome back",
   "loginSubtitle": "Sign in to track your workouts and progress.",
   "loginEmailLabel": "Email",

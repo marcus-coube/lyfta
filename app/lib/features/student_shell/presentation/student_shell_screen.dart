@@ -10,6 +10,7 @@ import '../../../shared/widgets/role_context_switcher.dart';
 import '../../agenda/presentation/agenda_screen.dart';
 import '../../chat/presentation/chat_home_screen.dart';
 import '../../chat/presentation/conversations_controller.dart';
+import '../../checkin/presentation/checkin_controller.dart';
 import '../../evolution/presentation/evolution_screen.dart';
 import '../../workout/presentation/today_screen.dart';
 
@@ -32,6 +33,10 @@ class _StudentShellScreenState extends ConsumerState<StudentShellScreen> {
     final l10n = AppLocalizations.of(context);
     final authState = ref.watch(authControllerProvider);
     final unread = ref.watch(unreadTotalProvider);
+    // Mantém vivo o reenvio dos check-ins feitos sem rede (P3.5 §2): sem
+    // isto o controller só nascia no envio, e um rascunho de uma sessão
+    // anterior do app (fechado ainda offline) nunca mais saía (E2E P4.4).
+    ref.watch(checkinControllerProvider);
 
     final destinations = [
       LyShellDestination(

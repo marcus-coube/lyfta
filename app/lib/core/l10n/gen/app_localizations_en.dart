@@ -12,7 +12,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Lyfta';
 
   @override
-  String get appVersion => 'v0.1.0';
+  String appVersion(String version) {
+    return 'v$version';
+  }
 
   @override
   String get loginWelcomeBack => 'Welcome back';

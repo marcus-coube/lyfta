@@ -105,11 +105,11 @@ abstract class AppLocalizations {
   /// **'Lyfta'**
   String get appTitle;
 
-  /// Rótulo de versão exibido na tela de login.
+  /// Rótulo de versão exibido na tela de login. `version` vem de AppConfig.appRelease, sem o número de build.
   ///
   /// In pt, this message translates to:
-  /// **'v0.1.0'**
-  String get appVersion;
+  /// **'v{version}'**
+  String appVersion(String version);
 
   /// No description provided for @loginWelcomeBack.
   ///

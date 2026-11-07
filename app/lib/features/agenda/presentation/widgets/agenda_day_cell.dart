@@ -38,7 +38,8 @@ class AgendaDayCell extends StatelessWidget {
   /// É o dia da semana atualmente em foco na strip.
   final bool selected;
 
-  /// Versão compacta (sem dia da semana nem número) para a grade do mês.
+  /// Versão compacta para a grade do mês: o número do dia vai dentro do
+  /// indicador e o dia da semana vem do cabeçalho da grade.
   final bool dense;
 
   final VoidCallback? onTap;
@@ -55,7 +56,8 @@ class AgendaDayCell extends StatelessWidget {
       AgendaDayState.rest => l10n.agendaStateRest,
     };
 
-    final double size = dense ? 22 : 34;
+    final double size = dense ? 30 : 34;
+    final dayNumber = DateFormat.d(locale).format(date);
     final Widget indicator = switch (state) {
       AgendaDayState.done => Container(
           width: size,
@@ -76,17 +78,23 @@ class AgendaDayCell extends StatelessWidget {
             border: Border.all(color: c.accent, width: 1.5),
           ),
           alignment: Alignment.center,
-          child:
-              dense ? null : Text(label ?? '', style: LyType.label(c.accent)),
+          child: Text(
+            dense ? dayNumber : (label ?? ''),
+            style: dense ? LyType.caption(c.accent) : LyType.label(c.accent),
+          ),
         ),
       AgendaDayState.rest => SizedBox(
           width: size,
           height: size,
-          child: Icon(
-            Icons.remove_rounded,
-            size: dense ? 12 : 16,
-            color: c.textSecondary,
-          ),
+          child: dense
+              ? Center(
+                  child: Text(dayNumber, style: LyType.caption(c.textSecondary)),
+                )
+              : Icon(
+                  Icons.remove_rounded,
+                  size: 16,
+                  color: c.textSecondary,
+                ),
         ),
     };
 
@@ -97,8 +105,10 @@ class AgendaDayCell extends StatelessWidget {
           )
         : null;
 
+    // Center: dentro da GridView a célula chega com restrição justa e o
+    // indicador esticava até o tamanho dela.
     final body = dense
-        ? indicator
+        ? Center(child: indicator)
         : Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -114,7 +124,7 @@ class AgendaDayCell extends StatelessWidget {
               ),
               const SizedBox(height: LySpace.x1),
               Text(
-                DateFormat.d(locale).format(date),
+                dayNumber,
                 style: LyType.bodySm(c.textPrimary),
               ),
             ],

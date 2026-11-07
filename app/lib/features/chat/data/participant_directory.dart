@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/http/providers.dart';
@@ -16,24 +17,31 @@ final participantDirectoryProvider = FutureProvider<Map<String, String>>((ref) a
   const pageLimit = 200;
   final dio = ref.watch(identityApiClientProvider).dio;
 
+  // Cada papel falha sozinho: o aluno só pode ler a equipe (coach/owner) e
+  // recebe 403 na lista de alunos — sem isso, um 403 apagava o diretório
+  // inteiro e o chat do aluno ficava sem o nome do professor (E2E P4.4).
+  Future<Map<String, dynamic>?> fetchRole(String role) async {
+    try {
+      final response = await dio.get<Map<String, dynamic>>(
+        '/v1/users',
+        queryParameters: {'role': role, 'limit': pageLimit},
+      );
+      return response.data;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 403) return null;
+      rethrow;
+    }
+  }
+
   final responses = await Future.wait([
-    dio.get<Map<String, dynamic>>(
-      '/v1/users',
-      queryParameters: {'role': 'student', 'limit': pageLimit},
-    ),
-    dio.get<Map<String, dynamic>>(
-      '/v1/users',
-      queryParameters: {'role': 'coach', 'limit': pageLimit},
-    ),
-    dio.get<Map<String, dynamic>>(
-      '/v1/users',
-      queryParameters: {'role': 'owner', 'limit': pageLimit},
-    ),
+    fetchRole('student'),
+    fetchRole('coach'),
+    fetchRole('owner'),
   ]);
 
   final directory = <String, String>{};
   for (final response in responses) {
-    final items = response.data?['items'] as List<dynamic>? ?? const [];
+    final items = response?['items'] as List<dynamic>? ?? const [];
     for (final raw in items) {
       final user = raw as Map<String, dynamic>;
       final id = user['id'] as String;

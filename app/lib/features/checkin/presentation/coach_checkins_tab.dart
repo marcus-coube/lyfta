@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
@@ -104,7 +105,7 @@ class _CheckinCard extends StatelessWidget {
           ),
           const SizedBox(height: LySpace.x1),
           Text(
-            _dateLabel(checkin.createdAt),
+            _dateLabel(context, checkin.createdAt),
             style: LyType.caption(c.textSecondary),
           ),
           if (checkin.painNotes.isNotEmpty) ...[
@@ -139,12 +140,11 @@ class _CheckinCard extends StatelessWidget {
     );
   }
 
-  String _dateLabel(DateTime dt) {
-    final d = dt.day.toString().padLeft(2, '0');
-    final m = dt.month.toString().padLeft(2, '0');
-    final h = dt.hour.toString().padLeft(2, '0');
-    final min = dt.minute.toString().padLeft(2, '0');
-    return '$d/$m $h:$min';
+  /// Dia/mês e hora na ordem do locale (`07/11 16:16` em pt, `11/7 4:16 PM`
+  /// em en) — antes era `dd/MM` fixo e o inglês lia 11 de julho (E2E P4.4).
+  String _dateLabel(BuildContext context, DateTime dt) {
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.Md(locale).add_jm().format(dt.toLocal());
   }
 }
 

@@ -1,7 +1,7 @@
 {
   "@@locale": "pt_PT",
   "appTitle": "Lyfta",
-  "appVersion": "v0.1.0",
+  "appVersion": "v{version}",
   "loginWelcomeBack": "Bem-vindo de volta",
   "loginSubtitle": "Entra para acompanhares os teus treinos e a tua evolução.",
   "loginEmailLabel": "E-mail",

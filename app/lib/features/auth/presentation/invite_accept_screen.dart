@@ -11,10 +11,8 @@ import '../../consent/presentation/consent_choices.dart';
 
 /// Tela de aceite de convite — ligada a `POST /v1/invitations/accept`
 /// (P0.6), com auto-login. O token chega via query param da rota `/invite`
-/// tanto em web (`APP_URL/#/invite?token=...`) quanto por deep link
-/// `lyfta://invite?token=...` no mobile (esquema registrado nas plataformas
-/// nativas geradas por `flutter create .`, fora do que este repo versiona —
-/// ver app/README.md).
+/// (`APP_URL/#/invite?token=...`); no celular o link abre a versão web —
+/// ver o comentário da rota em `app_router.dart`.
 class InviteAcceptScreen extends ConsumerStatefulWidget {
   const InviteAcceptScreen({super.key, this.token});
 

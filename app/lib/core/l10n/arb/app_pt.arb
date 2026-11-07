@@ -4,9 +4,14 @@
   "@appTitle": {
     "description": "Nome do app, exibido no título da janela/aba."
   },
-  "appVersion": "v0.1.0",
+  "appVersion": "v{version}",
   "@appVersion": {
-    "description": "Rótulo de versão exibido na tela de login."
+    "description": "Rótulo de versão exibido na tela de login. `version` vem de AppConfig.appRelease, sem o número de build.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
   },
   "loginWelcomeBack": "Bem-vindo de volta",
   "loginSubtitle": "Entre para acompanhar seus treinos e sua evolução.",

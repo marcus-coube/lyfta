@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/auth/auth_controller.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception.dart';
 import '../../../core/http/api_exception_l10n.dart';
@@ -57,17 +58,22 @@ class LoginScreen extends StatelessWidget {
               },
             ),
           ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: LySpace.x4,
-            child: Center(
-              child: Text(
-                AppLocalizations.of(context).appVersion,
-                style: LyType.caption(c.textSecondary),
+          // Some com o teclado aberto: preso ao rodapé, subia junto e
+          // cobria o botão Entrar no celular (E2E P4.4).
+          if (MediaQuery.viewInsetsOf(context).bottom == 0)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: LySpace.x4,
+              child: Center(
+                child: Text(
+                  AppLocalizations.of(
+                    context,
+                  ).appVersion(AppConfig.appRelease.split('+').first),
+                  style: LyType.caption(c.textSecondary),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

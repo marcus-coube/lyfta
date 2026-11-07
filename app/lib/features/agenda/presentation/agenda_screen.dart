@@ -194,6 +194,21 @@ class _MonthGrid extends ConsumerWidget {
           style: LyType.title(c.textPrimary),
         ),
         const SizedBox(height: LySpace.x2),
+        // Cabeçalho dom–sáb: a célula compacta não repete o dia da semana.
+        Row(
+          children: [
+            for (var i = 0; i < 7; i++)
+              Expanded(
+                child: Center(
+                  child: Text(
+                    _weekdayInitial(locale, i),
+                    style: LyType.caption(c.textSecondary),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: LySpace.x1),
         GridView.count(
           crossAxisCount: 7,
           shrinkWrap: true,
@@ -215,6 +230,13 @@ class _MonthGrid extends ConsumerWidget {
       ],
     );
   }
+}
+
+/// Abreviação do dia da semana `i` (0 = domingo), no idioma da tela.
+String _weekdayInitial(String locale, int i) {
+  // 4 de janeiro de 1970 foi domingo.
+  final abbrev = DateFormat.E(locale).format(DateTime(1970, 1, 4 + i));
+  return abbrev.length <= 3 ? abbrev : abbrev.substring(0, 3);
 }
 
 class _ErrorState extends StatelessWidget {
