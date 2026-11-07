@@ -102,11 +102,10 @@ func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 			}
 			filter.CoachID = raw
 		}
-	} else {
-		if filter.Role != "" && filter.Role != domain.RoleStudent {
-			writeError(w, errForbidden())
-			return
-		}
+	} else if filter.Role == "" || filter.Role == domain.RoleStudent {
+		// Lista de alunos (ou sem filtro, que devolveria alunos): só os dele.
+		// A lista de professores/owners segue aberta ao coach — é o diretório
+		// de nomes que o chat usa e não é dado de aluno.
 		filter.Role = domain.RoleStudent
 		filter.CoachID = claims.Subject
 	}

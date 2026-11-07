@@ -101,12 +101,13 @@ func TestCoachLinkListScopeAndReassign(t *testing.T) {
 	if names := userNames(t, own); len(names) != 1 || names[0] != "Aluno do B" {
 		t.Fatalf("coach B deveria ver só o aluno dele: %v", names)
 	}
-	// Sem role=student, vale o mesmo; outro papel é proibido.
-	if names := userNames(t, doGetAuth(t, f.client, f.url+"/v1/users", coachB)); len(names) != 1 {
+	// Sem role, vale o mesmo (nunca devolve aluno de outro).
+	if names := userNames(t, doGetAuth(t, f.client, f.url+"/v1/users", coachB)); len(names) != 1 || names[0] != "Aluno do B" {
 		t.Fatalf("lista sem filtro do coach B: %v", names)
 	}
-	if resp := doGetAuth(t, f.client, f.url+"/v1/users?role=coach", coachB); resp.status != http.StatusForbidden {
-		t.Fatalf("coach lista coaches: esperava 403, obtive %d", resp.status)
+	// O diretório de professores segue aberto (nomes do chat, sem dado de aluno).
+	if resp := doGetAuth(t, f.client, f.url+"/v1/users?role=coach", coachB); resp.status != http.StatusOK {
+		t.Fatalf("coach lista coaches: esperava 200, obtive %d", resp.status)
 	}
 
 	// Owner vê todos, com o professor de cada um, e filtra por coach_id.
