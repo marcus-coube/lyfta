@@ -332,7 +332,8 @@
   "chatTitleFallback": "Chat",
   "chatEmpty": "No messages yet. Say hi!",
   "chatConversationsEmpty": "No conversations yet.",
-  "chatStudentNoConversation": "Your coach hasn't started a conversation with you yet.",
+  "chatStudentNoConversation": "No conversation yet. Talk to your coach here.",
+  "chatStudentStart": "Message my coach",
   "chatNoMessagesYet": "No messages yet",
   "chatImagePreview": "📷 Photo",
   "chatMessageHint": "Type a message…",
@@ -412,5 +413,9 @@
   "studentsChangeCoach": "Change coach",
   "studentsChangeCoachTitle": "Coach for {student}",
   "studentsCoachChanged": "Coach changed to {name}.",
-  "studentsCoachesEmpty": "No coaches available."
+  "studentsCoachesEmpty": "No coaches available.",
+  "errorNoCoach": "You don't have an assigned coach yet. Contact your gym.",
+  "inviteSwitchAccountNotice": "You are signed in with another account on this device. Activating this invite signs you out of it and into the new account.",
+  "todayDoneOfflineTitle": "Today's workout done",
+  "todayDoneOfflineBody": "It's saved on this device and syncs on its own when you're back online. Your next workout shows up right after."
 }

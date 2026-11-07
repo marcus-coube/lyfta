@@ -42,6 +42,16 @@ class _PhotoCompareState extends State<PhotoCompare> {
 
   void _ensureDefaults() {
     if (widget.items.isEmpty) return;
+    // Foto escolhida que sumiu (exclusão) volta ao padrão.
+    if (_find(_beforeId) == null) _beforeId = null;
+    if (_find(_afterId) == null) _afterId = null;
+    // Com uma foto só os dois lados apontam para ela; quando a segunda
+    // chega, o par tem de se abrir de novo — senão o comparador seguia
+    // mostrando a mesma foto dos dois lados (E2E P4.4).
+    if (_beforeId != null && _beforeId == _afterId && widget.items.length > 1) {
+      _beforeId = null;
+      _afterId = null;
+    }
     _beforeId ??= widget.items.last.id;
     _afterId ??= widget.items.first.id;
   }

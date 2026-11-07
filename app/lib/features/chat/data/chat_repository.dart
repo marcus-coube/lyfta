@@ -29,15 +29,23 @@ class ChatRepository {
         .toList();
   }
 
-  /// Abre (ou recupera) a conversa com um aluno — só coach/owner
-  /// (`RequireRole`, P3.2). O aluno nunca chama isto: a dele já existe assim
-  /// que o professor iniciar.
+  /// Abre (ou recupera) a conversa com um aluno — lado do coach/owner.
   Future<Conversation> startConversation(String studentId) async {
     final json = await _send(
       () => _dio.post<Map<String, dynamic>>(
         '/v1/conversations',
         data: {'student_id': studentId},
       ),
+    );
+    return Conversation.fromJson(json!);
+  }
+
+  /// O aluno abre (ou recupera) a conversa com o próprio professor: o
+  /// servidor resolve o professor pelo vínculo (ADR-016) e responde 409
+  /// `no_coach` se não houver um.
+  Future<Conversation> startConversationWithMyCoach() async {
+    final json = await _send(
+      () => _dio.post<Map<String, dynamic>>('/v1/conversations', data: {}),
     );
     return Conversation.fromJson(json!);
   }

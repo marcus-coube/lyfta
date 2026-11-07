@@ -72,6 +72,21 @@ class MemoryWorkoutStore implements WorkoutLocalStore {
   }
 
   @override
+  Future<bool> finishedDaySince(
+    String studentId,
+    String dayId,
+    DateTime since,
+  ) async {
+    return _sessions.values.any(
+      (s) =>
+          s.studentId == studentId &&
+          s.session.dayId == dayId &&
+          (s.session.finishedAt != null &&
+              !s.session.finishedAt!.isBefore(since)),
+    );
+  }
+
+  @override
   Future<LocalSession?> openSession(String studentId) async {
     final open = _sessions.values
         .where((s) => s.studentId == studentId && s.session.isOpen)

@@ -1953,11 +1953,17 @@ abstract class AppLocalizations {
   /// **'Nenhuma conversa ainda.'**
   String get chatConversationsEmpty;
 
-  /// Estado vazio da aba Chat do aluno quando nenhum professor abriu conversa ainda.
+  /// Estado vazio da aba Chat do aluno, acima do botão que abre a conversa com o professor.
   ///
   /// In pt, this message translates to:
-  /// **'Seu professor ainda não iniciou uma conversa com você.'**
+  /// **'Nenhuma conversa ainda. Fale com seu professor por aqui.'**
   String get chatStudentNoConversation;
+
+  /// Botão do aluno para abrir a conversa com o próprio professor.
+  ///
+  /// In pt, this message translates to:
+  /// **'Falar com meu professor'**
+  String get chatStudentStart;
 
   /// No description provided for @chatNoMessagesYet.
   ///
@@ -2438,6 +2444,30 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Nenhum professor disponível.'**
   String get studentsCoachesEmpty;
+
+  /// 409 no_coach: aluno sem professor vinculado tentou abrir conversa.
+  ///
+  /// In pt, this message translates to:
+  /// **'Você ainda não tem um professor responsável. Fale com a sua academia.'**
+  String get errorNoCoach;
+
+  /// Aviso na tela de convite quando já há outra conta logada.
+  ///
+  /// In pt, this message translates to:
+  /// **'Você está conectado com outra conta neste aparelho. Ativar este convite sai dela e entra na conta nova.'**
+  String get inviteSwitchAccountNotice;
+
+  /// Hoje, sem rede, depois de concluir o treino do cache.
+  ///
+  /// In pt, this message translates to:
+  /// **'Treino de hoje concluído'**
+  String get todayDoneOfflineTitle;
+
+  /// Explica que o treino concluído offline sincroniza depois.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ele fica salvo no aparelho e sincroniza sozinho quando a conexão voltar. O próximo treino aparece em seguida.'**
+  String get todayDoneOfflineBody;
 }
 
 class _AppLocalizationsDelegate

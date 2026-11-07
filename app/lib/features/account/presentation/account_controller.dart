@@ -32,8 +32,11 @@ Future<void> setConsent(
 /// check-in e sessão — e o router leva ao login. Se o servidor falhar, nada
 /// local é apagado e o usuário pode tentar de novo.
 Future<void> deleteAccount(WidgetRef ref, String password) async {
+  final userId = ref.read(authControllerProvider).userId;
   await ref.read(accountRepositoryProvider).deleteMe(password);
   await ref.read(workoutRepositoryProvider).clearLocal();
-  await ref.read(checkinDraftStorageProvider).clear();
+  if (userId != null) {
+    await ref.read(checkinDraftStorageProvider).clear(userId);
+  }
   await ref.read(authControllerProvider.notifier).completeAccountDeletion();
 }

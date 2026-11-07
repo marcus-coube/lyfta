@@ -1029,7 +1029,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatStudentNoConversation =>
-      'Your coach hasn\'t started a conversation with you yet.';
+      'No conversation yet. Talk to your coach here.';
+
+  @override
+  String get chatStudentStart => 'Message my coach';
 
   @override
   String get chatNoMessagesYet => 'No messages yet';
@@ -1317,4 +1320,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get studentsCoachesEmpty => 'No coaches available.';
+
+  @override
+  String get errorNoCoach =>
+      'You don\'t have an assigned coach yet. Contact your gym.';
+
+  @override
+  String get inviteSwitchAccountNotice =>
+      'You are signed in with another account on this device. Activating this invite signs you out of it and into the new account.';
+
+  @override
+  String get todayDoneOfflineTitle => 'Today\'s workout done';
+
+  @override
+  String get todayDoneOfflineBody =>
+      'It\'s saved on this device and syncs on its own when you\'re back online. Your next workout shows up right after.';
 }

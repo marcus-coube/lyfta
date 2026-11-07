@@ -91,6 +91,14 @@ class _TodayBody extends ConsumerWidget {
             children: [
               const SyncIndicator(),
               const SizedBox(height: LySpace.x3),
+              if (view.finishedLocally) ...[
+                _EmptyState(
+                  icon: Icons.check_circle_outline,
+                  title: l10n.todayDoneOfflineTitle,
+                  body: l10n.todayDoneOfflineBody,
+                ),
+                const SizedBox(height: LySpace.x4),
+              ],
               switch (today.status) {
                 TodayStatus.noPlan => _EmptyState(
                     icon: Icons.event_note_outlined,
@@ -116,7 +124,9 @@ class _TodayBody extends ConsumerWidget {
             ],
           ),
         ),
-        if (today.hasWorkout)
+        // Treino do cache já feito offline: não oferece repetir até a fila
+        // chegar ao servidor e a rotação andar (E2E P4.4).
+        if (today.hasWorkout && !view.finishedLocally)
           _StartBar(today: today, hasOpenSession: openSession != null),
       ],
     );

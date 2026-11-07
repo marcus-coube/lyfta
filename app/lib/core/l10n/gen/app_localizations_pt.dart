@@ -1030,7 +1030,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get chatStudentNoConversation =>
-      'Seu professor ainda não iniciou uma conversa com você.';
+      'Nenhuma conversa ainda. Fale com seu professor por aqui.';
+
+  @override
+  String get chatStudentStart => 'Falar com meu professor';
 
   @override
   String get chatNoMessagesYet => 'Nenhuma mensagem ainda';
@@ -1319,6 +1322,21 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get studentsCoachesEmpty => 'Nenhum professor disponível.';
+
+  @override
+  String get errorNoCoach =>
+      'Você ainda não tem um professor responsável. Fale com a sua academia.';
+
+  @override
+  String get inviteSwitchAccountNotice =>
+      'Você está conectado com outra conta neste aparelho. Ativar este convite sai dela e entra na conta nova.';
+
+  @override
+  String get todayDoneOfflineTitle => 'Treino de hoje concluído';
+
+  @override
+  String get todayDoneOfflineBody =>
+      'Ele fica salvo no aparelho e sincroniza sozinho quando a conexão voltar. O próximo treino aparece em seguida.';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -2354,7 +2372,10 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get chatStudentNoConversation =>
-      'O teu professor ainda não iniciou uma conversa contigo.';
+      'Ainda não há conversas. Fala com o teu professor por aqui.';
+
+  @override
+  String get chatStudentStart => 'Falar com o meu professor';
 
   @override
   String get chatNoMessagesYet => 'Ainda não há mensagens';
@@ -2643,4 +2664,19 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get studentsCoachesEmpty => 'Nenhum professor disponível.';
+
+  @override
+  String get errorNoCoach =>
+      'Ainda não tens um professor responsável. Fala com o teu ginásio.';
+
+  @override
+  String get inviteSwitchAccountNotice =>
+      'Tens outra conta com sessão iniciada neste dispositivo. Ativar este convite termina essa sessão e entra na conta nova.';
+
+  @override
+  String get todayDoneOfflineTitle => 'Treino de hoje concluído';
+
+  @override
+  String get todayDoneOfflineBody =>
+      'Fica guardado no dispositivo e sincroniza sozinho quando a ligação voltar. O próximo treino aparece a seguir.';
 }

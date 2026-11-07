@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/auth/auth_controller.dart';
+import '../../../core/auth/auth_state.dart';
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception.dart';
 import '../../../core/http/api_exception_l10n.dart';
@@ -61,8 +63,10 @@ class _InviteAcceptScreenState extends ConsumerState<InviteAcceptScreen> {
               ConsentPurpose.progressPhotos: _photos,
             },
           );
-      // Sucesso: auto-login já atualizou AuthState; o redirect do go_router
-      // leva ao shell certo — nada a fazer aqui.
+      // Sucesso: o auto-login já trocou a sessão. Quem já estava logado
+      // continua em /invite (o redirect libera a rota com token), então a
+      // ida ao shell é explícita.
+      if (mounted) context.go('/home');
     } on ApiException catch (e) {
       if (mounted) setState(() => _errorMessage = e.message(l10n));
     } catch (_) {
@@ -97,6 +101,15 @@ class _InviteAcceptScreenState extends ConsumerState<InviteAcceptScreen> {
                     hasToken ? l10n.inviteSubtitle : l10n.inviteInvalidLink,
                     style: LyType.body(hasToken ? c.textSecondary : c.danger),
                   ),
+                  if (hasToken &&
+                      ref.watch(authControllerProvider).status ==
+                          AuthStatus.authenticated) ...[
+                    const SizedBox(height: LySpace.x3),
+                    Text(
+                      l10n.inviteSwitchAccountNotice,
+                      style: LyType.bodySm(c.warning),
+                    ),
+                  ],
                   const SizedBox(height: LySpace.x8),
                   if (hasToken) ...[
                     LyTextField(

@@ -54,6 +54,10 @@ abstract interface class WorkoutLocalStore {
 
   Future<void> finishSession(String clientId, DateTime finishedAt);
 
+  /// Se o aluno concluiu no aparelho o dia [dayId] depois de [since] — é o
+  /// treino do cache já feito offline, que o servidor ainda não sabe.
+  Future<bool> finishedDaySince(String studentId, String dayId, DateTime since);
+
   Future<void> saveSetLog(String studentId, LocalSetLog log);
 
   /// Os logs de uma sessão já com as revisões aplicadas: um log revisado

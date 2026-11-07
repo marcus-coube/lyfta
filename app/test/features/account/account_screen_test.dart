@@ -76,7 +76,7 @@ class _FakeDrafts extends CheckinDraftStorage {
   bool cleared = false;
 
   @override
-  Future<void> clear() async => cleared = true;
+  Future<void> clear(String userId) async => cleared = true;
 }
 
 class _Harness {

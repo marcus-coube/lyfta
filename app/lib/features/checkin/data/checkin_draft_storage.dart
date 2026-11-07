@@ -20,16 +20,22 @@ final checkinDraftStorageProvider = Provider<CheckinDraftStorage>((ref) {
 ///
 /// Reusa `flutter_secure_storage` (já é dependência do `TokenStorage`) em
 /// vez de trazer outro pacote de persistência só para uma lista pequena.
+///
+/// Uma lista por usuário: o `student_id` do check-in vem do token de quem
+/// envia, então um rascunho guardado por uma conta nunca pode sair com a
+/// sessão de outra que entrou depois no mesmo aparelho (E2E P4.4).
 class CheckinDraftStorage {
   CheckinDraftStorage({FlutterSecureStorage? storage})
       : _storage = storage ?? const FlutterSecureStorage();
 
-  static const _key = 'lyfta.checkin_drafts';
+  static const _keyPrefix = 'lyfta.checkin_drafts';
+
+  static String _key(String userId) => '$_keyPrefix.$userId';
 
   final FlutterSecureStorage _storage;
 
-  Future<List<CheckinDraft>> readAll() async {
-    final raw = await _storage.read(key: _key);
+  Future<List<CheckinDraft>> readAll(String userId) async {
+    final raw = await _storage.read(key: _key(userId));
     if (raw == null || raw.isEmpty) return const [];
     final list = jsonDecode(raw) as List<dynamic>;
     return list
@@ -37,27 +43,28 @@ class CheckinDraftStorage {
         .toList();
   }
 
-  Future<void> add(CheckinDraft draft) async {
-    final current = await readAll();
-    await _writeAll([...current, draft]);
+  Future<void> add(String userId, CheckinDraft draft) async {
+    final current = await readAll(userId);
+    await _writeAll(userId, [...current, draft]);
   }
 
   /// Remove pelo `sessionClientId` — é a chave natural (idempotência do
   /// servidor é por ela também).
-  Future<void> remove(String sessionClientId) async {
-    final current = await readAll();
+  Future<void> remove(String userId, String sessionClientId) async {
+    final current = await readAll(userId);
     await _writeAll(
+      userId,
       current.where((d) => d.sessionClientId != sessionClientId).toList(),
     );
   }
 
   /// Apaga todos os rascunhos — exclusão de conta (ADR-008 §2): nada do
   /// usuário fica no device.
-  Future<void> clear() => _storage.delete(key: _key);
+  Future<void> clear(String userId) => _storage.delete(key: _key(userId));
 
-  Future<void> _writeAll(List<CheckinDraft> drafts) async {
+  Future<void> _writeAll(String userId, List<CheckinDraft> drafts) async {
     await _storage.write(
-      key: _key,
+      key: _key(userId),
       value: jsonEncode(drafts.map((d) => d.toJson()).toList()),
     );
   }

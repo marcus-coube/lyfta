@@ -662,9 +662,13 @@
   },
   "chatEmpty": "Nenhuma mensagem ainda. Diga oi!",
   "chatConversationsEmpty": "Nenhuma conversa ainda.",
-  "chatStudentNoConversation": "Seu professor ainda não iniciou uma conversa com você.",
+  "chatStudentNoConversation": "Nenhuma conversa ainda. Fale com seu professor por aqui.",
   "@chatStudentNoConversation": {
-    "description": "Estado vazio da aba Chat do aluno quando nenhum professor abriu conversa ainda."
+    "description": "Estado vazio da aba Chat do aluno, acima do botão que abre a conversa com o professor."
+  },
+  "chatStudentStart": "Falar com meu professor",
+  "@chatStudentStart": {
+    "description": "Botão do aluno para abrir a conversa com o próprio professor."
   },
   "chatNoMessagesYet": "Nenhuma mensagem ainda",
   "chatImagePreview": "📷 Foto",
@@ -824,5 +828,21 @@
   "studentsCoachesEmpty": "Nenhum professor disponível.",
   "@studentsCoachesEmpty": {
     "description": "Seletor de professor sem opções."
+  },
+  "errorNoCoach": "Você ainda não tem um professor responsável. Fale com a sua academia.",
+  "@errorNoCoach": {
+    "description": "409 no_coach: aluno sem professor vinculado tentou abrir conversa."
+  },
+  "inviteSwitchAccountNotice": "Você está conectado com outra conta neste aparelho. Ativar este convite sai dela e entra na conta nova.",
+  "@inviteSwitchAccountNotice": {
+    "description": "Aviso na tela de convite quando já há outra conta logada."
+  },
+  "todayDoneOfflineTitle": "Treino de hoje concluído",
+  "@todayDoneOfflineTitle": {
+    "description": "Hoje, sem rede, depois de concluir o treino do cache."
+  },
+  "todayDoneOfflineBody": "Ele fica salvo no aparelho e sincroniza sozinho quando a conexão voltar. O próximo treino aparece em seguida.",
+  "@todayDoneOfflineBody": {
+    "description": "Explica que o treino concluído offline sincroniza depois."
   }
 }

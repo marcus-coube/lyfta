@@ -24,8 +24,6 @@ class ChatHomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (isCoach) return const ConversationListScreen();
 
-    final c = context.ly;
-    final l10n = AppLocalizations.of(context);
     final conversations = ref.watch(conversationsProvider);
 
     return conversations.when(
@@ -37,16 +35,7 @@ class ChatHomeScreen extends ConsumerWidget {
       ),
       data: (items) {
         if (items.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(LySpace.x6),
-              child: Text(
-                l10n.chatStudentNoConversation,
-                textAlign: TextAlign.center,
-                style: LyType.body(c.textSecondary),
-              ),
-            ),
-          );
+          return const _StartWithCoach();
         }
         if (items.length > 1) return const ConversationListScreen();
 
@@ -56,6 +45,71 @@ class ChatHomeScreen extends ConsumerWidget {
         final name = directory[conversation.coachId];
         return ChatScreen(conversationId: conversation.id, title: name);
       },
+    );
+  }
+}
+
+/// Estado vazio do aluno: ele mesmo abre a conversa com o professor
+/// vinculado (ADR-016). Sem professor, o servidor responde `no_coach`.
+class _StartWithCoach extends ConsumerStatefulWidget {
+  const _StartWithCoach();
+
+  @override
+  ConsumerState<_StartWithCoach> createState() => _StartWithCoachState();
+}
+
+class _StartWithCoachState extends ConsumerState<_StartWithCoach> {
+  bool _busy = false;
+  String? _error;
+
+  Future<void> _start() async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await ref.read(conversationsProvider.notifier).startWithMyCoach();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = describeApiError(context, e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ly;
+    final l10n = AppLocalizations.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(LySpace.x6),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n.chatStudentNoConversation,
+              textAlign: TextAlign.center,
+              style: LyType.body(c.textSecondary),
+            ),
+            const SizedBox(height: LySpace.x4),
+            LyButton(
+              label: l10n.chatStudentStart,
+              expanded: false,
+              loading: _busy,
+              onPressed: _busy ? null : _start,
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: LySpace.x3),
+              Text(
+                _error!,
+                textAlign: TextAlign.center,
+                style: LyType.bodySm(c.danger),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

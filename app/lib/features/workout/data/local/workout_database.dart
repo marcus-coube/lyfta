@@ -183,6 +183,24 @@ class DriftWorkoutStore implements WorkoutLocalStore {
   }
 
   @override
+  Future<bool> finishedDaySince(
+    String studentId,
+    String dayId,
+    DateTime since,
+  ) async {
+    final row = await (db.select(db.localSessionRows)
+          ..where(
+            (t) =>
+                t.studentId.equals(studentId) &
+                t.dayId.equals(dayId) &
+                t.finishedAt.isBiggerOrEqualValue(since),
+          )
+          ..limit(1))
+        .getSingleOrNull();
+    return row != null;
+  }
+
+  @override
   Future<LocalSession?> openSession(String studentId) async {
     final row = await (db.select(db.localSessionRows)
           ..where((t) => t.studentId.equals(studentId) & t.finishedAt.isNull())

@@ -38,6 +38,7 @@ class TodayView {
     required this.today,
     required this.fetchedAt,
     this.stale = false,
+    this.finishedLocally = false,
   });
 
   final Today today;
@@ -46,6 +47,10 @@ class TodayView {
   /// `true` quando o que está na tela veio do cache porque a rede falhou —
   /// é o que acende o aviso discreto de offline.
   final bool stale;
+
+  /// O treino do cache já foi concluído no aparelho (offline) e a fila ainda
+  /// não chegou ao servidor: a tela não oferece repeti-lo (E2E P4.4).
+  final bool finishedLocally;
 }
 
 /// Repositório offline-first da execução (ADR-003 §1).
@@ -66,22 +71,30 @@ class WorkoutRepository {
   Future<TodayView> load(String studentId, {bool refresh = true}) async {
     final cached = await _store.readToday(studentId);
     if (cached == null) return _fetch(studentId);
-    if (!refresh) {
-      return TodayView(
-        today: Today.decode(cached.payload),
-        fetchedAt: cached.fetchedAt,
-      );
-    }
+    if (!refresh) return _fromCache(studentId, cached, stale: false);
     try {
       return await _fetch(studentId);
     } on ApiException {
       // Com treino baixado, falha de rede não é erro de tela: é offline.
-      return TodayView(
-        today: Today.decode(cached.payload),
-        fetchedAt: cached.fetchedAt,
-        stale: true,
-      );
+      return _fromCache(studentId, cached, stale: true);
     }
+  }
+
+  Future<TodayView> _fromCache(
+    String studentId,
+    CachedToday cached, {
+    required bool stale,
+  }) async {
+    final today = Today.decode(cached.payload);
+    final dayId = today.day?.id;
+    final finished = dayId != null &&
+        await _store.finishedDaySince(studentId, dayId, cached.fetchedAt);
+    return TodayView(
+      today: today,
+      fetchedAt: cached.fetchedAt,
+      stale: stale,
+      finishedLocally: finished,
+    );
   }
 
   Future<TodayView> _fetch(String studentId) async {

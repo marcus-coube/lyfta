@@ -43,6 +43,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         final onConsent = state.matchedLocation == '/consent';
         if (authState.consentPending) return onConsent ? null : '/consent';
         if (onConsent) return '/home';
+        // Convite aberto por quem já está logado (outra conta no mesmo
+        // aparelho/navegador): mostra o convite em vez de ignorá-lo — a tela
+        // avisa que ativar troca de conta (E2E P4.4).
+        final token = state.uri.queryParameters['token'] ?? '';
+        if (state.matchedLocation == '/invite' && token.isNotEmpty) {
+          return null;
+        }
         return isPublic ? '/home' : null;
       }
 
@@ -84,7 +91,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         // esquema `lyfta://` NÃO está registrado no AndroidManifest nem no
         // Info.plist — abrir o app direto pelo convite pede App Links /
         // Universal Links com domínio próprio (pendência pré-loja).
+        // Chave pelo token: trocar de convite não reaproveita o formulário.
         builder: (context, state) => InviteAcceptScreen(
+          key: ValueKey(state.uri.queryParameters['token']),
           token: state.uri.queryParameters['token'],
         ),
       ),

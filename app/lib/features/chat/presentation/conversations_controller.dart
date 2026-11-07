@@ -34,11 +34,18 @@ class ConversationsController extends AsyncNotifier<List<Conversation>> {
     await future;
   }
 
-  /// Abre (ou recupera) a conversa com um aluno — só o coach chama isto
-  /// (P3.2: `POST /v1/conversations` exige `owner`/`coach`).
+  /// Abre (ou recupera) a conversa com um aluno — lado do coach.
   Future<Conversation> start(String studentId) async {
     final conv =
         await ref.read(chatRepositoryProvider).startConversation(studentId);
+    await refresh();
+    return conv;
+  }
+
+  /// O aluno abre a conversa com o próprio professor.
+  Future<Conversation> startWithMyCoach() async {
+    final conv =
+        await ref.read(chatRepositoryProvider).startConversationWithMyCoach();
     await refresh();
     return conv;
   }
