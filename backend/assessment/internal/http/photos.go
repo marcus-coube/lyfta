@@ -24,11 +24,12 @@ type PhotoHandler struct {
 	logger    *slog.Logger
 	photos    *repo.PhotoRepo
 	presigner *media.Presigner
+	consents  ConsentChecker
 }
 
 // NewPhotoHandler cria o handler de fotos de evolução.
-func NewPhotoHandler(logger *slog.Logger, photos *repo.PhotoRepo, presigner *media.Presigner) *PhotoHandler {
-	return &PhotoHandler{logger: logger, photos: photos, presigner: presigner}
+func NewPhotoHandler(logger *slog.Logger, photos *repo.PhotoRepo, presigner *media.Presigner, consents ConsentChecker) *PhotoHandler {
+	return &PhotoHandler{logger: logger, photos: photos, presigner: presigner, consents: consents}
 }
 
 type photoRequest struct {
@@ -51,12 +52,19 @@ type photoDTO struct {
 type photoListResponse struct {
 	Items      []photoDTO `json:"items"`
 	NextCursor string     `json:"next_cursor,omitempty"`
+	// ConsentRevoked avisa que o aluno não consente em fotos de evolução
+	// (ADR-008 §1): a lista vem vazia de propósito, não por falta de fotos.
+	ConsentRevoked bool `json:"consent_revoked,omitempty"`
 }
 
 func (h *PhotoHandler) CreateMine(w http.ResponseWriter, r *http.Request) {
 	claims, ok := ClaimsFromContext(r.Context())
 	if !ok || claims.TenantID == "" {
 		writeError(w, errUnauthenticated())
+		return
+	}
+	if !mineHasPhotoConsent(claims) {
+		writeError(w, errConsentRequired(PurposeProgressPhotos))
 		return
 	}
 	h.create(w, r, claims.TenantID, claims.Subject)
@@ -71,6 +79,9 @@ func (h *PhotoHandler) CreateForStudent(w http.ResponseWriter, r *http.Request) 
 	studentID := chi.URLParam(r, "id")
 	if _, err := uuid.Parse(studentID); err != nil {
 		writeError(w, errValidation("id"))
+		return
+	}
+	if !h.studentConsents(w, r, tenantID, studentID) {
 		return
 	}
 	h.create(w, r, tenantID, studentID)
@@ -94,6 +105,18 @@ func (h *PhotoHandler) ListForStudent(w http.ResponseWriter, r *http.Request) {
 	studentID := chi.URLParam(r, "id")
 	if _, err := uuid.Parse(studentID); err != nil {
 		writeError(w, errValidation("id"))
+		return
+	}
+	// O coach só vê as fotos de quem consentiu (ADR-008 §1): sem consentimento
+	// a lista vem vazia, sinalizada, e nenhuma foto é lida.
+	consented, err := h.consents.HasPurpose(r.Context(), tenantID, studentID, PurposeProgressPhotos)
+	if err != nil {
+		h.logger.Error("photo_consent_check_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
+	}
+	if !consented {
+		writeJSON(w, http.StatusOK, photoListResponse{Items: []photoDTO{}, ConsentRevoked: true})
 		return
 	}
 	h.list(w, r, tenantID, studentID)
@@ -221,4 +244,10 @@ func (h *PhotoHandler) toDTO(r *http.Request, p domain.ProgressPhoto) photoDTO {
 		ID: p.ID, StudentID: p.StudentID, TakenAt: p.TakenAt.Format(time.DateOnly),
 		Pose: string(p.Pose), MediaURL: mediaURL, Notes: p.Notes, CreatedAt: p.CreatedAt,
 	}
+}
+
+// studentConsents confere o consentimento do aluno alvo quando o ator é o
+// coach: false = a resposta de erro já foi escrita.
+func (h *PhotoHandler) studentConsents(w http.ResponseWriter, r *http.Request, tenantID, studentID string) bool {
+	return requireStudentPhotoConsent(w, r, h.logger, h.consents, tenantID, studentID)
 }

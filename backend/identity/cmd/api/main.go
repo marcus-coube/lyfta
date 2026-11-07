@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/marcus-coube/lyfta/identity/internal/config"
+	"github.com/marcus-coube/lyfta/identity/internal/erasure"
 	ihttp "github.com/marcus-coube/lyfta/identity/internal/http"
 	"github.com/marcus-coube/lyfta/identity/internal/mail"
 	"github.com/marcus-coube/lyfta/identity/internal/repo"
@@ -65,13 +66,22 @@ func run(logger *slog.Logger) error {
 	authRepo := repo.NewAuthRepo(pool)
 	invitationRepo := repo.NewInvitationRepo(pool)
 	passwordResetRepo := repo.NewPasswordResetRepo(pool)
+	consentRepo := repo.NewConsentRepo(pool)
 
-	authHandler := ihttp.NewAuthHandler(logger, tenants, users, authRepo, jwtSigner)
-	invitationHandler := ihttp.NewInvitationHandler(logger, invitationRepo, users, authRepo, jwtSigner, mailer, cfg.AppURL)
+	issuer := ihttp.NewSessionIssuer(logger, jwtSigner, authRepo, consentRepo, cfg.TermsVersion)
+	eraser := erasure.New(cfg.InternalToken, []erasure.Target{
+		{Name: "assessment", BaseURL: cfg.AssessmentURL},
+		{Name: "workout", BaseURL: cfg.WorkoutURL},
+		{Name: "comms", BaseURL: cfg.CommsURL},
+	})
+
+	authHandler := ihttp.NewAuthHandler(logger, tenants, users, authRepo, issuer, cfg.TermsVersion)
+	invitationHandler := ihttp.NewInvitationHandler(logger, invitationRepo, users, consentRepo, issuer, mailer, cfg.AppURL, cfg.TermsVersion)
+	accountHandler := ihttp.NewAccountHandler(logger, users, authRepo, consentRepo, issuer, eraser, cfg.TermsVersion)
 	passwordResetHandler := ihttp.NewPasswordResetHandler(logger, authRepo, users, passwordResetRepo, mailer, cfg.AppURL)
 
 	userHandler := ihttp.NewUserHandler(logger, users)
-	router := ihttp.NewRouter(logger, cfg.CORSOrigins, jwtSigner, authHandler, invitationHandler, passwordResetHandler, userHandler)
+	router := ihttp.NewRouter(logger, cfg.CORSOrigins, jwtSigner, cfg.InternalToken, authHandler, invitationHandler, passwordResetHandler, userHandler, accountHandler)
 
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,

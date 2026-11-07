@@ -61,7 +61,7 @@ func newDeviceTestServer(t *testing.T) (*httptest.Server, ed25519.PrivateKey) {
 	var wsHandler *chttp.WSHandler
 	var checkinHandler *chttp.CheckinHandler
 
-	router := chttp.NewRouter(logger, []string{"*"}, verifier, conversationHandler, mediaHandler, wsHandler, checkinHandler, deviceHandler)
+	router := chttp.NewRouter(logger, []string{"*"}, verifier, "", conversationHandler, mediaHandler, wsHandler, checkinHandler, deviceHandler, nil)
 	server := httptest.NewServer(router)
 	t.Cleanup(server.Close)
 	return server, priv

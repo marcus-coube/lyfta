@@ -23,11 +23,13 @@ func NewRouter(
 	logger *slog.Logger,
 	corsOrigins []string,
 	verifier *security.JWTVerifier,
+	internalToken string,
 	measurementHandler *MeasurementHandler,
 	bioimpedanceHandler *BioimpedanceHandler,
 	photoHandler *PhotoHandler,
 	mediaHandler *MediaHandler,
 	summaryHandler *SummaryHandler,
+	erasureHandler *ErasureHandler,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -43,6 +45,12 @@ func NewRouter(
 	}))
 
 	r.Get("/healthz", healthzHandler)
+
+	// M2M (ADR-013 §4/§5): exclusão de conta, chamada pelo identity (P4.5).
+	r.Route("/internal/v1", func(r chi.Router) {
+		r.Use(RequireInternalToken(internalToken))
+		r.Delete("/users/{id}", erasureHandler.EraseUser)
+	})
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Use(RequireAuth(verifier))

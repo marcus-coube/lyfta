@@ -74,6 +74,22 @@ var (
 	errForbidden = func() APIError {
 		return newAPIError(http.StatusForbidden, "forbidden")
 	}
+	// Consentimento e exclusão de conta (ADR-008, P4.5).
+	errConsentRequired = func(purpose string) APIError {
+		return newAPIError(http.StatusBadRequest, "consent_required", "purpose", purpose)
+	}
+	errTermsVersionMismatch = func(current string) APIError {
+		return newAPIError(http.StatusConflict, "terms_version_mismatch", "current", current)
+	}
+	errOwnerCannotDelete = func() APIError {
+		return newAPIError(http.StatusForbidden, "owner_cannot_delete")
+	}
+	errInvalidPassword = func() APIError {
+		return newAPIError(http.StatusForbidden, "invalid_password")
+	}
+	errErasureFailed = func(services []string) APIError {
+		return newAPIError(http.StatusBadGateway, "erasure_failed", "services", services)
+	}
 	errInternal = func() APIError {
 		return newAPIError(http.StatusInternalServerError, "internal_error")
 	}

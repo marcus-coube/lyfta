@@ -194,7 +194,8 @@ func (r *UserRepo) List(ctx context.Context, tenantID string, f UserFilter) (use
 			           '{}'
 			       ) AS roles
 			FROM users u
-			WHERE ($1::text IS NULL OR EXISTS (
+			WHERE u.status NOT IN ('deleting', 'deleted')
+			  AND ($1::text IS NULL OR EXISTS (
 			          SELECT 1 FROM user_roles ur WHERE ur.user_id = u.id AND ur.role = $1))
 			  AND ($2::text IS NULL OR u.status = $2)
 			  AND ($3::text IS NULL OR u.name ILIKE $3 OR u.email ILIKE $3)
@@ -250,4 +251,85 @@ func likePattern(query string) string {
 	}
 	escaped := strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(query)
 	return "%" + escaped + "%"
+}
+
+// PasswordHash devolve o hash de senha do usuário — usado só para confirmar a
+// senha antes de uma ação destrutiva (exclusão de conta, P4.5).
+func (r *UserRepo) PasswordHash(ctx context.Context, tenantID, userID string) (string, error) {
+	var hash string
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		err := tx.QueryRow(ctx, `SELECT password_hash FROM users WHERE id = $1`, userID).Scan(&hash)
+		if err == pgx.ErrNoRows {
+			return ErrNotFound
+		}
+		return err
+	})
+	if err != nil {
+		if err == ErrNotFound {
+			return "", ErrNotFound
+		}
+		return "", fmt.Errorf("repo: buscar hash de senha: %w", err)
+	}
+	return hash, nil
+}
+
+// MarkDeleting inicia a exclusão de conta (ADR-008 §2): o usuário passa a
+// `deleting` — o login (que só enxerga `active`) e o refresh deixam de
+// funcionar — e os refresh tokens são revogados. Idempotente: repetir a
+// chamada num usuário já `deleting` é no-op.
+func (r *UserRepo) MarkDeleting(ctx context.Context, tenantID, userID string) error {
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		if _, err := tx.Exec(ctx,
+			`UPDATE users SET status = 'deleting' WHERE id = $1 AND status IN ('active', 'deleting')`, userID); err != nil {
+			return err
+		}
+		_, err := tx.Exec(ctx,
+			`UPDATE refresh_tokens SET revoked_at = now() WHERE user_id = $1 AND revoked_at IS NULL`, userID)
+		return err
+	})
+	if err != nil {
+		return fmt.Errorf("repo: marcar usuário como deleting: %w", err)
+	}
+	return nil
+}
+
+// Anonymize é o último passo da exclusão (ADR-008 §2): e-mail, nome e hash de
+// senha são substituídos, os papéis, tokens, pedidos de reset e convites para
+// o e-mail antigo somem, e o usuário vira `deleted`. A linha de `users` fica
+// (outros serviços guardam o UUID como pseudônimo, sem como voltar à pessoa) e
+// os consentimentos também (prova do que foi concedido, sem dado pessoal).
+// Idempotente.
+func (r *UserRepo) Anonymize(ctx context.Context, tenantID, userID string) error {
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		var email string
+		err := tx.QueryRow(ctx, `SELECT email FROM users WHERE id = $1 AND status = 'deleting'`, userID).Scan(&email)
+		if err == pgx.ErrNoRows {
+			return nil // já anonimizado (ou inexistente): nada a fazer.
+		}
+		if err != nil {
+			return err
+		}
+		for _, q := range []string{
+			`DELETE FROM refresh_tokens WHERE user_id = $1`,
+			`DELETE FROM password_resets WHERE user_id = $1`,
+			`DELETE FROM user_roles WHERE user_id = $1`,
+		} {
+			if _, err := tx.Exec(ctx, q, userID); err != nil {
+				return err
+			}
+		}
+		if _, err := tx.Exec(ctx, `DELETE FROM invitations WHERE email = $1`, email); err != nil {
+			return err
+		}
+		_, err = tx.Exec(ctx, `
+			UPDATE users
+			SET email = 'deleted+' || id::text || '@deleted.invalid',
+			    name = 'deleted', password_hash = '', status = 'deleted'
+			WHERE id = $1`, userID)
+		return err
+	})
+	if err != nil {
+		return fmt.Errorf("repo: anonimizar usuário: %w", err)
+	}
+	return nil
 }

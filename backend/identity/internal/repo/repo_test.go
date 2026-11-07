@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/marcus-coube/lyfta/identity/internal/domain"
@@ -127,6 +128,7 @@ func TestCreateTenantWithOwnerTransactional(t *testing.T) {
 				Name: "Owner Signup", Locale: "pt-BR", Status: domain.UserStatusActive,
 				Roles: []domain.Role{domain.RoleOwner, domain.RoleCoach},
 			},
+			"v1", []string{domain.PurposeTerms},
 		)
 		if err != nil {
 			t.Fatalf("CreateWithOwner: %v", err)
@@ -148,6 +150,7 @@ func TestCreateTenantWithOwnerTransactional(t *testing.T) {
 				Name: "Owner Falha", Locale: "pt-BR", Status: domain.UserStatusActive,
 				Roles: []domain.Role{"papel-invalido"}, // viola CHECK de user_roles.role
 			},
+			"v1", []string{domain.PurposeTerms},
 		)
 		if err == nil {
 			t.Fatal("esperava erro ao inserir papel inválido")
@@ -157,4 +160,65 @@ func TestCreateTenantWithOwnerTransactional(t *testing.T) {
 			t.Fatalf("esperava tenant revertido (ErrNotFound), obtive: %v", err)
 		}
 	})
+}
+
+// TestConsentsIsolationAndAppendOnly cobre o repositório de consentimentos
+// (P4.5): isolamento cross-tenant (ADR-001 §6) e histórico append-only —
+// revogar não apaga linha e conceder de novo cria outra.
+func TestConsentsIsolationAndAppendOnly(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	tenants := repo.NewTenantRepo(pool)
+	users := repo.NewUserRepo(pool)
+	consents := repo.NewConsentRepo(pool)
+
+	tenantA, _ := tenants.Create(ctx, domain.Tenant{Name: "Consent A", Slug: uniqueSlug("consent-a"), Locale: "pt-BR"})
+	tenantB, _ := tenants.Create(ctx, domain.Tenant{Name: "Consent B", Slug: uniqueSlug("consent-b"), Locale: "pt-BR"})
+	userA, err := users.Create(ctx, domain.User{
+		TenantID: tenantA.ID, Email: "aluno@consent-a.com", PasswordHash: "hash", Name: "Aluno A",
+		Locale: "pt-BR", Status: domain.UserStatusActive, Roles: []domain.Role{domain.RoleStudent},
+	})
+	if err != nil {
+		t.Fatalf("criar usuário: %v", err)
+	}
+
+	if err := consents.Apply(ctx, tenantA.ID, userA.ID, "v1", map[string]bool{
+		domain.PurposeTerms: true, domain.PurposeHealthData: true, domain.PurposeProgressPhotos: true,
+	}); err != nil {
+		t.Fatalf("conceder: %v", err)
+	}
+	// Idempotente: repetir na mesma versão não duplica a linha vigente.
+	if err := consents.Apply(ctx, tenantA.ID, userA.ID, "v1", map[string]bool{domain.PurposeTerms: true}); err != nil {
+		t.Fatalf("repetir: %v", err)
+	}
+
+	// Outro tenant não enxerga os consentimentos do usuário de A.
+	other, err := consents.Active(ctx, tenantB.ID, userA.ID)
+	if err != nil || len(other) != 0 {
+		t.Fatalf("isolamento: tenant B não deveria ver consentimentos de A: %v %v", other, err)
+	}
+
+	// Revogar grava revoked_at, não apaga.
+	if err := consents.Apply(ctx, tenantA.ID, userA.ID, "v1", map[string]bool{domain.PurposeProgressPhotos: false}); err != nil {
+		t.Fatalf("revogar: %v", err)
+	}
+	purposes, _ := consents.ActivePurposes(ctx, tenantA.ID, userA.ID, "v1")
+	if len(purposes) != 2 {
+		t.Fatalf("esperava 2 finalidades vigentes após revogar, obtive %v", purposes)
+	}
+	var total int
+	err = repo.WithTenant(ctx, pool, tenantA.ID, func(tx pgx.Tx) error {
+		return tx.QueryRow(ctx, `SELECT count(*) FROM consents WHERE user_id = $1 AND purpose = 'progress_photos'`, userA.ID).Scan(&total)
+	})
+	if err != nil || total != 1 {
+		t.Fatalf("a linha revogada deveria continuar no banco: total=%d err=%v", total, err)
+	}
+
+	// Conceder de novo cria outra linha; versão nova dos termos encerra a velha.
+	if err := consents.Apply(ctx, tenantA.ID, userA.ID, "v2", map[string]bool{domain.PurposeProgressPhotos: true}); err != nil {
+		t.Fatalf("conceder v2: %v", err)
+	}
+	if got, _ := consents.ActivePurposes(ctx, tenantA.ID, userA.ID, "v2"); len(got) != 1 || got[0] != domain.PurposeProgressPhotos {
+		t.Fatalf("só progress_photos está vigente na v2, obtive %v", got)
+	}
 }

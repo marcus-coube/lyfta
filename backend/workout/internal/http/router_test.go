@@ -107,6 +107,7 @@ func newTestRouterWithPool(t *testing.T, publicPEM string, pool *pgxpool.Pool) h
 		whttp.NewSyncHandler(logger, plans, sessions, exercises, presigner),
 		whttp.NewHistoryHandler(logger, sessions, exercises, presigner),
 		whttp.NewPendingStudentsHandler(logger, pending),
+		whttp.NewErasureHandler(logger, repo.NewErasureRepo(pool)),
 	)
 }
 

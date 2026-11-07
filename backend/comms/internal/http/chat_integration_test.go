@@ -132,7 +132,7 @@ func TestChatEndToEnd(t *testing.T) {
 	wsHandler := chttp.NewWSHandler(logger, verifier, hub, redisClient)
 	var checkinHandler *chttp.CheckinHandler
 
-	router := chttp.NewRouter(logger, []string{"*"}, verifier, conversationHandler, mediaHandler, wsHandler, checkinHandler, nil)
+	router := chttp.NewRouter(logger, []string{"*"}, verifier, "", conversationHandler, mediaHandler, wsHandler, checkinHandler, nil, nil)
 	server := httptest.NewServer(router)
 	t.Cleanup(server.Close)
 
@@ -398,7 +398,7 @@ func TestChatAuthorizationAndValidation(t *testing.T) {
 	var mediaHandler *chttp.MediaHandler
 	wsHandler := chttp.NewWSHandler(logger, verifier, hub, redisClient)
 	var checkinHandler *chttp.CheckinHandler
-	router := chttp.NewRouter(logger, []string{"*"}, verifier, conversationHandler, mediaHandler, wsHandler, checkinHandler, nil)
+	router := chttp.NewRouter(logger, []string{"*"}, verifier, "", conversationHandler, mediaHandler, wsHandler, checkinHandler, nil, nil)
 	server := httptest.NewServer(router)
 	t.Cleanup(server.Close)
 

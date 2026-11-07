@@ -26,6 +26,20 @@ type Claims struct {
 	TenantID string   `json:"tenant_id"`
 	Roles    []string `json:"roles"`
 	Locale   string   `json:"locale"`
+	// Consents são as finalidades de consentimento vigentes na versão atual
+	// dos termos (ADR-008 §1, P4.5): o assessment checa `progress_photos` aqui
+	// para o aluno agir sobre as próprias fotos, sem chamada ao identity.
+	Consents []string `json:"consents"`
+}
+
+// HasConsent diz se a finalidade está vigente nas claims.
+func (c *Claims) HasConsent(purpose string) bool {
+	for _, p := range c.Consents {
+		if p == purpose {
+			return true
+		}
+	}
+	return false
 }
 
 // JWTVerifier valida access tokens EdDSA (ed25519) com a chave pública.

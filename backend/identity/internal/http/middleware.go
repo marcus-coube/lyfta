@@ -127,6 +127,20 @@ func RequireRole(roles ...string) func(http.Handler) http.Handler {
 	}
 }
 
+// RequireInternalToken protege rotas M2M (ADR-013 §4): compara o header
+// X-Internal-Token com INTERNAL_TOKEN. Token vazio na config nunca autentica.
+func RequireInternalToken(token string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if token == "" || r.Header.Get("X-Internal-Token") != token {
+				writeError(w, errUnauthenticated())
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 // Recover captura panics e responde 500 sem derrubar o processo, logando o
 // erro com o request-id da requisição.
 func Recover(logger *slog.Logger) func(http.Handler) http.Handler {

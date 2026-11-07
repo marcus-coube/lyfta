@@ -117,12 +117,13 @@ func run(logger *slog.Logger) error {
 	notifications := repo.NewNotificationLogRepo(pool)
 	notifier := push.NewNotifier(logger, deviceTokens, notifications, pusher)
 
-	router := chttp.NewRouter(logger, cfg.CORSOrigins, verifier,
+	router := chttp.NewRouter(logger, cfg.CORSOrigins, verifier, cfg.InternalToken,
 		chttp.NewConversationHandler(logger, conversations, messages, presigner, redisClient, notifier),
 		chttp.NewMediaHandler(logger, conversations, presigner),
 		chttp.NewWSHandler(logger, verifier, hub, redisClient),
 		chttp.NewCheckinHandler(logger, checkins, conversations, redisClient, notifier),
 		chttp.NewDeviceHandler(logger, deviceTokens),
+		chttp.NewErasureHandler(logger, repo.NewErasureRepo(pool)),
 	)
 
 	// Job diário "treino pendente" (P3.4, passo 3) — M2M com o workout

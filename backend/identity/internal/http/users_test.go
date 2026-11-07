@@ -83,6 +83,7 @@ func signupCoach(t *testing.T, f usersFixture) string {
 		"name":          "Coach Responsável",
 		"email":         uniqueEmail("coach"),
 		"password":      "SenhaForte123!",
+		"terms_version": testTermsVersion,
 	})
 	if resp.status != http.StatusCreated {
 		t.Fatalf("signup do coach: %d %+v", resp.status, resp.body)
@@ -108,6 +109,7 @@ func inviteStudent(t *testing.T, f usersFixture, coachToken, name string) string
 	}
 	accept := doPost(t, f.client, f.url+"/v1/invitations/accept", map[string]any{
 		"token": tokenFromMail(t, msg), "password": "SenhaAluno123!",
+		"terms_version": testTermsVersion, "consents": map[string]bool{"health_data": true},
 	})
 	if accept.status != http.StatusOK && accept.status != http.StatusCreated {
 		t.Fatalf("aceitar convite: %d %+v", accept.status, accept.body)

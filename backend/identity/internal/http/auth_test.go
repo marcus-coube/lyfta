@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sync"
 	"testing"
 	"time"
 
@@ -75,7 +76,43 @@ func testSigner(t *testing.T) *security.JWTSigner {
 	return signer
 }
 
+// testTermsVersion é a versão dos termos configurada nos handlers de teste.
+const testTermsVersion = "test-v1"
+
+// fakeEraser é o Eraser dos testes: registra as chamadas e falha nos serviços
+// listados em failing.
+type fakeEraser struct {
+	mu      sync.Mutex
+	calls   []string
+	failing []string
+}
+
+func (f *fakeEraser) Erase(_ context.Context, tenantID, userID string) []string {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.calls = append(f.calls, tenantID+"/"+userID)
+	return f.failing
+}
+
+func (f *fakeEraser) setFailing(services ...string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.failing = services
+}
+
+func (f *fakeEraser) callCount() int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return len(f.calls)
+}
+
 func newTestServer(t *testing.T) (*httptest.Server, *security.JWTSigner, *captureMailer) {
+	t.Helper()
+	server, signer, mailer, _ := newTestServerWithEraser(t)
+	return server, signer, mailer
+}
+
+func newTestServerWithEraser(t *testing.T) (*httptest.Server, *security.JWTSigner, *captureMailer, *fakeEraser) {
 	t.Helper()
 	pool := testPool(t)
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelError}))
@@ -88,16 +125,23 @@ func newTestServer(t *testing.T) (*httptest.Server, *security.JWTSigner, *captur
 	invitationRepo := repo.NewInvitationRepo(pool)
 	passwordResetRepo := repo.NewPasswordResetRepo(pool)
 
-	authHandler := ihttp.NewAuthHandler(logger, tenants, users, authRepo, signer)
-	invitationHandler := ihttp.NewInvitationHandler(logger, invitationRepo, users, authRepo, signer, mailer, "http://localhost:5173")
+	consentRepo := repo.NewConsentRepo(pool)
+	issuer := ihttp.NewSessionIssuer(logger, signer, authRepo, consentRepo, testTermsVersion)
+	eraser := &fakeEraser{}
+
+	authHandler := ihttp.NewAuthHandler(logger, tenants, users, authRepo, issuer, testTermsVersion)
+	invitationHandler := ihttp.NewInvitationHandler(logger, invitationRepo, users, consentRepo, issuer, mailer, "http://localhost:5173", testTermsVersion)
+	accountHandler := ihttp.NewAccountHandler(logger, users, authRepo, consentRepo, issuer, eraser, testTermsVersion)
 	passwordResetHandler := ihttp.NewPasswordResetHandler(logger, authRepo, users, passwordResetRepo, mailer, "http://localhost:5173")
 
 	userHandler := ihttp.NewUserHandler(logger, users)
-	router := ihttp.NewRouter(logger, []string{"*"}, signer, authHandler, invitationHandler, passwordResetHandler, userHandler)
+	router := ihttp.NewRouter(logger, []string{"*"}, signer, testInternalToken, authHandler, invitationHandler, passwordResetHandler, userHandler, accountHandler)
 	server := httptest.NewServer(router)
 	t.Cleanup(server.Close)
-	return server, signer, mailer
+	return server, signer, mailer, eraser
 }
+
+const testInternalToken = "test-internal-token"
 
 func uniqueSlug(prefix string) string {
 	return prefix + "-" + uuid.NewString()[:8]
@@ -147,6 +191,7 @@ func TestSignupLoginRefreshLogout(t *testing.T) {
 		"name":          "Owner Teste",
 		"email":         email,
 		"password":      "senha12345",
+		"terms_version": testTermsVersion,
 	})
 	if signupResp.status != http.StatusCreated {
 		t.Fatalf("signup: esperava 201, obtive %d: %v", signupResp.status, signupResp.body)
@@ -229,6 +274,7 @@ func TestLoginMultipleTenants(t *testing.T) {
 			"name":          "Dono Multi",
 			"email":         email,
 			"password":      password,
+			"terms_version": testTermsVersion,
 		})
 		if resp.status != http.StatusCreated {
 			t.Fatalf("signup %d: esperava 201, obtive %d: %v", i, resp.status, resp.body)
@@ -280,6 +326,7 @@ func TestLoginInvalidCredentials(t *testing.T) {
 		"name":          "Dono Senha",
 		"email":         email,
 		"password":      "senhacorreta1",
+		"terms_version": testTermsVersion,
 	})
 	if signupResp.status != http.StatusCreated {
 		t.Fatalf("signup: esperava 201, obtive %d: %v", signupResp.status, signupResp.body)
@@ -309,7 +356,7 @@ func TestLoginInvalidCredentials(t *testing.T) {
 func TestExpiredAccessTokenRejected(t *testing.T) {
 	_, signer, _ := newTestServer(t)
 
-	token, expiresAt, err := signer.SignWithExpiry("user-id", "tenant-id", []string{"owner"}, "pt-BR", time.Now().Add(-1*time.Minute))
+	token, expiresAt, err := signer.SignWithExpiry("user-id", "tenant-id", []string{"owner"}, "pt-BR", nil, time.Now().Add(-1*time.Minute))
 	if err != nil {
 		t.Fatalf("assinar token expirado: %v", err)
 	}

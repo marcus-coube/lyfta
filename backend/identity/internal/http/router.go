@@ -18,10 +18,12 @@ func NewRouter(
 	logger *slog.Logger,
 	corsOrigins []string,
 	signer *security.JWTSigner,
+	internalToken string,
 	auth *AuthHandler,
 	invitations *InvitationHandler,
 	passwordReset *PasswordResetHandler,
 	users *UserHandler,
+	account *AccountHandler,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -38,6 +40,13 @@ func NewRouter(
 
 	r.Get("/healthz", healthzHandler)
 
+	// M2M (ADR-013 §4/§5): outros serviços consultam o consentimento de um
+	// usuário que não é quem faz a requisição (P4.5).
+	r.Route("/internal/v1", func(r chi.Router) {
+		r.Use(RequireInternalToken(internalToken))
+		r.Get("/users/{id}/consents", account.InternalConsents)
+	})
+
 	r.Route("/v1", func(r chi.Router) {
 		r.Post("/tenants", auth.Signup)
 		r.Route("/auth", func(r chi.Router) {
@@ -47,6 +56,15 @@ func NewRouter(
 			r.Post("/forgot-password", passwordReset.ForgotPassword)
 			r.Post("/reset-password", passwordReset.ResetPassword)
 		})
+		// Conta do próprio usuário (P4.5): consentimentos (ADR-008 §1) e
+		// exclusão de conta (ADR-008 §2). Qualquer papel autenticado.
+		r.Route("/me", func(r chi.Router) {
+			r.Use(RequireAuth(signer))
+			r.Get("/consents", account.GetConsents)
+			r.Put("/consents", account.PutConsents)
+			r.Delete("/", account.DeleteMe)
+		})
+
 		// Usuários do tenant (P1.6): a lista de alunos do professor. É do
 		// identity porque o vínculo aluno↔tenant vive aqui — nenhum serviço
 		// lê o banco do outro (ADR-013 §2).

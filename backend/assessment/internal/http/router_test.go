@@ -7,10 +7,12 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
+	"errors"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sync"
 	"testing"
 	"time"
 
@@ -64,6 +66,20 @@ func newTestKeys(t *testing.T) (publicPEM string, private ed25519.PrivateKey) {
 // registro dos demais.
 func signTokenAs(t *testing.T, priv ed25519.PrivateKey, tenantID, subject string, roles []string, expiresAt time.Time) string {
 	t.Helper()
+	// Os atores de teste consentiram em tudo, como um usuário comum depois do
+	// onboarding; os testes de consentimento usam signTokenWithConsents.
+	return signToken(t, priv, tenantID, subject, roles, []string{"terms", "health_data", "progress_photos"}, expiresAt)
+}
+
+// signTokenWithConsents emite um token válido por 1 minuto com as finalidades
+// de consentimento escolhidas.
+func signTokenWithConsents(t *testing.T, priv ed25519.PrivateKey, tenantID, subject string, roles, consents []string) string {
+	t.Helper()
+	return signToken(t, priv, tenantID, subject, roles, consents, time.Now().Add(time.Minute))
+}
+
+func signToken(t *testing.T, priv ed25519.PrivateKey, tenantID, subject string, roles, consents []string, expiresAt time.Time) string {
+	t.Helper()
 	claims := security.Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   subject,
@@ -73,6 +89,7 @@ func signTokenAs(t *testing.T, priv ed25519.PrivateKey, tenantID, subject string
 		TenantID: tenantID,
 		Roles:    roles,
 		Locale:   "pt-BR",
+		Consents: consents,
 	}
 	signed, err := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims).SignedString(priv)
 	if err != nil {
@@ -81,7 +98,53 @@ func signTokenAs(t *testing.T, priv ed25519.PrivateKey, tenantID, subject string
 	return signed
 }
 
+// fakeConsents é o ConsentChecker dos testes: todo aluno consentiu em tudo,
+// exceto os listados em revoked.
+type fakeConsents struct {
+	mu      sync.Mutex
+	revoked map[string]bool
+}
+
+func (f *fakeConsents) revoke(studentID string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.revoked == nil {
+		f.revoked = map[string]bool{}
+	}
+	f.revoked[studentID] = true
+}
+
+func (f *fakeConsents) HasPurpose(_ context.Context, _, userID, _ string) (bool, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return !f.revoked[userID], nil
+}
+
+// fakeObjects registra as pastas de aluno apagadas do "storage".
+type fakeObjects struct {
+	mu      sync.Mutex
+	deleted []string
+	fail    bool
+}
+
+func (f *fakeObjects) DeleteStudentObjects(_ context.Context, tenantID, studentID string) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.fail {
+		return errors.New("storage fora do ar")
+	}
+	f.deleted = append(f.deleted, tenantID+"/"+studentID)
+	return nil
+}
+
+const testInternalToken = "token-m2m-de-teste"
+
 func newTestRouterWithPool(t *testing.T, publicPEM string, pool *pgxpool.Pool) http.Handler {
+	t.Helper()
+	return newTestRouterFull(t, publicPEM, pool, &fakeConsents{}, &fakeObjects{})
+}
+
+func newTestRouterFull(t *testing.T, publicPEM string, pool *pgxpool.Pool, consents ahttp.ConsentChecker, objects ahttp.ObjectEraser) http.Handler {
 	t.Helper()
 	verifier, err := security.NewJWTVerifier(publicPEM)
 	if err != nil {
@@ -101,12 +164,13 @@ func newTestRouterWithPool(t *testing.T, publicPEM string, pool *pgxpool.Pool) h
 	measurements := repo.NewMeasurementRepo(pool)
 	bioimpedance := repo.NewBioimpedanceRepo(pool)
 	photos := repo.NewPhotoRepo(pool)
-	return ahttp.NewRouter(logger, []string{"*"}, verifier,
+	return ahttp.NewRouter(logger, []string{"*"}, verifier, testInternalToken,
 		ahttp.NewMeasurementHandler(logger, measurements),
 		ahttp.NewBioimpedanceHandler(logger, bioimpedance),
-		ahttp.NewPhotoHandler(logger, photos, presigner),
-		ahttp.NewMediaHandler(logger, presigner),
-		ahttp.NewSummaryHandler(logger, measurements, bioimpedance, photos),
+		ahttp.NewPhotoHandler(logger, photos, presigner, consents),
+		ahttp.NewMediaHandler(logger, presigner, consents),
+		ahttp.NewSummaryHandler(logger, measurements, bioimpedance, photos, consents),
+		ahttp.NewErasureHandler(logger, repo.NewErasureRepo(pool), objects),
 	)
 }
 
@@ -114,6 +178,9 @@ func newTestRouterWithPool(t *testing.T, publicPEM string, pool *pgxpool.Pool) h
 // às três suítes de recurso: o aluno dono, outro aluno do mesmo tenant, o
 // coach do tenant e um coach de outro tenant.
 type assessmentActors struct {
+	consents  *fakeConsents
+	objects   *fakeObjects
+	priv      ed25519.PrivateKey
 	handler   http.Handler
 	tenantID  string
 	student   string // token do aluno dono (sub = studentID)
@@ -127,13 +194,17 @@ func newAssessmentActors(t *testing.T) assessmentActors {
 	t.Helper()
 	pool := testPool(t)
 	publicPEM, priv := newTestKeys(t)
-	handler := newTestRouterWithPool(t, publicPEM, pool)
+	consents, objects := &fakeConsents{}, &fakeObjects{}
+	handler := newTestRouterFull(t, publicPEM, pool, consents, objects)
 
 	tenantID, tenantB := uuid.NewString(), uuid.NewString()
 	studentID, otherID := uuid.NewString(), uuid.NewString()
 	expires := time.Now().Add(time.Minute)
 
 	return assessmentActors{
+		consents:  consents,
+		objects:   objects,
+		priv:      priv,
 		handler:   handler,
 		tenantID:  tenantID,
 		student:   signTokenAs(t, priv, tenantID, studentID, []string{"student"}, expires),

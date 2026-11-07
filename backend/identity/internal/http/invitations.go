@@ -23,10 +23,13 @@ type InvitationHandler struct {
 	logger      *slog.Logger
 	invitations *repo.InvitationRepo
 	users       *repo.UserRepo
-	auth        *repo.AuthRepo
-	jwt         *security.JWTSigner
+	consents    *repo.ConsentRepo
+	issuer      *SessionIssuer
 	mailer      mail.Mailer
 	appURL      string
+	// termsVersion é a versão vigente dos termos (ADR-008 §6): o aceite só
+	// vale se o convidado diz ter aceitado exatamente essa.
+	termsVersion string
 }
 
 // NewInvitationHandler cria um InvitationHandler com as dependências
@@ -35,19 +38,21 @@ func NewInvitationHandler(
 	logger *slog.Logger,
 	invitations *repo.InvitationRepo,
 	users *repo.UserRepo,
-	auth *repo.AuthRepo,
-	jwt *security.JWTSigner,
+	consents *repo.ConsentRepo,
+	issuer *SessionIssuer,
 	mailer mail.Mailer,
 	appURL string,
+	termsVersion string,
 ) *InvitationHandler {
 	return &InvitationHandler{
-		logger:      logger,
-		invitations: invitations,
-		users:       users,
-		auth:        auth,
-		jwt:         jwt,
-		mailer:      mailer,
-		appURL:      appURL,
+		logger:       logger,
+		invitations:  invitations,
+		users:        users,
+		consents:     consents,
+		issuer:       issuer,
+		mailer:       mailer,
+		appURL:       appURL,
+		termsVersion: termsVersion,
 	}
 }
 
@@ -197,6 +202,11 @@ func (h *InvitationHandler) createAndSendInvitation(ctx context.Context, tenantI
 type acceptInvitationRequest struct {
 	Token    string `json:"token"`
 	Password string `json:"password"`
+	// TermsVersion e Consents (finalidade -> concedida) trazem o aceite dos
+	// termos e das finalidades de saúde (ADR-008 §1/§6, P4.5): `health_data` é
+	// obrigatória para o aluno, `progress_photos` é opcional.
+	TermsVersion string          `json:"terms_version"`
+	Consents     map[string]bool `json:"consents"`
 }
 
 // Accept ativa a conta do convidado: valida o token (existe, não expirado,
@@ -214,6 +224,11 @@ func (h *InvitationHandler) Accept(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(req.Password) < 8 {
 		writeError(w, errValidation("password"))
+		return
+	}
+
+	if apiErr := checkTermsVersion(req.TermsVersion, h.termsVersion); apiErr != nil {
+		writeError(w, *apiErr)
 		return
 	}
 
@@ -238,9 +253,34 @@ func (h *InvitationHandler) Accept(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Finalidades concedidas no aceite: os termos sempre (a versão já foi
+	// conferida) e, para o aluno, os dados de saúde — sem eles o aceite não
+	// acontece — e as fotos, se ele marcou.
+	grant := []string{domain.PurposeTerms}
+	if inv.Role == domain.RoleStudent {
+		if !req.Consents[domain.PurposeHealthData] {
+			writeError(w, errConsentRequired(domain.PurposeHealthData))
+			return
+		}
+		grant = append(grant, domain.PurposeHealthData)
+		if req.Consents[domain.PurposeProgressPhotos] {
+			grant = append(grant, domain.PurposeProgressPhotos)
+		}
+	}
+
 	passwordHash, err := security.HashPassword(req.Password)
 	if err != nil {
 		h.logger.Error("invitation_accept_hash_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
+	}
+
+	changes := make(map[string]bool, len(grant))
+	for _, p := range grant {
+		changes[p] = true
+	}
+	if err := h.consents.Apply(ctx, inv.TenantID, user.ID, h.termsVersion, changes); err != nil {
+		h.logger.Error("invitation_accept_consents_failed", slog.Any("error", err))
 		writeError(w, errInternal())
 		return
 	}
@@ -257,7 +297,7 @@ func (h *InvitationHandler) Accept(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.Status = domain.UserStatusActive
-	resp, apiErr := issueTokens(ctx, h.jwt, h.auth, h.logger, user)
+	resp, apiErr := h.issuer.Issue(ctx, user)
 	if apiErr != nil {
 		writeError(w, *apiErr)
 		return

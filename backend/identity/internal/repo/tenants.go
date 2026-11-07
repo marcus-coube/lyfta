@@ -46,7 +46,7 @@ func (r *TenantRepo) Create(ctx context.Context, t domain.Tenant) (domain.Tenant
 // `app.tenant_id` (SELECT set_config, igual a WithTenant) antes de inseri-las,
 // dentro da mesma transação — se qualquer passo falhar, tudo é revertido
 // (nunca fica tenant órfão sem usuário).
-func (r *TenantRepo) CreateWithOwner(ctx context.Context, t domain.Tenant, u domain.User) (domain.Tenant, domain.User, error) {
+func (r *TenantRepo) CreateWithOwner(ctx context.Context, t domain.Tenant, u domain.User, termsVersion string, consents []string) (domain.Tenant, domain.User, error) {
 	tenantID, err := uuid.NewV7()
 	if err != nil {
 		return domain.Tenant{}, domain.User{}, fmt.Errorf("repo: gerar id do tenant: %w", err)
@@ -93,6 +93,12 @@ func (r *TenantRepo) CreateWithOwner(ctx context.Context, t domain.Tenant, u dom
 		if _, err := tx.Exec(ctx, qRole, u.ID, u.TenantID, string(role)); err != nil {
 			return domain.Tenant{}, domain.User{}, fmt.Errorf("repo: atribuir papel %q: %w", role, err)
 		}
+	}
+
+	// O aceite dos termos entra na mesma transação: tenant sem registro de
+	// consentimento nunca existe (ADR-008 §6, P4.5).
+	if err := grantConsentsTx(ctx, tx, u.TenantID, u.ID, termsVersion, consents); err != nil {
+		return domain.Tenant{}, domain.User{}, err
 	}
 
 	if err := tx.Commit(ctx); err != nil {

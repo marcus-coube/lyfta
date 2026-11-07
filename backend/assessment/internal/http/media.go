@@ -19,11 +19,12 @@ import (
 type MediaHandler struct {
 	logger    *slog.Logger
 	presigner *media.Presigner
+	consents  ConsentChecker
 }
 
 // NewMediaHandler cria o handler de mídia sobre o presigner configurado.
-func NewMediaHandler(logger *slog.Logger, presigner *media.Presigner) *MediaHandler {
-	return &MediaHandler{logger: logger, presigner: presigner}
+func NewMediaHandler(logger *slog.Logger, presigner *media.Presigner, consents ConsentChecker) *MediaHandler {
+	return &MediaHandler{logger: logger, presigner: presigner, consents: consents}
 }
 
 type presignRequest struct {
@@ -46,6 +47,11 @@ func (h *MediaHandler) PresignMine(w http.ResponseWriter, r *http.Request) {
 		writeError(w, errUnauthenticated())
 		return
 	}
+	// Sem consentimento em fotos o aluno nem começa o upload (ADR-008 §1).
+	if !mineHasPhotoConsent(claims) {
+		writeError(w, errConsentRequired(PurposeProgressPhotos))
+		return
+	}
 	h.presign(w, r, claims.TenantID, claims.Subject)
 }
 
@@ -59,6 +65,9 @@ func (h *MediaHandler) PresignForStudent(w http.ResponseWriter, r *http.Request)
 	studentID := chi.URLParam(r, "id")
 	if _, err := uuid.Parse(studentID); err != nil {
 		writeError(w, errValidation("id"))
+		return
+	}
+	if !requireStudentPhotoConsent(w, r, h.logger, h.consents, tenantID, studentID) {
 		return
 	}
 	h.presign(w, r, tenantID, studentID)

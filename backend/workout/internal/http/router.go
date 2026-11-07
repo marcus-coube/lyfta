@@ -24,6 +24,7 @@ func NewRouter(
 	syncHandler *SyncHandler,
 	historyHandler *HistoryHandler,
 	pendingHandler *PendingStudentsHandler,
+	erasureHandler *ErasureHandler,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -48,6 +49,8 @@ func NewRouter(
 	r.Route("/internal/v1", func(r chi.Router) {
 		r.Use(RequireInternalToken(internalToken))
 		r.Get("/pending-students", pendingHandler.List)
+		// Exclusão de conta (ADR-008 §2, P4.5): chamada pelo identity.
+		r.Delete("/users/{id}", erasureHandler.EraseUser)
 	})
 
 	r.Route("/v1", func(r chi.Router) {

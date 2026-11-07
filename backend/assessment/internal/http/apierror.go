@@ -71,6 +71,10 @@ var (
 	errInvalidMediaKey = func() APIError {
 		return newAPIError(http.StatusUnprocessableEntity, "invalid_media_key")
 	}
+	// O titular não consentiu (ou revogou) a finalidade — ADR-008 §1.
+	errConsentRequired = func(purpose string) APIError {
+		return newAPIError(http.StatusForbidden, "consent_required", "purpose", purpose)
+	}
 	errInternal = func() APIError {
 		return newAPIError(http.StatusInternalServerError, "internal_error")
 	}

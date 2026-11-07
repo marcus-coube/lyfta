@@ -58,6 +58,7 @@ type Config struct {
 
 // Presigner assina URLs de upload e leitura no bucket configurado.
 type Presigner struct {
+	client        *s3.Client
 	presign       *s3.PresignClient
 	bucket        string
 	publicBaseURL string
@@ -81,6 +82,7 @@ func NewPresigner(cfg Config) (*Presigner, error) {
 	})
 
 	return &Presigner{
+		client:        client,
 		presign:       s3.NewPresignClient(client),
 		bucket:        cfg.Bucket,
 		publicBaseURL: strings.TrimSuffix(cfg.PublicBaseURL, "/"),
@@ -145,4 +147,45 @@ func (p *Presigner) ReadURL(ctx context.Context, key string) (string, error) {
 		return "", fmt.Errorf("media: assinar leitura: %w", err)
 	}
 	return req.URL, nil
+}
+
+// StudentPrefix é a "pasta" de um aluno no bucket: tudo que o aluno enviou
+// mora aqui (ver ObjectKey).
+func StudentPrefix(tenantID, studentID string) string {
+	return fmt.Sprintf("tenants/%s/students/%s/", tenantID, studentID)
+}
+
+// DeleteStudentObjects apaga fisicamente TODOS os objetos da pasta do aluno
+// (ADR-008 §2, P4.5): lista pelo prefixo em vez de confiar nas linhas do banco,
+// então pega também foto enviada por URL assinada e nunca cadastrada.
+// Idempotente — pasta vazia ou já apagada é sucesso.
+func (p *Presigner) DeleteStudentObjects(ctx context.Context, tenantID, studentID string) error {
+	if tenantID == "" || studentID == "" {
+		return fmt.Errorf("media: tenant e aluno são obrigatórios para apagar a pasta")
+	}
+	prefix := StudentPrefix(tenantID, studentID)
+
+	var token *string
+	for {
+		page, err := p.client.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+			Bucket:            aws.String(p.bucket),
+			Prefix:            aws.String(prefix),
+			ContinuationToken: token,
+		})
+		if err != nil {
+			return fmt.Errorf("media: listar objetos do aluno: %w", err)
+		}
+		for _, obj := range page.Contents {
+			if _, err := p.client.DeleteObject(ctx, &s3.DeleteObjectInput{
+				Bucket: aws.String(p.bucket),
+				Key:    obj.Key,
+			}); err != nil {
+				return fmt.Errorf("media: apagar %s: %w", aws.ToString(obj.Key), err)
+			}
+		}
+		if !aws.ToBool(page.IsTruncated) {
+			return nil
+		}
+		token = page.NextContinuationToken
+	}
 }

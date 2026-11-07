@@ -179,3 +179,68 @@ func doPut(t *testing.T, url, contentType string, body []byte) (int, string) {
 	respBody, _ := io.ReadAll(resp.Body)
 	return resp.StatusCode, string(respBody)
 }
+
+// TestDeleteStudentObjects cobre a exclusão física da exclusão de conta
+// (ADR-008 §2, P4.5): tudo na pasta do aluno some do storage — inclusive o que
+// nunca foi cadastrado no banco —, a pasta de outro aluno fica intacta e
+// repetir é sucesso.
+func TestDeleteStudentObjects(t *testing.T) {
+	cfg := requireStorage(t)
+	ctx := context.Background()
+	presigner, err := media.NewPresigner(cfg)
+	if err != nil {
+		t.Fatalf("criar presigner: %v", err)
+	}
+
+	const tenantID = "44444444-4444-4444-4444-444444444444"
+	const studentID, otherID = "55555555-5555-5555-5555-555555555555", "66666666-6666-6666-6666-666666666666"
+	content := []byte{0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0xff, 0xd9}
+
+	upload := func(student string) string {
+		t.Helper()
+		key, err := media.ObjectKey(tenantID, student, "jpg")
+		if err != nil {
+			t.Fatalf("montar chave: %v", err)
+		}
+		url, _, err := presigner.PresignPut(ctx, key, "image/jpeg", int64(len(content)))
+		if err != nil {
+			t.Fatalf("assinar upload: %v", err)
+		}
+		if status, body := doPut(t, url, "image/jpeg", content); status != http.StatusOK {
+			t.Fatalf("upload: %d %s", status, body)
+		}
+		return key
+	}
+	exists := func(key string) bool {
+		t.Helper()
+		url, err := presigner.ReadURL(ctx, key)
+		if err != nil {
+			t.Fatalf("assinar leitura: %v", err)
+		}
+		resp, err := http.Get(url) //nolint:gosec // URL assinada gerada no próprio teste
+		if err != nil {
+			t.Fatalf("GET: %v", err)
+		}
+		resp.Body.Close()
+		return resp.StatusCode == http.StatusOK
+	}
+
+	mine1, mine2, theirs := upload(studentID), upload(studentID), upload(otherID)
+
+	for i := 0; i < 2; i++ { // idempotente
+		if err := presigner.DeleteStudentObjects(ctx, tenantID, studentID); err != nil {
+			t.Fatalf("apagar (%d): %v", i+1, err)
+		}
+	}
+	if exists(mine1) || exists(mine2) {
+		t.Fatal("os objetos do aluno deveriam ter sido apagados do storage")
+	}
+	if !exists(theirs) {
+		t.Fatal("o objeto de outro aluno não pode ser apagado")
+	}
+	_ = presigner.DeleteStudentObjects(ctx, tenantID, otherID)
+
+	if err := presigner.DeleteStudentObjects(ctx, "", studentID); err == nil {
+		t.Fatal("tenant vazio deveria ser recusado (prefixo amplo demais)")
+	}
+}

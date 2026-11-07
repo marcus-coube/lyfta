@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/marcus-coube/lyfta/assessment/internal/config"
+	"github.com/marcus-coube/lyfta/assessment/internal/consent"
 	ahttp "github.com/marcus-coube/lyfta/assessment/internal/http"
 	"github.com/marcus-coube/lyfta/assessment/internal/media"
 	"github.com/marcus-coube/lyfta/assessment/internal/repo"
@@ -67,12 +68,15 @@ func run(logger *slog.Logger) error {
 	measurements := repo.NewMeasurementRepo(pool)
 	bioimpedance := repo.NewBioimpedanceRepo(pool)
 	photos := repo.NewPhotoRepo(pool)
-	router := ahttp.NewRouter(logger, cfg.CORSOrigins, verifier,
+	// Consentimento de outra pessoa (coach lendo foto de aluno, P4.5).
+	consents := consent.NewClient(cfg.IdentityURL, cfg.InternalToken)
+	router := ahttp.NewRouter(logger, cfg.CORSOrigins, verifier, cfg.InternalToken,
 		ahttp.NewMeasurementHandler(logger, measurements),
 		ahttp.NewBioimpedanceHandler(logger, bioimpedance),
-		ahttp.NewPhotoHandler(logger, photos, presigner),
-		ahttp.NewMediaHandler(logger, presigner),
-		ahttp.NewSummaryHandler(logger, measurements, bioimpedance, photos),
+		ahttp.NewPhotoHandler(logger, photos, presigner, consents),
+		ahttp.NewMediaHandler(logger, presigner, consents),
+		ahttp.NewSummaryHandler(logger, measurements, bioimpedance, photos, consents),
+		ahttp.NewErasureHandler(logger, repo.NewErasureRepo(pool), presigner),
 	)
 
 	server := &http.Server{

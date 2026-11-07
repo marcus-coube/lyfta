@@ -19,11 +19,12 @@ type SummaryHandler struct {
 	measurements *repo.MeasurementRepo
 	bioimpedance *repo.BioimpedanceRepo
 	photos       *repo.PhotoRepo
+	consents     ConsentChecker
 }
 
 // NewSummaryHandler cria o handler de resumo.
-func NewSummaryHandler(logger *slog.Logger, measurements *repo.MeasurementRepo, bioimpedance *repo.BioimpedanceRepo, photos *repo.PhotoRepo) *SummaryHandler {
-	return &SummaryHandler{logger: logger, measurements: measurements, bioimpedance: bioimpedance, photos: photos}
+func NewSummaryHandler(logger *slog.Logger, measurements *repo.MeasurementRepo, bioimpedance *repo.BioimpedanceRepo, photos *repo.PhotoRepo, consents ConsentChecker) *SummaryHandler {
+	return &SummaryHandler{logger: logger, measurements: measurements, bioimpedance: bioimpedance, photos: photos, consents: consents}
 }
 
 type summaryDeltaDTO struct {
@@ -64,11 +65,21 @@ func (h *SummaryHandler) Get(w http.ResponseWriter, r *http.Request) {
 		writeError(w, errInternal())
 		return
 	}
-	photoCount, err := h.photos.Count(r.Context(), tenantID, studentID)
+	// Sem consentimento em fotos o coach não vê nem a contagem (ADR-008 §1).
+	consented, err := h.consents.HasPurpose(r.Context(), tenantID, studentID, PurposeProgressPhotos)
 	if err != nil {
-		h.logger.Error("summary_photos_failed", slog.Any("error", err))
+		h.logger.Error("summary_consent_failed", slog.Any("error", err))
 		writeError(w, errInternal())
 		return
+	}
+	photoCount := 0
+	if consented {
+		photoCount, err = h.photos.Count(r.Context(), tenantID, studentID)
+		if err != nil {
+			h.logger.Error("summary_photos_failed", slog.Any("error", err))
+			writeError(w, errInternal())
+			return
+		}
 	}
 
 	resp := summaryResponse{PhotoCount: photoCount}

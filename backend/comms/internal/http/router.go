@@ -27,11 +27,13 @@ func NewRouter(
 	logger *slog.Logger,
 	corsOrigins []string,
 	verifier *security.JWTVerifier,
+	internalToken string,
 	conversationHandler *ConversationHandler,
 	mediaHandler *MediaHandler,
 	wsHandler *WSHandler,
 	checkinHandler *CheckinHandler,
 	deviceHandler *DeviceHandler,
+	erasureHandler *ErasureHandler,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -50,6 +52,12 @@ func NewRouter(
 	// Autenticação própria (token na query, ver WSHandler.Serve) — fora do
 	// grupo /v1 porque não usa o Authorization header do RequireAuth.
 	r.Get("/ws", wsHandler.Serve)
+
+	// M2M (ADR-013 §4/§5): exclusão de conta, chamada pelo identity (P4.5).
+	r.Route("/internal/v1", func(r chi.Router) {
+		r.Use(RequireInternalToken(internalToken))
+		r.Delete("/users/{id}", erasureHandler.EraseUser)
+	})
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Use(RequireAuth(verifier))

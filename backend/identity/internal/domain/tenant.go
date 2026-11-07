@@ -91,3 +91,55 @@ type PasswordReset struct {
 	UsedAt    *time.Time
 	CreatedAt time.Time
 }
+
+// UserStatusDeleting e UserStatusDeleted marcam as duas fases da exclusão de
+// conta (ADR-008 §2, P4.5): `deleting` bloqueia o login enquanto os outros
+// serviços apagam o que é do usuário; `deleted` é o usuário já anonimizado.
+const (
+	UserStatusDeleting UserStatus = "deleting"
+	UserStatusDeleted  UserStatus = "deleted"
+)
+
+// Finalidades de consentimento (ADR-008 §1). `terms` é o aceite dos termos e
+// da política de privacidade — vale para todo papel; `health_data` e
+// `progress_photos` são as finalidades de saúde do aluno. GPS entra com o
+// running (4.0).
+const (
+	PurposeTerms          = "terms"
+	PurposeHealthData     = "health_data"
+	PurposeProgressPhotos = "progress_photos"
+)
+
+// IsKnownPurpose diz se a finalidade existe.
+func IsKnownPurpose(p string) bool {
+	switch p {
+	case PurposeTerms, PurposeHealthData, PurposeProgressPhotos:
+		return true
+	}
+	return false
+}
+
+// RequiredPurposes são as finalidades sem as quais o usuário não entra no
+// app: os termos para todos e, para o aluno, os dados de saúde.
+func RequiredPurposes(roles []Role) []string {
+	required := []string{PurposeTerms}
+	for _, r := range roles {
+		if r == RoleStudent {
+			required = append(required, PurposeHealthData)
+			break
+		}
+	}
+	return required
+}
+
+// Consent é uma linha do registro append-only de consentimentos: revogar grava
+// RevokedAt, nunca apaga (ADR-008 §1).
+type Consent struct {
+	ID           string
+	TenantID     string
+	UserID       string
+	Purpose      string
+	TermsVersion string
+	GrantedAt    time.Time
+	RevokedAt    *time.Time
+}

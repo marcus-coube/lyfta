@@ -1,15 +1,11 @@
 package http
 
 import (
-	"context"
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"log/slog"
 	"net/http"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/marcus-coube/lyfta/identity/internal/domain"
 	"github.com/marcus-coube/lyfta/identity/internal/repo"
@@ -23,25 +19,18 @@ type AuthHandler struct {
 	tenants *repo.TenantRepo
 	users   *repo.UserRepo
 	auth    *repo.AuthRepo
-	jwt     *security.JWTSigner
+	issuer  *SessionIssuer
+	// termsVersion é a versão vigente dos termos (ADR-008 §6): o signup só
+	// vale se o cliente diz ter aceitado exatamente essa.
+	termsVersion string
 }
 
 // NewAuthHandler cria um AuthHandler com as dependências informadas.
-func NewAuthHandler(logger *slog.Logger, tenants *repo.TenantRepo, users *repo.UserRepo, auth *repo.AuthRepo, jwt *security.JWTSigner) *AuthHandler {
-	return &AuthHandler{logger: logger, tenants: tenants, users: users, auth: auth, jwt: jwt}
+func NewAuthHandler(logger *slog.Logger, tenants *repo.TenantRepo, users *repo.UserRepo, auth *repo.AuthRepo, issuer *SessionIssuer, termsVersion string) *AuthHandler {
+	return &AuthHandler{logger: logger, tenants: tenants, users: users, auth: auth, issuer: issuer, termsVersion: termsVersion}
 }
 
 var slugPattern = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
-
-// tokenResponse é o corpo devolvido por signup/login/refresh bem-sucedidos.
-type tokenResponse struct {
-	AccessToken  string   `json:"access_token"`
-	RefreshToken string   `json:"refresh_token"`
-	ExpiresAt    string   `json:"expires_at"`
-	TenantID     string   `json:"tenant_id"`
-	UserID       string   `json:"user_id"`
-	Roles        []string `json:"roles"`
-}
 
 // --- POST /v1/tenants (público) ---------------------------------------
 
@@ -52,6 +41,8 @@ type signupRequest struct {
 	Email        string `json:"email"`
 	Password     string `json:"password"`
 	Locale       string `json:"locale"`
+	// TermsVersion é a versão dos termos que o usuário aceitou (ADR-008 §6).
+	TermsVersion string `json:"terms_version"`
 }
 
 // Signup cria um tenant novo + o usuário owner/coach numa transação
@@ -69,6 +60,11 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
 	if req.Locale == "" {
 		req.Locale = "pt-BR"
+	}
+
+	if apiErr := checkTermsVersion(req.TermsVersion, h.termsVersion); apiErr != nil {
+		writeError(w, *apiErr)
+		return
 	}
 
 	switch {
@@ -121,6 +117,7 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 			Status:       domain.UserStatusActive,
 			Roles:        []domain.Role{domain.RoleOwner, domain.RoleCoach},
 		},
+		h.termsVersion, []string{domain.PurposeTerms},
 	)
 	if err != nil {
 		h.logger.Error("signup_create_tenant_and_owner_failed", slog.Any("error", err))
@@ -128,7 +125,7 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, apiErr := issueTokens(ctx, h.jwt, h.auth, h.logger, user)
+	resp, apiErr := h.issuer.Issue(ctx, user)
 	if apiErr != nil {
 		writeError(w, *apiErr)
 		return
@@ -212,7 +209,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, apiErr := issueTokens(ctx, h.jwt, h.auth, h.logger, user)
+	resp, apiErr := h.issuer.Issue(ctx, user)
 	if apiErr != nil {
 		writeError(w, *apiErr)
 		return
@@ -271,7 +268,13 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, apiErr := issueTokens(ctx, h.jwt, h.auth, h.logger, user)
+	// Conta em exclusão/excluída ou desativada não renova sessão (P4.5).
+	if user.Status != domain.UserStatusActive {
+		writeError(w, errInvalidToken())
+		return
+	}
+
+	resp, apiErr := h.issuer.Issue(ctx, user)
 	if apiErr != nil {
 		writeError(w, *apiErr)
 		return
@@ -319,57 +322,4 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
-}
-
-// --- helpers ---------------------------------------------------------------
-
-// issueTokens assina um novo access token e cria um novo refresh token para
-// o usuário informado, devolvendo o envelope de resposta comum aos três
-// endpoints que emitem sessão (signup, login, refresh).
-//
-// É uma função livre (não método) porque também é usada pelo fluxo de aceite
-// de convite (invitations.go), que faz auto-login sem um AuthHandler.
-func issueTokens(ctx context.Context, jwt *security.JWTSigner, auth *repo.AuthRepo, logger *slog.Logger, user domain.User) (tokenResponse, *APIError) {
-	roles := make([]string, 0, len(user.Roles))
-	for _, role := range user.Roles {
-		roles = append(roles, string(role))
-	}
-
-	access, expiresAt, err := jwt.Sign(user.ID, user.TenantID, roles, user.Locale)
-	if err != nil {
-		logger.Error("issue_tokens_sign_failed", slog.Any("error", err))
-		errAPI := errInternal()
-		return tokenResponse{}, &errAPI
-	}
-
-	refreshPlain, err := generateOpaqueToken()
-	if err != nil {
-		logger.Error("issue_tokens_refresh_gen_failed", slog.Any("error", err))
-		errAPI := errInternal()
-		return tokenResponse{}, &errAPI
-	}
-
-	if _, err := auth.CreateRefreshToken(ctx, user.TenantID, user.ID, repo.HashToken(refreshPlain), time.Now().Add(repo.RefreshTokenTTL)); err != nil {
-		logger.Error("issue_tokens_create_refresh_failed", slog.Any("error", err))
-		errAPI := errInternal()
-		return tokenResponse{}, &errAPI
-	}
-
-	return tokenResponse{
-		AccessToken:  access,
-		RefreshToken: refreshPlain,
-		ExpiresAt:    expiresAt.UTC().Format(time.RFC3339),
-		TenantID:     user.TenantID,
-		UserID:       user.ID,
-		Roles:        roles,
-	}, nil
-}
-
-// generateOpaqueToken gera um refresh token opaco aleatório (256 bits).
-func generateOpaqueToken() (string, error) {
-	buf := make([]byte, 32)
-	if _, err := rand.Read(buf); err != nil {
-		return "", err
-	}
-	return base64.RawURLEncoding.EncodeToString(buf), nil
 }

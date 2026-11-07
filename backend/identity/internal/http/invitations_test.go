@@ -96,6 +96,7 @@ func signupOwner(t *testing.T, client *http.Client, baseURL string) (string, str
 		"name":          "Owner Convite",
 		"email":         email,
 		"password":      "senha12345",
+		"terms_version": testTermsVersion,
 	})
 	if resp.status != http.StatusCreated {
 		t.Fatalf("signup owner: esperava 201, obtive %d: %v", resp.status, resp.body)
@@ -132,8 +133,9 @@ func TestInvitationFlow(t *testing.T) {
 
 	// Aceite define a senha e faz auto-login (retorna tokens).
 	accepted := doPost(t, client, server.URL+"/v1/invitations/accept", map[string]any{
-		"token":    token,
-		"password": "senhadoaluno1",
+		"token":         token,
+		"password":      "senhadoaluno1",
+		"terms_version": testTermsVersion, "consents": map[string]bool{"health_data": true},
 	})
 	if accepted.status != http.StatusOK {
 		t.Fatalf("aceitar convite: esperava 200, obtive %d: %v", accepted.status, accepted.body)
@@ -153,8 +155,9 @@ func TestInvitationFlow(t *testing.T) {
 
 	// Reuso do token de convite (já aceito) deve falhar.
 	reuse := doPost(t, client, server.URL+"/v1/invitations/accept", map[string]any{
-		"token":    token,
-		"password": "outrasenha123",
+		"token":         token,
+		"password":      "outrasenha123",
+		"terms_version": testTermsVersion, "consents": map[string]bool{"health_data": true},
 	})
 	if reuse.status != http.StatusUnauthorized || reuse.body["code"] != "invalid_token" {
 		t.Fatalf("reuso de convite: esperava 401 invalid_token, obtive %d %v", reuse.status, reuse.body)
@@ -177,7 +180,7 @@ func TestInvitationRequiresAuth(t *testing.T) {
 	}
 
 	// Token válido, mas só com papel student -> 403 forbidden.
-	studentToken, _, err := signer.Sign("00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002", []string{"student"}, "pt-BR")
+	studentToken, _, err := signer.Sign("00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002", []string{"student"}, "pt-BR", nil)
 	if err != nil {
 		t.Fatalf("assinar token de student: %v", err)
 	}
@@ -222,8 +225,9 @@ func TestInvitationResendInvalidatesPrevious(t *testing.T) {
 
 	// Token antigo não vale mais.
 	oldFails := doPost(t, client, server.URL+"/v1/invitations/accept", map[string]any{
-		"token":    firstToken,
-		"password": "senhadoaluno1",
+		"token":         firstToken,
+		"password":      "senhadoaluno1",
+		"terms_version": testTermsVersion, "consents": map[string]bool{"health_data": true},
 	})
 	if oldFails.status != http.StatusUnauthorized || oldFails.body["code"] != "invalid_token" {
 		t.Fatalf("token antigo pós-reenvio: esperava 401 invalid_token, obtive %d %v", oldFails.status, oldFails.body)
@@ -231,8 +235,9 @@ func TestInvitationResendInvalidatesPrevious(t *testing.T) {
 
 	// Token novo funciona.
 	newWorks := doPost(t, client, server.URL+"/v1/invitations/accept", map[string]any{
-		"token":    secondToken,
-		"password": "senhadoaluno1",
+		"token":         secondToken,
+		"password":      "senhadoaluno1",
+		"terms_version": testTermsVersion, "consents": map[string]bool{"health_data": true},
 	})
 	if newWorks.status != http.StatusOK {
 		t.Fatalf("token novo pós-reenvio: esperava 200, obtive %d: %v", newWorks.status, newWorks.body)

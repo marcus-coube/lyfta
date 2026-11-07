@@ -20,6 +20,14 @@ type Config struct {
 	AppURL        string
 	CORSOrigins   []string
 	AppEnv        string
+	// TermsVersion é a versão vigente dos termos de uso e da política de
+	// privacidade (ADR-008 §6, P4.5). O app embarca a mesma versão em
+	// assets/legal/; mudar aqui obriga todo mundo a consentir de novo.
+	TermsVersion string
+	// URLs dos serviços chamados na exclusão de conta (M2M, ADR-013 §5).
+	WorkoutURL    string
+	AssessmentURL string
+	CommsURL      string
 }
 
 // Load lê as variáveis de ambiente do processo e valida as obrigatórias.
@@ -37,6 +45,10 @@ func Load() (Config, error) {
 		AppURL:        getEnv("APP_URL", "http://localhost:5173"),
 		CORSOrigins:   splitAndTrim(getEnv("CORS_ORIGINS", "http://localhost:*")),
 		AppEnv:        getEnv("APP_ENV", "development"),
+		TermsVersion:  getEnv("TERMS_VERSION", "2026-11-v1"),
+		WorkoutURL:    getEnv("WORKOUT_URL", "http://localhost:8082"),
+		AssessmentURL: getEnv("ASSESSMENT_URL", "http://localhost:8083"),
+		CommsURL:      getEnv("COMMS_URL", "http://localhost:8084"),
 	}
 
 	if cfg.DatabaseURL == "" {
