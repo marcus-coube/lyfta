@@ -77,8 +77,8 @@ func NewRouter(
 		r.Post("/conversations/{id}/read", conversationHandler.MarkRead)
 		r.Post("/conversations/{id}/media/presign", mediaHandler.Presign)
 
-		// Só o coach abre uma conversa nova — "qualquer professor do tenant" é
-		// o mesmo critério do P1.4/P2.1/P2.3.
+		// Só o coach abre uma conversa nova, e só com aluno dele (ADR-016):
+		// o vínculo é checado no handler.
 		r.Group(func(r chi.Router) {
 			r.Use(RequireRole("owner", "coach"))
 			r.Post("/conversations", conversationHandler.Start)
@@ -87,7 +87,7 @@ func NewRouter(
 		// Check-in de treino (P3.3): o aluno escreve o próprio (student_id vem
 		// da claim, ver CheckinHandler.Create) — sem restrição de papel aqui,
 		// igual ao restante do chat. Ler a fila e revisar é coisa de
-		// coach/owner, mesmo critério de "qualquer professor do tenant".
+		// coach/owner, restrita aos alunos vinculados (ADR-016).
 		r.Post("/checkins", checkinHandler.Create)
 		r.Group(func(r chi.Router) {
 			r.Use(RequireRole("owner", "coach"))

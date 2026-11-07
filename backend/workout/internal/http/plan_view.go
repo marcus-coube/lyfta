@@ -8,6 +8,7 @@ import (
 	"github.com/marcus-coube/lyfta/workout/internal/domain"
 	"github.com/marcus-coube/lyfta/workout/internal/media"
 	"github.com/marcus-coube/lyfta/workout/internal/repo"
+	"github.com/marcus-coube/lyfta/workout/internal/security"
 )
 
 // planView é a leitura de um plano: a árvore do domínio virando o JSON que o
@@ -22,10 +23,17 @@ type planView struct {
 	plans     *repo.PlanRepo
 	exercises *repo.ExerciseRepo
 	presigner *media.Presigner
+	// linker checa o vínculo coach↔aluno nas rotas de professor (ADR-016).
+	linker StudentLinker
 }
 
-func newPlanView(logger *slog.Logger, plans *repo.PlanRepo, exercises *repo.ExerciseRepo, presigner *media.Presigner) planView {
-	return planView{logger: logger, plans: plans, exercises: exercises, presigner: presigner}
+func newPlanView(logger *slog.Logger, plans *repo.PlanRepo, exercises *repo.ExerciseRepo, presigner *media.Presigner, linker StudentLinker) planView {
+	return planView{logger: logger, plans: plans, exercises: exercises, presigner: presigner, linker: linker}
+}
+
+// checkStudent aplica o vínculo coach↔aluno (ADR-016): nil = pode.
+func (v planView) checkStudent(ctx context.Context, claims *security.Claims, studentID string) *APIError {
+	return checkStudentLink(ctx, v.logger, v.linker, claims, studentID)
 }
 
 // exerciseSummary é o mínimo que o builder e a tela do aluno precisam para

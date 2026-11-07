@@ -21,11 +21,12 @@ type MediaHandler struct {
 	logger        *slog.Logger
 	conversations *repo.ConversationRepo
 	presigner     *media.Presigner
+	linker        StudentLinker
 }
 
 // NewMediaHandler cria o handler de mídia sobre o presigner configurado.
-func NewMediaHandler(logger *slog.Logger, conversations *repo.ConversationRepo, presigner *media.Presigner) *MediaHandler {
-	return &MediaHandler{logger: logger, conversations: conversations, presigner: presigner}
+func NewMediaHandler(logger *slog.Logger, conversations *repo.ConversationRepo, presigner *media.Presigner, linker StudentLinker) *MediaHandler {
+	return &MediaHandler{logger: logger, conversations: conversations, presigner: presigner, linker: linker}
 }
 
 type presignRequest struct {
@@ -60,8 +61,8 @@ func (h *MediaHandler) Presign(w http.ResponseWriter, r *http.Request) {
 		writeError(w, errNotFound("conversation"))
 		return
 	}
-	if claims.Subject != conv.StudentID && claims.Subject != conv.CoachID {
-		writeError(w, errForbidden())
+	if apiErr := authorizeParticipant(r.Context(), h.logger, h.linker, claims, conv); apiErr != nil {
+		writeError(w, *apiErr)
 		return
 	}
 

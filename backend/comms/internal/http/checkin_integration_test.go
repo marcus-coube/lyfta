@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	chttp "github.com/marcus-coube/lyfta/comms/internal/http"
+	"github.com/marcus-coube/lyfta/comms/internal/media"
 	"github.com/marcus-coube/lyfta/comms/internal/pubsub"
 	"github.com/marcus-coube/lyfta/comms/internal/repo"
 	"github.com/marcus-coube/lyfta/comms/internal/security"
@@ -43,9 +44,19 @@ type checkinListEnvelope struct {
 
 // newCheckinTestServer sobe o roteador completo (chat + check-ins) com
 // repositórios reais — os testes de check-in também precisam do
-// ConversationRepo porque o gancho de dor forte publica pra quem já tem
-// conversa aberta com o aluno (ver CheckinHandler.notifyCoachesOfStrongPain).
-func newCheckinTestServer(t *testing.T) (*httptest.Server, ed25519.PrivateKey, *ws.Hub) {
+// ConversationRepo; o gancho de dor forte consulta o coach atual do aluno no
+// vínculo (ver CheckinHandler.notifyCoachOfStrongPain).
+func newCheckinTestServer(t *testing.T) (*httptest.Server, ed25519.PrivateKey, *ws.Hub, *fakeLinker) {
+	t.Helper()
+	linker := newAllowAllLinker()
+	server, priv, hub := newServerWithLinker(t, linker)
+	return server, priv, hub, linker
+}
+
+// newServerWithLinker é o roteador completo com o vínculo coach↔aluno
+// injetado: o fakeLinker dos testes comuns ou o cliente coachlink contra um
+// identity fake (coach_link_test.go).
+func newServerWithLinker(t *testing.T, linker chttp.StudentLinker) (*httptest.Server, ed25519.PrivateKey, *ws.Hub) {
 	t.Helper()
 	pool := testChatPool(t)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -74,10 +85,19 @@ func newCheckinTestServer(t *testing.T) (*httptest.Server, ed25519.PrivateKey, *
 	conversations := repo.NewConversationRepo(pool)
 	messages := repo.NewMessageRepo(pool)
 	checkins := repo.NewCheckinRepo(pool)
-	conversationHandler := chttp.NewConversationHandler(logger, conversations, messages, nil, redisClient, nil)
-	var mediaHandler *chttp.MediaHandler
+	conversationHandler := chttp.NewConversationHandler(logger, conversations, messages, nil, redisClient, nil, linker)
+	// Assinar é operação offline: o presigner monta a URL sem falar com o
+	// storage (mesmo critério do workout/assessment).
+	presigner, err := media.NewPresigner(media.Config{
+		Endpoint: "http://localhost:9000", Region: "us-east-1", Bucket: "lyfta-media",
+		AccessKey: "minioadmin", SecretKey: "minioadmin", UsePathStyle: true,
+	})
+	if err != nil {
+		t.Fatalf("criar presigner: %v", err)
+	}
+	mediaHandler := chttp.NewMediaHandler(logger, conversations, presigner, linker)
 	wsHandler := chttp.NewWSHandler(logger, verifier, hub, redisClient)
-	checkinHandler := chttp.NewCheckinHandler(logger, checkins, conversations, redisClient, nil)
+	checkinHandler := chttp.NewCheckinHandler(logger, checkins, linker, redisClient, nil)
 
 	router := chttp.NewRouter(logger, []string{"*"}, verifier, "", conversationHandler, mediaHandler, wsHandler, checkinHandler, nil, nil)
 	server := httptest.NewServer(router)
@@ -86,7 +106,7 @@ func newCheckinTestServer(t *testing.T) (*httptest.Server, ed25519.PrivateKey, *
 }
 
 func TestCheckinCreateIsIdempotentOverHTTP(t *testing.T) {
-	server, priv, _ := newCheckinTestServer(t)
+	server, priv, _, _ := newCheckinTestServer(t)
 	tenantID, studentID := uuid.NewString(), uuid.NewString()
 	studentToken := signToken(t, priv, tenantID, studentID, []string{"student"})
 	sessionClientID := uuid.NewString()
@@ -123,7 +143,7 @@ func TestCheckinCreateIsIdempotentOverHTTP(t *testing.T) {
 }
 
 func TestCheckinStudentIDAlwaysComesFromClaim(t *testing.T) {
-	server, priv, _ := newCheckinTestServer(t)
+	server, priv, _, _ := newCheckinTestServer(t)
 	tenantID, studentID, spoofedID := uuid.NewString(), uuid.NewString(), uuid.NewString()
 	studentToken := signToken(t, priv, tenantID, studentID, []string{"student"})
 
@@ -137,7 +157,7 @@ func TestCheckinStudentIDAlwaysComesFromClaim(t *testing.T) {
 }
 
 func TestCheckinListOrdersPendingFirstOverHTTP(t *testing.T) {
-	server, priv, _ := newCheckinTestServer(t)
+	server, priv, _, _ := newCheckinTestServer(t)
 	tenantID, studentID := uuid.NewString(), uuid.NewString()
 	studentToken := signToken(t, priv, tenantID, studentID, []string{"student"})
 	coachToken := signToken(t, priv, tenantID, uuid.NewString(), []string{"coach"})
@@ -168,7 +188,7 @@ func TestCheckinListOrdersPendingFirstOverHTTP(t *testing.T) {
 }
 
 func TestCheckinReviewOverHTTP(t *testing.T) {
-	server, priv, _ := newCheckinTestServer(t)
+	server, priv, _, _ := newCheckinTestServer(t)
 	tenantID, studentID, coachID := uuid.NewString(), uuid.NewString(), uuid.NewString()
 	studentToken := signToken(t, priv, tenantID, studentID, []string{"student"})
 	coachToken := signToken(t, priv, tenantID, coachID, []string{"coach"})
@@ -186,7 +206,7 @@ func TestCheckinReviewOverHTTP(t *testing.T) {
 }
 
 func TestCheckinAuthorizationAndValidation(t *testing.T) {
-	server, priv, _ := newCheckinTestServer(t)
+	server, priv, _, _ := newCheckinTestServer(t)
 	tenantID, studentID := uuid.NewString(), uuid.NewString()
 	studentToken := signToken(t, priv, tenantID, studentID, []string{"student"})
 	coachToken := signToken(t, priv, tenantID, uuid.NewString(), []string{"coach"})
@@ -230,19 +250,18 @@ func TestCheckinAuthorizationAndValidation(t *testing.T) {
 	}
 }
 
-// TestCheckinStrongPainNotifiesCoachWithOpenConversation cobre o gancho
-// barato da P3.4 (não é push de verdade — FCM não existe ainda): dor
-// `strong` publica no canal Redis do coach que já tem conversa aberta com o
-// aluno, no mesmo formato dos eventos de chat — quem estiver com o WS
-// conectado recebe na hora.
+// TestCheckinStrongPainNotifiesCoachWithOpenConversation: dor `strong` publica
+// no canal Redis do coach atual do aluno, no mesmo formato dos eventos de
+// chat — quem estiver com o WS conectado recebe na hora.
 func TestCheckinStrongPainNotifiesCoachWithOpenConversation(t *testing.T) {
-	server, priv, hub := newCheckinTestServer(t)
+	server, priv, hub, linker := newCheckinTestServer(t)
 	tenantID, studentID, coachID := uuid.NewString(), uuid.NewString(), uuid.NewString()
 	studentToken := signToken(t, priv, tenantID, studentID, []string{"student"})
 	coachToken := signToken(t, priv, tenantID, coachID, []string{"coach"})
 
-	// Coach abre a conversa com o aluno primeiro — sem isso o comms não tem
-	// como saber quem é "o coach" deste aluno (dívida do identity, P1.4).
+	// O coach atual do aluno vem do identity (ADR-016): o push de dor forte vai
+	// só para ele, tenha ou não conversa aberta.
+	linker.link(coachID, studentID)
 	doJSON(t, server, http.MethodPost, "/v1/conversations", coachToken,
 		map[string]string{"student_id": studentID}, &struct {
 			ID string `json:"id"`

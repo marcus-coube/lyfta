@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
 
@@ -147,6 +148,48 @@ func RequireInternalToken(token string) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if token == "" || r.Header.Get("X-Internal-Token") != token {
 				writeError(w, errUnauthenticated())
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// StudentLinker responde se o ator pode acessar dados de um aluno
+// (ADR-016): owner sempre; coach só o aluno vinculado a ele.
+type StudentLinker interface {
+	CanAccessStudent(ctx context.Context, tenantID, userID string, roles []string, studentID string) (bool, error)
+}
+
+// checkStudentLink aplica o vínculo. Devolve nil quando o acesso é permitido;
+// senão o erro a responder: 404 `student_not_found` (indistinguível de aluno
+// inexistente) ou 500 se o identity falhar — o acesso fecha (ADR-016 §3).
+func checkStudentLink(ctx context.Context, logger *slog.Logger, linker StudentLinker, claims *security.Claims, studentID string) *APIError {
+	ok, err := linker.CanAccessStudent(ctx, claims.TenantID, claims.Subject, claims.Roles, studentID)
+	if err != nil {
+		logger.Error("coach_link_check_failed", slog.Any("error", err))
+		apiErr := errInternal()
+		return &apiErr
+	}
+	if !ok {
+		apiErr := errStudentNotFound()
+		return &apiErr
+	}
+	return nil
+}
+
+// RequireStudentLink protege as rotas `/students/{id}/...`: o aluno da URL
+// precisa ser do coach (ou o ator ser owner). Roda depois de RequireAuth.
+func RequireStudentLink(logger *slog.Logger, linker StudentLinker) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			claims, ok := ClaimsFromContext(r.Context())
+			if !ok {
+				writeError(w, errUnauthenticated())
+				return
+			}
+			if apiErr := checkStudentLink(r.Context(), logger, linker, claims, chi.URLParam(r, "id")); apiErr != nil {
+				writeError(w, *apiErr)
 				return
 			}
 			next.ServeHTTP(w, r)

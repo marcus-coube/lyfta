@@ -127,7 +127,8 @@ func TestChatEndToEnd(t *testing.T) {
 
 	conversations := repo.NewConversationRepo(pool)
 	messages := repo.NewMessageRepo(pool)
-	conversationHandler := chttp.NewConversationHandler(logger, conversations, messages, nil, redisClient, nil)
+	linker := newFakeLinker()
+	conversationHandler := chttp.NewConversationHandler(logger, conversations, messages, nil, redisClient, nil, linker)
 	var mediaHandler *chttp.MediaHandler
 	wsHandler := chttp.NewWSHandler(logger, verifier, hub, redisClient)
 	var checkinHandler *chttp.CheckinHandler
@@ -141,6 +142,7 @@ func TestChatEndToEnd(t *testing.T) {
 	coachID := uuid.NewString()
 	studentToken := signToken(t, priv, tenantID, studentID, []string{"student"})
 	coachToken := signToken(t, priv, tenantID, coachID, []string{"coach"})
+	linker.link(coachID, studentID)
 
 	// 1. Coach abre a conversa com o aluno.
 	var convResp conversationEnvelope
@@ -394,7 +396,7 @@ func TestChatAuthorizationAndValidation(t *testing.T) {
 	hub := ws.NewHub()
 	conversations := repo.NewConversationRepo(pool)
 	messages := repo.NewMessageRepo(pool)
-	conversationHandler := chttp.NewConversationHandler(logger, conversations, messages, nil, redisClient, nil)
+	conversationHandler := chttp.NewConversationHandler(logger, conversations, messages, nil, redisClient, nil, newAllowAllLinker())
 	var mediaHandler *chttp.MediaHandler
 	wsHandler := chttp.NewWSHandler(logger, verifier, hub, redisClient)
 	var checkinHandler *chttp.CheckinHandler

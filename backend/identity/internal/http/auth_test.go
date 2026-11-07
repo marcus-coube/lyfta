@@ -135,7 +135,7 @@ func newTestServerWithEraser(t *testing.T) (*httptest.Server, *security.JWTSigne
 	accountHandler := ihttp.NewAccountHandler(logger, users, authRepo, consentRepo, issuer, eraser, testTermsVersion)
 	passwordResetHandler := ihttp.NewPasswordResetHandler(logger, authRepo, users, passwordResetRepo, mailer, "http://localhost:5173")
 
-	userHandler := ihttp.NewUserHandler(logger, users)
+	userHandler := ihttp.NewUserHandler(logger, users, repo.NewCoachLinkRepo(pool))
 	router := ihttp.NewRouter(logger, []string{"*"}, signer, testInternalToken, authHandler, invitationHandler, passwordResetHandler, userHandler, accountHandler, ihttp.NewRateLimiter(ratelimit.NewMemoryStore(), logger, false))
 	server := httptest.NewServer(router)
 	t.Cleanup(server.Close)

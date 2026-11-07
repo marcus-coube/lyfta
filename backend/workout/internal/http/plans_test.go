@@ -308,7 +308,7 @@ func TestPublishIncompleteIsRejected(t *testing.T) {
 }
 
 // TestPlanAccessControl cobre quem pode o quê: outro tenant não vê o plano,
-// outro coach do tenant lê mas não edita, e o aluno não cria plano nenhum.
+// outro coach do tenant segue o linker (vínculo), e o aluno não cria plano nenhum.
 func TestPlanAccessControl(t *testing.T) {
 	a := builderFixture(t)
 	planID := createPublishedPlan(t, a)
@@ -319,12 +319,12 @@ func TestPlanAccessControl(t *testing.T) {
 	if rec := do(t, a.handler, http.MethodGet, "/v1/plans/"+planID, a.otherCoach, nil); rec.Code != http.StatusOK {
 		t.Fatalf("outro coach do tenant deveria ler o plano, veio %d", rec.Code)
 	}
+	// O vínculo coach↔aluno (ADR-016) é checado pelo linker; aqui ele libera
+	// todo mundo, então outro coach edita. O cross-coach de verdade está em
+	// coach_link_test.go.
 	rec := do(t, a.handler, http.MethodPut, "/v1/plans/"+planID+"/draft", a.otherCoach, draftBody(a.exerciseID, "A"))
-	if rec.Code != http.StatusForbidden || decodeError(t, rec).Code != "forbidden" {
-		t.Fatalf("esperava 403 para coach que não é dono do plano, veio %d %s", rec.Code, rec.Body.String())
-	}
-	if rec := do(t, a.handler, http.MethodPost, "/v1/plans/"+planID+"/publish", a.otherCoach, nil); rec.Code != http.StatusForbidden {
-		t.Fatalf("esperava 403 ao publicar plano de outro coach, veio %d", rec.Code)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("coach vinculado deveria editar o plano, veio %d %s", rec.Code, rec.Body.String())
 	}
 	rec = do(t, a.handler, http.MethodPost, "/v1/plans", a.student, map[string]any{
 		"student_id": a.studentID, "title": "Meu próprio treino",

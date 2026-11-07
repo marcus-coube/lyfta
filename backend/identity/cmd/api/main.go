@@ -108,7 +108,7 @@ func run(logger *slog.Logger) error {
 	}
 	limiter := ihttp.NewRateLimiter(limitStore, logger, cfg.TrustProxy)
 
-	userHandler := ihttp.NewUserHandler(logger, users)
+	userHandler := ihttp.NewUserHandler(logger, users, repo.NewCoachLinkRepo(pool))
 	router := ihttp.NewRouter(logger, cfg.CORSOrigins, jwtSigner, cfg.InternalToken, authHandler, invitationHandler, passwordResetHandler, userHandler, accountHandler, limiter)
 
 	server := &http.Server{

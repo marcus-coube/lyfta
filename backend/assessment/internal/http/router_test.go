@@ -144,7 +144,21 @@ func newTestRouterWithPool(t *testing.T, publicPEM string, pool *pgxpool.Pool) h
 	return newTestRouterFull(t, publicPEM, pool, &fakeConsents{}, &fakeObjects{})
 }
 
+// allowAllLinker faz o papel do vínculo coach↔aluno nos testes que não são do
+// vínculo: todo ator acessa todo aluno. Quem testa o vínculo de verdade é
+// coach_link_test.go, com o cliente coachlink contra um identity fake.
+type allowAllLinker struct{}
+
+func (allowAllLinker) CanAccessStudent(context.Context, string, string, []string, string) (bool, error) {
+	return true, nil
+}
+
 func newTestRouterFull(t *testing.T, publicPEM string, pool *pgxpool.Pool, consents ahttp.ConsentChecker, objects ahttp.ObjectEraser) http.Handler {
+	t.Helper()
+	return newTestRouterLinked(t, publicPEM, pool, consents, objects, allowAllLinker{})
+}
+
+func newTestRouterLinked(t *testing.T, publicPEM string, pool *pgxpool.Pool, consents ahttp.ConsentChecker, objects ahttp.ObjectEraser, linker ahttp.StudentLinker) http.Handler {
 	t.Helper()
 	verifier, err := security.NewJWTVerifier(publicPEM)
 	if err != nil {
@@ -171,6 +185,7 @@ func newTestRouterFull(t *testing.T, publicPEM string, pool *pgxpool.Pool, conse
 		ahttp.NewMediaHandler(logger, presigner, consents),
 		ahttp.NewSummaryHandler(logger, measurements, bioimpedance, photos, consents),
 		ahttp.NewErasureHandler(logger, repo.NewErasureRepo(pool), objects),
+		linker,
 	)
 }
 

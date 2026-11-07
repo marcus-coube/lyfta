@@ -1,12 +1,15 @@
 package http_test
 
 import (
+	"context"
 	"crypto/ed25519"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 	"time"
 
@@ -119,4 +122,81 @@ func TestWhoamiAcceptsValidToken(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("esperava 200, veio %d — %s", rec.Code, rec.Body.String())
 	}
+}
+
+// fakeLinker é o vínculo coach↔aluno em memória dos testes de handler:
+// owner acessa tudo; coach só os alunos ligados a ele por link. O vínculo
+// contra um identity de verdade (cliente coachlink) está em
+// coach_link_test.go.
+type fakeLinker struct {
+	mu      sync.Mutex
+	coachOf map[string]string // aluno -> coach
+	down    bool
+	// allowAll libera CanAccessStudent para qualquer ator.
+	allowAll bool
+}
+
+func newFakeLinker() *fakeLinker { return &fakeLinker{coachOf: map[string]string{}} }
+
+// newAllowAllLinker é o fakeLinker dos testes que não são do vínculo: todo
+// ator acessa todo aluno (CoachOf continua sem vínculo, então nenhum push de
+// dor sai).
+func newAllowAllLinker() *fakeLinker {
+	f := newFakeLinker()
+	f.allowAll = true
+	return f
+}
+
+func (f *fakeLinker) link(coachID, studentID string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.coachOf[studentID] = coachID
+}
+
+func (f *fakeLinker) setDown(down bool) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.down = down
+}
+
+func (f *fakeLinker) CanAccessStudent(_ context.Context, _, userID string, roles []string, studentID string) (bool, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.down {
+		return false, errors.New("identity fora do ar")
+	}
+	if f.allowAll {
+		return true, nil
+	}
+	for _, role := range roles {
+		if role == "owner" {
+			return true, nil
+		}
+	}
+	return f.coachOf[studentID] == userID, nil
+}
+
+func (f *fakeLinker) StudentsOf(_ context.Context, _, coachID string) (map[string]struct{}, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.down {
+		return nil, errors.New("identity fora do ar")
+	}
+	out := map[string]struct{}{}
+	for student, coach := range f.coachOf {
+		if coach == coachID {
+			out[student] = struct{}{}
+		}
+	}
+	return out, nil
+}
+
+func (f *fakeLinker) CoachOf(_ context.Context, _, studentID string) (string, bool, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.down {
+		return "", false, errors.New("identity fora do ar")
+	}
+	coach, ok := f.coachOf[studentID]
+	return coach, ok, nil
 }

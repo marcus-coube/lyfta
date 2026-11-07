@@ -1,6 +1,7 @@
 package http_test
 
 import (
+	"context"
 	"crypto/ed25519"
 	"crypto/x509"
 	"encoding/json"
@@ -80,7 +81,21 @@ func newTestRouter(t *testing.T, publicPEM string) http.Handler {
 	return newTestRouterWithPool(t, publicPEM, nil)
 }
 
+// allowAllLinker faz o papel do vínculo coach↔aluno nos testes que não são do
+// vínculo: todo ator acessa todo aluno. Quem testa o vínculo de verdade é
+// coach_link_test.go, com o cliente coachlink contra um identity fake.
+type allowAllLinker struct{}
+
+func (allowAllLinker) CanAccessStudent(context.Context, string, string, []string, string) (bool, error) {
+	return true, nil
+}
+
 func newTestRouterWithPool(t *testing.T, publicPEM string, pool *pgxpool.Pool) http.Handler {
+	t.Helper()
+	return newTestRouterWithLinker(t, publicPEM, pool, allowAllLinker{})
+}
+
+func newTestRouterWithLinker(t *testing.T, publicPEM string, pool *pgxpool.Pool, linker whttp.StudentLinker) http.Handler {
 	t.Helper()
 	verifier, err := security.NewJWTVerifier(publicPEM)
 	if err != nil {
@@ -103,11 +118,12 @@ func newTestRouterWithPool(t *testing.T, publicPEM string, pool *pgxpool.Pool) h
 	return whttp.NewRouter(logger, []string{"*"}, verifier, testInternalToken,
 		whttp.NewMediaHandler(logger, presigner),
 		whttp.NewExerciseHandler(logger, exercises, presigner),
-		whttp.NewPlanHandler(logger, plans, exercises, presigner),
-		whttp.NewSyncHandler(logger, plans, sessions, exercises, presigner),
+		whttp.NewPlanHandler(logger, plans, exercises, presigner, linker),
+		whttp.NewSyncHandler(logger, plans, sessions, exercises, presigner, linker),
 		whttp.NewHistoryHandler(logger, sessions, exercises, presigner),
 		whttp.NewPendingStudentsHandler(logger, pending),
 		whttp.NewErasureHandler(logger, repo.NewErasureRepo(pool)),
+		linker,
 	)
 }
 

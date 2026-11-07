@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Config agrega as variáveis de ambiente usadas pelo serviço comms.
@@ -46,6 +47,10 @@ type Config struct {
 	// nas Notas de execução da P3.4; até existir, todo tenant usa o mesmo
 	// fuso.
 	NotificationTimezone string
+	// IdentityURL e CoachLinkCacheTTL: vínculo professor↔aluno (ADR-016,
+	// P4.7), consultado no identity por M2M com INTERNAL_TOKEN.
+	IdentityURL       string
+	CoachLinkCacheTTL time.Duration
 }
 
 // Load lê as variáveis de ambiente do processo e valida as obrigatórias.
@@ -74,6 +79,16 @@ func Load() (Config, error) {
 		FCMCredentialsJSON:   os.Getenv("FCM_CREDENTIALS_JSON"),
 		WorkoutBaseURL:       getEnv("WORKOUT_BASE_URL", "http://localhost:8082"),
 		NotificationTimezone: getEnv("NOTIFICATION_TIMEZONE", "America/Sao_Paulo"),
+		IdentityURL:          getEnv("IDENTITY_URL", "http://localhost:8081"),
+	}
+
+	cfg.CoachLinkCacheTTL = 30 * time.Second
+	if raw := os.Getenv("COACH_LINK_CACHE_TTL"); raw != "" {
+		ttl, err := time.ParseDuration(raw)
+		if err != nil {
+			return Config{}, fmt.Errorf("config: COACH_LINK_CACHE_TTL inválida: %w", err)
+		}
+		cfg.CoachLinkCacheTTL = ttl
 	}
 
 	if cfg.DatabaseURL == "" {

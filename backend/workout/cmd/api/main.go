@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/marcus-coube/lyfta/workout/internal/coachlink"
 	"github.com/marcus-coube/lyfta/workout/internal/config"
 	whttp "github.com/marcus-coube/lyfta/workout/internal/http"
 	"github.com/marcus-coube/lyfta/workout/internal/media"
@@ -79,14 +80,16 @@ func run(logger *slog.Logger) error {
 	plans := repo.NewPlanRepo(pool)
 	sessions := repo.NewSessionRepo(pool)
 	pending := repo.NewPendingRepo(pool)
+	coachLinks := coachlink.NewClient(cfg.IdentityURL, cfg.InternalToken, cfg.CoachLinkCacheTTL)
 	router := whttp.NewRouter(logger, cfg.CORSOrigins, verifier, cfg.InternalToken,
 		whttp.NewMediaHandler(logger, presigner),
 		whttp.NewExerciseHandler(logger, exercises, presigner),
-		whttp.NewPlanHandler(logger, plans, exercises, presigner),
-		whttp.NewSyncHandler(logger, plans, sessions, exercises, presigner),
+		whttp.NewPlanHandler(logger, plans, exercises, presigner, coachLinks),
+		whttp.NewSyncHandler(logger, plans, sessions, exercises, presigner, coachLinks),
 		whttp.NewHistoryHandler(logger, sessions, exercises, presigner),
 		whttp.NewPendingStudentsHandler(logger, pending),
 		whttp.NewErasureHandler(logger, repo.NewErasureRepo(pool)),
+		coachLinks,
 	)
 
 	server := &http.Server{

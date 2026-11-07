@@ -68,6 +68,12 @@ var (
 	errUnauthenticated = func() APIError {
 		return newAPIError(http.StatusUnauthorized, "unauthenticated")
 	}
+	errUnprocessable = func(field string) APIError {
+		return newAPIError(http.StatusUnprocessableEntity, "validation_error", "field", field)
+	}
+	errStudentNotFound = func() APIError {
+		return newAPIError(http.StatusNotFound, "student_not_found")
+	}
 	errInvalidCursor = func() APIError {
 		return newAPIError(http.StatusBadRequest, "invalid_cursor")
 	}

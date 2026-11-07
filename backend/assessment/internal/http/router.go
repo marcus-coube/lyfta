@@ -16,8 +16,8 @@ import (
 //
 // API completa da P2.3: medidas, bioimpedância e fotos de evolução, cada uma
 // com duas portas — `/me/...` para o aluno (resolvido pela claim, sem
-// parâmetro de aluno na URL) e `/students/{id}/...` para o coach (qualquer
-// professor do tenant, mesmo critério do P1.4/P2.1). O resumo do coach
+// parâmetro de aluno na URL) e `/students/{id}/...` para o coach (owner ou
+// professor vinculado ao aluno, ADR-016). O resumo do coach
 // (`/students/{id}/summary`) e o presign de foto seguem o mesmo par de rotas.
 func NewRouter(
 	logger *slog.Logger,
@@ -30,6 +30,7 @@ func NewRouter(
 	mediaHandler *MediaHandler,
 	summaryHandler *SummaryHandler,
 	erasureHandler *ErasureHandler,
+	linker StudentLinker,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -79,13 +80,15 @@ func NewRouter(
 			r.Post("/media/presign", mediaHandler.PresignMine)
 		})
 
-		// O coach lê e lança pelos alunos do tenant — é comum em avaliação
-		// presencial. "Qualquer professor do tenant" é o mesmo critério do
-		// P1.4/P2.1; o vínculo coach↔aluno segue sendo dívida do identity.
+		// O coach lê e lança pelos seus alunos — é comum em avaliação
+		// presencial. Só o owner ou o professor vinculado ao aluno passa
+		// (ADR-016): o middleware roda antes do handler e, portanto, antes da
+		// checagem de consentimento.
 		r.Group(func(r chi.Router) {
 			r.Use(RequireRole("owner", "coach"))
 
 			r.Route("/students/{id}", func(r chi.Router) {
+				r.Use(RequireStudentLink(logger, linker))
 				r.Post("/measurements", measurementHandler.CreateForStudent)
 				r.Get("/measurements", measurementHandler.ListForStudent)
 				r.Delete("/measurements/{measurement_id}", measurementHandler.DeleteForStudent)

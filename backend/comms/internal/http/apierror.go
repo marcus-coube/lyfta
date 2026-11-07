@@ -57,6 +57,11 @@ var (
 	errInvalidCursor = func() APIError {
 		return newAPIError(http.StatusBadRequest, "invalid_cursor")
 	}
+	// Aluno que não é do coach (ou não existe, ou é de outro tenant): o
+	// mesmo 404 para os três casos (ADR-016 §4).
+	errStudentNotFound = func() APIError {
+		return newAPIError(http.StatusNotFound, "student_not_found")
+	}
 	errNotFound = func(resource string) APIError {
 		return newAPIError(http.StatusNotFound, "not_found", "resource", resource)
 	}

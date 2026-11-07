@@ -26,8 +26,8 @@ type SyncHandler struct {
 }
 
 // NewSyncHandler cria o handler de execução e sync.
-func NewSyncHandler(logger *slog.Logger, plans *repo.PlanRepo, sessions *repo.SessionRepo, exercises *repo.ExerciseRepo, presigner *media.Presigner) *SyncHandler {
-	return &SyncHandler{planView: newPlanView(logger, plans, exercises, presigner), sessions: sessions}
+func NewSyncHandler(logger *slog.Logger, plans *repo.PlanRepo, sessions *repo.SessionRepo, exercises *repo.ExerciseRepo, presigner *media.Presigner, linker StudentLinker) *SyncHandler {
+	return &SyncHandler{planView: newPlanView(logger, plans, exercises, presigner, linker), sessions: sessions}
 }
 
 // Limites do lote e sanidade do relógio do device.
@@ -612,6 +612,11 @@ func (h *SyncHandler) OverrideDay(w http.ResponseWriter, r *http.Request) {
 		// ao professor; mexer no dia de outra pessoa exige ser professor.
 		if !hasRole(claims, "coach") && !hasRole(claims, "owner") {
 			writeError(w, errForbidden())
+			return
+		}
+		// ...e só do professor vinculado ao aluno (ADR-016).
+		if apiErr := h.checkStudent(r.Context(), claims, raw); apiErr != nil {
+			writeError(w, *apiErr)
 			return
 		}
 		studentID = raw

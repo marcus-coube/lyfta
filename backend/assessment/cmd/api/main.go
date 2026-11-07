@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/marcus-coube/lyfta/assessment/internal/coachlink"
 	"github.com/marcus-coube/lyfta/assessment/internal/config"
 	"github.com/marcus-coube/lyfta/assessment/internal/consent"
 	ahttp "github.com/marcus-coube/lyfta/assessment/internal/http"
@@ -81,6 +82,7 @@ func run(logger *slog.Logger) error {
 	photos := repo.NewPhotoRepo(pool)
 	// Consentimento de outra pessoa (coach lendo foto de aluno, P4.5).
 	consents := consent.NewClient(cfg.IdentityURL, cfg.InternalToken)
+	coachLinks := coachlink.NewClient(cfg.IdentityURL, cfg.InternalToken, cfg.CoachLinkCacheTTL)
 	router := ahttp.NewRouter(logger, cfg.CORSOrigins, verifier, cfg.InternalToken,
 		ahttp.NewMeasurementHandler(logger, measurements),
 		ahttp.NewBioimpedanceHandler(logger, bioimpedance),
@@ -88,6 +90,7 @@ func run(logger *slog.Logger) error {
 		ahttp.NewMediaHandler(logger, presigner, consents),
 		ahttp.NewSummaryHandler(logger, measurements, bioimpedance, photos, consents),
 		ahttp.NewErasureHandler(logger, repo.NewErasureRepo(pool), presigner),
+		coachLinks,
 	)
 
 	server := &http.Server{

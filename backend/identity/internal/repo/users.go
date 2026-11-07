@@ -27,6 +27,16 @@ func NewUserRepo(pool *pgxpool.Pool) *UserRepo {
 // Create insere um usuário e seus papéis dentro do tenant informado,
 // respeitando RLS via WithTenant.
 func (r *UserRepo) Create(ctx context.Context, u domain.User) (domain.User, error) {
+	return r.create(ctx, u, "")
+}
+
+// CreateStudent cria o aluno convidado e o vínculo com o professor que o
+// convidou na mesma transação: nunca existe aluno sem professor (ADR-016 §1).
+func (r *UserRepo) CreateStudent(ctx context.Context, u domain.User, coachID string) (domain.User, error) {
+	return r.create(ctx, u, coachID)
+}
+
+func (r *UserRepo) create(ctx context.Context, u domain.User, coachID string) (domain.User, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
 		return domain.User{}, fmt.Errorf("repo: gerar id do usuário: %w", err)
@@ -48,6 +58,14 @@ func (r *UserRepo) Create(ctx context.Context, u domain.User) (domain.User, erro
 		for _, role := range u.Roles {
 			if _, err := tx.Exec(ctx, qRole, u.ID, u.TenantID, string(role)); err != nil {
 				return fmt.Errorf("repo: atribuir papel %q: %w", role, err)
+			}
+		}
+		if coachID != "" {
+			const qLink = `
+				INSERT INTO coach_students (tenant_id, student_id, coach_id, assigned_by)
+				VALUES ($1, $2, $3, $3)`
+			if _, err := tx.Exec(ctx, qLink, u.TenantID, u.ID, coachID); err != nil {
+				return fmt.Errorf("repo: vincular aluno ao professor: %w", err)
 			}
 		}
 		return nil
@@ -157,6 +175,8 @@ type UserFilter struct {
 	Role   domain.Role
 	Query  string
 	Status domain.UserStatus
+	// CoachID restringe aos alunos vinculados a esse professor (ADR-016).
+	CoachID string
 	// Cursor keyset: o nome e o id da última linha da página anterior.
 	CursorName string
 	CursorID   string
@@ -192,19 +212,23 @@ func (r *UserRepo) List(ctx context.Context, tenantID string, f UserFilter) (use
 			           (SELECT array_agg(ur.role ORDER BY ur.role)
 			            FROM user_roles ur WHERE ur.user_id = u.id),
 			           '{}'
-			       ) AS roles
+			       ) AS roles,
+			       cs.coach_id, cu.name
 			FROM users u
+			LEFT JOIN coach_students cs ON cs.student_id = u.id AND cs.tenant_id = u.tenant_id
+			LEFT JOIN users cu ON cu.id = cs.coach_id
 			WHERE u.status NOT IN ('deleting', 'deleted')
 			  AND ($1::text IS NULL OR EXISTS (
 			          SELECT 1 FROM user_roles ur WHERE ur.user_id = u.id AND ur.role = $1))
 			  AND ($2::text IS NULL OR u.status = $2)
 			  AND ($3::text IS NULL OR u.name ILIKE $3 OR u.email ILIKE $3)
 			  AND ($4::text IS NULL OR (u.name, u.id::text) > ($4, $5))
+			  AND ($7::uuid IS NULL OR cs.coach_id = $7)
 			ORDER BY u.name, u.id
 			LIMIT $6`
 		rows, queryErr := tx.Query(ctx, q,
 			nullString(string(f.Role)), nullString(string(f.Status)),
-			nullString(likePattern(f.Query)), nullString(f.CursorName), f.CursorID, limit+1)
+			nullString(likePattern(f.Query)), nullString(f.CursorName), f.CursorID, limit+1, nullString(f.CoachID))
 		if queryErr != nil {
 			return fmt.Errorf("repo: listar usuários: %w", queryErr)
 		}
@@ -215,7 +239,7 @@ func (r *UserRepo) List(ctx context.Context, tenantID string, f UserFilter) (use
 				roles []string
 			)
 			if scanErr := rows.Scan(&u.ID, &u.TenantID, &u.Email, &u.Name, &u.Locale,
-				&u.Status, &u.CreatedAt, &roles); scanErr != nil {
+				&u.Status, &u.CreatedAt, &roles, &u.CoachID, &u.CoachName); scanErr != nil {
 				return fmt.Errorf("repo: ler usuário: %w", scanErr)
 			}
 			for _, role := range roles {
@@ -283,6 +307,20 @@ func (r *UserRepo) MarkDeleting(ctx context.Context, tenantID, userID string) er
 			`UPDATE users SET status = 'deleting' WHERE id = $1 AND status IN ('active', 'deleting')`, userID); err != nil {
 			return err
 		}
+		// Coach que sai devolve os alunos ao owner ativo mais antigo: nunca
+		// fica aluno sem professor (ADR-016 §1). Para aluno não casa linha.
+		if _, err := tx.Exec(ctx, `
+			UPDATE coach_students
+			SET coach_id = (SELECT o.id FROM users o
+			                JOIN user_roles r ON r.user_id = o.id AND r.role = 'owner'
+			                WHERE o.status = 'active' ORDER BY o.created_at LIMIT 1),
+			    assigned_at = now()
+			WHERE coach_id = $1
+			  AND EXISTS (SELECT 1 FROM users o
+			              JOIN user_roles r ON r.user_id = o.id AND r.role = 'owner'
+			              WHERE o.status = 'active')`, userID); err != nil {
+			return err
+		}
 		_, err := tx.Exec(ctx,
 			`UPDATE refresh_tokens SET revoked_at = now() WHERE user_id = $1 AND revoked_at IS NULL`, userID)
 		return err
@@ -313,6 +351,7 @@ func (r *UserRepo) Anonymize(ctx context.Context, tenantID, userID string) error
 			`DELETE FROM refresh_tokens WHERE user_id = $1`,
 			`DELETE FROM password_resets WHERE user_id = $1`,
 			`DELETE FROM user_roles WHERE user_id = $1`,
+			`DELETE FROM coach_students WHERE student_id = $1`,
 		} {
 			if _, err := tx.Exec(ctx, q, userID); err != nil {
 				return err

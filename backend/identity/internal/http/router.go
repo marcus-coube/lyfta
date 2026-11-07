@@ -48,6 +48,9 @@ func NewRouter(
 	r.Route("/internal/v1", func(r chi.Router) {
 		r.Use(RequireInternalToken(internalToken))
 		r.Get("/users/{id}/consents", account.InternalConsents)
+		// Vínculo professor↔aluno (ADR-016 §3, P4.7).
+		r.Get("/coaches/{id}/students", users.InternalCoachStudents)
+		r.Get("/students/{id}/coach", users.InternalStudentCoach)
 	})
 
 	r.Route("/v1", func(r chi.Router) {
@@ -77,6 +80,13 @@ func NewRouter(
 			r.Use(RequireAuth(signer))
 			r.Use(RequireRole(string(domain.RoleOwner), string(domain.RoleCoach)))
 			r.Get("/", users.List)
+		})
+
+		// Reatribuição do professor do aluno: só owner (ADR-016 §1).
+		r.Route("/students", func(r chi.Router) {
+			r.Use(RequireAuth(signer))
+			r.Use(RequireRole(string(domain.RoleOwner)))
+			r.Put("/{id}/coach", users.PutStudentCoach)
 		})
 
 		r.Route("/invitations", func(r chi.Router) {

@@ -25,6 +25,7 @@ func NewRouter(
 	historyHandler *HistoryHandler,
 	pendingHandler *PendingStudentsHandler,
 	erasureHandler *ErasureHandler,
+	linker StudentLinker,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -98,19 +99,23 @@ func NewRouter(
 			r.Post("/exercises", exerciseHandler.Create)
 			r.Put("/exercises/{id}", exerciseHandler.Update)
 
-			// Builder e atribuição (P1.4). Ler o plano é de qualquer
-			// professor do tenant; escrever, só do coach dono ou do owner
-			// (authorizeWrite).
+			// Builder e atribuição (P1.4). Só o owner ou o coach vinculado ao
+			// aluno do plano lê e escreve (ADR-016 §4): as rotas por plano
+			// checam `plan.StudentID` dentro do handler.
 			r.Post("/plans", planHandler.Create)
 			r.Get("/plans/{id}", planHandler.Get)
 			r.Put("/plans/{id}/draft", planHandler.UpdateDraft)
 			r.Post("/plans/{id}/publish", planHandler.Publish)
-			r.Get("/students/{id}/plans", planHandler.ListByStudent)
 
-			// O mesmo progresso, com o aluno na URL: é o que a tela do
-			// professor acompanha (P2.5).
-			r.Get("/students/{id}/exercises/logged", historyHandler.StudentLogged)
-			r.Get("/students/{id}/exercises/{exercise_id}/history", historyHandler.StudentHistory)
+			// Rotas com o aluno na URL: o vínculo é checado antes do handler.
+			r.Route("/students/{id}", func(r chi.Router) {
+				r.Use(RequireStudentLink(logger, linker))
+				r.Get("/plans", planHandler.ListByStudent)
+				// O mesmo progresso, com o aluno na URL: é o que a tela do
+				// professor acompanha (P2.5).
+				r.Get("/exercises/logged", historyHandler.StudentLogged)
+				r.Get("/exercises/{exercise_id}/history", historyHandler.StudentHistory)
+			})
 		})
 	})
 

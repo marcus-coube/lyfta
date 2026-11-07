@@ -141,6 +141,9 @@ jobs:
           # Pub/sub do comms (P3.1) e limite de tentativas do identity.
           # Ignorado pelos demais serviços.
           REDIS_URL: redis://localhost:6379/0
+          # Backfill da migration 0012 do identity (P4.7): roda como
+          # superusuário, que ignora RLS. Ignorado pelos demais serviços.
+          SUPERUSER_DATABASE_URL: postgres://postgres:postgres@localhost:5432/lyfta_identity?sslmode=disable
         run: go test ./...
 
   app:

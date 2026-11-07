@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -17,6 +18,7 @@ import (
 	"github.com/marcus-coube/lyfta/comms/internal/pubsub"
 	"github.com/marcus-coube/lyfta/comms/internal/push"
 	"github.com/marcus-coube/lyfta/comms/internal/repo"
+	"github.com/marcus-coube/lyfta/comms/internal/security"
 )
 
 // maxMessageBodyLen é o teto de texto por mensagem — teto de payload, não
@@ -34,15 +36,16 @@ type ConversationHandler struct {
 	presigner     *media.Presigner
 	redisClient   *redis.Client
 	notifier      *push.Notifier
+	linker        StudentLinker
 }
 
 // NewConversationHandler cria o handler de conversas. notifier pode ser nil
 // nos testes que não exercitam o push (mesmo critério do presigner nil em
 // chat_integration_test.go) — SendMessage confere antes de usar.
-func NewConversationHandler(logger *slog.Logger, conversations *repo.ConversationRepo, messages *repo.MessageRepo, presigner *media.Presigner, redisClient *redis.Client, notifier *push.Notifier) *ConversationHandler {
+func NewConversationHandler(logger *slog.Logger, conversations *repo.ConversationRepo, messages *repo.MessageRepo, presigner *media.Presigner, redisClient *redis.Client, notifier *push.Notifier, linker StudentLinker) *ConversationHandler {
 	return &ConversationHandler{
 		logger: logger, conversations: conversations, messages: messages,
-		presigner: presigner, redisClient: redisClient, notifier: notifier,
+		presigner: presigner, redisClient: redisClient, notifier: notifier, linker: linker,
 	}
 }
 
@@ -104,16 +107,38 @@ func (h *ConversationHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// O coach sem owner não vê conversa de quem deixou de ser aluno dele
+	// (ADR-016 §6); o aluno e o owner veem todas as suas.
+	var mine map[string]struct{}
+	if !isOwner(claims) {
+		for _, c := range items {
+			if c.CoachID == claims.Subject {
+				set, err := h.linker.StudentsOf(r.Context(), claims.TenantID, claims.Subject)
+				if err != nil {
+					h.logger.Error("coach_link_check_failed", slog.Any("error", err))
+					writeError(w, errInternal())
+					return
+				}
+				mine = set
+				break
+			}
+		}
+	}
+
 	resp := conversationListResponse{Items: make([]conversationDTO, 0, len(items))}
 	for _, c := range items {
+		if c.CoachID == claims.Subject && mine != nil {
+			if _, linked := mine[c.StudentID]; !linked {
+				continue
+			}
+		}
 		resp.Items = append(resp.Items, h.toConversationDTO(r, c))
 	}
 	writeJSON(w, http.StatusOK, resp)
 }
 
 // Start abre (ou recupera) a conversa entre o coach autenticado e um aluno
-// do tenant — "qualquer professor do tenant" é o mesmo critério do
-// P1.4/P2.1/P2.3; o vínculo coach↔aluno segue dívida do identity.
+// dele — o owner abre com qualquer aluno do tenant (ADR-016).
 func (h *ConversationHandler) Start(w http.ResponseWriter, r *http.Request) {
 	claims, ok := ClaimsFromContext(r.Context())
 	if !ok || claims.TenantID == "" {
@@ -134,6 +159,11 @@ func (h *ConversationHandler) Start(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if apiErr := checkStudentLink(r.Context(), h.logger, h.linker, claims, studentID); apiErr != nil {
+		writeError(w, *apiErr)
+		return
+	}
+
 	conv, err := h.conversations.GetOrCreate(r.Context(), claims.TenantID, studentID, claims.Subject)
 	if err != nil {
 		h.logger.Error("conversation_start_failed", slog.Any("error", err))
@@ -151,7 +181,7 @@ func (h *ConversationHandler) ListMessages(w http.ResponseWriter, r *http.Reques
 		writeError(w, errUnauthenticated())
 		return
 	}
-	conv, apiErr := h.loadParticipantConversation(r, claims.TenantID, claims.Subject)
+	conv, apiErr := h.loadParticipantConversation(r, claims)
 	if apiErr != nil {
 		writeError(w, *apiErr)
 		return
@@ -191,7 +221,7 @@ func (h *ConversationHandler) SendMessage(w http.ResponseWriter, r *http.Request
 		writeError(w, errUnauthenticated())
 		return
 	}
-	conv, apiErr := h.loadParticipantConversation(r, claims.TenantID, claims.Subject)
+	conv, apiErr := h.loadParticipantConversation(r, claims)
 	if apiErr != nil {
 		writeError(w, *apiErr)
 		return
@@ -299,7 +329,7 @@ func (h *ConversationHandler) MarkRead(w http.ResponseWriter, r *http.Request) {
 		writeError(w, errUnauthenticated())
 		return
 	}
-	conv, apiErr := h.loadParticipantConversation(r, claims.TenantID, claims.Subject)
+	conv, apiErr := h.loadParticipantConversation(r, claims)
 	if apiErr != nil {
 		writeError(w, *apiErr)
 		return
@@ -326,7 +356,8 @@ func (h *ConversationHandler) MarkRead(w http.ResponseWriter, r *http.Request) {
 // ela existe no tenant e que o chamador é um dos dois participantes — 404
 // tanto para id inexistente quanto para tenant errado (RLS já filtrou), 403
 // para tenant certo mas usuário de fora da conversa.
-func (h *ConversationHandler) loadParticipantConversation(r *http.Request, tenantID, userID string) (domain.Conversation, *APIError) {
+func (h *ConversationHandler) loadParticipantConversation(r *http.Request, claims *security.Claims) (domain.Conversation, *APIError) {
+	tenantID := claims.TenantID
 	id := chi.URLParam(r, "id")
 	if _, err := uuid.Parse(id); err != nil {
 		return domain.Conversation{}, ptr(errValidation("id"))
@@ -339,10 +370,24 @@ func (h *ConversationHandler) loadParticipantConversation(r *http.Request, tenan
 		h.logger.Error("conversation_load_failed", slog.Any("error", err))
 		return domain.Conversation{}, ptr(errInternal())
 	}
-	if userID != conv.StudentID && userID != conv.CoachID {
-		return domain.Conversation{}, ptr(errForbidden())
+	if apiErr := authorizeParticipant(r.Context(), h.logger, h.linker, claims, conv); apiErr != nil {
+		return domain.Conversation{}, apiErr
 	}
 	return conv, nil
+}
+
+// authorizeParticipant confere que o ator é um dos dois participantes e, no
+// caso do coach da conversa, que o aluno ainda é dele (ADR-016 §6): o ex-coach
+// perde o acesso (404 student_not_found), o owner e o aluno não dependem do
+// vínculo — o aluno segue lendo o próprio histórico.
+func authorizeParticipant(ctx context.Context, logger *slog.Logger, linker StudentLinker, claims *security.Claims, conv domain.Conversation) *APIError {
+	if claims.Subject != conv.StudentID && claims.Subject != conv.CoachID {
+		return ptr(errForbidden())
+	}
+	if claims.Subject == conv.CoachID && claims.Subject != conv.StudentID {
+		return checkStudentLink(ctx, logger, linker, claims, conv.StudentID)
+	}
+	return nil
 }
 
 // publish serializa o evento e publica no canal Redis dos dois participantes

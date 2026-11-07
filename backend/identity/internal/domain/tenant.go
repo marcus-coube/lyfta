@@ -44,6 +44,10 @@ type User struct {
 	Status       UserStatus
 	Roles        []Role
 	CreatedAt    time.Time
+	// CoachID/CoachName só vêm preenchidos na listagem, para aluno com vínculo
+	// (ADR-016).
+	CoachID   *string
+	CoachName *string
 }
 
 // TenantMatch identifica um tenant onde um e-mail tem conta ativa — usado na

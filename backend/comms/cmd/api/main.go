@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/marcus-coube/lyfta/comms/internal/coachlink"
 	"github.com/marcus-coube/lyfta/comms/internal/config"
 	"github.com/marcus-coube/lyfta/comms/internal/fcm"
 	chttp "github.com/marcus-coube/lyfta/comms/internal/http"
@@ -128,11 +129,12 @@ func run(logger *slog.Logger) error {
 	notifications := repo.NewNotificationLogRepo(pool)
 	notifier := push.NewNotifier(logger, deviceTokens, notifications, pusher)
 
+	coachLinks := coachlink.NewClient(cfg.IdentityURL, cfg.InternalToken, cfg.CoachLinkCacheTTL)
 	router := chttp.NewRouter(logger, cfg.CORSOrigins, verifier, cfg.InternalToken,
-		chttp.NewConversationHandler(logger, conversations, messages, presigner, redisClient, notifier),
-		chttp.NewMediaHandler(logger, conversations, presigner),
+		chttp.NewConversationHandler(logger, conversations, messages, presigner, redisClient, notifier, coachLinks),
+		chttp.NewMediaHandler(logger, conversations, presigner, coachLinks),
 		chttp.NewWSHandler(logger, verifier, hub, redisClient),
-		chttp.NewCheckinHandler(logger, checkins, conversations, redisClient, notifier),
+		chttp.NewCheckinHandler(logger, checkins, coachLinks, redisClient, notifier),
 		chttp.NewDeviceHandler(logger, deviceTokens),
 		chttp.NewErasureHandler(logger, repo.NewErasureRepo(pool)),
 	)

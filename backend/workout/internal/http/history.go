@@ -20,8 +20,8 @@ import (
 // Cada rota tem duas portas — `/me/...` para o aluno, `/students/{id}/...`
 // para o professor —, e as duas caem no mesmo repositório. O que muda é só de
 // onde sai o `student_id`: da claim ou da URL. Ler o histórico de um aluno é
-// de qualquer professor do tenant, o mesmo critério que o P1.4 usou para ler
-// plano; o vínculo coach↔aluno vive no identity (dívida anotada lá).
+// do owner ou do professor vinculado ao aluno (ADR-016): o middleware da rota
+// `/students/{id}` checa o vínculo no identity antes do handler.
 type HistoryHandler struct {
 	logger    *slog.Logger
 	sessions  *repo.SessionRepo

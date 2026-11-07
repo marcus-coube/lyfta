@@ -54,6 +54,11 @@ var (
 	errFileTooLarge = func(maxBytes int64) APIError {
 		return newAPIError(http.StatusRequestEntityTooLarge, "file_too_large", "max_bytes", maxBytes)
 	}
+	// Aluno que não é do coach (ou não existe, ou é de outro tenant): o
+	// mesmo 404 para os três casos (ADR-016 §4).
+	errStudentNotFound = func() APIError {
+		return newAPIError(http.StatusNotFound, "student_not_found")
+	}
 	errNotFound = func(resource string) APIError {
 		return newAPIError(http.StatusNotFound, "not_found", "resource", resource)
 	}

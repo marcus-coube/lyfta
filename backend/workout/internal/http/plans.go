@@ -30,8 +30,8 @@ type PlanHandler struct {
 }
 
 // NewPlanHandler cria o handler do builder.
-func NewPlanHandler(logger *slog.Logger, plans *repo.PlanRepo, exercises *repo.ExerciseRepo, presigner *media.Presigner) *PlanHandler {
-	return &PlanHandler{planView: newPlanView(logger, plans, exercises, presigner)}
+func NewPlanHandler(logger *slog.Logger, plans *repo.PlanRepo, exercises *repo.ExerciseRepo, presigner *media.Presigner, linker StudentLinker) *PlanHandler {
+	return &PlanHandler{planView: newPlanView(logger, plans, exercises, presigner, linker)}
 }
 
 // Limites da árvore enviada pelo builder. Não são regra de negócio, são teto
@@ -168,8 +168,14 @@ func (h *PlanHandler) Create(w http.ResponseWriter, r *http.Request) {
 		writeError(w, errValidation("title"))
 		return
 	}
+	// O aluno precisa ser do coach (ou o ator ser owner, ADR-016 §4).
+	if apiErr := h.checkStudent(r.Context(), claims, strings.TrimSpace(req.StudentID)); apiErr != nil {
+		writeError(w, *apiErr)
+		return
+	}
 	// Por padrão o autor é o coach do plano. Atribuir o plano a outro
-	// professor é ato de administração da academia, então exige owner.
+	// professor é ato de administração da academia, então exige owner — e o
+	// coach informado precisa ser o vinculado ao aluno.
 	coachID := claims.Subject
 	if raw := strings.TrimSpace(req.CoachID); raw != "" && raw != claims.Subject {
 		if _, err := uuid.Parse(raw); err != nil {
@@ -178,6 +184,17 @@ func (h *PlanHandler) Create(w http.ResponseWriter, r *http.Request) {
 		}
 		if !hasRole(claims, "owner") {
 			writeError(w, errForbidden())
+			return
+		}
+		// Papéis vazios: o coach informado não ganha o passe livre de owner.
+		linked, err := h.linker.CanAccessStudent(r.Context(), claims.TenantID, raw, nil, strings.TrimSpace(req.StudentID))
+		if err != nil {
+			h.logger.Error("coach_link_check_failed", slog.Any("error", err))
+			writeError(w, errInternal())
+			return
+		}
+		if !linked {
+			writeError(w, errValidation("coach_id"))
 			return
 		}
 		coachID = raw
@@ -218,6 +235,10 @@ func (h *PlanHandler) Get(w http.ResponseWriter, r *http.Request) {
 		writeError(w, *apiErr)
 		return
 	}
+	if apiErr := h.checkStudent(r.Context(), claims, plan.StudentID); apiErr != nil {
+		writeError(w, *apiErr)
+		return
+	}
 
 	version, apiErr := h.resolveVersion(r, claims.TenantID, plan.ID)
 	if apiErr != nil {
@@ -249,7 +270,7 @@ func (h *PlanHandler) UpdateDraft(w http.ResponseWriter, r *http.Request) {
 		writeError(w, *apiErr)
 		return
 	}
-	if apiErr := authorizeWrite(claims, plan); apiErr != nil {
+	if apiErr := h.checkStudent(r.Context(), claims, plan.StudentID); apiErr != nil {
 		writeError(w, *apiErr)
 		return
 	}
@@ -312,7 +333,7 @@ func (h *PlanHandler) Publish(w http.ResponseWriter, r *http.Request) {
 		writeError(w, *apiErr)
 		return
 	}
-	if apiErr := authorizeWrite(claims, plan); apiErr != nil {
+	if apiErr := h.checkStudent(r.Context(), claims, plan.StudentID); apiErr != nil {
 		writeError(w, *apiErr)
 		return
 	}
@@ -351,8 +372,7 @@ func (h *PlanHandler) Publish(w http.ResponseWriter, r *http.Request) {
 // ListByStudent devolve os planos de um aluno para o coach — o histórico do
 // aluno dentro do tenant, com a marca de qual está ativo.
 //
-// Ler é do tenant inteiro (um professor cobrindo férias do outro precisa ver
-// o plano); escrever continua restrito ao coach do plano ou ao owner.
+// O vínculo coach↔aluno é checado pelo middleware da rota (ADR-016).
 func (h *PlanHandler) ListByStudent(w http.ResponseWriter, r *http.Request) {
 	tenantID, ok := TenantFromContext(r.Context())
 	if !ok {
@@ -619,16 +639,6 @@ func versionRef(v domain.PlanVersion) versionRefDTO {
 	return versionRefDTO{
 		ID: v.ID, VersionNo: v.VersionNo, PublishedAt: v.PublishedAt, IsDraft: v.PublishedAt == nil,
 	}
-}
-
-// authorizeWrite aplica o "só coach do aluno edita" do P1.4 com o que existe
-// dentro deste serviço: o coach dono do plano, ou o owner do tenant.
-func authorizeWrite(claims *security.Claims, plan domain.Plan) *APIError {
-	if plan.CoachID == claims.Subject || hasRole(claims, "owner") {
-		return nil
-	}
-	apiErr := errForbidden()
-	return &apiErr
 }
 
 func hasRole(claims *security.Claims, role string) bool {

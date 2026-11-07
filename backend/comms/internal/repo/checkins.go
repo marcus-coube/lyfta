@@ -142,6 +142,20 @@ func NewCheckinCursor(c domain.WorkoutCheckin) CheckinCursor {
 // para idx_workout_checkins_student e ordena em memória, o que é aceitável
 // porque o volume por aluno é pequeno.
 func (r *CheckinRepo) List(ctx context.Context, tenantID, studentID string, cursor *CheckinCursor, limit int) (items []domain.WorkoutCheckin, hasMore bool, err error) {
+	return r.list(ctx, tenantID, studentID, nil, cursor, limit)
+}
+
+// ListForStudents é a fila do coach sem owner (ADR-016, P4.7): só os check-ins
+// dos alunos do conjunto — `student_id = ANY(...)`. Conjunto vazio devolve
+// vazio (e não o tenant inteiro).
+func (r *CheckinRepo) ListForStudents(ctx context.Context, tenantID string, studentIDs []string, cursor *CheckinCursor, limit int) (items []domain.WorkoutCheckin, hasMore bool, err error) {
+	if studentIDs == nil {
+		studentIDs = []string{}
+	}
+	return r.list(ctx, tenantID, "", studentIDs, cursor, limit)
+}
+
+func (r *CheckinRepo) list(ctx context.Context, tenantID, studentID string, studentIDs []string, cursor *CheckinCursor, limit int) (items []domain.WorkoutCheckin, hasMore bool, err error) {
 	if limit <= 0 || limit > maxCheckinPageSize {
 		limit = maxCheckinPageSize
 	}
@@ -170,10 +184,14 @@ func (r *CheckinRepo) List(ctx context.Context, tenantID, studentID string, curs
 	err = WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
 		var q string
 		var args []any
-		if studentID == "" {
+		switch {
+		case studentIDs != nil:
+			q = `SELECT ` + checkinCols + ` FROM workout_checkins WHERE student_id = ANY($5::uuid[]) ` + cursorPredicate + ` ` + orderAndLimit
+			args = []any{cursorReviewedAt, cursorCreatedAt, nullString(cursorID), limit + 1, studentIDs}
+		case studentID == "":
 			q = `SELECT ` + checkinCols + ` FROM workout_checkins WHERE true ` + cursorPredicate + ` ` + orderAndLimit
 			args = []any{cursorReviewedAt, cursorCreatedAt, nullString(cursorID), limit + 1}
-		} else {
+		default:
 			q = `SELECT ` + checkinCols + ` FROM workout_checkins WHERE student_id = $5 ` + cursorPredicate + ` ` + orderAndLimit
 			args = []any{cursorReviewedAt, cursorCreatedAt, nullString(cursorID), limit + 1, studentID}
 		}

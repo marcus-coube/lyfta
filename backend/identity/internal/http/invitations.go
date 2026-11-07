@@ -108,7 +108,7 @@ func (h *InvitationHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.users.Create(ctx, domain.User{
+	newUser := domain.User{
 		TenantID: tenantID,
 		Email:    req.Email,
 		// Sem senha até o accept — hash vazio nunca casa com VerifyPassword
@@ -119,7 +119,17 @@ func (h *InvitationHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Locale:       "pt-BR",
 		Status:       domain.UserStatusInvited,
 		Roles:        []domain.Role{domain.Role(req.Role)},
-	})
+	}
+	var (
+		user domain.User
+		err  error
+	)
+	if newUser.Roles[0] == domain.RoleStudent {
+		// O aluno nasce vinculado a quem o convidou (ADR-016 §1).
+		user, err = h.users.CreateStudent(ctx, newUser, claims.Subject)
+	} else {
+		user, err = h.users.Create(ctx, newUser)
+	}
 	if err != nil {
 		h.logger.Error("invitation_create_user_failed", slog.Any("error", err))
 		writeError(w, errInternal())

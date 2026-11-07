@@ -26,25 +26,21 @@ const maxCheckinNoteLen = 500
 // registra ao concluir a sessão, o coach revisa a fila (não revisados
 // primeiro, Aceite do P3.3).
 type CheckinHandler struct {
-	logger        *slog.Logger
-	checkins      *repo.CheckinRepo
-	conversations *repo.ConversationRepo
-	redisClient   *redis.Client
-	notifier      *push.Notifier
+	logger      *slog.Logger
+	checkins    *repo.CheckinRepo
+	linker      StudentLinker
+	redisClient *redis.Client
+	notifier    *push.Notifier
 }
 
 // NewCheckinHandler cria o handler de check-ins.
 //
-// conversations entra só para o gancho de push da dor forte (ver Create):
-// como o comms já modela o par aluno-coach em `conversations` (P3.2), reusar
-// essa tabela para descobrir "o coach deste aluno" é mais barato que
-// inventar uma consulta M2M nova ao identity — que é o único lugar que sabe
-// o vínculo coach↔aluno de verdade (dívida aberta desde o P1.4). Se o aluno
-// ainda não tem conversa aberta com nenhum coach, nada é publicado. notifier
-// pode ser nil nos testes que não exercitam push (mesmo critério do
-// ConversationHandler).
-func NewCheckinHandler(logger *slog.Logger, checkins *repo.CheckinRepo, conversations *repo.ConversationRepo, redisClient *redis.Client, notifier *push.Notifier) *CheckinHandler {
-	return &CheckinHandler{logger: logger, checkins: checkins, conversations: conversations, redisClient: redisClient, notifier: notifier}
+// linker serve à fila do coach (só os alunos dele) e ao push da dor forte, que
+// vai só para o coach atual do aluno (ADR-016 §6) — o identity é o dono do
+// vínculo. notifier pode ser nil nos testes que não exercitam push (mesmo
+// critério do ConversationHandler).
+func NewCheckinHandler(logger *slog.Logger, checkins *repo.CheckinRepo, linker StudentLinker, redisClient *redis.Client, notifier *push.Notifier) *CheckinHandler {
+	return &CheckinHandler{logger: logger, checkins: checkins, linker: linker, redisClient: redisClient, notifier: notifier}
 }
 
 type checkinDTO struct {
@@ -143,22 +139,25 @@ func (h *CheckinHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if created.Pain == domain.PainStrong {
-		h.notifyCoachesOfStrongPain(r, created)
+		h.notifyCoachOfStrongPain(r, created)
 	}
 
 	writeJSON(w, http.StatusCreated, h.toDTO(created))
 }
 
-// notifyCoachesOfStrongPain publica o evento de dor forte para cada coach com
-// quem o aluno já tem conversa aberta neste tenant, e manda push pra eles —
-// sempre, esteja o coach online ou não (ao contrário de message.new, o plano
-// não condiciona este push à presença: dor é importante o bastante pra tocar
-// mesmo com o app aberto). Falha ao publicar/mandar push não derruba a
-// criação do check-in, que já está gravado.
-func (h *CheckinHandler) notifyCoachesOfStrongPain(r *http.Request, c domain.WorkoutCheckin) {
-	convs, err := h.conversations.ListForUser(r.Context(), c.TenantID, c.StudentID)
+// notifyCoachOfStrongPain publica o evento de dor forte para o coach atual do
+// aluno (consultado no identity, ADR-016 §6) e manda push pra ele — sempre,
+// esteja online ou não (ao contrário de message.new, dor é importante o bastante
+// pra tocar mesmo com o app aberto). Aluno sem vínculo ou falha ao consultar o
+// identity/publicar/mandar push não derrubam a criação do check-in, que já
+// está gravado.
+func (h *CheckinHandler) notifyCoachOfStrongPain(r *http.Request, c domain.WorkoutCheckin) {
+	coachID, found, err := h.linker.CoachOf(r.Context(), c.TenantID, c.StudentID)
 	if err != nil {
-		h.logger.Error("checkin_pain_lookup_coaches_failed", slog.Any("error", err))
+		h.logger.Error("checkin_pain_lookup_coach_failed", slog.Any("error", err))
+		return
+	}
+	if !found {
 		return
 	}
 	payload, err := json.Marshal(checkinPainEvent{
@@ -168,15 +167,13 @@ func (h *CheckinHandler) notifyCoachesOfStrongPain(r *http.Request, c domain.Wor
 		h.logger.Error("checkin_pain_event_marshal_failed", slog.Any("error", err))
 		return
 	}
-	for _, conv := range convs {
-		if err := pubsub.PublishToUser(r.Context(), h.redisClient, conv.CoachID, payload); err != nil {
-			h.logger.Error("checkin_pain_event_publish_failed", slog.Any("error", err), slog.String("coach_id", conv.CoachID))
-		}
-		if h.notifier != nil {
-			h.notifier.Send(r.Context(), c.TenantID, conv.CoachID, push.KindCheckinPainStrong, map[string]string{
-				"type": "checkin.pain_strong", "checkin_id": c.ID, "student_id": c.StudentID,
-			})
-		}
+	if err := pubsub.PublishToUser(r.Context(), h.redisClient, coachID, payload); err != nil {
+		h.logger.Error("checkin_pain_event_publish_failed", slog.Any("error", err), slog.String("coach_id", coachID))
+	}
+	if h.notifier != nil {
+		h.notifier.Send(r.Context(), c.TenantID, coachID, push.KindCheckinPainStrong, map[string]string{
+			"type": "checkin.pain_strong", "checkin_id": c.ID, "student_id": c.StudentID,
+		})
 	}
 }
 
@@ -196,7 +193,35 @@ func (h *CheckinHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	items, hasMore, err := h.checkins.List(r.Context(), claims.TenantID, studentID, cursor, limit)
+	var (
+		items   []domain.WorkoutCheckin
+		hasMore bool
+		err     error
+	)
+	switch {
+	case studentID != "":
+		// Fila de um aluno: o vínculo é checado (owner passa).
+		if apiErr := checkStudentLink(r.Context(), h.logger, h.linker, claims, studentID); apiErr != nil {
+			writeError(w, *apiErr)
+			return
+		}
+		items, hasMore, err = h.checkins.List(r.Context(), claims.TenantID, studentID, cursor, limit)
+	case isOwner(claims):
+		items, hasMore, err = h.checkins.List(r.Context(), claims.TenantID, "", cursor, limit)
+	default:
+		// Coach sem owner: só a fila dos alunos dele (ADR-016 §6).
+		students, linkErr := h.linker.StudentsOf(r.Context(), claims.TenantID, claims.Subject)
+		if linkErr != nil {
+			h.logger.Error("coach_link_check_failed", slog.Any("error", linkErr))
+			writeError(w, errInternal())
+			return
+		}
+		ids := make([]string, 0, len(students))
+		for id := range students {
+			ids = append(ids, id)
+		}
+		items, hasMore, err = h.checkins.ListForStudents(r.Context(), claims.TenantID, ids, cursor, limit)
+	}
 	if err != nil {
 		h.logger.Error("checkin_list_failed", slog.Any("error", err))
 		writeError(w, errInternal())
@@ -225,6 +250,24 @@ func (h *CheckinHandler) Review(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if _, err := uuid.Parse(id); err != nil {
 		writeError(w, errValidation("id"))
+		return
+	}
+
+	// Carrega o check-in antes para checar o vínculo com o aluno dele: check-in
+	// inexistente e de aluno que não é do coach respondem diferente só no
+	// código (not_found × student_not_found), nenhum dos dois vaza dado.
+	existing, err := h.checkins.Get(r.Context(), claims.TenantID, id)
+	if errors.Is(err, repo.ErrNotFound) {
+		writeError(w, errNotFound("checkin"))
+		return
+	}
+	if err != nil {
+		h.logger.Error("checkin_load_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
+	}
+	if apiErr := checkStudentLink(r.Context(), h.logger, h.linker, claims, existing.StudentID); apiErr != nil {
+		writeError(w, *apiErr)
 		return
 	}
 
