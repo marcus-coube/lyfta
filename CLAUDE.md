@@ -21,24 +21,27 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
   **nunca** importar código entre serviços (duplicar é o certo: ver o
   `internal/security` de cada um).
 - `docs/` — documentação. **Fonte de verdade de produto e arquitetura.**
-- `.claude/agents/mvp-dev.md` — agente (Sonnet) que executa o plano do MVP, uma
-  tarefa por invocação.
+- `.claude/agents/mvp-dev.md` — agente (Sonnet) que executa os planos do MVP
+  (1.0 e 2.0), uma tarefa por invocação.
 
 ## Onde está a verdade (ler antes de propor mudanças)
 - **[docs/000-product_description.md](docs/000-product_description.md)** — roadmap em
   **pacotes** (MVP 1.0 → 2.0 → 3.0 → 4.0 running → V2 IA → Futuro).
 - **[docs/014-plano-de-documentacao.md](docs/014-plano-de-documentacao.md)** — plano de
   docs + marcos de implementação e de-para marco→pacote.
-- **[docs/adr/](docs/adr/)** — decisões estruturais (ADR-001..016). São normativas.
+- **[docs/adr/](docs/adr/)** — decisões estruturais (ADR-001..018). São normativas.
 - **[docs/plan/mvp1/](docs/plan/mvp1/)** — plano de execução do MVP 1.0 (P0–P4,
-  32 tarefas, protocolo do agente). Progresso em `STATUS.md`.
+  32 tarefas, protocolo do agente). Fechado; lista pré-loja (L1–L10) no `STATUS.md`.
+- **[docs/plan/mvp2/](docs/plan/mvp2/)** — plano do MVP 2.0 (P5–P8, 18 tarefas):
+  alunos, builder completo, financeiro só com baixa manual, dashboard. Progresso
+  em `STATUS.md`.
 - **[docs/benchmarking/](docs/benchmarking/)** — auditoria HubFit × Trainerize × Lyfta.
 - `docs/guidelines/` — convenções de código (ex.: `flutter.md`).
 
-## Estado atual (2026-11-07)
-**Executando o plano do MVP 1.0** ([docs/plan/mvp1/](docs/plan/mvp1/)) na ordem
-P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P4.X").
-**Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
+## Estado atual (2026-11-08)
+**Executando o plano do MVP 2.0** ([docs/plan/mvp2/](docs/plan/mvp2/)) na ordem
+P5→P8, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P5.X").
+**Progresso vivo em [STATUS.md](docs/plan/mvp2/STATUS.md)** — ler ele primeiro para
 saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
 **MVP 1.0 fechado: P0–P4 concluídas, 32/32 (2026-11-08):** `identity` completo (auth, convites,
 reset, lista de usuários do tenant), CI no GitHub Actions
@@ -94,7 +97,12 @@ o projeto com DSN (humano). A **P4.7** fechou o vínculo professor↔aluno
 nasce no convite, owner reatribui), checagem por M2M com cache de 30 s no
 `internal/coachlink` de workout, assessment e comms, e 404 `student_not_found`
 para aluno que não é do coach — owner vê tudo, e só ele troca o professor no app.
-Próximo: **pós-MVP** (pacote 2.0 do doc 000), só em emulador: o que depende de
+Próximo: **MVP 2.0** — plano em [docs/plan/mvp2/](docs/plan/mvp2/README.md)
+(P5 alunos → P6 builder → P7 financeiro → P8 dashboard/release; comando
+"implemente P5.1"). Financeiro do 2.0 é o sexto serviço, `billing` (8085), **só
+com baixa manual** — PIX adiado ([ADR-017](docs/adr/ADR-017-financeiro-servico-billing-baixa-manual.md));
+modelos de treino aplicados por cópia ([ADR-018](docs/adr/ADR-018-modelos-de-treino-por-copia.md)).
+Tudo só em emulador: o que depende de
 loja, conta ou aparelho virou a lista **pré-loja** (L1–L10 do STATUS) — Android
 compila sem `google-services.json` (sem push). iOS roda no
 simulador com Xcode 27 (receita em [app/README.md](app/README.md) § iOS). Escopo do MVP em
@@ -115,7 +123,7 @@ funcionam em **todas** as plataformas (mobile e web).
    (instalado no Mac; pendente no Windows).
 5. Segredos são locais por máquina (`.env` de cada serviço, nunca no git);
    `backend/.env.example` documenta as variáveis.
-6. Continuar: dizer "implemente <próxima tarefa do STATUS.md>".
+6. Continuar: dizer "implemente <próxima tarefa do docs/plan/mvp2/STATUS.md>".
 
 ## Convenções inegociáveis
 - **Decisão estrutural nova → novo ADR**, nunca edição silenciosa de doc.

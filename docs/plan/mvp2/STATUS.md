@@ -1,0 +1,37 @@
+# STATUS — MVP 2.0
+
+> Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
+> checkboxes nos arquivos de fase.
+
+**Próxima tarefa:** P5.1 — fuso e configurações do tenant.
+
+| Fase | Progresso | Situação |
+|---|---|---|
+| P5 — Alunos | 0/5 | não iniciada |
+| P6 — Builder | 0/5 | não iniciada |
+| P7 — Financeiro | 0/4 | não iniciada |
+| P8 — Dashboard e release | 0/4 | não iniciada |
+| **Total** | **0/18** | |
+
+## Bancos locais
+
+| Banco | Criado (Windows) | Criado (Mac) |
+|---|---|---|
+| lyfta_billing (P7.1) | ⬜ | ⬜ |
+
+Os quatro bancos do 1.0 seguem na tabela do [STATUS do 1.0](../mvp1/STATUS.md).
+
+## Fora do 2.0 (decidido)
+
+| Item | Decisão |
+|---|---|
+| PIX, cartão, Asaas/Stripe, webhooks | Adiado — ADR-017 §2. O schema já comporta (`provider`, `payment_provider_events`) |
+| Cobrança automática, lembrete de vencimento (push/e-mail) | Adiado com o PIX |
+| Pagamento parcial, multa/juros, desconto | Adiado; no 2.0 a baixa quita a fatura inteira |
+| Recibo/nota fiscal | Adiado |
+
+## Log de marcos
+
+| Data | Evento |
+|---|---|
+| 2026-11-08 | Plano do 2.0 criado (18 tarefas, P5–P8); ADR-017 (serviço `billing`, só baixa manual) e ADR-018 (modelos por cópia) |

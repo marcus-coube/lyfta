@@ -28,6 +28,9 @@ onde densidade vale mais que volume.
 | [ADR-013](adr/ADR-013-microservicos-db-por-servico.md) | Microserviços Go com banco Postgres por serviço (supersede ADR-006) |
 | [ADR-014](adr/ADR-014-pastas-de-plataforma-versionadas.md) | `android/` versionada; demais plataformas geradas por `flutter create` |
 | [ADR-015](adr/ADR-015-distribuicao-e-lojas.md) | Validação por APK/IPA direto; publicar em loja é step opcional e manual |
+| [ADR-016](adr/ADR-016-vinculo-professor-aluno.md) | Vínculo professor↔aluno no identity; checagem M2M com cache |
+| [ADR-017](adr/ADR-017-financeiro-servico-billing-baixa-manual.md) | Financeiro do 2.0 no serviço `billing`; só baixa manual (PIX adiado) |
+| [ADR-018](adr/ADR-018-modelos-de-treino-por-copia.md) | Modelos de treino aplicados por cópia, sem vínculo vivo |
 
 Novas decisões estruturais → novo ADR, nunca edição silenciosa de docs.
 
@@ -53,7 +56,7 @@ plano/entitlement e feature flag são coisas distintas e serão especificados no
 > | Pacote (doc 000) | Marcos que o compõem |
 > |---|---|
 > | **MVP 1.0** — loop diário do aluno | M0 + fatia mínima de M2 (builder mínimo) + M3 (execução/offline) + parte de M4 (histórico de carga) + avaliação física (subia do V1) + fatia de M5 (chat texto+imagem) |
-> | **MVP 2.0** — coach monta e gerencia | M1 (alunos) + M2 completo (builder) + M6 (financeiro + dashboard) |
+> | **MVP 2.0** — coach monta e gerencia | M1 (alunos) + M2 completo (builder) + M6 (financeiro + dashboard) — plano em [plan/mvp2/](plan/mvp2/README.md), P5–P8 |
 > | **MVP 3.0** — engajamento e análise | resto de M4 (muscle map, PRs/1RM) + resto de M5 (mídia rica) + agenda/gamificação/relatórios |
 
 Estimativa honesta para dev solo full-time: **8–12 meses** até fechar os pacotes que

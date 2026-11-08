@@ -99,10 +99,13 @@ to make them real.
     A→B→C rotation, manual override
 -   Student management: registration, status, goals, injuries, coach
     assignment, LGPD consent
--   Finance (PIX / manual reconciliation first): monthly fee, payment history,
-    active / delinquent / inactive --- the coach-adoption lever
+-   Finance (**manual payment entry only** in 2.0; PIX/card postponed ---
+    ADR-017): monthly fee, payment history, active / delinquent / inactive ---
+    the coach-adoption lever
 -   Coach dashboard: active students, delinquents, monthly revenue, today's
     workouts
+
+Execution plan: [docs/plan/mvp2/](plan/mvp2/README.md).
 
 ## MVP 3.0 --- Engagement and analysis
 
