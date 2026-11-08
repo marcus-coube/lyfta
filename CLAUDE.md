@@ -32,7 +32,7 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 - **[docs/adr/](docs/adr/)** — decisões estruturais (ADR-001..018). São normativas.
 - **[docs/plan/mvp1/](docs/plan/mvp1/)** — plano de execução do MVP 1.0 (P0–P4,
   32 tarefas, protocolo do agente). Fechado; lista pré-loja (L1–L10) no `STATUS.md`.
-- **[docs/plan/mvp2/](docs/plan/mvp2/)** — plano do MVP 2.0 (P5–P8, 18 tarefas):
+- **[docs/plan/mvp2/](docs/plan/mvp2/)** — plano do MVP 2.0 (P5–P8, 19 tarefas):
   alunos, builder completo, financeiro só com baixa manual, dashboard. Progresso
   em `STATUS.md`.
 - **[docs/benchmarking/](docs/benchmarking/)** — auditoria HubFit × Trainerize × Lyfta.
@@ -100,7 +100,7 @@ para aluno que não é do coach — owner vê tudo, e só ele troca o professor 
 Próximo: **MVP 2.0** — plano em [docs/plan/mvp2/](docs/plan/mvp2/README.md)
 (P5 alunos → P6 builder → P7 financeiro → P8 dashboard/release; comando
 "implemente P5.1"). Financeiro do 2.0 é o sexto serviço, `billing` (8085), **só
-com baixa manual** — PIX adiado ([ADR-017](docs/adr/ADR-017-financeiro-servico-billing-baixa-manual.md));
+com baixa manual** — PIX adiado; acesso do coach configurável por organização ([ADR-017](docs/adr/ADR-017-financeiro-servico-billing-baixa-manual.md));
 modelos de treino aplicados por cópia ([ADR-018](docs/adr/ADR-018-modelos-de-treino-por-copia.md)).
 Tudo só em emulador: o que depende de
 loja, conta ou aparelho virou a lista **pré-loja** (L1–L10 do STATUS) — Android

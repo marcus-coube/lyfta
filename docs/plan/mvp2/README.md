@@ -26,7 +26,7 @@ plano: são ações humanas, não tarefas do agente.
 |---|---|---|
 | P5 | [P5-alunos.md](P5-alunos.md) | Fuso por tenant, cadastro e status do aluno, anamnese, ficha do aluno no app |
 | P6 | [P6-builder.md](P6-builder.md) | Modelos, gestão de planos, ergonomia do builder, player por bloco |
-| P7 | [P7-financeiro.md](P7-financeiro.md) | Serviço `billing`: planos, assinaturas, faturas, baixa manual, jobs |
+| P7 | [P7-financeiro.md](P7-financeiro.md) | Serviço `billing`: planos, assinaturas, faturas, baixa manual, jobs, exclusão de conta com fatura pendente |
 | P8 | [P8-dashboard.md](P8-dashboard.md) | Dashboard, dívidas do 1.0 que o 2.0 encosta, E2E e release 2.0.0 |
 
 Ordem P5→P8. P6 não depende de P5 (pode ser adiantada); P7 depende da P5.1
@@ -56,9 +56,10 @@ testes mínimos). Mais:
   `tenants.timezone`, nunca no relógio do servidor nem em UTC puro.
 - **Vínculo (ADR-016):** toda rota nova de coach sobre aluno passa pelo
   `coachlink` (404 `student_not_found` fora do vínculo). Owner vê todos.
-- **Financeiro só do owner (ADR-017 §3):** rotas de `billing` com
-  `RequireRole(owner)`, exceto `/me/invoices` (aluno) e o status derivado
-  (coach, sem valores).
+- **Acesso ao financeiro (ADR-017 §3):** owner vê tudo; o coach depende de
+  `tenants.coach_billing_access` (`status_only` = só o selo de inadimplente;
+  `own_students` = assinaturas, faturas e baixa dos alunos dele). Estorno,
+  planos e receita são sempre só do owner. Aluno lê as próprias faturas.
 - **Desktop-first na web do coach:** telas de gestão (lista de alunos, builder,
   financeiro, dashboard) usam o espaço acima de 840 px (tabela/grid, master-detail);
   abaixo disso, coluna única.

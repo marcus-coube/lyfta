@@ -15,20 +15,25 @@ Refs normativas: ADR-001, ADR-002, ADR-007 §3, ADR-008, ADR-013, ADR-016.
 **Passos:**
 1. identity: migration com `tenants.timezone TEXT NOT NULL DEFAULT
    'America/Sao_Paulo'` (validar nome IANA com `time.LoadLocation`).
-   `GET /v1/tenant` (todo papel: nome, slug, locale, timezone) e
-   `PUT /v1/tenant` (owner: nome, timezone). JWT ganha a claim `tz`.
+   Mais `tenants.coach_billing_access TEXT NOT NULL DEFAULT 'status_only'
+   CHECK (IN ('status_only','own_students'))` (ADR-017 §3; o financeiro só usa
+   na P7, mas a configuração nasce aqui com as outras do tenant).
+   `GET /v1/tenant` (todo papel: nome, slug, locale, timezone,
+   `coach_billing_access`) e `PUT /v1/tenant` (owner). JWT ganha a claim `tz`.
 2. identity M2M: `GET /internal/v1/tenants?after=&limit=` (id + timezone,
-   cursor) para jobs que varrem todos os tenants, e `GET /internal/v1/tenants/{id}`.
+   cursor) para jobs que varrem todos os tenants, e `GET /internal/v1/tenants/{id}`
+   (timezone + `coach_billing_access`).
 3. comms: o job de treino pendente varre por tenant no fuso de cada um (lista
    por M2M, cache de 10 min), mantendo o mecanismo da P3.4 — só a janela
    `[since, until)` passa a ser por tenant. `NOTIFICATION_TIMEZONE` sai.
 4. workout: "hoje" do aluno (`/me/today`, `/me/sessions`) não muda de regra,
    mas onde o servidor precisar de dia civil usa a claim `tz`.
-5. App: seção "Academia" na tela Conta do owner (nome, fuso com busca na
-   lista IANA mais comum do BR/PT + "outro").
+5. App: seção "Organização" na tela Conta do owner (nome, fuso com busca na
+   lista IANA mais comum do BR/PT + "outro"). O toggle do financeiro entra na
+   P7.4, junto da tela que ele controla.
 **Aceite:** dois tenants com fusos diferentes recebem o push de pendente no
 horário local de cada um (teste do job com relógio fake); `PUT /v1/tenant` com
-fuso inválido = 422 `invalid_timezone`; teste de widget da seção Academia.
+fuso inválido = 422 `invalid_timezone`; teste de widget da seção Organização.
 
 ## - [ ] P5.2 Cadastro e status do aluno (identity)
 

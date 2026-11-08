@@ -29,7 +29,11 @@ o modelo (editar o modelo muda todos) ou o modelo é copiado na atribuição.
 
 - Personalizar o treino de um aluno depois de aplicar um modelo é o caso comum e
   não tem efeito colateral.
-- Propagar uma correção do modelo para N alunos é reaplicar (gera nova versão de
-  cada plano), não automático. Aceito: o coach decide aluno a aluno.
+- Propagar uma correção do modelo é **manual**: "reaplicar" lista quem recebeu
+  o modelo (pelo `source_template_id`) e o coach escolhe os alunos. Para cada
+  um, o rascunho do plano é substituído pela versão atual do modelo e
+  publicado como versão nova (ADR-004): o histórico fica, mas os ajustes
+  individuais daquele plano se perdem, e o app avisa disso. Confirmado pelo
+  usuário em 2026-11-08.
 - **Alternativa rejeitada:** referência viva com "override" por aluno. Exigiria
   merge de árvores versionadas e quebraria a leitura simples do ADR-004.

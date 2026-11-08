@@ -67,8 +67,9 @@ ou verificação registrada nas Notas.
    mensalidade → convida coach → coach convida aluno → ficha com objetivo e
    lesão → coach cria modelo com superset e aplica a 2 alunos → aluno executa
    o superset offline no emulador → sync → owner assina o aluno → job gera a
-   fatura (relógio/forçar tick) → vence → selo inadimplente e dashboard → baixa
-   manual → estorno → inativar aluno (aviso de assinatura) → login do aluno
+   fatura (relógio/forçar tick) → vence → selo inadimplente e dashboard → aluno
+   tenta excluir a conta e é bloqueado → baixa manual → estorno → baixa de novo →
+   owner liga o toggle e o coach dá baixa num aluno dele → inativar aluno (aviso de assinatura) → login do aluno
    falha → reativar.
 2. Repetir o roteiro final do 1.0 ([e2e-final.md](../mvp1/e2e-final.md)) como
    regressão.

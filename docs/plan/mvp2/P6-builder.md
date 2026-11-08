@@ -30,13 +30,19 @@ Refs normativas: ADR-003, ADR-004, ADR-016, ADR-018.
    transação por aluno; resposta lista sucesso/erro por aluno (aluno fora do
    vínculo = `student_not_found` naquele item, não falha o lote). Com
    `publish=true` o plano entra direto na rotação do aluno.
-4. `POST /v1/plans/{id}/save-as-template` (copia a versão publicada ou o
+4. Reaplicar: `GET /v1/templates/{id}/recipients` (planos com esse
+   `source_template_id`: aluno, versão do modelo aplicada, se o plano foi
+   editado depois) e `POST /v1/templates/{id}/reapply` `{plan_ids[]}`: troca a
+   árvore de cada plano pela última versão publicada do modelo e publica uma
+   versão nova (rotação reancora pelo rótulo, como no P1.8). Resultado por item.
+5. `POST /v1/plans/{id}/save-as-template` (copia a versão publicada ou o
    rascunho atual).
-5. Garantir que modelo nunca aparece em `/me/*`, no histórico nem no
+6. Garantir que modelo nunca aparece em `/me/*`, no histórico nem no
    `student_plan_state`.
 **Aceite:** aplicar um modelo a 3 alunos cria 3 planos independentes (editar o
 modelo depois não muda nenhum — teste); modelo sem versão publicada = 422
-`template_not_published`; teste de handler do assign com um aluno fora do vínculo.
+`template_not_published`; reaplicar gera versão nova só nos planos escolhidos;
+teste de handler do assign com um aluno fora do vínculo.
 
 ## - [ ] P6.2 Planos do aluno: duplicar, arquivar, ativar, versões, próximo dia (workout)
 
@@ -65,6 +71,9 @@ arquivado continua no gráfico de carga (ADR-004 §2); testes de handler.
    builder da P1.6 (modo modelo: sem aluno, título + descrição), arquivar.
 2. "Aplicar a alunos": seleção múltipla com busca (P5.2), opção publicar já ou
    como rascunho, resultado por aluno.
+   "Reaplicar a quem recebeu": lista da P6.1 com quem já está na versão atual e
+   quem teve o plano editado depois (destacado), seleção, aviso de que os
+   ajustes individuais serão substituídos e resultado por aluno.
 3. No builder de um plano: "Salvar como modelo"; na aba Treino da ficha
    (P5.4): "Aplicar modelo", "Duplicar", "Arquivar", "Ativar", com o plano
    ativo destacado.

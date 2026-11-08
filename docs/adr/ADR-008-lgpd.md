@@ -22,6 +22,9 @@ Isto é requisito de MVP, não de futuro.
    - Dados de saúde e fotos: exclusão física.
    - Registros financeiros: anonimização do titular, mantendo o registro contábil
      (obrigação legal de guarda).
+     **Substituído pelo [ADR-017](ADR-017-financeiro-servico-billing-baixa-manual.md) §5:**
+     o registro financeiro mantém nome e e-mail do titular, e quem tem fatura
+     em aberto não pode excluir a conta.
    - Execuções de treino: anonimizar (viram estatística sem titular) ou excluir.
 3. **Minimização de acesso:** coach só vê dados de saúde dos alunos vinculados a ele;
    Reception não vê dados de saúde (refinar no doc de permissões).

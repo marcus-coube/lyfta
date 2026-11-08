@@ -9,9 +9,9 @@
 |---|---|---|
 | P5 — Alunos | 0/5 | não iniciada |
 | P6 — Builder | 0/5 | não iniciada |
-| P7 — Financeiro | 0/4 | não iniciada |
+| P7 — Financeiro | 0/5 | não iniciada |
 | P8 — Dashboard e release | 0/4 | não iniciada |
-| **Total** | **0/18** | |
+| **Total** | **0/19** | |
 
 ## Bancos locais
 
@@ -35,3 +35,4 @@ Os quatro bancos do 1.0 seguem na tabela do [STATUS do 1.0](../mvp1/STATUS.md).
 | Data | Evento |
 |---|---|
 | 2026-11-08 | Plano do 2.0 criado (18 tarefas, P5–P8); ADR-017 (serviço `billing`, só baixa manual) e ADR-018 (modelos por cópia) |
+| 2026-11-08 | Revisão do usuário: acesso do coach ao financeiro vira configuração da organização; exclusão de conta bloqueada com fatura pendente e titular retido no financeiro (ADR-017 §3/§5, substitui ADR-008 §2 nesse ponto). P7.5 nova; total 19 |
