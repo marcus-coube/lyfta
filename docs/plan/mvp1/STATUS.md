@@ -3,7 +3,7 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** fechar a `P4.4` com as verificações em emulador (E1–E3 abaixo). Decisão de 2026-11-07: o que depende de loja, conta ou aparelho físico virou **pendência pré-loja** (L1–L10) e não bloqueia o MVP nem o pós-MVP. A `P4.7` (vínculo professor↔aluno, ADR-016) fechou em 2026-11-07. A `P4.6` (crash/erros, Sentry) fechou em 2026-11-07; falta só o projeto Sentry/GlitchTip com DSN (humano). A `P4.5` (LGPD) fechou em 2026-11-07; falta a revisão jurídica dos textos de `assets/legal/` (humano).
+**MVP 1.0 fechado (32/32) em 2026-11-08.** A `P4.4` fechou por decisão do usuário com o E2E executado no Android e aceito sem execução completa no iOS e no aluno web (ver Notas da P4.4). O pós-MVP segue só em emulador; o que depende de loja, conta, aparelho ou conteúdo está na lista **pré-loja** (L1–L10) abaixo, junto com repetir o roteiro final nas três plataformas antes da primeira subida.
 
 | Fase | Progresso | Situação |
 |---|---|---|
@@ -11,8 +11,8 @@
 | P1 — Treino | 8/8 | concluída |
 | P2 — Evolução | 5/5 | concluída |
 | P3 — Comunicação | 5/5 | concluída |
-| P4 — Praticidade | 6/7 | em andamento |
-| **Total** | **31/32** | |
+| P4 — Praticidade | 7/7 | concluída |
+| **Total** | **32/32** | MVP 1.0 fechado |
 
 ## Bancos locais
 
@@ -65,13 +65,13 @@ subida para Play Store/App Store (ADR-015: loja é step opcional e manual).
 | L9 | **Convite abrindo o app direto:** hoje o link do e-mail é web e no celular abre o navegador (o aluno aceita ali e depois entra no app). Para abrir o app: domínio próprio + Android App Links (`assetlinks.json`) e iOS Universal Links (`apple-app-site-association`), com `intent-filter`/Associated Domains no app | E2E P4.4 | domínio de produção + assinatura de release (L2/L3) |
 | L10 | **Mídia da biblioteca global:** os 41 exercícios do seed não têm GIF/vídeo. Precisa de conteúdo licenciado (produção própria ou banco com licença comercial) subido ao storage e referenciado no seed | E2E P4.4 | conteúdo (humano) |
 
-## Verificações em emulador (fecham a P4.4)
+## Verificações em emulador (P4.4 — fechada em 2026-11-08)
 
 | # | Verificação | De onde vem |
 |---|---|---|
-| E1 | Roteiro de [e2e-final.md](e2e-final.md) no emulador Android, no simulador iOS e no Chrome, incluindo a troca de professor da P4.7 | P4.4 |
-| E2 | Aba Agenda com dados reais: semana corrente, navegação, mês expansível, streak | P4.1 |
-| E3 | TalkBack no emulador no fluxo Hoje→executar→finalizar (Aceite literal da P4.3) | P4.3 |
+| E1 | Roteiro de [e2e-final.md](e2e-final.md) no emulador Android, no simulador iOS e no Chrome, incluindo a troca de professor da P4.7 | P4.4 | Android ✅; iOS/web aceitos sem execução completa
+| E2 | Aba Agenda com dados reais: semana corrente, navegação, mês expansível, streak | P4.1 | ✅ Android
+| E3 | TalkBack no emulador no fluxo Hoje→executar→finalizar (Aceite literal da P4.3) | P4.3 | não executado — repetir antes da loja
 
 A AVD `lyfta_pixel` é `google_apis` (sem Play Store), escolhida na P1.8 para
 permitir `adb root` no teste offline — push não funciona nela (L1).
@@ -123,4 +123,6 @@ de execução" da fase onde nasceram.
 | 2026-11-07 | Pós-MVP só em emulador: pendências de loja/conta/aparelho viram a lista pré-loja (L1–L8); P4.4 fecha com E2E em emulador/simulador/Chrome. Build Android destravado sem `google-services.json` (plugin do Firebase condicional; sem push) e `minSdk` 26 — o `sentry_flutter` da P4.6 exigia e o build Android quebrava sem ninguém ver |
 | 2026-11-07 | Tarefa nova no plano: P4.7 (vínculo professor↔aluno, ADR-008 §3) com o [ADR-016](../../adr/ADR-016-vinculo-professor-aluno.md): 1 coach principal por aluno, owner vê todos e reatribui, checagem por M2M ao identity com cache de 30 s. Sai do "vai pro 2.0" da P4.4. Total passa a 32 |
 | 2026-11-07 | **P4.7 concluída (Mac):** vínculo professor↔aluno (ADR-016, ADR-008 §3). identity: `coach_students` (migration 0012 com backfill), convite de aluno vincula a quem convidou, lista de alunos escopada ao coach (owner vê todos com `coach_id`/`coach_name`), `PUT /v1/students/{id}/coach` (só owner) e M2M `/internal/v1/coaches/{id}/students` e `/students/{id}/coach`; excluir coach devolve os alunos ao owner. `internal/coachlink` duplicado em workout, assessment e comms (cache de 30 s, identity fora do ar = 500); aluno não vinculado = 404 `student_not_found` em todo serviço, incluindo conversa, presign, fila e revisão de check-in; push de dor forte só ao coach atual. App: `AuthState.isOwner`, tile mostra o professor e "Trocar professor" só ao owner, `student_not_found` traduzido sem retry. Testes cross-coach por serviço com identity fake. Reiniciar os serviços de dev com o código novo (ver Notas em P4-praticidade.md) |
+| 2026-11-07 | E2E em emulador: Android completo, 11 defeitos corrigidos (check-in offline perdido, nome do professor no chat, convite sem nome da academia, Agenda do mês, entre outros); aluno abre conversa com o próprio professor (decisão do usuário) |
+| 2026-11-08 | **P4.4 fechada — MVP 1.0 32/32.** iOS e aluno web aceitos pelo usuário sem execução completa; repetir o roteiro final nas três plataformas antes da primeira subida para loja |
 

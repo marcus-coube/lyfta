@@ -46,7 +46,7 @@ TalkBack no fluxo de execução de treino.
 **Aceite:** script de paridade ARB no CI verde; fluxo Hoje→executar→finalizar
 navegável por TalkBack.
 
-## - [ ] P4.4 E2E final + roteiro de release
+## - [x] P4.4 E2E final + roteiro de release
 
 **Objetivo:** MVP 1.0 validado ponta a ponta e empacotado.
 **Passos:**
@@ -550,6 +550,15 @@ físico virou a lista **pré-loja** (L1–L10 do STATUS) e não bloqueia a taref
 Para isso o plugin do Firebase passou a ser condicional ao
 `google-services.json` (build sem push) e o `minSdk` subiu para 26
 (`sentry_flutter`).
+
+### P4.4 — fechamento (2026-11-08)
+
+Fechada por decisão do usuário ("considere testado"). Execução real: Android
+completo (1–12, 15–19) + professor na web; iOS só até o gate de
+consentimento e aluno web só até o aceite do convite — o restante dessas
+duas plataformas foi **aceito sem execução** (ambiente lento: simulador e
+painel do navegador ocultos). TalkBack (E3) não executado. Repetir o
+roteiro nas três plataformas antes da primeira subida para loja.
 
 ### P4.4 — execução do E2E em emulador (2026-11-07, Mac)
 

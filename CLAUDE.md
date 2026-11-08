@@ -40,7 +40,7 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 P0→P4, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P4.X").
 **Progresso vivo em [STATUS.md](docs/plan/mvp1/STATUS.md)** — ler ele primeiro para
 saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
-**P0, P1, P2 e P3 concluídas e a P4 quase fechada, 31/32 (só a P4.4 falta):** `identity` completo (auth, convites,
+**MVP 1.0 fechado: P0–P4 concluídas, 32/32 (2026-11-08):** `identity` completo (auth, convites,
 reset, lista de usuários do tenant), CI no GitHub Actions
 (`.github/workflows/ci.yml`) e o serviço `workout` completo do lado servidor —
 schema do ADR-004, mídia por URL presignada, biblioteca com seed global de 41
@@ -77,9 +77,9 @@ Firebase (bloqueio conhecido, ver `app/README.md` § Firebase). Na P4, o
 **Agenda**: strip semanal (dom–sáb) com o que já foi treinado e o que a
 rotação projeta localmente para os próximos dias, mês expansível e streak
 simples de semanas seguidas batendo a meta (P4.1).
-P4.2 (performance) e P4.3 (i18n + acessibilidade) fechadas; a P4.4 (E2E final +
-release) está **parcial**: varredura verde, app `1.0.0+1`, build web e
-[e2e-final.md](docs/plan/mvp1/e2e-final.md) prontos. A **P4.5 (LGPD mínima,
+P4.2 (performance) e P4.3 (i18n + acessibilidade) fechadas; a P4.4 (E2E final)
+fechou com o [e2e-final.md](docs/plan/mvp1/e2e-final.md) executado no Android e
+aceito pelo usuário sem execução completa no iOS e no aluno web. A **P4.5 (LGPD mínima,
 ADR-008) fechou**: consentimento versionado (`consents` no identity, finalidades
 `terms`/`health_data`/`progress_photos` nas claims do JWT, gate `/consent` no
 app, textos em `app/assets/legal/` com `TERMS_VERSION`), tela Conta
@@ -94,8 +94,7 @@ o projeto com DSN (humano). A **P4.7** fechou o vínculo professor↔aluno
 nasce no convite, owner reatribui), checagem por M2M com cache de 30 s no
 `internal/coachlink` de workout, assessment e comms, e 404 `student_not_found`
 para aluno que não é do coach — owner vê tudo, e só ele troca o professor no app.
-Próxima: **fechar a P4.4** com o E2E em emulador Android, simulador iOS e
-Chrome (E1–E3 do STATUS). O pós-MVP segue **só em emulador**: o que depende de
+Próximo: **pós-MVP** (pacote 2.0 do doc 000), só em emulador: o que depende de
 loja, conta ou aparelho virou a lista **pré-loja** (L1–L10 do STATUS) — Android
 compila sem `google-services.json` (sem push). iOS roda no
 simulador com Xcode 27 (receita em [app/README.md](app/README.md) § iOS). Escopo do MVP em

@@ -88,4 +88,5 @@ Rodar antes de cada release, em cada alvo. Marcar com data.
 |---|---|---|
 | 2026-11-07 | Android (emulador `lyfta_pixel`, pt-BR, `adb reverse` + modo avião) | **Passos 1–12 e 15–19 verdes** (13–14 push = pré-loja L1). Professor na web (en). 5 defeitos corrigidos no caminho — ver Notas da P4.4 |
 | 2026-11-07 | iOS (simulador iPhone 17) | **Parcial**: app abre em pt-BR e o gate de consentimento funciona; roteiro interrompido — o simulador passou a levar até 15 min por ação |
+| 2026-11-08 | iOS e Web (aluno) | **Aceitos pelo usuário sem execução completa** (P4.4 fechada). Repetir nas três plataformas antes da primeira subida para loja |
 | 2026-11-07 | Web (aluno) | **Parcial**: aceite de convite com consentimento ok; roteiro interrompido — painel do navegador oculto não renderiza |
