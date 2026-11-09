@@ -178,14 +178,17 @@ func newTestRouterLinked(t *testing.T, publicPEM string, pool *pgxpool.Pool, con
 	measurements := repo.NewMeasurementRepo(pool)
 	bioimpedance := repo.NewBioimpedanceRepo(pool)
 	photos := repo.NewPhotoRepo(pool)
+	profiles, injuries := repo.NewProfileRepo(pool), repo.NewInjuryRepo(pool)
 	return ahttp.NewRouter(logger, []string{"*"}, verifier, testInternalToken,
 		ahttp.NewMeasurementHandler(logger, measurements),
 		ahttp.NewBioimpedanceHandler(logger, bioimpedance),
 		ahttp.NewPhotoHandler(logger, photos, presigner, consents),
 		ahttp.NewMediaHandler(logger, presigner, consents),
-		ahttp.NewSummaryHandler(logger, measurements, bioimpedance, photos, consents),
+		ahttp.NewSummaryHandler(logger, measurements, bioimpedance, photos, profiles, injuries, consents),
 		ahttp.NewErasureHandler(logger, repo.NewErasureRepo(pool), objects),
+		ahttp.NewProfileHandler(logger, profiles, injuries),
 		linker,
+		consents,
 	)
 }
 

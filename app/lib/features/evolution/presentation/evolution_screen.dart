@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/design_system/design_system.dart';
+import '../../../core/http/api_exception.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_skeleton.dart';
@@ -119,7 +120,7 @@ class _LoadTab extends ConsumerWidget {
     return logged.when(
       loading: () => const _LoadTabSkeleton(),
       error: (error, _) => _TabError(
-        message: describeApiError(context, error),
+        message: _describeError(context, error, scope),
         retryable: isRetryableError(error),
         onRetry: () => ref.invalidate(loggedExercisesProvider(scope)),
       ),
@@ -157,7 +158,7 @@ class _LoadTab extends ConsumerWidget {
                       child: LySkeletonBox(width: double.infinity, height: 220),
                     ),
                     error: (error, _) => _TabError(
-                      message: describeApiError(context, error),
+                      message: _describeError(context, error, scope),
                       retryable: isRetryableError(error),
                       onRetry: () => ref.invalidate(
                         exerciseHistoryProvider(
@@ -218,7 +219,7 @@ class _MeasurementsTab extends ConsumerWidget {
         measurements.when(
           loading: () => const _ListRowsSkeleton(),
           error: (error, _) => _TabError(
-            message: describeApiError(context, error),
+            message: _describeError(context, error, scope),
             retryable: isRetryableError(error),
             onRetry: () => ref.invalidate(measurementsProvider(scope)),
           ),
@@ -248,7 +249,7 @@ class _MeasurementsTab extends ConsumerWidget {
         bioimpedance.when(
           loading: () => const _ListRowsSkeleton(),
           error: (error, _) => _TabError(
-            message: describeApiError(context, error),
+            message: _describeError(context, error, scope),
             retryable: isRetryableError(error),
             onRetry: () => ref.invalidate(bioimpedanceProvider(scope)),
           ),
@@ -374,7 +375,7 @@ class _PhotosTab extends ConsumerWidget {
         photos.when(
           loading: () => const _PhotoGridSkeleton(),
           error: (error, _) => _TabError(
-            message: describeApiError(context, error),
+            message: _describeError(context, error, scope),
             retryable: isRetryableError(error),
             onRetry: () => ref.invalidate(photosProvider(scope)),
           ),
@@ -581,6 +582,22 @@ class _PhotoGridSkeleton extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Mensagem de erro das abas. Na porta do coach, `consent_required` é o
+/// aluno que não autorizou dados de saúde (ADR-008 §1) — a mensagem padrão
+/// fala com o titular e não serve aqui.
+String _describeError(
+  BuildContext context,
+  Object error,
+  EvolutionScope scope,
+) {
+  if (scope.isCoach &&
+      error is ApiException &&
+      error.code == 'consent_required') {
+    return AppLocalizations.of(context).errorStudentConsentRequired;
+  }
+  return describeApiError(context, error);
 }
 
 class _TabError extends StatelessWidget {

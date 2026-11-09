@@ -2439,6 +2439,12 @@ abstract class AppLocalizations {
   /// **'Você não autorizou esse uso dos seus dados. Ajuste em Conta > Privacidade.'**
   String get errorConsentRequired;
 
+  /// No description provided for @errorStudentConsentRequired.
+  ///
+  /// In pt, this message translates to:
+  /// **'O aluno não autorizou o uso dos dados de saúde. Só ele pode mudar isso, em Conta > Privacidade.'**
+  String get errorStudentConsentRequired;
+
   /// No description provided for @errorTermsVersionMismatch.
   ///
   /// In pt, this message translates to:

@@ -20,6 +20,8 @@ type apiSummary struct {
 		BodyFatPct *float64 `json:"body_fat_pct"`
 		WaistCm    *float64 `json:"waist_cm"`
 	} `json:"deltas"`
+	Goal           *string     `json:"goal"`
+	ActiveInjuries []apiInjury `json:"active_injuries"`
 }
 
 // TestSummaryDeltas cobre o Aceite do P2.3: última medida, última

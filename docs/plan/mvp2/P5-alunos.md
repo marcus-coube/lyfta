@@ -61,7 +61,7 @@ pendente; reativar devolve; coach de outro aluno = 404; histórico registra as
 duas transições; teste de handler (feliz + 404 + aluno já inativo = 409
 `already_inactive`).
 
-## - [ ] P5.3 Anamnese: objetivo, lesões e restrições (assessment)
+## - [x] P5.3 Anamnese: objetivo, lesões e restrições (assessment)
 
 **Objetivo:** o coach prescreve sabendo do que o aluno tem — dado de saúde,
 por isso no `assessment` (ADR-008 §1, apagado na exclusão).
@@ -201,3 +201,31 @@ objetivo e o coach vê; teste de widget do formulário de lesão.
   o fim do corte em 200 alunos na tela ficam na P5.4 (a API já pagina tudo).
   Dívida: o app ainda não trata o status `inactive` (só aparece no filtro
   explícito; nada que o app mostra hoje depende dele).
+
+### P5.3 (2026-11-09)
+
+- assessment: migration `0005_student_profiles` (`student_profiles` com PK
+  `(tenant_id, student_id)`, `student_injuries` com índice `(tenant_id,
+  student_id, created_at)`, RLS nas duas, CHECKs com os códigos estáveis).
+  Rodar `migrate up` no assessment.
+- API: `GET/PUT /v1/me/profile` e `/v1/students/{id}/profile` (PUT substitui
+  só os campos que a porta escreve: a do aluno nunca toca `coach_notes`, e a
+  chave nem aparece na resposta dele; sem anamnese o GET devolve perfil
+  vazio, não 404). Lesões: `GET/POST /injuries`, `PATCH/DELETE
+  /injuries/{injury_id}` nas duas portas; `GET ?active=true` filtra as
+  resolvidas; PATCH parcial, `since`/`resolved_at` aceitam `null` (reabrir).
+  Códigos de região: `neck, shoulder, elbow, wrist_hand, upper_back,
+  lower_back, chest, hip, knee, ankle_foot, other`.
+- Resumo do coach ganhou `goal` e `active_injuries`.
+- Gate `health_data` (decisão do usuário: medidas também): o plano dizia
+  "igual às medidas", mas as medidas não tinham gate. Agora medidas,
+  bioimpedância e anamnese/lesões exigem `health_data` por middleware no
+  roteador — `RequireMyHealthData` (claim, porta `/me`) e
+  `RequireStudentHealthData` (identity via `ConsentChecker`, porta
+  `/students/{id}`, depois do vínculo); 403 `consent_required` com
+  `purpose: health_data`. Fotos seguem com a finalidade própria. O resumo do
+  coach sem `health_data` vem só com a contagem de fotos (medidas,
+  bioimpedância, deltas, objetivo e lesões nulos/vazios). App: na porta do
+  coach, `consent_required` vira `errorStudentConsentRequired` ("o aluno não
+  autorizou…") e não oferece "Tentar de novo" (`isRetryableError`).
+- Exclusão física inclui as duas tabelas novas.

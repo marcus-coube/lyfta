@@ -413,6 +413,7 @@
   "organizationLoadError": "We could not load the organization.",
   "errorInvalidTimezone": "That time zone does not exist. Pick one from the list or use a name like America/New_York.",
   "errorConsentRequired": "You have not authorized this use of your data. Change it under Account > Privacy.",
+  "errorStudentConsentRequired": "This student has not authorized the use of their health data. Only they can change this, under Account > Privacy.",
   "errorTermsVersionMismatch": "The terms were updated. Reopen the app to read the new version.",
   "errorInvalidPassword": "Wrong password.",
   "errorOwnerCannotDelete": "The account owner cannot delete the account here. Closing the gym is a separate process — contact support.",

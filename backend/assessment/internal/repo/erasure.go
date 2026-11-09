@@ -19,7 +19,7 @@ func NewErasureRepo(pool *pgxpool.Pool) *ErasureRepo {
 }
 
 // EraseUser é a exclusão física (ADR-008 §2: dados de saúde e fotos não se
-// anonimizam, se apagam): medidas, bioimpedância e fotos do aluno, numa
+// anonimizam, se apagam): medidas, bioimpedância, fotos, anamnese e lesões do aluno, numa
 // transação. Idempotente. Os objetos das fotos no storage são apagados por
 // quem chama (media.Presigner.DeleteStudentObjects).
 func (r *ErasureRepo) EraseUser(ctx context.Context, tenantID, studentID string) error {
@@ -28,6 +28,8 @@ func (r *ErasureRepo) EraseUser(ctx context.Context, tenantID, studentID string)
 			`DELETE FROM body_measurements WHERE student_id = $1`,
 			`DELETE FROM bioimpedance_records WHERE student_id = $1`,
 			`DELETE FROM progress_photos WHERE student_id = $1`,
+			`DELETE FROM student_profiles WHERE student_id = $1`,
+			`DELETE FROM student_injuries WHERE student_id = $1`,
 		} {
 			if _, err := tx.Exec(ctx, q, studentID); err != nil {
 				return err

@@ -390,6 +390,7 @@
   "organizationLoadError": "Não conseguimos carregar a organização.",
   "errorInvalidTimezone": "Esse fuso horário não existe. Escolha um da lista ou use um nome como Europe/Lisbon.",
   "errorConsentRequired": "Não autorizou esta utilização dos seus dados. Ajuste em Conta > Privacidade.",
+  "errorStudentConsentRequired": "O aluno não autorizou a utilização dos dados de saúde. Só ele pode alterar isto, em Conta > Privacidade.",
   "errorTermsVersionMismatch": "Os termos foram atualizados. Reabra a app para ler a nova versão.",
   "errorInvalidPassword": "Palavra-passe incorreta.",
   "errorOwnerCannotDelete": "O dono da conta não a pode eliminar aqui. Encerrar o ginásio é outro processo — contacte o suporte.",

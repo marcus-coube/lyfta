@@ -3,15 +3,15 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** P5.3 — anamnese: objetivo, lesões e restrições (assessment).
+**Próxima tarefa:** P5.4 — app: lista de alunos e cadastro (Flutter).
 
 | Fase | Progresso | Situação |
 |---|---|---|
-| P5 — Alunos | 2/5 | em andamento |
+| P5 — Alunos | 3/5 | em andamento |
 | P6 — Builder | 0/5 | não iniciada |
 | P7 — Financeiro | 0/5 | não iniciada |
 | P8 — Dashboard e release | 0/4 | não iniciada |
-| **Total** | **2/19** | |
+| **Total** | **3/19** | |
 
 ## Bancos locais
 
@@ -38,3 +38,4 @@ Os quatro bancos do 1.0 seguem na tabela do [STATUS do 1.0](../mvp1/STATUS.md).
 | 2026-11-08 | Revisão do usuário: acesso do coach ao financeiro vira configuração da organização; exclusão de conta bloqueada com fatura pendente e titular retido no financeiro (ADR-017 §3/§5, substitui ADR-008 §2 nesse ponto). P7.5 nova; total 19 |
 | 2026-11-08 | **P5.1 concluída:** `tenants.timezone` + `coach_billing_access` (migration 0013), `GET/PUT /v1/tenant`, M2M de tenants, claim `tz` no JWT, job de pendente do comms por fuso do tenant (`NOTIFICATION_TIMEZONE` removida), seção Organização na Conta do owner |
 | 2026-11-09 | **P5.2 concluída:** migration `0014_student_registry` (telefone, nascimento, status `inactive`, `user_status_events`), `/v1/students` (lista com cursor, ficha, edição, inativar/reativar, histórico), `GET/PATCH /v1/me`, M2M em lote `POST /internal/v1/students/statuses` e job de pendente do comms ignorando inativos (1 consulta por varredura); histórico inclui o aceite do convite |
+| 2026-11-09 | **P5.3 concluída:** assessment `0005_student_profiles` (anamnese + lesões, RLS), `/me/profile` e `/students/{id}/profile` (aluno nunca vê `coach_notes`), `/injuries` CRUD nas duas portas, resumo do coach com objetivo e lesões ativas, exclusão física estendida; gate `health_data` em medidas, bioimpedância e anamnese (middleware), com mensagem própria do coach no app |

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lyfta/core/design_system/design_system.dart';
+import 'package:lyfta/core/http/api_exception.dart';
 import 'package:lyfta/core/l10n/gen/app_localizations.dart';
 import 'package:lyfta/core/realtime/comms_socket.dart';
 import 'package:lyfta/core/realtime/comms_socket_provider.dart';
@@ -22,7 +23,11 @@ import 'package:lyfta/features/evolution/widgets/summary_card.dart';
 /// teste precisa afirmar: a mesma tela, montada com escopos diferentes,
 /// bate na porta `/me` ou na `/students/{id}` sem duplicar código (P2.5).
 class _FakeRepository extends EvolutionRepository {
-  _FakeRepository() : super(workoutDio: Dio(), assessmentDio: Dio());
+  _FakeRepository({this.measurementsError})
+      : super(workoutDio: Dio(), assessmentDio: Dio());
+
+  /// Quando presente, medidas e bioimpedância falham com este erro.
+  final Object? measurementsError;
 
   final scopes = <EvolutionScope>{};
   var summaryCalls = 0;
@@ -40,6 +45,7 @@ class _FakeRepository extends EvolutionRepository {
     int? limit,
   }) async {
     scopes.add(scope);
+    if (measurementsError != null) throw measurementsError!;
     return const EvolutionPage(items: []);
   }
 
@@ -50,6 +56,7 @@ class _FakeRepository extends EvolutionRepository {
     int? limit,
   }) async {
     scopes.add(scope);
+    if (measurementsError != null) throw measurementsError!;
     return const EvolutionPage(items: []);
   }
 
@@ -150,5 +157,28 @@ void main() {
     // Nenhuma chamada vazou para `/me` — é o ponto do escopo.
     expect(repository.scopes, {scope});
     expect(find.text('3'), findsOneWidget);
+  });
+
+  testWidgets(
+      'coach sem consentimento de saúde do aluno: mensagem própria, sem repetir',
+      (tester) async {
+    const scope = EvolutionScope.student('aluno-1');
+    final repository = _FakeRepository(
+      measurementsError: const ApiException(
+        code: 'consent_required',
+        params: {'purpose': 'health_data'},
+        statusCode: 403,
+      ),
+    );
+    await _pump(tester, scope, repository);
+
+    final l10n =
+        AppLocalizations.of(tester.element(find.byType(EvolutionScreen)));
+    await tester.tap(find.text(l10n.evolutionTabMeasurements));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.errorStudentConsentRequired), findsWidgets);
+    expect(find.text(l10n.errorConsentRequired), findsNothing);
+    expect(find.text(l10n.commonRetry), findsNothing);
   });
 }

@@ -30,7 +30,9 @@ func NewRouter(
 	mediaHandler *MediaHandler,
 	summaryHandler *SummaryHandler,
 	erasureHandler *ErasureHandler,
+	profileHandler *ProfileHandler,
 	linker StudentLinker,
+	consents ConsentChecker,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -65,13 +67,25 @@ func NewRouter(
 		// parâmetro de aluno, então nenhum token lê/escreve o registro de
 		// outra pessoa.
 		r.Route("/me", func(r chi.Router) {
-			r.Post("/measurements", measurementHandler.CreateMine)
-			r.Get("/measurements", measurementHandler.ListMine)
-			r.Delete("/measurements/{measurement_id}", measurementHandler.DeleteMine)
+			// Dado de saúde (ADR-008 §1): medidas, bioimpedância e anamnese
+			// exigem `health_data`; fotos têm finalidade própria.
+			r.Group(func(r chi.Router) {
+				r.Use(RequireMyHealthData)
+				r.Post("/measurements", measurementHandler.CreateMine)
+				r.Get("/measurements", measurementHandler.ListMine)
+				r.Delete("/measurements/{measurement_id}", measurementHandler.DeleteMine)
 
-			r.Post("/bioimpedance", bioimpedanceHandler.CreateMine)
-			r.Get("/bioimpedance", bioimpedanceHandler.ListMine)
-			r.Delete("/bioimpedance/{record_id}", bioimpedanceHandler.DeleteMine)
+				r.Post("/bioimpedance", bioimpedanceHandler.CreateMine)
+				r.Get("/bioimpedance", bioimpedanceHandler.ListMine)
+				r.Delete("/bioimpedance/{record_id}", bioimpedanceHandler.DeleteMine)
+
+				r.Get("/profile", profileHandler.GetMine)
+				r.Put("/profile", profileHandler.PutMine)
+				r.Get("/injuries", profileHandler.ListMine)
+				r.Post("/injuries", profileHandler.CreateInjuryMine)
+				r.Patch("/injuries/{injury_id}", profileHandler.UpdateInjuryMine)
+				r.Delete("/injuries/{injury_id}", profileHandler.DeleteInjuryMine)
+			})
 
 			r.Post("/photos", photoHandler.CreateMine)
 			r.Get("/photos", photoHandler.ListMine)
@@ -89,13 +103,24 @@ func NewRouter(
 
 			r.Route("/students/{id}", func(r chi.Router) {
 				r.Use(RequireStudentLink(logger, linker))
-				r.Post("/measurements", measurementHandler.CreateForStudent)
-				r.Get("/measurements", measurementHandler.ListForStudent)
-				r.Delete("/measurements/{measurement_id}", measurementHandler.DeleteForStudent)
 
-				r.Post("/bioimpedance", bioimpedanceHandler.CreateForStudent)
-				r.Get("/bioimpedance", bioimpedanceHandler.ListForStudent)
-				r.Delete("/bioimpedance/{record_id}", bioimpedanceHandler.DeleteForStudent)
+				r.Group(func(r chi.Router) {
+					r.Use(RequireStudentHealthData(logger, consents))
+					r.Post("/measurements", measurementHandler.CreateForStudent)
+					r.Get("/measurements", measurementHandler.ListForStudent)
+					r.Delete("/measurements/{measurement_id}", measurementHandler.DeleteForStudent)
+
+					r.Post("/bioimpedance", bioimpedanceHandler.CreateForStudent)
+					r.Get("/bioimpedance", bioimpedanceHandler.ListForStudent)
+					r.Delete("/bioimpedance/{record_id}", bioimpedanceHandler.DeleteForStudent)
+
+					r.Get("/profile", profileHandler.GetForStudent)
+					r.Put("/profile", profileHandler.PutForStudent)
+					r.Get("/injuries", profileHandler.ListForStudent)
+					r.Post("/injuries", profileHandler.CreateInjuryForStudent)
+					r.Patch("/injuries/{injury_id}", profileHandler.UpdateInjuryForStudent)
+					r.Delete("/injuries/{injury_id}", profileHandler.DeleteInjuryForStudent)
+				})
 
 				r.Post("/photos", photoHandler.CreateForStudent)
 				r.Get("/photos", photoHandler.ListForStudent)
@@ -103,6 +128,7 @@ func NewRouter(
 
 				r.Post("/media/presign", mediaHandler.PresignForStudent)
 
+				// O resumo mistura finalidades: cada bloco respeita a sua.
 				r.Get("/summary", summaryHandler.Get)
 			})
 		})

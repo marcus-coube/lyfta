@@ -1306,6 +1306,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'Você não autorizou esse uso dos seus dados. Ajuste em Conta > Privacidade.';
 
   @override
+  String get errorStudentConsentRequired =>
+      'O aluno não autorizou o uso dos dados de saúde. Só ele pode mudar isso, em Conta > Privacidade.';
+
+  @override
   String get errorTermsVersionMismatch =>
       'Os termos foram atualizados. Reabra o app para ler a nova versão.';
 
@@ -2679,6 +2683,10 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   @override
   String get errorConsentRequired =>
       'Não autorizou esta utilização dos seus dados. Ajuste em Conta > Privacidade.';
+
+  @override
+  String get errorStudentConsentRequired =>
+      'O aluno não autorizou a utilização dos dados de saúde. Só ele pode alterar isto, em Conta > Privacidade.';
 
   @override
   String get errorTermsVersionMismatch =>

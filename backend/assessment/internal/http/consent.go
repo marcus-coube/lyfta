@@ -5,6 +5,9 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
+
 	"github.com/marcus-coube/lyfta/assessment/internal/security"
 )
 
@@ -39,4 +42,53 @@ func requireStudentPhotoConsent(w http.ResponseWriter, r *http.Request, logger *
 		return false
 	}
 	return true
+}
+
+// RequireMyHealthData barra com 403 consent_required o titular sem a
+// finalidade `health_data` na claim (ADR-008 §1): medidas, bioimpedância e
+// anamnese são dado de saúde (P5.3).
+func RequireMyHealthData(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		claims, ok := ClaimsFromContext(r.Context())
+		if !ok {
+			writeError(w, errUnauthenticated())
+			return
+		}
+		if !claims.HasConsent(PurposeHealthData) {
+			writeError(w, errConsentRequired(PurposeHealthData))
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+// RequireStudentHealthData barra com 403 consent_required o coach agindo
+// sobre dado de saúde de um aluno (`{id}` da rota) que não consentiu em
+// `health_data`. Falha ao consultar o identity é 500: na dúvida, não expõe.
+func RequireStudentHealthData(logger *slog.Logger, consents ConsentChecker) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			tenantID, ok := TenantFromContext(r.Context())
+			if !ok {
+				writeError(w, errUnauthenticated())
+				return
+			}
+			studentID := chi.URLParam(r, "id")
+			if _, err := uuid.Parse(studentID); err != nil {
+				writeError(w, errValidation("id"))
+				return
+			}
+			consented, err := consents.HasPurpose(r.Context(), tenantID, studentID, PurposeHealthData)
+			if err != nil {
+				logger.Error("health_consent_check_failed", slog.Any("error", err))
+				writeError(w, errInternal())
+				return
+			}
+			if !consented {
+				writeError(w, errConsentRequired(PurposeHealthData))
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
 }

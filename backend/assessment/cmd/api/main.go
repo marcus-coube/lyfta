@@ -80,6 +80,7 @@ func run(logger *slog.Logger) error {
 	measurements := repo.NewMeasurementRepo(pool)
 	bioimpedance := repo.NewBioimpedanceRepo(pool)
 	photos := repo.NewPhotoRepo(pool)
+	profiles, injuries := repo.NewProfileRepo(pool), repo.NewInjuryRepo(pool)
 	// Consentimento de outra pessoa (coach lendo foto de aluno, P4.5).
 	consents := consent.NewClient(cfg.IdentityURL, cfg.InternalToken)
 	coachLinks := coachlink.NewClient(cfg.IdentityURL, cfg.InternalToken, cfg.CoachLinkCacheTTL)
@@ -88,9 +89,11 @@ func run(logger *slog.Logger) error {
 		ahttp.NewBioimpedanceHandler(logger, bioimpedance),
 		ahttp.NewPhotoHandler(logger, photos, presigner, consents),
 		ahttp.NewMediaHandler(logger, presigner, consents),
-		ahttp.NewSummaryHandler(logger, measurements, bioimpedance, photos, consents),
+		ahttp.NewSummaryHandler(logger, measurements, bioimpedance, photos, profiles, injuries, consents),
 		ahttp.NewErasureHandler(logger, repo.NewErasureRepo(pool), presigner),
+		ahttp.NewProfileHandler(logger, profiles, injuries),
 		coachLinks,
+		consents,
 	)
 
 	server := &http.Server{

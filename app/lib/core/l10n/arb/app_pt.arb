@@ -790,6 +790,7 @@
   "organizationLoadError": "Não conseguimos carregar a organização.",
   "errorInvalidTimezone": "Esse fuso horário não existe. Escolha um da lista ou use um nome como America/Sao_Paulo.",
   "errorConsentRequired": "Você não autorizou esse uso dos seus dados. Ajuste em Conta > Privacidade.",
+  "errorStudentConsentRequired": "O aluno não autorizou o uso dos dados de saúde. Só ele pode mudar isso, em Conta > Privacidade.",
   "errorTermsVersionMismatch": "Os termos foram atualizados. Reabra o app para ler a nova versão.",
   "errorInvalidPassword": "Senha incorreta.",
   "errorOwnerCannotDelete": "O dono da conta não pode excluí-la por aqui. Encerrar a academia é outro processo — fale com o suporte.",

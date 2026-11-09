@@ -20,8 +20,15 @@ func TestEraseUserIsPhysicalAndScoped(t *testing.T) {
 	student, neighbour := newID(), newID()
 	measurements, bio, photos := repo.NewMeasurementRepo(pool), repo.NewBioimpedanceRepo(pool), repo.NewPhotoRepo(pool)
 
+	profiles, injuries := repo.NewProfileRepo(pool), repo.NewInjuryRepo(pool)
 	seed := func(tenant, who string) {
 		t.Helper()
+		if _, err := profiles.Upsert(ctx, domain.StudentProfile{TenantID: tenant, StudentID: who, Goal: ptr("health"), CoachNotes: "n", UpdatedBy: who}, true); err != nil {
+			t.Fatalf("anamnese: %v", err)
+		}
+		if _, err := injuries.Create(ctx, domain.StudentInjury{TenantID: tenant, StudentID: who, BodyRegion: "knee", Description: "x", CreatedBy: who}); err != nil {
+			t.Fatalf("lesão: %v", err)
+		}
 		if _, err := measurements.Create(ctx, domain.BodyMeasurement{TenantID: tenant, StudentID: who, MeasuredAt: time.Now(), WeightKg: f(80)}); err != nil {
 			t.Fatalf("medida: %v", err)
 		}
@@ -44,6 +51,18 @@ func TestEraseUserIsPhysicalAndScoped(t *testing.T) {
 		if err := erasure.EraseUser(ctx, tenantID, student); err != nil {
 			t.Fatalf("excluir (%d): %v", i+1, err)
 		}
+	}
+
+	hasHealth := func(tenant, who string) bool {
+		_, err := profiles.Get(ctx, tenant, who)
+		list, _ := injuries.List(ctx, tenant, who, false)
+		return err == nil || len(list) > 0
+	}
+	if hasHealth(tenantID, student) {
+		t.Fatal("anamnese e lesões do aluno excluído deveriam ter sumido")
+	}
+	if !hasHealth(tenantID, neighbour) || !hasHealth(otherTenant, student) {
+		t.Fatal("anamnese de outro aluno / outro tenant não pode ser afetada")
 	}
 
 	counts := func(tenant, who string) (m, b, p int) {

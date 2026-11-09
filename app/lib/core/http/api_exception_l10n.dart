@@ -93,5 +93,6 @@ String describeApiError(BuildContext context, Object error) {
 /// do professor (`student_not_found`) continua não sendo na próxima tentativa:
 /// a tela mostra a mensagem sem o botão de tentar de novo.
 bool isRetryableError(Object error) {
-  return !(error is ApiException && error.code == 'student_not_found');
+  return !(error is ApiException &&
+      (error.code == 'student_not_found' || error.code == 'consent_required'));
 }

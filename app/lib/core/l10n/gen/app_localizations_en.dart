@@ -1304,6 +1304,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'You have not authorized this use of your data. Change it under Account > Privacy.';
 
   @override
+  String get errorStudentConsentRequired =>
+      'This student has not authorized the use of their health data. Only they can change this, under Account > Privacy.';
+
+  @override
   String get errorTermsVersionMismatch =>
       'The terms were updated. Reopen the app to read the new version.';
 
