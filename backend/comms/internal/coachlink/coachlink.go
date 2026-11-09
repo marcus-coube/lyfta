@@ -9,6 +9,7 @@
 package coachlink
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -129,27 +130,61 @@ func (c *Client) CoachOf(ctx context.Context, tenantID, studentID string) (coach
 	}
 }
 
-// StudentStatus devolve o status do aluno no identity (`active`, `inactive`,
-// ...). found=false quando o identity não o conhece como aluno do tenant (404).
-// Sem cache: quem chama é o job diário, uma consulta por aluno pendente.
-func (c *Client) StudentStatus(ctx context.Context, tenantID, studentID string) (status string, found bool, err error) {
-	target := fmt.Sprintf("%s/internal/v1/students/%s?tenant_id=%s",
-		c.baseURL, url.PathEscape(studentID), url.QueryEscape(tenantID))
-	var body struct {
-		Status string `json:"status"`
+// StudentRef identifica um aluno num tenant.
+type StudentRef struct {
+	TenantID  string `json:"tenant_id"`
+	StudentID string `json:"student_id"`
+}
+
+// maxStatusesPerRequest é o teto do identity por chamada do M2M em lote.
+const maxStatusesPerRequest = 500
+
+// StudentStatuses consulta no identity, em lote (POST
+// /internal/v1/students/statuses), o status de cada aluno. Quem o identity
+// não conhece (excluído, outro tenant) fica fora do mapa. Listas maiores que
+// o teto viram várias chamadas; lista vazia não chama nada. Sem cache: o job
+// de pendente roda uma vez por dia por fuso.
+func (c *Client) StudentStatuses(ctx context.Context, refs []StudentRef) (map[StudentRef]string, error) {
+	out := make(map[StudentRef]string, len(refs))
+	for start := 0; start < len(refs); start += maxStatusesPerRequest {
+		end := min(start+maxStatusesPerRequest, len(refs))
+		raw, err := json.Marshal(map[string]any{"students": refs[start:end]})
+		if err != nil {
+			return nil, err
+		}
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/internal/v1/students/statuses", bytes.NewReader(raw))
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Internal-Token", c.token)
+		resp, err := c.http.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		var body struct {
+			Items []struct {
+				TenantID  string `json:"tenant_id"`
+				StudentID string `json:"student_id"`
+				Status    string `json:"status"`
+			} `json:"items"`
+		}
+		status := resp.StatusCode
+		if status == http.StatusOK {
+			err = json.NewDecoder(resp.Body).Decode(&body)
+		}
+		resp.Body.Close()
+		if status != http.StatusOK {
+			return nil, fmt.Errorf("coachlink: identity respondeu %d", status)
+		}
+		if err != nil {
+			return nil, err
+		}
+		for _, it := range body.Items {
+			out[StudentRef{TenantID: it.TenantID, StudentID: it.StudentID}] = it.Status
+		}
 	}
-	code, err := c.get(ctx, target, &body)
-	if err != nil {
-		return "", false, err
-	}
-	switch code {
-	case http.StatusOK:
-		return body.Status, true, nil
-	case http.StatusNotFound:
-		return "", false, nil
-	default:
-		return "", false, fmt.Errorf("coachlink: identity respondeu %d", code)
-	}
+	return out, nil
 }
 
 func (c *Client) get(ctx context.Context, target string, out any) (int, error) {

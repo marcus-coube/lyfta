@@ -34,8 +34,11 @@ func TestStudentRepoTenantIsolationAndErasure(t *testing.T) {
 	if _, err := students.Get(ctx, tenantB, student.ID); err != repo.ErrNotFound {
 		t.Fatalf("Get cross-tenant: %v", err)
 	}
-	if _, err := students.StatusOf(ctx, tenantB, student.ID); err != repo.ErrNotFound {
-		t.Fatalf("StatusOf cross-tenant: %v", err)
+	if got, err := students.StatusesOf(ctx, tenantB, []string{student.ID}); err != nil || len(got) != 0 {
+		t.Fatalf("StatusesOf cross-tenant deveria vir vazio: %v %v", got, err)
+	}
+	if got, err := students.StatusesOf(ctx, tenantA, []string{student.ID}); err != nil || got[student.ID] != domain.UserStatusActive {
+		t.Fatalf("StatusesOf no tenant do aluno: %v %v", got, err)
 	}
 
 	phone, birth := "11 99999-0000", "1990-01-02"

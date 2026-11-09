@@ -2,6 +2,8 @@ package coachlink
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
@@ -134,32 +136,70 @@ func TestCoachOf(t *testing.T) {
 	}
 }
 
-func TestStudentStatus(t *testing.T) {
+func TestStudentStatuses(t *testing.T) {
+	var calls, total int
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("X-Internal-Token") != "segredo" || r.URL.Query().Get("tenant_id") != "t-1" {
+		if r.Header.Get("X-Internal-Token") != "segredo" || r.Method != http.MethodPost || r.URL.Path != "/internal/v1/students/statuses" {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		switch r.URL.Path {
-		case "/internal/v1/students/s-1":
-			_, _ = w.Write([]byte(`{"id":"s-1","status":"inactive"}`))
-		case "/internal/v1/students/s-2":
-			w.WriteHeader(http.StatusNotFound)
-		default:
-			w.WriteHeader(http.StatusInternalServerError)
+		var req struct {
+			Students []StudentRef `json:"students"`
 		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil || len(req.Students) > 500 {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		calls++
+		total += len(req.Students)
+		if req.Students[0].StudentID == "erro" {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		// Devolve todos menos "sumido"; "s-1" está inativo.
+		type item struct {
+			TenantID  string `json:"tenant_id"`
+			StudentID string `json:"student_id"`
+			Status    string `json:"status"`
+		}
+		items := []item{}
+		for _, ref := range req.Students {
+			switch ref.StudentID {
+			case "sumido":
+			case "s-1":
+				items = append(items, item{ref.TenantID, ref.StudentID, "inactive"})
+			default:
+				items = append(items, item{ref.TenantID, ref.StudentID, "active"})
+			}
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"items": items})
 	}))
 	t.Cleanup(srv.Close)
 	c := NewClient(srv.URL, "segredo", time.Second)
 	ctx := context.Background()
 
-	if status, found, err := c.StudentStatus(ctx, "t-1", "s-1"); err != nil || !found || status != "inactive" {
-		t.Fatalf("s-1: %q %v %v", status, found, err)
+	got, err := c.StudentStatuses(ctx, []StudentRef{{"t-1", "s-1"}, {"t-2", "s-2"}, {"t-1", "sumido"}})
+	if err != nil {
+		t.Fatalf("StudentStatuses: %v", err)
 	}
-	if _, found, err := c.StudentStatus(ctx, "t-1", "s-2"); err != nil || found {
-		t.Fatalf("s-2 deveria ser not found sem erro: %v %v", found, err)
+	if len(got) != 2 || got[StudentRef{"t-1", "s-1"}] != "inactive" || got[StudentRef{"t-2", "s-2"}] != "active" {
+		t.Fatalf("mapa inesperado: %v", got)
 	}
-	if _, _, err := c.StudentStatus(ctx, "t-1", "s-3"); err == nil {
+
+	calls, total = 0, 0
+	many := make([]StudentRef, 1200)
+	for i := range many {
+		many[i] = StudentRef{"t-1", fmt.Sprintf("s-%d", i+2)}
+	}
+	if got, err := c.StudentStatuses(ctx, many); err != nil || len(got) != 1200 || calls != 3 || total != 1200 {
+		t.Fatalf("lotes: itens=%d calls=%d total=%d err=%v", len(got), calls, total, err)
+	}
+
+	calls = 0
+	if _, err := c.StudentStatuses(ctx, nil); err != nil || calls != 0 {
+		t.Fatalf("lista vazia não deveria chamar o identity: calls=%d err=%v", calls, err)
+	}
+	if _, err := c.StudentStatuses(ctx, []StudentRef{{"t-1", "erro"}}); err == nil {
 		t.Fatalf("500 do identity deveria virar erro")
 	}
 }

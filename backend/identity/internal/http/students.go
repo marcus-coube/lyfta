@@ -354,32 +354,60 @@ func (h *StudentHandler) StatusHistory(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
-// InternalStudent — GET /internal/v1/students/{id}?tenant_id= (M2M): o status
-// e o professor do aluno. Os serviços que varrem alunos (job de pendente do
-// comms) usam o status para ignorar inativos. 404 `student_not_found` se não é
-// aluno do tenant.
-func (h *StudentHandler) InternalStudent(w http.ResponseWriter, r *http.Request) {
-	studentID, tenantID, ok := internalIDs(w, r)
-	if !ok {
+// MaxInternalStudentStatuses é o teto de alunos por chamada do M2M em lote.
+const MaxInternalStudentStatuses = 500
+
+type internalStudentRef struct {
+	TenantID  string `json:"tenant_id"`
+	StudentID string `json:"student_id"`
+}
+
+type internalStudentStatus struct {
+	TenantID  string `json:"tenant_id"`
+	StudentID string `json:"student_id"`
+	Status    string `json:"status"`
+}
+
+// InternalStudentStatuses — POST /internal/v1/students/statuses (M2M): o
+// status de vários alunos, de um ou mais tenants, numa chamada. O job de
+// pendente do comms usa para ignorar inativos. Aluno que não existe no
+// tenant (ou foi excluído) simplesmente não volta em `items`.
+func (h *StudentHandler) InternalStudentStatuses(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Students []internalStudentRef `json:"students"`
+	}
+	if err := json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&req); err != nil {
+		writeError(w, errValidation("students"))
 		return
 	}
-	status, err := h.students.StatusOf(r.Context(), tenantID, studentID)
-	if errors.Is(err, repo.ErrNotFound) {
-		writeError(w, errStudentNotFound())
+	if len(req.Students) == 0 || len(req.Students) > MaxInternalStudentStatuses {
+		writeError(w, errValidation("students"))
 		return
 	}
-	if err != nil {
-		h.logger.Error("internal_student_failed", slog.Any("error", err))
-		writeError(w, errInternal())
-		return
+	byTenant := map[string][]string{}
+	for _, ref := range req.Students {
+		if _, err := uuid.Parse(ref.TenantID); err != nil {
+			writeError(w, errValidation("tenant_id"))
+			return
+		}
+		if _, err := uuid.Parse(ref.StudentID); err != nil {
+			writeError(w, errValidation("student_id"))
+			return
+		}
+		byTenant[ref.TenantID] = append(byTenant[ref.TenantID], ref.StudentID)
 	}
-	resp := map[string]string{"id": studentID, "status": string(status)}
-	if coachID, err := h.links.CoachOf(r.Context(), tenantID, studentID); err == nil {
-		resp["coach_id"] = coachID
-	} else if !errors.Is(err, repo.ErrNotFound) {
-		h.logger.Error("internal_student_coach_failed", slog.Any("error", err))
-		writeError(w, errInternal())
-		return
+
+	items := make([]internalStudentStatus, 0, len(req.Students))
+	for tenantID, ids := range byTenant {
+		statuses, err := h.students.StatusesOf(r.Context(), tenantID, ids)
+		if err != nil {
+			h.logger.Error("internal_student_statuses_failed", slog.Any("error", err))
+			writeError(w, errInternal())
+			return
+		}
+		for id, status := range statuses {
+			items = append(items, internalStudentStatus{TenantID: tenantID, StudentID: id, Status: string(status)})
+		}
 	}
-	writeJSON(w, http.StatusOK, resp)
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
 }

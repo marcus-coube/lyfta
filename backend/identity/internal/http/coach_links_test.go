@@ -1,6 +1,7 @@
 package http_test
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
@@ -58,6 +59,30 @@ func internalGet(t *testing.T, f usersFixture, path string, withToken bool) json
 	resp, err := f.client.Do(req)
 	if err != nil {
 		t.Fatalf("GET %s: %v", path, err)
+	}
+	defer resp.Body.Close()
+	var body map[string]any
+	_ = json.NewDecoder(resp.Body).Decode(&body)
+	if body == nil {
+		body = map[string]any{}
+	}
+	return jsonResponse{status: resp.StatusCode, body: body}
+}
+
+func internalPost(t *testing.T, f usersFixture, path string, payload any, withToken bool) jsonResponse {
+	t.Helper()
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		t.Fatalf("serializar payload: %v", err)
+	}
+	req, _ := http.NewRequest(http.MethodPost, f.url+path, bytes.NewReader(raw))
+	req.Header.Set("Content-Type", "application/json")
+	if withToken {
+		req.Header.Set("X-Internal-Token", testInternalToken)
+	}
+	resp, err := f.client.Do(req)
+	if err != nil {
+		t.Fatalf("POST %s: %v", path, err)
 	}
 	defer resp.Body.Close()
 	var body map[string]any

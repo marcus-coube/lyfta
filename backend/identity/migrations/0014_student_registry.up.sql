@@ -10,7 +10,8 @@ ALTER TABLE users DROP CONSTRAINT users_status_check;
 ALTER TABLE users ADD CONSTRAINT users_status_check
     CHECK (status IN ('invited', 'active', 'inactive', 'disabled', 'deleting', 'deleted'));
 
--- Histórico das transições de status feitas à mão (inativar/reativar).
+-- Histórico das transições de status: aceite do convite (invited → active,
+-- autor = o próprio usuário) e inativar/reativar.
 -- Append-only: a aplicação só insere. O DELETE existe só para a exclusão de
 -- conta (ADR-008 §2), porque `reason` é texto livre e pode citar a pessoa.
 CREATE TABLE user_status_events (

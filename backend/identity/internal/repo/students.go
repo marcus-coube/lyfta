@@ -191,25 +191,34 @@ func (r *StudentRepo) StatusHistory(ctx context.Context, tenantID, studentID str
 	return events, nil
 }
 
-// StatusOf devolve o status do aluno (M2M), ou ErrNotFound se não é um aluno
-// não excluído do tenant.
-func (r *StudentRepo) StatusOf(ctx context.Context, tenantID, studentID string) (domain.UserStatus, error) {
-	var status domain.UserStatus
+// StatusesOf devolve o status de cada aluno do tenant entre `ids` (M2M, em
+// lote). Quem não é aluno não excluído do tenant fica fora do mapa.
+func (r *StudentRepo) StatusesOf(ctx context.Context, tenantID string, ids []string) (map[string]domain.UserStatus, error) {
+	out := make(map[string]domain.UserStatus, len(ids))
+	if len(ids) == 0 {
+		return out, nil
+	}
 	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
-		err := tx.QueryRow(ctx, `
-			SELECT u.status FROM users u
+		rows, err := tx.Query(ctx, `
+			SELECT u.id, u.status FROM users u
 			JOIN user_roles ur ON ur.user_id = u.id AND ur.role = 'student'
-			WHERE u.id = $1 AND u.status NOT IN ('deleting', 'deleted')`, studentID).Scan(&status)
-		if err == pgx.ErrNoRows {
-			return ErrNotFound
+			WHERE u.id = ANY($1::uuid[]) AND u.status NOT IN ('deleting', 'deleted')`, ids)
+		if err != nil {
+			return err
 		}
-		return err
+		defer rows.Close()
+		for rows.Next() {
+			var id string
+			var status domain.UserStatus
+			if err := rows.Scan(&id, &status); err != nil {
+				return err
+			}
+			out[id] = status
+		}
+		return rows.Err()
 	})
-	if err == ErrNotFound {
-		return "", err
-	}
 	if err != nil {
-		return "", fmt.Errorf("repo: status do aluno: %w", err)
+		return nil, fmt.Errorf("repo: status dos alunos: %w", err)
 	}
-	return status, nil
+	return out, nil
 }

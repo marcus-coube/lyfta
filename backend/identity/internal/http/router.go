@@ -56,8 +56,8 @@ func NewRouter(
 		// Fuso e configurações do tenant (P5.1): jobs que varrem tenants.
 		r.Get("/tenants", tenant.InternalList)
 		r.Get("/tenants/{id}", tenant.InternalGet)
-		// Status do aluno (P5.2): jobs ignoram inativos.
-		r.Get("/students/{id}", students.InternalStudent)
+		// Status dos alunos em lote (P5.2): jobs ignoram inativos.
+		r.Post("/students/statuses", students.InternalStudentStatuses)
 	})
 
 	r.Route("/v1", func(r chi.Router) {

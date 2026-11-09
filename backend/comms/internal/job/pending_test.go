@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/marcus-coube/lyfta/comms/internal/coachlink"
 	"github.com/marcus-coube/lyfta/comms/internal/domain"
 	"github.com/marcus-coube/lyfta/comms/internal/fcm"
 	"github.com/marcus-coube/lyfta/comms/internal/job"
@@ -95,16 +96,25 @@ func (f *fakePusher) count() int {
 type fakeStudents struct {
 	status map[string]string
 	err    error
+	calls  int
 }
 
-func (f *fakeStudents) StudentStatus(ctx context.Context, tenantID, studentID string) (string, bool, error) {
+func (f *fakeStudents) StudentStatuses(ctx context.Context, refs []coachlink.StudentRef) (map[coachlink.StudentRef]string, error) {
+	f.calls++
 	if f.err != nil {
-		return "", false, f.err
+		return nil, f.err
 	}
-	if s, ok := f.status[studentID]; ok {
-		return s, s != "", nil
+	out := map[coachlink.StudentRef]string{}
+	for _, ref := range refs {
+		s, ok := f.status[ref.StudentID]
+		if !ok {
+			s = "active"
+		}
+		if s != "" {
+			out[ref] = s
+		}
 	}
-	return "active", true, nil
+	return out, nil
 }
 
 // TestSweepDoesNotDuplicateSameDay cobre o Aceite da P3.4: "job não duplica
@@ -183,6 +193,9 @@ func TestSweepSkipsInactiveStudents(t *testing.T) {
 	sent, _, err := j.Sweep(ctx, since, since.AddDate(0, 0, 1), []string{tenantID})
 	if err != nil || sent != 1 || pusher.count() != 1 {
 		t.Fatalf("só o aluno ativo deveria receber: sent=%d push=%d err=%v", sent, pusher.count(), err)
+	}
+	if students.calls != 1 {
+		t.Fatalf("esperava 1 consulta em lote ao identity, foram %d", students.calls)
 	}
 
 	students.err = errors.New("identity fora")

@@ -181,17 +181,22 @@ objetivo e o coach vê; teste de widget do formulário de lesão.
 - `GET /v1/users` também esconde inativos por padrão (mesma regra do repo) e
   aceita `status=inactive`. A ficha traz `pending_invitation` (id, datas,
   `expired`) quando o aluno está `invited`, para o app reenviar.
-- M2M novo `GET /internal/v1/students/{id}?tenant_id=` -> `{id, status,
-  coach_id}`. `coachlink` do comms ganhou `StudentStatus`; o job de pendente
-  consulta o status de cada aluno que o workout devolve e pula quem não é
-  `active` (ou o identity não conhece). Falha do identity aborta a varredura
-  daquele fuso (`lastSwept` não avança; o próximo tick refaz e o dedupe protege
-  quem já recebeu). Assinatura de `NewPendingWorkoutJob` ganhou o parâmetro
-  `students`.
+- M2M novo em lote `POST /internal/v1/students/statuses` (body
+  `{students:[{tenant_id, student_id}]}`, 1–500) -> `{items:[{tenant_id,
+  student_id, status}]}`; quem o identity não conhece (excluído, outro tenant)
+  não volta. `coachlink` do comms ganhou `StudentStatuses` (lotes de 500); o
+  job de pendente faz **uma** consulta por varredura com os alunos que o
+  workout devolveu e pula quem não é `active`. Falha do identity aborta a
+  varredura daquele fuso (`lastSwept` não avança; o próximo tick refaz e o
+  dedupe protege quem já recebeu). Assinatura de `NewPendingWorkoutJob` ganhou
+  o parâmetro `students`.
 - Exclusão de conta (ADR-008 §2): `Anonymize` apaga `user_status_events` do
   usuário (o `reason` é texto livre) e zera telefone/nascimento. Por isso a
   tabela concede DELETE ao `lyfta_app`; fora isso a aplicação só insere.
-- Decisão: histórico só registra inativar/reativar (não o `invited -> active`).
+- Histórico registra inativar/reativar e também o aceite do convite
+  (`invited -> active`, autor = o próprio usuário, em `ActivateWithPassword`).
+- Decisão: inativar não derruba o access token em circulação (até 15 min);
+  login e refresh já bloqueiam na hora — sem lista de revogação.
 - Sem mudança no app: a troca de `/v1/users?role=student` por `/v1/students` e
   o fim do corte em 200 alunos na tela ficam na P5.4 (a API já pagina tudo).
   Dívida: o app ainda não trata o status `inactive` (só aparece no filtro

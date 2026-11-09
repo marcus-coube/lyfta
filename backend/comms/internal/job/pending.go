@@ -17,6 +17,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/marcus-coube/lyfta/comms/internal/coachlink"
 	"github.com/marcus-coube/lyfta/comms/internal/push"
 	"github.com/marcus-coube/lyfta/comms/internal/repo"
 	"github.com/marcus-coube/lyfta/comms/internal/tenantclient"
@@ -40,10 +41,10 @@ type pendingStudentsSource interface {
 	PendingStudents(ctx context.Context, since, until time.Time, tenantIDs []string) ([]workoutclient.PendingStudent, error)
 }
 
-// studentStatusSource consulta o status do aluno no identity
+// studentStatusSource consulta no identity, em lote, o status dos alunos
 // (coachlink.Client): aluno inativo não recebe o push (P5.2).
 type studentStatusSource interface {
-	StudentStatus(ctx context.Context, tenantID, studentID string) (status string, found bool, err error)
+	StudentStatuses(ctx context.Context, refs []coachlink.StudentRef) (map[coachlink.StudentRef]string, error)
 }
 
 // statusActive é o status do aluno que treina (identity).
@@ -217,15 +218,20 @@ func (j *PendingWorkoutJob) Sweep(ctx context.Context, since, until time.Time, t
 		return 0, 0, err
 	}
 
-	for _, s := range pending {
-		// Aluno inativo (ou que o identity não conhece mais) fica fora. Falha
-		// do identity aborta a varredura: o próximo tick refaz, e o dedupe
-		// protege quem já recebeu.
-		status, found, statusErr := j.students.StudentStatus(ctx, s.TenantID, s.StudentID)
-		if statusErr != nil {
-			return sent, skippedDedupe, statusErr
-		}
-		if !found || status != statusActive {
+	// Aluno inativo (ou que o identity não conhece mais) fica fora. Uma
+	// chamada em lote por varredura; falha do identity aborta a varredura: o
+	// próximo tick refaz, e o dedupe protege quem já recebeu.
+	refs := make([]coachlink.StudentRef, len(pending))
+	for i, s := range pending {
+		refs[i] = coachlink.StudentRef{TenantID: s.TenantID, StudentID: s.StudentID}
+	}
+	statuses, err := j.students.StudentStatuses(ctx, refs)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	for i, s := range pending {
+		if statuses[refs[i]] != statusActive {
 			continue
 		}
 		already, existsErr := j.logs.ExistsInRange(ctx, s.TenantID, s.StudentID, string(push.KindWorkoutPending), since, until)

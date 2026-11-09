@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+
+	"github.com/google/uuid"
 )
 
 func studentLogin(t *testing.T, f usersFixture, email, password string) jsonResponse {
@@ -13,7 +15,8 @@ func studentLogin(t *testing.T, f usersFixture, email, password string) jsonResp
 
 // TestStudentLifecycle cobre o Aceite da P5.2: inativar bloqueia login e
 // refresh e tira o aluno da lista padrão; reativar devolve o acesso; o
-// histórico registra as duas transições; repetir a transição é 409.
+// histórico registra o aceite do convite e as duas transições; repetir a
+// transição é 409.
 func TestStudentLifecycle(t *testing.T) {
 	f := newUsersFixture(t)
 	email := inviteStudent(t, f, f.coachToken, "Ana Alves")
@@ -59,12 +62,25 @@ func TestStudentLifecycle(t *testing.T) {
 	if resp := doGetAuth(t, f.client, base, f.coachToken); resp.status != http.StatusOK || resp.body["status"] != "inactive" {
 		t.Fatalf("ficha do inativo: %d %+v", resp.status, resp.body)
 	}
-	m2m := internalGet(t, f, "/internal/v1/students/"+studentID+"?tenant_id="+tenantID, true)
-	if m2m.status != http.StatusOK || m2m.body["status"] != "inactive" {
-		t.Fatalf("M2M do aluno: %d %+v", m2m.status, m2m.body)
+	// M2M em lote: o inativo volta com o status; id desconhecido fica fora.
+	unknown := uuid.NewString()
+	batch := map[string]any{"students": []map[string]string{
+		{"tenant_id": tenantID, "student_id": studentID},
+		{"tenant_id": tenantID, "student_id": unknown},
+	}}
+	m2m := internalPost(t, f, "/internal/v1/students/statuses", batch, true)
+	m2mItems, _ := m2m.body["items"].([]any)
+	if m2m.status != http.StatusOK || len(m2mItems) != 1 {
+		t.Fatalf("M2M em lote: %d %+v", m2m.status, m2m.body)
 	}
-	if resp := internalGet(t, f, "/internal/v1/students/"+studentID+"?tenant_id="+tenantID, false); resp.status != http.StatusUnauthorized {
+	if it := m2mItems[0].(map[string]any); it["student_id"] != studentID || it["tenant_id"] != tenantID || it["status"] != "inactive" {
+		t.Fatalf("M2M em lote: item inesperado %+v", it)
+	}
+	if resp := internalPost(t, f, "/internal/v1/students/statuses", batch, false); resp.status != http.StatusUnauthorized {
 		t.Fatalf("M2M sem token: %d", resp.status)
+	}
+	if resp := internalPost(t, f, "/internal/v1/students/statuses", map[string]any{"students": []any{}}, true); resp.status != http.StatusBadRequest {
+		t.Fatalf("M2M com lista vazia: esperava 400, obtive %d", resp.status)
 	}
 
 	// Reativar devolve o acesso.
@@ -82,13 +98,17 @@ func TestStudentLifecycle(t *testing.T) {
 	// Histórico: as duas transições, da mais recente para a mais antiga.
 	hist := doGetAuth(t, f.client, base+"/status-history", f.coachToken)
 	items, _ := hist.body["items"].([]any)
-	if hist.status != http.StatusOK || len(items) != 2 {
+	if hist.status != http.StatusOK || len(items) != 3 {
 		t.Fatalf("histórico: %d %+v", hist.status, hist.body)
 	}
-	last, first := items[0].(map[string]any), items[1].(map[string]any)
+	last, first, accepted := items[0].(map[string]any), items[1].(map[string]any), items[2].(map[string]any)
 	if last["from"] != "inactive" || last["to"] != "active" || first["from"] != "active" || first["to"] != "inactive" ||
 		first["reason"] != "trancou a matrícula" || first["changed_by_name"] != "Coach Responsável" {
 		t.Fatalf("eventos do histórico: %+v", items)
+	}
+	// O aceite do convite também entra, com o próprio aluno como autor.
+	if accepted["from"] != "invited" || accepted["to"] != "active" || accepted["changed_by"] != studentID {
+		t.Fatalf("evento do aceite do convite: %+v", accepted)
 	}
 }
 

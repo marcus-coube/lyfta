@@ -115,13 +115,31 @@ func (r *UserRepo) FindByEmailInTenant(ctx context.Context, tenantID, email stri
 }
 
 // ActivateWithPassword define a senha (já com hash) de um usuário convidado e
-// o ativa (status=active) — usado no accept de convite (P0.4).
+// o ativa (status=active) — usado no accept de convite (P0.4). A ativação
+// entra no histórico de status (P5.2) com o próprio usuário como autor.
 func (r *UserRepo) ActivateWithPassword(ctx context.Context, tenantID, userID, passwordHash string) error {
-	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
-		const q = `
+	eventID, err := uuid.NewV7()
+	if err != nil {
+		return fmt.Errorf("repo: gerar id do evento: %w", err)
+	}
+	err = WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		var from string
+		if err := tx.QueryRow(ctx, `SELECT status FROM users WHERE id = $1 FOR UPDATE`, userID).Scan(&from); err != nil {
+			return err
+		}
+		active := string(domain.UserStatusActive)
+		if _, err := tx.Exec(ctx, `
 			UPDATE users SET password_hash = $1, status = $2
-			WHERE id = $3`
-		_, err := tx.Exec(ctx, q, passwordHash, string(domain.UserStatusActive), userID)
+			WHERE id = $3`, passwordHash, active, userID); err != nil {
+			return err
+		}
+		if from == active {
+			return nil
+		}
+		_, err := tx.Exec(ctx, `
+			INSERT INTO user_status_events (id, tenant_id, user_id, from_status, to_status, changed_by)
+			VALUES ($1, $2, $3, $4, $5, $3)`,
+			eventID.String(), tenantID, userID, from, active)
 		return err
 	})
 	if err != nil {
