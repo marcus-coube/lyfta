@@ -35,12 +35,13 @@ type SessionIssuer struct {
 	jwt          *security.JWTSigner
 	auth         *repo.AuthRepo
 	consents     *repo.ConsentRepo
+	tenants      *repo.TenantRepo
 	termsVersion string
 }
 
 // NewSessionIssuer cria o emissor de sessão.
-func NewSessionIssuer(logger *slog.Logger, jwt *security.JWTSigner, auth *repo.AuthRepo, consents *repo.ConsentRepo, termsVersion string) *SessionIssuer {
-	return &SessionIssuer{logger: logger, jwt: jwt, auth: auth, consents: consents, termsVersion: termsVersion}
+func NewSessionIssuer(logger *slog.Logger, jwt *security.JWTSigner, auth *repo.AuthRepo, consents *repo.ConsentRepo, tenants *repo.TenantRepo, termsVersion string) *SessionIssuer {
+	return &SessionIssuer{logger: logger, jwt: jwt, auth: auth, consents: consents, tenants: tenants, termsVersion: termsVersion}
 }
 
 // grantedPurposes devolve as finalidades vigentes do usuário na versão atual
@@ -62,6 +63,15 @@ func (s *SessionIssuer) grantedPurposes(ctx context.Context, user domain.User) (
 	return granted, needsConsent, nil
 }
 
+// tenantTimezone devolve o fuso do tenant para a claim `tz`.
+func (s *SessionIssuer) tenantTimezone(ctx context.Context, tenantID string) (string, error) {
+	t, err := s.tenants.FindByID(ctx, tenantID)
+	if err != nil {
+		return "", err
+	}
+	return t.Timezone, nil
+}
+
 // Issue assina um access token novo e cria um refresh token novo.
 func (s *SessionIssuer) Issue(ctx context.Context, user domain.User) (tokenResponse, *APIError) {
 	roles := make([]string, 0, len(user.Roles))
@@ -76,7 +86,14 @@ func (s *SessionIssuer) Issue(ctx context.Context, user domain.User) (tokenRespo
 		return tokenResponse{}, &errAPI
 	}
 
-	access, expiresAt, err := s.jwt.Sign(user.ID, user.TenantID, roles, user.Locale, granted)
+	timezone, err := s.tenantTimezone(ctx, user.TenantID)
+	if err != nil {
+		s.logger.Error("issue_tokens_tenant_failed", slog.Any("error", err))
+		errAPI := errInternal()
+		return tokenResponse{}, &errAPI
+	}
+
+	access, expiresAt, err := s.jwt.Sign(user.ID, user.TenantID, roles, user.Locale, timezone, granted)
 	if err != nil {
 		s.logger.Error("issue_tokens_sign_failed", slog.Any("error", err))
 		errAPI := errInternal()

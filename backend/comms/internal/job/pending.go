@@ -4,6 +4,10 @@
 // workout (workoutclient.PendingStudents) e manda push pros alunos sem sessão
 // no dia — dedupe por notification_log evita reenvio, e pg_advisory_lock
 // evita que duas instâncias do comms rodem a varredura ao mesmo tempo.
+//
+// O "dia" e a hora de disparo são do fuso de cada tenant (P5.1, ADR-007 §3):
+// a lista de tenants vem do identity por M2M (cache de 10 min) e a varredura
+// roda uma vez por fuso distinto, com a janela [since, until) daquele fuso.
 package job
 
 import (
@@ -15,6 +19,7 @@ import (
 
 	"github.com/marcus-coube/lyfta/comms/internal/push"
 	"github.com/marcus-coube/lyfta/comms/internal/repo"
+	"github.com/marcus-coube/lyfta/comms/internal/tenantclient"
 	"github.com/marcus-coube/lyfta/comms/internal/workoutclient"
 )
 
@@ -32,7 +37,12 @@ const tickInterval = 5 * time.Minute
 // uma interface pequena para os testes poderem injetar uma fonte falsa sem
 // precisar do serviço workout no ar.
 type pendingStudentsSource interface {
-	PendingStudents(ctx context.Context, since, until time.Time) ([]workoutclient.PendingStudent, error)
+	PendingStudents(ctx context.Context, since, until time.Time, tenantIDs []string) ([]workoutclient.PendingStudent, error)
+}
+
+// tenantSource lista os tenants com o fuso de cada um (tenantclient.Client).
+type tenantSource interface {
+	List(ctx context.Context) ([]tenantclient.Tenant, error)
 }
 
 // PendingWorkoutJob é o job diário "treino pendente".
@@ -40,30 +50,40 @@ type PendingWorkoutJob struct {
 	logger      *slog.Logger
 	pool        *pgxpool.Pool
 	workout     pendingStudentsSource
+	tenants     tenantSource
 	logs        *repo.NotificationLogRepo
 	notifier    *push.Notifier
-	location    *time.Location
 	triggerHour int
+	now         func() time.Time
 
-	lastSweptDay string // "2006-01-02" na location configurada.
+	// lastSwept guarda, por fuso, o último dia ("2006-01-02" naquele fuso) já
+	// varrido nesta instância.
+	lastSwept map[string]string
 }
 
-// NewPendingWorkoutJob cria o job. triggerHour é a hora (0-23) na location
-// informada a partir da qual o job passa a considerar "hoje" fechado para
+// NewPendingWorkoutJob cria o job. triggerHour é a hora (0-23), no fuso de
+// cada tenant, a partir da qual o job passa a considerar "hoje" fechado para
 // quem ainda não treinou (plano: "até as 18h locais").
 func NewPendingWorkoutJob(
 	logger *slog.Logger,
 	pool *pgxpool.Pool,
 	workout pendingStudentsSource,
+	tenants tenantSource,
 	logs *repo.NotificationLogRepo,
 	notifier *push.Notifier,
-	location *time.Location,
 	triggerHour int,
 ) *PendingWorkoutJob {
 	return &PendingWorkoutJob{
-		logger: logger, pool: pool, workout: workout, logs: logs,
-		notifier: notifier, location: location, triggerHour: triggerHour,
+		logger: logger, pool: pool, workout: workout, tenants: tenants, logs: logs,
+		notifier: notifier, triggerHour: triggerHour, now: time.Now,
+		lastSwept: map[string]string{},
 	}
+}
+
+// WithClock troca o relógio do job — só para teste (relógio fake).
+func (j *PendingWorkoutJob) WithClock(now func() time.Time) *PendingWorkoutJob {
+	j.now = now
+	return j
 }
 
 // Run inicia o ticker e roda até o contexto ser cancelado — chamado como
@@ -85,17 +105,54 @@ func (j *PendingWorkoutJob) Run(ctx context.Context) {
 	}
 }
 
-// tick decide se é hora de varrer (já passou do horário, ainda não varreu
-// hoje) e, se for, tenta o advisory lock antes de chamar Sweep — não
-// bloqueia: se outra instância já segura o lock, esta apenas volta no
-// próximo tick.
+// dueWindow é um fuso cuja hora de disparo já passou hoje e que ainda não foi
+// varrido: a janela [since, until) do dia civil local e os tenants dele.
+type dueWindow struct {
+	timezone     string
+	day          string
+	since, until time.Time
+	tenantIDs    []string
+}
+
+// Tick decide, por fuso, se é hora de varrer (já passou do horário local e
+// ainda não varreu o dia local) e, se algum estiver no ponto, tenta o
+// advisory lock antes de chamar Sweep — não bloqueia: se outra instância já
+// segura o lock, esta apenas volta no próximo tick. Exportado para o teste
+// com relógio fake.
+func (j *PendingWorkoutJob) Tick(ctx context.Context) { j.tick(ctx) }
+
 func (j *PendingWorkoutJob) tick(ctx context.Context) {
-	now := time.Now().In(j.location)
-	if now.Hour() < j.triggerHour {
+	tenants, err := j.tenants.List(ctx)
+	if err != nil {
+		j.logger.Error("pending_job_list_tenants_failed", slog.Any("error", err))
 		return
 	}
-	today := now.Format("2006-01-02")
-	if today == j.lastSweptDay {
+
+	byZone := map[string][]string{}
+	for _, t := range tenants {
+		byZone[t.Timezone] = append(byZone[t.Timezone], t.ID)
+	}
+
+	var due []dueWindow
+	utcNow := j.now()
+	for tz, ids := range byZone {
+		loc, err := time.LoadLocation(tz)
+		if err != nil {
+			j.logger.Error("pending_job_invalid_timezone", slog.String("timezone", tz), slog.Any("error", err))
+			continue
+		}
+		now := utcNow.In(loc)
+		if now.Hour() < j.triggerHour {
+			continue
+		}
+		day := now.Format("2006-01-02")
+		if j.lastSwept[tz] == day {
+			continue
+		}
+		since := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
+		due = append(due, dueWindow{timezone: tz, day: day, since: since, until: since.AddDate(0, 0, 1), tenantIDs: ids})
+	}
+	if len(due) == 0 {
 		return
 	}
 
@@ -121,16 +178,15 @@ func (j *PendingWorkoutJob) tick(ctx context.Context) {
 		}
 	}()
 
-	since := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, j.location)
-	until := since.AddDate(0, 0, 1)
-
-	sent, skipped, err := j.Sweep(ctx, since, until)
-	if err != nil {
-		j.logger.Error("pending_job_sweep_failed", slog.Any("error", err))
-		return
+	for _, w := range due {
+		sent, skipped, err := j.Sweep(ctx, w.since, w.until, w.tenantIDs)
+		if err != nil {
+			j.logger.Error("pending_job_sweep_failed", slog.String("timezone", w.timezone), slog.Any("error", err))
+			continue
+		}
+		j.lastSwept[w.timezone] = w.day
+		j.logger.Info("pending_job_swept", slog.String("timezone", w.timezone), slog.Int("sent", sent), slog.Int("skipped_dedupe", skipped))
 	}
-	j.lastSweptDay = today
-	j.logger.Info("pending_job_swept", slog.Int("sent", sent), slog.Int("skipped_dedupe", skipped))
 }
 
 // Sweep é a parte testável do job: dado um intervalo [since, until) já
@@ -138,8 +194,14 @@ func (j *PendingWorkoutJob) tick(ctx context.Context) {
 // não receberam esta notificação nesse intervalo (dedupe por
 // notification_log via NotificationLogRepo.ExistsInRange) — exportado para o
 // teste exercitar sem depender do relógio real nem do advisory lock.
-func (j *PendingWorkoutJob) Sweep(ctx context.Context, since, until time.Time) (sent, skippedDedupe int, err error) {
-	students, err := j.workout.PendingStudents(ctx, since, until)
+//
+// tenantIDs são os tenants daquele fuso — o workout só devolve alunos deles;
+// lista vazia não varre ninguém.
+func (j *PendingWorkoutJob) Sweep(ctx context.Context, since, until time.Time, tenantIDs []string) (sent, skippedDedupe int, err error) {
+	if len(tenantIDs) == 0 {
+		return 0, 0, nil
+	}
+	students, err := j.workout.PendingStudents(ctx, since, until, tenantIDs)
 	if err != nil {
 		return 0, 0, err
 	}

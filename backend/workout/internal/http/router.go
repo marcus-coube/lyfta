@@ -47,8 +47,8 @@ func NewRouter(
 	// M2M (ADR-013 §4/§5): o job diário do comms (P3.4) consulta quem tem
 	// plano ativo e não treinou hoje. Autenticação própria (X-Internal-Token),
 	// fora do /v1 porque não é uma requisição de usuário — não há JWT nem
-	// tenant de request aqui, a consulta atravessa todos os tenants de
-	// propósito (ver internal/repo.PendingRepo).
+	// tenant de request aqui: o comms manda a lista de tenants (`tenant_id`)
+	// de cada fuso (P5.1, ver internal/repo.PendingRepo).
 	r.Route("/internal/v1", func(r chi.Router) {
 		r.Use(RequireInternalToken(internalToken))
 		r.Get("/pending-students", pendingHandler.List)

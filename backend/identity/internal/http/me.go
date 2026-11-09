@@ -138,7 +138,13 @@ func (h *AccountHandler) PutConsents(w http.ResponseWriter, r *http.Request) {
 	for _, role := range user.Roles {
 		roles = append(roles, string(role))
 	}
-	access, expiresAt, err := h.issuer.jwt.Sign(user.ID, user.TenantID, roles, user.Locale, resp.Granted)
+	timezone, err := h.issuer.tenantTimezone(ctx, user.TenantID)
+	if err != nil {
+		h.logger.Error("consents_put_tenant_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
+	}
+	access, expiresAt, err := h.issuer.jwt.Sign(user.ID, user.TenantID, roles, user.Locale, timezone, resp.Granted)
 	if err != nil {
 		h.logger.Error("consents_put_sign_failed", slog.Any("error", err))
 		writeError(w, errInternal())

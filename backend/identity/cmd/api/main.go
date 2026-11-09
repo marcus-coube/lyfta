@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	_ "time/tzdata" // fuso IANA sem depender do tzdata do SO (P5.1)
 
 	"github.com/marcus-coube/lyfta/identity/internal/config"
 	"github.com/marcus-coube/lyfta/identity/internal/erasure"
@@ -80,7 +81,7 @@ func run(logger *slog.Logger) error {
 	passwordResetRepo := repo.NewPasswordResetRepo(pool)
 	consentRepo := repo.NewConsentRepo(pool)
 
-	issuer := ihttp.NewSessionIssuer(logger, jwtSigner, authRepo, consentRepo, cfg.TermsVersion)
+	issuer := ihttp.NewSessionIssuer(logger, jwtSigner, authRepo, consentRepo, tenants, cfg.TermsVersion)
 	eraser := erasure.New(cfg.InternalToken, []erasure.Target{
 		{Name: "assessment", BaseURL: cfg.AssessmentURL},
 		{Name: "workout", BaseURL: cfg.WorkoutURL},
@@ -109,7 +110,7 @@ func run(logger *slog.Logger) error {
 	limiter := ihttp.NewRateLimiter(limitStore, logger, cfg.TrustProxy)
 
 	userHandler := ihttp.NewUserHandler(logger, users, repo.NewCoachLinkRepo(pool))
-	router := ihttp.NewRouter(logger, cfg.CORSOrigins, jwtSigner, cfg.InternalToken, authHandler, invitationHandler, passwordResetHandler, userHandler, accountHandler, limiter)
+	router := ihttp.NewRouter(logger, cfg.CORSOrigins, jwtSigner, cfg.InternalToken, authHandler, invitationHandler, passwordResetHandler, userHandler, accountHandler, ihttp.NewTenantHandler(logger, tenants), limiter)
 
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,

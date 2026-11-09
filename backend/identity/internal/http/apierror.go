@@ -96,6 +96,12 @@ var (
 	errErasureFailed = func(services []string) APIError {
 		return newAPIError(http.StatusBadGateway, "erasure_failed", "services", services)
 	}
+	errInvalidTimezone = func() APIError {
+		return newAPIError(http.StatusUnprocessableEntity, "invalid_timezone")
+	}
+	errTenantNotFound = func() APIError {
+		return newAPIError(http.StatusNotFound, "tenant_not_found")
+	}
 	errInternal = func() APIError {
 		return newAPIError(http.StatusInternalServerError, "internal_error")
 	}

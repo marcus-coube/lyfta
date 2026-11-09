@@ -5,13 +5,13 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+	_ "time/tzdata" // fuso IANA sem depender do tzdata do SO (P5.1)
 
 	"github.com/marcus-coube/lyfta/comms/internal/coachlink"
 	"github.com/marcus-coube/lyfta/comms/internal/config"
@@ -24,6 +24,7 @@ import (
 	"github.com/marcus-coube/lyfta/comms/internal/push"
 	"github.com/marcus-coube/lyfta/comms/internal/repo"
 	"github.com/marcus-coube/lyfta/comms/internal/security"
+	"github.com/marcus-coube/lyfta/comms/internal/tenantclient"
 	"github.com/marcus-coube/lyfta/comms/internal/workoutclient"
 	"github.com/marcus-coube/lyfta/comms/internal/ws"
 )
@@ -117,11 +118,6 @@ func run(logger *slog.Logger) error {
 		pusher = fcmClient
 	}
 
-	location, err := time.LoadLocation(cfg.NotificationTimezone)
-	if err != nil {
-		return fmt.Errorf("comms: NOTIFICATION_TIMEZONE inválida: %w", err)
-	}
-
 	conversations := repo.NewConversationRepo(pool)
 	messages := repo.NewMessageRepo(pool)
 	checkins := repo.NewCheckinRepo(pool)
@@ -143,7 +139,7 @@ func run(logger *slog.Logger) error {
 	// (ADR-013 §4/§5), dedupe por notification_log e pg_advisory_lock contra
 	// duas instâncias rodando ao mesmo tempo (ver internal/job).
 	workoutClient := workoutclient.NewClient(cfg.WorkoutBaseURL, cfg.InternalToken)
-	pendingJob := job.NewPendingWorkoutJob(logger, pool, workoutClient, notifications, notifier, location, pendingWorkoutTriggerHour)
+	pendingJob := job.NewPendingWorkoutJob(logger, pool, workoutClient, tenantclient.NewClient(cfg.IdentityURL, cfg.InternalToken, tenantclient.DefaultTTL), notifications, notifier, pendingWorkoutTriggerHour)
 	go pendingJob.Run(ctx)
 
 	server := &http.Server{

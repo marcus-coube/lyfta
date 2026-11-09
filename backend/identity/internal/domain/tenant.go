@@ -11,6 +11,25 @@ type Tenant struct {
 	Slug      string
 	Locale    string
 	CreatedAt time.Time
+	// Timezone é o nome IANA do fuso do tenant (ADR-007 §3): "hoje", "mês
+	// corrente" e vencimento se calculam nele (P5.1).
+	Timezone string
+	// CoachBillingAccess define o que o coach vê do financeiro (ADR-017 §3).
+	CoachBillingAccess string
+}
+
+// DefaultTimezone é o fuso de todo tenant até o owner mudar (ADR-007 §3).
+const DefaultTimezone = "America/Sao_Paulo"
+
+// Valores de Tenant.CoachBillingAccess (ADR-017 §3).
+const (
+	CoachBillingStatusOnly  = "status_only"
+	CoachBillingOwnStudents = "own_students"
+)
+
+// IsKnownCoachBillingAccess diz se o valor existe.
+func IsKnownCoachBillingAccess(v string) bool {
+	return v == CoachBillingStatusOnly || v == CoachBillingOwnStudents
 }
 
 // UserStatus é o ciclo de vida de um usuário dentro do tenant.

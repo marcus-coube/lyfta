@@ -8,7 +8,7 @@ Refs normativas: ADR-001, ADR-002, ADR-007 §3, ADR-008, ADR-013, ADR-016.
 
 ---
 
-## - [ ] P5.1 Fuso e configurações do tenant (identity, comms, workout)
+## - [x] P5.1 Fuso e configurações do tenant (identity, comms, workout)
 
 **Objetivo:** `tenants.timezone` (ADR-007 §3) e quitar a dívida do
 `NOTIFICATION_TIMEZONE` único da P3.4.
@@ -121,3 +121,39 @@ objetivo e o coach vê; teste de widget do formulário de lesão.
 ## Notas de execução
 
 (o agente anota aqui descobertas, dívidas e desvios aprovados)
+
+### P5.1 (2026-11-08)
+
+- identity: migration `0013_tenant_settings` (`timezone`, `coach_billing_access`
+  com CHECK). `GET/PUT /v1/tenant` (PUT só owner; campo omitido mantém o valor;
+  fuso validado por `time.LoadLocation`, rejeitando `""` e `Local` -> 422
+  `invalid_timezone`). M2M `GET /internal/v1/tenants?after=&limit=` (cursor =
+  id do último, teto 500) e `GET /internal/v1/tenants/{id}`. `time/tzdata`
+  embutido nos binários do identity e do comms (container sem tzdata do SO).
+- JWT: claim `tz` emitida em signup/login/refresh/aceite/consentimento.
+  `JWTSigner.Sign/SignWithExpiry` ganharam o parâmetro `timezone`;
+  `SessionIssuer` agora recebe o `TenantRepo`. O workout só ganhou o campo
+  `Timezone` em `Claims` — hoje o servidor dele não calcula dia civil (só
+  `time.Now().UTC()` para carimbo), então não houve regra a trocar.
+- Mudar o fuso no PUT não reemite token: a claim `tz` só atualiza no próximo
+  refresh (<= 15 min). Aceitável porque nada usa a claim ainda; quem passar a
+  usar deve preferir o M2M `GET /internal/v1/tenants/{id}` para decisões de
+  jobs.
+- comms: `NOTIFICATION_TIMEZONE` removida (config, main, `.env.example`).
+  Novo `internal/tenantclient` (lista M2M com cache de 10 min). O job agrupa
+  os tenants por fuso, e para cada fuso cuja hora de disparo (18h) já passou
+  no relógio local e que ainda não foi varrido no dia local, chama o workout
+  com a janela `[since, until)` daquele fuso e os tenants do grupo (1 chamada
+  por fuso distinto, em lotes de 100 tenants). O workout deixou de ser
+  cross-tenant: `GET /internal/v1/pending-students` exige `tenant_id`
+  (repetido, 1–100 UUIDs) e a função `find_pending_students` ganhou o
+  parâmetro `p_tenant_ids UUID[]` (migration `0017_pending_students_by_tenant`
+  do workout — rodar `migrate up` no workout também). `lastSwept` agora é por fuso, em memória;
+  dedupe por `notification_log` segue protegendo de reinício/duas instâncias.
+  Teste com relógio fake (`WithClock`) com São Paulo e Tóquio.
+- App: seção "Organização" na Conta do owner (nome + fuso com busca na lista
+  comum BR/PT e "Outro fuso..." digitado, validado pelo servidor). Strings
+  nas 3 ARBs + `errorInvalidTimezone`. `TenantSettings.coachBillingAccess` já
+  é lido, sem UI (entra na P7.4).
+- Dívida: o app do owner não atualiza a claim `tz` local após o PUT (nada a
+  consome ainda).

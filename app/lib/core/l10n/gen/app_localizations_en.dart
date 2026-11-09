@@ -1267,6 +1267,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountDeleteConfirm => 'Delete for good';
 
   @override
+  String get organizationSection => 'Organization';
+
+  @override
+  String get organizationNameLabel => 'Organization name';
+
+  @override
+  String get organizationTimezoneLabel => 'Time zone';
+
+  @override
+  String get organizationTimezoneHelp =>
+      'Sets “today” and the reminder times for your students.';
+
+  @override
+  String get organizationTimezoneSearchHint => 'Search time zone';
+
+  @override
+  String get organizationTimezoneOther => 'Other time zone…';
+
+  @override
+  String get organizationTimezoneOtherLabel =>
+      'Time zone name (e.g. America/New_York)';
+
+  @override
+  String get organizationSaved => 'Organization updated.';
+
+  @override
+  String get organizationLoadError => 'We could not load the organization.';
+
+  @override
+  String get errorInvalidTimezone =>
+      'That time zone does not exist. Pick one from the list or use a name like America/New_York.';
+
+  @override
   String get errorConsentRequired =>
       'You have not authorized this use of your data. Change it under Account > Privacy.';
 

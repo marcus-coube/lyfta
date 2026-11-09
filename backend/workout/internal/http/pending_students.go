@@ -3,7 +3,10 @@ package http
 import (
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/marcus-coube/lyfta/workout/internal/repo"
 )
@@ -30,18 +33,27 @@ type pendingStudentsResponse struct {
 	Items []pendingStudentDTO `json:"items"`
 }
 
-// List devolve os alunos com plano ativo e sem sessão registrada em
-// [since, until) — o intervalo vem de quem chama (o comms resolve "hoje" no
-// timezone configurado por lá, ver Notas de execução da P3.4); o workout só
-// responde à pergunta com a janela recebida, sem saber de timezone nenhum.
+// maxPendingTenants limita quantos tenant_id cabem numa chamada — o comms
+// pagina do lado dele (workoutclient).
+const maxPendingTenants = 100
+
+// List devolve, dos tenants pedidos (`tenant_id`, repetido, obrigatório), os
+// alunos com plano ativo e sem sessão registrada em [since, until) — a janela
+// e os tenants vêm de quem chama (o comms agrupa os tenants por fuso e
+// resolve "hoje" em cada um, P5.1); o workout não sabe de timezone nenhum.
 func (h *PendingStudentsHandler) List(w http.ResponseWriter, r *http.Request) {
 	since, until, apiErr := parsePendingRange(r)
 	if apiErr != nil {
 		writeError(w, *apiErr)
 		return
 	}
+	tenantIDs, apiErr := parsePendingTenants(r)
+	if apiErr != nil {
+		writeError(w, *apiErr)
+		return
+	}
 
-	items, err := h.pending.PendingStudents(r.Context(), since, until)
+	items, err := h.pending.PendingStudents(r.Context(), since, until, tenantIDs)
 	if err != nil {
 		h.logger.Error("pending_students_failed", slog.Any("error", err))
 		writeError(w, errInternal())
@@ -72,4 +84,22 @@ func parsePendingRange(r *http.Request) (since, until time.Time, apiErr *APIErro
 		return time.Time{}, time.Time{}, &e
 	}
 	return since, until, nil
+}
+
+func parsePendingTenants(r *http.Request) ([]string, *APIError) {
+	raw := r.URL.Query()["tenant_id"]
+	if len(raw) == 0 || len(raw) > maxPendingTenants {
+		e := errValidation("tenant_id")
+		return nil, &e
+	}
+	out := make([]string, 0, len(raw))
+	for _, id := range raw {
+		id = strings.TrimSpace(id)
+		if _, err := uuid.Parse(id); err != nil {
+			e := errValidation("tenant_id")
+			return nil, &e
+		}
+		out = append(out, id)
+	}
+	return out, nil
 }

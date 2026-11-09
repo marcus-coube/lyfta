@@ -42,14 +42,17 @@ func TestPendingStudentsRequiresInternalToken(t *testing.T) {
 func TestPendingStudentsRejectsBadRange(t *testing.T) {
 	publicPEM, _ := newTestKeys(t)
 	router := newTestRouterWithPool(t, publicPEM, nil)
+	validTenant := uuid.NewString()
 
 	cases := []struct {
 		name  string
 		query string
 	}{
-		{"since ausente", "?until=2026-01-02T00:00:00Z"},
-		{"until ausente", "?since=2026-01-01T00:00:00Z"},
-		{"until antes de since", "?since=2026-01-02T00:00:00Z&until=2026-01-01T00:00:00Z"},
+		{"since ausente", "?until=2026-01-02T00:00:00Z&tenant_id=" + validTenant},
+		{"until ausente", "?since=2026-01-01T00:00:00Z&tenant_id=" + validTenant},
+		{"until antes de since", "?since=2026-01-02T00:00:00Z&until=2026-01-01T00:00:00Z&tenant_id=" + validTenant},
+		{"tenant_id ausente", "?since=2026-01-01T00:00:00Z&until=2026-01-02T00:00:00Z"},
+		{"tenant_id inválido", "?since=2026-01-01T00:00:00Z&until=2026-01-02T00:00:00Z&tenant_id=nao-e-uuid"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -105,7 +108,7 @@ func TestPendingStudentsHappyPathOverHTTP(t *testing.T) {
 	since := time.Now().Add(-time.Hour).UTC().Format(time.RFC3339)
 	until := time.Now().Add(time.Hour).UTC().Format(time.RFC3339)
 
-	req := httptest.NewRequest(http.MethodGet, "/internal/v1/pending-students?since="+since+"&until="+until, nil)
+	req := httptest.NewRequest(http.MethodGet, "/internal/v1/pending-students?since="+since+"&until="+until+"&tenant_id="+tenantID, nil)
 	req.Header.Set("X-Internal-Token", testInternalToken)
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)

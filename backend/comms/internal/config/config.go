@@ -42,11 +42,6 @@ type Config struct {
 	// WorkoutBaseURL é onde o comms encontra o workout para o M2M do job
 	// diário (GET /internal/v1/pending-students, ADR-013 §4/§5).
 	WorkoutBaseURL string
-	// NotificationTimezone resolve "hoje" e "18h" para o job diário. Não há
-	// timezone por tenant hoje (nem no identity, nem aqui) — dívida anotada
-	// nas Notas de execução da P3.4; até existir, todo tenant usa o mesmo
-	// fuso.
-	NotificationTimezone string
 	// IdentityURL e CoachLinkCacheTTL: vínculo professor↔aluno (ADR-016,
 	// P4.7), consultado no identity por M2M com INTERNAL_TOKEN.
 	IdentityURL       string
@@ -76,10 +71,9 @@ func Load() (Config, error) {
 		SentryDSN:       os.Getenv("SENTRY_DSN"),
 		SentryRelease:   os.Getenv("SENTRY_RELEASE"),
 
-		FCMCredentialsJSON:   os.Getenv("FCM_CREDENTIALS_JSON"),
-		WorkoutBaseURL:       getEnv("WORKOUT_BASE_URL", "http://localhost:8082"),
-		NotificationTimezone: getEnv("NOTIFICATION_TIMEZONE", "America/Sao_Paulo"),
-		IdentityURL:          getEnv("IDENTITY_URL", "http://localhost:8081"),
+		FCMCredentialsJSON: os.Getenv("FCM_CREDENTIALS_JSON"),
+		WorkoutBaseURL:     getEnv("WORKOUT_BASE_URL", "http://localhost:8082"),
+		IdentityURL:        getEnv("IDENTITY_URL", "http://localhost:8081"),
 	}
 
 	cfg.CoachLinkCacheTTL = 30 * time.Second

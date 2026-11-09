@@ -16,9 +16,9 @@ type PendingStudent struct {
 }
 
 // PendingRepo dá acesso à consulta M2M de "treino pendente" (P3.4) — a única
-// leitura do serviço que atravessa tenants de propósito (ver a função SQL
-// SECURITY DEFINER da migration 0016), então não passa por WithTenant como o
-// resto do repositório.
+// leitura do serviço sem app.tenant_id: recebe a lista de tenants explícita
+// (função SQL SECURITY DEFINER, migrations 0016/0017), então não passa por
+// WithTenant como o resto do repositório.
 type PendingRepo struct {
 	pool *pgxpool.Pool
 }
@@ -28,13 +28,16 @@ func NewPendingRepo(pool *pgxpool.Pool) *PendingRepo {
 	return &PendingRepo{pool: pool}
 }
 
-// PendingStudents devolve, de todos os tenants, quem tem plano ativo
+// PendingStudents devolve, dos tenants pedidos, quem tem plano ativo
 // (student_plan_state) e nenhuma sessão com `received_at` dentro de
-// [since, until) — o intervalo é decidido por quem chama (o job diário do
-// comms resolve "hoje" no timezone configurado, ver
-// backend/comms/internal/job).
-func (r *PendingRepo) PendingStudents(ctx context.Context, since, until time.Time) ([]PendingStudent, error) {
-	rows, err := r.pool.Query(ctx, `SELECT tenant_id, student_id FROM find_pending_students($1, $2)`, since, until)
+// [since, until) — o intervalo e os tenants são decididos por quem chama (o
+// comms agrupa os tenants por fuso e resolve "hoje" em cada um, P5.1, ver
+// backend/comms/internal/job). Lista vazia não devolve ninguém.
+func (r *PendingRepo) PendingStudents(ctx context.Context, since, until time.Time, tenantIDs []string) ([]PendingStudent, error) {
+	if len(tenantIDs) == 0 {
+		return nil, nil
+	}
+	rows, err := r.pool.Query(ctx, `SELECT tenant_id, student_id FROM find_pending_students($1, $2, $3::uuid[])`, since, until, tenantIDs)
 	if err != nil {
 		return nil, fmt.Errorf("repo: consultar alunos pendentes: %w", err)
 	}

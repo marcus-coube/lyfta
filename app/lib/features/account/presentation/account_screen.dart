@@ -9,6 +9,7 @@ import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../core/legal/legal_document.dart';
 import '../data/account_repository.dart';
 import 'account_controller.dart';
+import 'organization_section.dart';
 
 /// Tela Conta (P4.5): privacidade (fotos de evolução, só aluno), documentos
 /// legais, sair e "Excluir minha conta" (ADR-008 §2). É o único lugar do app
@@ -51,8 +52,8 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   Widget build(BuildContext context) {
     final c = context.ly;
     final l10n = AppLocalizations.of(context);
-    final isStudent =
-        ref.watch(authControllerProvider).roles.contains(UserRole.student);
+    final auth = ref.watch(authControllerProvider);
+    final isStudent = auth.roles.contains(UserRole.student);
     final status = ref.watch(consentStatusProvider);
 
     return Scaffold(
@@ -60,6 +61,11 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
       body: ListView(
         padding: const EdgeInsets.all(LySpace.x4),
         children: [
+          // Organização (P5.1): só o owner mexe no nome e no fuso do tenant.
+          if (auth.isOwner) ...[
+            const OrganizationSection(),
+            const SizedBox(height: LySpace.x4),
+          ],
           if (isStudent) ...[
             _Section(l10n.accountPrivacySection),
             SwitchListTile(

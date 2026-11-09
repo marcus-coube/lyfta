@@ -120,8 +120,8 @@ func TenantFromContext(ctx context.Context) (string, bool) {
 // do header X-Internal-Token com o valor configurado (env INTERNAL_TOKEN).
 // Sem Bearer/claims aqui: quem chama é outro serviço (o comms, no caso do
 // job diário da P3.4), não um usuário, então não existe tenant de request
-// para setar — o handler que fica atrás desta rota consulta todos os
-// tenants de propósito (ver internal/repo.PendingRepo).
+// para setar — os handlers atrás desta rota recebem os tenants explícitos
+// na requisição (ver internal/repo.PendingRepo).
 func RequireInternalToken(token string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

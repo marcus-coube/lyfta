@@ -24,6 +24,7 @@ func NewRouter(
 	passwordReset *PasswordResetHandler,
 	users *UserHandler,
 	account *AccountHandler,
+	tenant *TenantHandler,
 	limiter *RateLimiter,
 ) http.Handler {
 	r := chi.NewRouter()
@@ -51,6 +52,9 @@ func NewRouter(
 		// Vínculo professor↔aluno (ADR-016 §3, P4.7).
 		r.Get("/coaches/{id}/students", users.InternalCoachStudents)
 		r.Get("/students/{id}/coach", users.InternalStudentCoach)
+		// Fuso e configurações do tenant (P5.1): jobs que varrem tenants.
+		r.Get("/tenants", tenant.InternalList)
+		r.Get("/tenants/{id}", tenant.InternalGet)
 	})
 
 	r.Route("/v1", func(r chi.Router) {
@@ -82,6 +86,13 @@ func NewRouter(
 			r.Use(RequireAuth(signer))
 			r.Use(RequireRole(string(domain.RoleOwner), string(domain.RoleCoach), string(domain.RoleStudent)))
 			r.Get("/", users.List)
+		})
+
+		// Configurações do tenant (P5.1): todo papel lê, só o owner escreve.
+		r.Route("/tenant", func(r chi.Router) {
+			r.Use(RequireAuth(signer))
+			r.Get("/", tenant.Get)
+			r.With(RequireRole(string(domain.RoleOwner))).Put("/", tenant.Put)
 		})
 
 		// Reatribuição do professor do aluno: só owner (ADR-016 §1).

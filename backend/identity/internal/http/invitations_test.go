@@ -185,7 +185,7 @@ func TestInvitationRequiresAuth(t *testing.T) {
 	}
 
 	// Token válido, mas só com papel student -> 403 forbidden.
-	studentToken, _, err := signer.Sign("00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002", []string{"student"}, "pt-BR", nil)
+	studentToken, _, err := signer.Sign("00000000-0000-0000-0000-000000000001", "00000000-0000-0000-0000-000000000002", []string{"student"}, "pt-BR", "America/Sao_Paulo", nil)
 	if err != nil {
 		t.Fatalf("assinar token de student: %v", err)
 	}

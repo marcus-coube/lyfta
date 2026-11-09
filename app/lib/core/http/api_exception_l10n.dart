@@ -68,6 +68,8 @@ extension ApiExceptionL10n on ApiException {
       case 'too_many_requests':
         final seconds = (params['retry_after_seconds'] as num?)?.toInt() ?? 300;
         return l10n.errorTooManyRequests(((seconds + 59) ~/ 60).clamp(1, 60));
+      case 'invalid_timezone':
+        return l10n.errorInvalidTimezone;
       case 'no_coach':
         return l10n.errorNoCoach;
       case 'network_error':

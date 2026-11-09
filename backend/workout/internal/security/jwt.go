@@ -26,6 +26,9 @@ type Claims struct {
 	TenantID string   `json:"tenant_id"`
 	Roles    []string `json:"roles"`
 	Locale   string   `json:"locale"`
+	// Timezone é o fuso IANA do tenant (claim `tz`, P5.1): dia civil no
+	// servidor usa este fuso, nunca o relógio do servidor (ADR-007 §3).
+	Timezone string `json:"tz"`
 }
 
 // JWTVerifier valida access tokens EdDSA (ed25519) com a chave pública.

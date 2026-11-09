@@ -127,7 +127,7 @@ func newTestServerWithEraser(t *testing.T) (*httptest.Server, *security.JWTSigne
 	passwordResetRepo := repo.NewPasswordResetRepo(pool)
 
 	consentRepo := repo.NewConsentRepo(pool)
-	issuer := ihttp.NewSessionIssuer(logger, signer, authRepo, consentRepo, testTermsVersion)
+	issuer := ihttp.NewSessionIssuer(logger, signer, authRepo, consentRepo, tenants, testTermsVersion)
 	eraser := &fakeEraser{}
 
 	authHandler := ihttp.NewAuthHandler(logger, tenants, users, authRepo, issuer, testTermsVersion)
@@ -136,7 +136,7 @@ func newTestServerWithEraser(t *testing.T) (*httptest.Server, *security.JWTSigne
 	passwordResetHandler := ihttp.NewPasswordResetHandler(logger, authRepo, users, passwordResetRepo, mailer, "http://localhost:5173")
 
 	userHandler := ihttp.NewUserHandler(logger, users, repo.NewCoachLinkRepo(pool))
-	router := ihttp.NewRouter(logger, []string{"*"}, signer, testInternalToken, authHandler, invitationHandler, passwordResetHandler, userHandler, accountHandler, ihttp.NewRateLimiter(ratelimit.NewMemoryStore(), logger, false))
+	router := ihttp.NewRouter(logger, []string{"*"}, signer, testInternalToken, authHandler, invitationHandler, passwordResetHandler, userHandler, accountHandler, ihttp.NewTenantHandler(logger, tenants), ihttp.NewRateLimiter(ratelimit.NewMemoryStore(), logger, false))
 	server := httptest.NewServer(router)
 	t.Cleanup(server.Close)
 	return server, signer, mailer, eraser
@@ -357,7 +357,7 @@ func TestLoginInvalidCredentials(t *testing.T) {
 func TestExpiredAccessTokenRejected(t *testing.T) {
 	_, signer, _ := newTestServer(t)
 
-	token, expiresAt, err := signer.SignWithExpiry("user-id", "tenant-id", []string{"owner"}, "pt-BR", nil, time.Now().Add(-1*time.Minute))
+	token, expiresAt, err := signer.SignWithExpiry("user-id", "tenant-id", []string{"owner"}, "pt-BR", "America/Sao_Paulo", nil, time.Now().Add(-1*time.Minute))
 	if err != nil {
 		t.Fatalf("assinar token expirado: %v", err)
 	}

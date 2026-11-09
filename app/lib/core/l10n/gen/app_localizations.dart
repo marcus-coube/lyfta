@@ -2373,6 +2373,66 @@ abstract class AppLocalizations {
   /// **'Excluir definitivamente'**
   String get accountDeleteConfirm;
 
+  /// No description provided for @organizationSection.
+  ///
+  /// In pt, this message translates to:
+  /// **'Organização'**
+  String get organizationSection;
+
+  /// No description provided for @organizationNameLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome da organização'**
+  String get organizationNameLabel;
+
+  /// No description provided for @organizationTimezoneLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fuso horário'**
+  String get organizationTimezoneLabel;
+
+  /// No description provided for @organizationTimezoneHelp.
+  ///
+  /// In pt, this message translates to:
+  /// **'Define o “hoje” e os horários dos lembretes dos seus alunos.'**
+  String get organizationTimezoneHelp;
+
+  /// No description provided for @organizationTimezoneSearchHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Buscar fuso'**
+  String get organizationTimezoneSearchHint;
+
+  /// No description provided for @organizationTimezoneOther.
+  ///
+  /// In pt, this message translates to:
+  /// **'Outro fuso…'**
+  String get organizationTimezoneOther;
+
+  /// No description provided for @organizationTimezoneOtherLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome do fuso (ex.: America/Sao_Paulo)'**
+  String get organizationTimezoneOtherLabel;
+
+  /// No description provided for @organizationSaved.
+  ///
+  /// In pt, this message translates to:
+  /// **'Organização atualizada.'**
+  String get organizationSaved;
+
+  /// No description provided for @organizationLoadError.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não conseguimos carregar a organização.'**
+  String get organizationLoadError;
+
+  /// No description provided for @errorInvalidTimezone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esse fuso horário não existe. Escolha um da lista ou use um nome como America/Sao_Paulo.'**
+  String get errorInvalidTimezone;
+
   /// No description provided for @errorConsentRequired.
   ///
   /// In pt, this message translates to:

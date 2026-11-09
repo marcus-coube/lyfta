@@ -45,14 +45,35 @@ type pendingStudentsResponse struct {
 	Items []PendingStudent `json:"items"`
 }
 
-// PendingStudents chama GET /internal/v1/pending-students?since=&until= — o
-// intervalo [since, until) é decidido pelo comms (internal/job: "hoje" no
-// timezone padrão configurado, ver Notas de execução da P3.4), não pelo
-// workout, que só responde à pergunta com a janela que recebe.
-func (c *Client) PendingStudents(ctx context.Context, since, until time.Time) ([]PendingStudent, error) {
+// maxTenantsPerRequest é o teto de `tenant_id` por chamada aceito pelo
+// workout — listas maiores viram várias chamadas.
+const maxTenantsPerRequest = 100
+
+// PendingStudents chama GET /internal/v1/pending-students?since=&until=&tenant_id=…
+// — o intervalo [since, until) e os tenants são decididos pelo comms
+// (internal/job agrupa os tenants por fuso, P5.1); o workout só devolve
+// alunos dos tenants pedidos. Pagina em lotes de maxTenantsPerRequest; lista
+// vazia não faz chamada nenhuma.
+func (c *Client) PendingStudents(ctx context.Context, since, until time.Time, tenantIDs []string) ([]PendingStudent, error) {
+	var out []PendingStudent
+	for start := 0; start < len(tenantIDs); start += maxTenantsPerRequest {
+		end := min(start+maxTenantsPerRequest, len(tenantIDs))
+		items, err := c.pendingStudentsBatch(ctx, since, until, tenantIDs[start:end])
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, items...)
+	}
+	return out, nil
+}
+
+func (c *Client) pendingStudentsBatch(ctx context.Context, since, until time.Time, tenantIDs []string) ([]PendingStudent, error) {
 	q := url.Values{}
 	q.Set("since", since.UTC().Format(time.RFC3339))
 	q.Set("until", until.UTC().Format(time.RFC3339))
+	for _, id := range tenantIDs {
+		q.Add("tenant_id", id)
+	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/internal/v1/pending-students?"+q.Encode(), nil)
 	if err != nil {

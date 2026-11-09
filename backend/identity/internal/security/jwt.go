@@ -25,6 +25,9 @@ type Claims struct {
 	TenantID string   `json:"tenant_id"`
 	Roles    []string `json:"roles"`
 	Locale   string   `json:"locale"`
+	// Timezone é o fuso IANA do tenant (ADR-007 §3, P5.1): os serviços que
+	// precisam de dia civil usam esta claim em vez do relógio do servidor.
+	Timezone string `json:"tz"`
 	// Consents são as finalidades de consentimento vigentes na versão atual
 	// dos termos (ADR-008 §1, P4.5) — os outros serviços checam aqui, sem
 	// chamada síncrona ao identity.
@@ -66,14 +69,14 @@ func NewJWTSigner(privatePEM, publicPEM string) (*JWTSigner, error) {
 }
 
 // Sign emite um access token para o usuário/tenant/papéis informados.
-func (s *JWTSigner) Sign(userID, tenantID string, roles []string, locale string, consents []string) (string, time.Time, error) {
-	return s.SignWithExpiry(userID, tenantID, roles, locale, consents, time.Now().Add(AccessTokenTTL))
+func (s *JWTSigner) Sign(userID, tenantID string, roles []string, locale, timezone string, consents []string) (string, time.Time, error) {
+	return s.SignWithExpiry(userID, tenantID, roles, locale, timezone, consents, time.Now().Add(AccessTokenTTL))
 }
 
 // SignWithExpiry emite um access token com expiração explícita — usado por
 // Sign (TTL padrão de 15min) e por testes que precisam simular um token já
 // expirado.
-func (s *JWTSigner) SignWithExpiry(userID, tenantID string, roles []string, locale string, consents []string, expiresAt time.Time) (string, time.Time, error) {
+func (s *JWTSigner) SignWithExpiry(userID, tenantID string, roles []string, locale, timezone string, consents []string, expiresAt time.Time) (string, time.Time, error) {
 	if s.private == nil {
 		return "", time.Time{}, errors.New("security: signer sem chave privada")
 	}
@@ -88,6 +91,7 @@ func (s *JWTSigner) SignWithExpiry(userID, tenantID string, roles []string, loca
 		TenantID: tenantID,
 		Roles:    roles,
 		Locale:   locale,
+		Timezone: timezone,
 		Consents: consents,
 	}
 

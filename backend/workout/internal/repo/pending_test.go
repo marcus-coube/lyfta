@@ -18,7 +18,7 @@ import (
 // que GetState já assume em todo o resto do serviço — inserir direto, mesmo
 // truque de TestSetLogsAreAppendOnly, é suficiente e mais simples.
 
-func TestPendingStudentsAcrossTenants(t *testing.T) {
+func TestPendingStudentsOfRequestedTenant(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	plans := repo.NewPlanRepo(pool)
@@ -58,7 +58,7 @@ func TestPendingStudentsAcrossTenants(t *testing.T) {
 	since := time.Now().Add(-time.Hour)
 	until := time.Now().Add(time.Hour)
 
-	items, err := pending.PendingStudents(ctx, since, until)
+	items, err := pending.PendingStudents(ctx, since, until, []string{tenantID})
 	if err != nil {
 		t.Fatalf("consultar pendentes: %v", err)
 	}
@@ -117,12 +117,68 @@ func TestPendingStudentsExcludesWhoTrainedInRange(t *testing.T) {
 		t.Fatalf("gravar sessão: %v", err)
 	}
 
-	items, err := pending.PendingStudents(ctx, since, until)
+	items, err := pending.PendingStudents(ctx, since, until, []string{tenantID})
 	if err != nil {
 		t.Fatalf("consultar pendentes: %v", err)
 	}
 	if containsPending(items, tenantID, studentID) {
 		t.Fatalf("aluno que treinou dentro do intervalo não deveria aparecer como pendente, veio %+v", items)
+	}
+}
+
+// TestPendingStudentsOnlyRequestedTenants: aluno pendente de um tenant que
+// não foi pedido não aparece (P5.1 — a consulta deixou de ser cross-tenant).
+func TestPendingStudentsOnlyRequestedTenants(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	plans := repo.NewPlanRepo(pool)
+	pending := repo.NewPendingRepo(pool)
+
+	tenantID := newTenant()
+	studentID := uuid.NewString()
+
+	plan, err := plans.CreatePlan(ctx, domain.Plan{
+		TenantID: tenantID, StudentID: studentID, CoachID: uuid.NewString(), Title: "Plano ativo",
+	})
+	if err != nil {
+		t.Fatalf("criar plano: %v", err)
+	}
+	version, err := plans.CreateVersion(ctx, tenantID, plan.ID)
+	if err != nil {
+		t.Fatalf("criar versão: %v", err)
+	}
+	if err := repo.WithTenant(ctx, pool, tenantID, func(tx pgx.Tx) error {
+		_, err := tx.Exec(ctx, `
+			INSERT INTO student_plan_state (tenant_id, student_id, plan_id, active_version_id)
+			VALUES ($1, $2, $3, $4)`,
+			tenantID, studentID, plan.ID, version.ID)
+		return err
+	}); err != nil {
+		t.Fatalf("gravar student_plan_state: %v", err)
+	}
+
+	since := time.Now().Add(-time.Hour)
+	until := time.Now().Add(time.Hour)
+
+	items, err := pending.PendingStudents(ctx, since, until, []string{newTenant()})
+	if err != nil {
+		t.Fatalf("consultar pendentes: %v", err)
+	}
+	if containsPending(items, tenantID, studentID) {
+		t.Fatalf("aluno de tenant não pedido não deveria aparecer, veio %+v", items)
+	}
+	for _, it := range items {
+		if it.TenantID == tenantID {
+			t.Fatalf("veio item de tenant não pedido: %+v", it)
+		}
+	}
+
+	none, err := pending.PendingStudents(ctx, since, until, nil)
+	if err != nil {
+		t.Fatalf("consultar pendentes sem tenants: %v", err)
+	}
+	if len(none) != 0 {
+		t.Fatalf("lista de tenants vazia deveria devolver nada, veio %+v", none)
 	}
 }
 

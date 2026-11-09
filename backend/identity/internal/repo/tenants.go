@@ -32,8 +32,8 @@ func (r *TenantRepo) Create(ctx context.Context, t domain.Tenant) (domain.Tenant
 	const q = `
 		INSERT INTO tenants (id, name, slug, locale)
 		VALUES ($1, $2, $3, $4)
-		RETURNING created_at`
-	if err := r.pool.QueryRow(ctx, q, t.ID, t.Name, t.Slug, t.Locale).Scan(&t.CreatedAt); err != nil {
+		RETURNING created_at, timezone, coach_billing_access`
+	if err := r.pool.QueryRow(ctx, q, t.ID, t.Name, t.Slug, t.Locale).Scan(&t.CreatedAt, &t.Timezone, &t.CoachBillingAccess); err != nil {
 		return domain.Tenant{}, fmt.Errorf("repo: criar tenant: %w", err)
 	}
 	return t, nil
@@ -69,8 +69,8 @@ func (r *TenantRepo) CreateWithOwner(ctx context.Context, t domain.Tenant, u dom
 	const qTenant = `
 		INSERT INTO tenants (id, name, slug, locale)
 		VALUES ($1, $2, $3, $4)
-		RETURNING created_at`
-	if err := tx.QueryRow(ctx, qTenant, t.ID, t.Name, t.Slug, t.Locale).Scan(&t.CreatedAt); err != nil {
+		RETURNING created_at, timezone, coach_billing_access`
+	if err := tx.QueryRow(ctx, qTenant, t.ID, t.Name, t.Slug, t.Locale).Scan(&t.CreatedAt, &t.Timezone, &t.CoachBillingAccess); err != nil {
 		return domain.Tenant{}, domain.User{}, fmt.Errorf("repo: criar tenant: %w", err)
 	}
 
@@ -109,9 +109,9 @@ func (r *TenantRepo) CreateWithOwner(ctx context.Context, t domain.Tenant, u dom
 
 // FindByID busca um tenant por id.
 func (r *TenantRepo) FindByID(ctx context.Context, id string) (domain.Tenant, error) {
-	const q = `SELECT id, name, slug, locale, created_at FROM tenants WHERE id = $1`
+	const q = `SELECT id, name, slug, locale, created_at, timezone, coach_billing_access FROM tenants WHERE id = $1`
 	var t domain.Tenant
-	err := r.pool.QueryRow(ctx, q, id).Scan(&t.ID, &t.Name, &t.Slug, &t.Locale, &t.CreatedAt)
+	err := r.pool.QueryRow(ctx, q, id).Scan(&t.ID, &t.Name, &t.Slug, &t.Locale, &t.CreatedAt, &t.Timezone, &t.CoachBillingAccess)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return domain.Tenant{}, ErrNotFound
@@ -124,9 +124,9 @@ func (r *TenantRepo) FindByID(ctx context.Context, id string) (domain.Tenant, er
 // FindBySlug busca um tenant por slug — usado no signup para devolver
 // 409 code:slug_taken sem depender só da constraint UNIQUE do banco.
 func (r *TenantRepo) FindBySlug(ctx context.Context, slug string) (domain.Tenant, error) {
-	const q = `SELECT id, name, slug, locale, created_at FROM tenants WHERE slug = $1`
+	const q = `SELECT id, name, slug, locale, created_at, timezone, coach_billing_access FROM tenants WHERE slug = $1`
 	var t domain.Tenant
-	err := r.pool.QueryRow(ctx, q, slug).Scan(&t.ID, &t.Name, &t.Slug, &t.Locale, &t.CreatedAt)
+	err := r.pool.QueryRow(ctx, q, slug).Scan(&t.ID, &t.Name, &t.Slug, &t.Locale, &t.CreatedAt, &t.Timezone, &t.CoachBillingAccess)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return domain.Tenant{}, ErrNotFound
@@ -134,4 +134,58 @@ func (r *TenantRepo) FindBySlug(ctx context.Context, slug string) (domain.Tenant
 		return domain.Tenant{}, fmt.Errorf("repo: buscar tenant por slug: %w", err)
 	}
 	return t, nil
+}
+
+// Update grava nome, fuso e acesso do coach ao financeiro (PUT /v1/tenant,
+// P5.1). Slug e locale não mudam aqui.
+func (r *TenantRepo) Update(ctx context.Context, t domain.Tenant) (domain.Tenant, error) {
+	const q = `
+		UPDATE tenants SET name = $2, timezone = $3, coach_billing_access = $4
+		WHERE id = $1
+		RETURNING id, name, slug, locale, created_at, timezone, coach_billing_access`
+	var out domain.Tenant
+	err := r.pool.QueryRow(ctx, q, t.ID, t.Name, t.Timezone, t.CoachBillingAccess).
+		Scan(&out.ID, &out.Name, &out.Slug, &out.Locale, &out.CreatedAt, &out.Timezone, &out.CoachBillingAccess)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return domain.Tenant{}, ErrNotFound
+		}
+		return domain.Tenant{}, fmt.Errorf("repo: atualizar tenant: %w", err)
+	}
+	return out, nil
+}
+
+// MaxTenantPageSize é o teto do limit da varredura M2M de tenants.
+const MaxTenantPageSize = 500
+
+// ListAfter devolve até limit tenants com id > after, em ordem de id (cursor
+// keyset), para os jobs que varrem todos os tenants (M2M, P5.1). after vazio
+// começa do início.
+func (r *TenantRepo) ListAfter(ctx context.Context, after string, limit int) ([]domain.Tenant, error) {
+	if limit <= 0 || limit > MaxTenantPageSize {
+		limit = MaxTenantPageSize
+	}
+	const q = `
+		SELECT id, name, slug, locale, created_at, timezone, coach_billing_access
+		FROM tenants
+		WHERE ($1::text = '' OR id::text > $1::text)
+		ORDER BY id
+		LIMIT $2`
+	rows, err := r.pool.Query(ctx, q, after, limit)
+	if err != nil {
+		return nil, fmt.Errorf("repo: listar tenants: %w", err)
+	}
+	defer rows.Close()
+	var out []domain.Tenant
+	for rows.Next() {
+		var t domain.Tenant
+		if err := rows.Scan(&t.ID, &t.Name, &t.Slug, &t.Locale, &t.CreatedAt, &t.Timezone, &t.CoachBillingAccess); err != nil {
+			return nil, fmt.Errorf("repo: ler tenant: %w", err)
+		}
+		out = append(out, t)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("repo: listar tenants: %w", err)
+	}
+	return out, nil
 }

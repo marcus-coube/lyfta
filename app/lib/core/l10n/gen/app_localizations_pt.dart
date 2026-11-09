@@ -1269,6 +1269,39 @@ class AppLocalizationsPt extends AppLocalizations {
   String get accountDeleteConfirm => 'Excluir definitivamente';
 
   @override
+  String get organizationSection => 'Organização';
+
+  @override
+  String get organizationNameLabel => 'Nome da organização';
+
+  @override
+  String get organizationTimezoneLabel => 'Fuso horário';
+
+  @override
+  String get organizationTimezoneHelp =>
+      'Define o “hoje” e os horários dos lembretes dos seus alunos.';
+
+  @override
+  String get organizationTimezoneSearchHint => 'Buscar fuso';
+
+  @override
+  String get organizationTimezoneOther => 'Outro fuso…';
+
+  @override
+  String get organizationTimezoneOtherLabel =>
+      'Nome do fuso (ex.: America/Sao_Paulo)';
+
+  @override
+  String get organizationSaved => 'Organização atualizada.';
+
+  @override
+  String get organizationLoadError => 'Não conseguimos carregar a organização.';
+
+  @override
+  String get errorInvalidTimezone =>
+      'Esse fuso horário não existe. Escolha um da lista ou use um nome como America/Sao_Paulo.';
+
+  @override
   String get errorConsentRequired =>
       'Você não autorizou esse uso dos seus dados. Ajuste em Conta > Privacidade.';
 
@@ -2609,6 +2642,39 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get accountDeleteConfirm => 'Eliminar definitivamente';
+
+  @override
+  String get organizationSection => 'Organização';
+
+  @override
+  String get organizationNameLabel => 'Nome da organização';
+
+  @override
+  String get organizationTimezoneLabel => 'Fuso horário';
+
+  @override
+  String get organizationTimezoneHelp =>
+      'Define o “hoje” e os horários dos lembretes dos seus alunos.';
+
+  @override
+  String get organizationTimezoneSearchHint => 'Pesquisar fuso';
+
+  @override
+  String get organizationTimezoneOther => 'Outro fuso…';
+
+  @override
+  String get organizationTimezoneOtherLabel =>
+      'Nome do fuso (ex.: Europe/Lisbon)';
+
+  @override
+  String get organizationSaved => 'Organização atualizada.';
+
+  @override
+  String get organizationLoadError => 'Não conseguimos carregar a organização.';
+
+  @override
+  String get errorInvalidTimezone =>
+      'Esse fuso horário não existe. Escolha um da lista ou use um nome como Europe/Lisbon.';
 
   @override
   String get errorConsentRequired =>
