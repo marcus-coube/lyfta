@@ -2,6 +2,7 @@ package job_test
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"os"
 	"slices"
@@ -90,6 +91,22 @@ func (f *fakePusher) count() int {
 	return len(f.sent)
 }
 
+// fakeStudents responde o status por aluno; quem não está no mapa é `active`.
+type fakeStudents struct {
+	status map[string]string
+	err    error
+}
+
+func (f *fakeStudents) StudentStatus(ctx context.Context, tenantID, studentID string) (string, bool, error) {
+	if f.err != nil {
+		return "", false, f.err
+	}
+	if s, ok := f.status[studentID]; ok {
+		return s, s != "", nil
+	}
+	return "active", true, nil
+}
+
 // TestSweepDoesNotDuplicateSameDay cobre o Aceite da P3.4: "job não duplica
 // no mesmo dia". Duas chamadas a Sweep com o mesmo intervalo e a mesma lista
 // de alunos pendentes só mandam push uma vez — a segunda encontra o
@@ -110,7 +127,8 @@ func TestSweepDoesNotDuplicateSameDay(t *testing.T) {
 	notifier := push.NewNotifier(logger, deviceTokens, notifications, pusher)
 
 	source := &fakeWorkoutSource{students: []workoutclient.PendingStudent{{TenantID: tenantID, StudentID: studentID}}}
-	j := job.NewPendingWorkoutJob(logger, pool, source, nil, notifications, notifier, 18)
+	students := &fakeStudents{}
+	j := job.NewPendingWorkoutJob(logger, pool, source, nil, students, notifications, notifier, 18)
 
 	since := time.Now().UTC().Truncate(24 * time.Hour)
 	until := since.AddDate(0, 0, 1)
@@ -138,6 +156,41 @@ func TestSweepDoesNotDuplicateSameDay(t *testing.T) {
 	}
 }
 
+// TestSweepSkipsInactiveStudents cobre o Aceite da P5.2: aluno inativo sai do
+// push de pendente, e falha do identity aborta a varredura.
+func TestSweepSkipsInactiveStudents(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	logger := slog.New(slog.DiscardHandler)
+
+	tenantID, active, inactive := uuid.NewString(), uuid.NewString(), uuid.NewString()
+	deviceTokens := repo.NewDeviceTokenRepo(pool)
+	for _, id := range []string{active, inactive} {
+		if _, err := deviceTokens.Upsert(ctx, tenantID, id, domain.PlatformAndroid, "tok-"+uuid.NewString(), domain.LocalePTBR); err != nil {
+			t.Fatalf("registrar device token: %v", err)
+		}
+	}
+	notifications := repo.NewNotificationLogRepo(pool)
+	pusher := &fakePusher{}
+	notifier := push.NewNotifier(logger, deviceTokens, notifications, pusher)
+	source := &fakeWorkoutSource{students: []workoutclient.PendingStudent{
+		{TenantID: tenantID, StudentID: active}, {TenantID: tenantID, StudentID: inactive},
+	}}
+	students := &fakeStudents{status: map[string]string{inactive: "inactive"}}
+	j := job.NewPendingWorkoutJob(logger, pool, source, nil, students, notifications, notifier, 18)
+
+	since := time.Now().UTC().Truncate(24 * time.Hour)
+	sent, _, err := j.Sweep(ctx, since, since.AddDate(0, 0, 1), []string{tenantID})
+	if err != nil || sent != 1 || pusher.count() != 1 {
+		t.Fatalf("só o aluno ativo deveria receber: sent=%d push=%d err=%v", sent, pusher.count(), err)
+	}
+
+	students.err = errors.New("identity fora")
+	if _, _, err := j.Sweep(ctx, since, since.AddDate(0, 0, 1), []string{tenantID}); err == nil {
+		t.Fatalf("falha do identity deveria abortar a varredura")
+	}
+}
+
 // TestSweepDedupeIsPerDayWindow cobre a borda do dedupe: um envio de ONTEM
 // (fora do intervalo [since, until) de hoje) não impede o envio de hoje —
 // senão o aluno nunca mais receberia o lembrete depois do primeiro dia.
@@ -162,7 +215,8 @@ func TestSweepDedupeIsPerDayWindow(t *testing.T) {
 	}
 
 	source := &fakeWorkoutSource{students: []workoutclient.PendingStudent{{TenantID: tenantID, StudentID: studentID}}}
-	j := job.NewPendingWorkoutJob(logger, pool, source, nil, notifications, notifier, 18)
+	students := &fakeStudents{}
+	j := job.NewPendingWorkoutJob(logger, pool, source, nil, students, notifications, notifier, 18)
 
 	// Intervalo de "hoje" começando amanhã de propósito, só para garantir que
 	// o log de "ontem" (gravado agora, com sent_at = now()) fica ANTES do
@@ -234,7 +288,8 @@ func TestTickRunsInEachTenantTimezone(t *testing.T) {
 	}}
 
 	clock := time.Date(2030, 3, 10, 9, 0, 0, 0, time.UTC)
-	j := job.NewPendingWorkoutJob(logger, pool, source, tenants, notifications, notifier, 18).
+	students := &fakeStudents{}
+	j := job.NewPendingWorkoutJob(logger, pool, source, tenants, students, notifications, notifier, 18).
 		WithClock(func() time.Time { return clock })
 
 	notified := func(tenantID, studentID string) bool {

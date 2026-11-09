@@ -129,6 +129,29 @@ func (c *Client) CoachOf(ctx context.Context, tenantID, studentID string) (coach
 	}
 }
 
+// StudentStatus devolve o status do aluno no identity (`active`, `inactive`,
+// ...). found=false quando o identity não o conhece como aluno do tenant (404).
+// Sem cache: quem chama é o job diário, uma consulta por aluno pendente.
+func (c *Client) StudentStatus(ctx context.Context, tenantID, studentID string) (status string, found bool, err error) {
+	target := fmt.Sprintf("%s/internal/v1/students/%s?tenant_id=%s",
+		c.baseURL, url.PathEscape(studentID), url.QueryEscape(tenantID))
+	var body struct {
+		Status string `json:"status"`
+	}
+	code, err := c.get(ctx, target, &body)
+	if err != nil {
+		return "", false, err
+	}
+	switch code {
+	case http.StatusOK:
+		return body.Status, true, nil
+	case http.StatusNotFound:
+		return "", false, nil
+	default:
+		return "", false, fmt.Errorf("coachlink: identity respondeu %d", code)
+	}
+}
+
 func (c *Client) get(ctx context.Context, target string, out any) (int, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
 	if err != nil {

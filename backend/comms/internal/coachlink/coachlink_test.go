@@ -133,3 +133,33 @@ func TestCoachOf(t *testing.T) {
 		t.Fatal("identity com 500 deveria virar erro")
 	}
 }
+
+func TestStudentStatus(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-Internal-Token") != "segredo" || r.URL.Query().Get("tenant_id") != "t-1" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		switch r.URL.Path {
+		case "/internal/v1/students/s-1":
+			_, _ = w.Write([]byte(`{"id":"s-1","status":"inactive"}`))
+		case "/internal/v1/students/s-2":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	}))
+	t.Cleanup(srv.Close)
+	c := NewClient(srv.URL, "segredo", time.Second)
+	ctx := context.Background()
+
+	if status, found, err := c.StudentStatus(ctx, "t-1", "s-1"); err != nil || !found || status != "inactive" {
+		t.Fatalf("s-1: %q %v %v", status, found, err)
+	}
+	if _, found, err := c.StudentStatus(ctx, "t-1", "s-2"); err != nil || found {
+		t.Fatalf("s-2 deveria ser not found sem erro: %v %v", found, err)
+	}
+	if _, _, err := c.StudentStatus(ctx, "t-1", "s-3"); err == nil {
+		t.Fatalf("500 do identity deveria virar erro")
+	}
+}

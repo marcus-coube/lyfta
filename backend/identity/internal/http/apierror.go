@@ -102,6 +102,15 @@ var (
 	errTenantNotFound = func() APIError {
 		return newAPIError(http.StatusNotFound, "tenant_not_found")
 	}
+	errAlreadyInactive = func() APIError {
+		return newAPIError(http.StatusConflict, "already_inactive")
+	}
+	errAlreadyActive = func() APIError {
+		return newAPIError(http.StatusConflict, "already_active")
+	}
+	errInvalidStatusTransition = func() APIError {
+		return newAPIError(http.StatusConflict, "invalid_status_transition")
+	}
 	errInternal = func() APIError {
 		return newAPIError(http.StatusInternalServerError, "internal_error")
 	}

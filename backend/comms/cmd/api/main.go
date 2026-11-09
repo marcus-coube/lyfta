@@ -139,7 +139,7 @@ func run(logger *slog.Logger) error {
 	// (ADR-013 §4/§5), dedupe por notification_log e pg_advisory_lock contra
 	// duas instâncias rodando ao mesmo tempo (ver internal/job).
 	workoutClient := workoutclient.NewClient(cfg.WorkoutBaseURL, cfg.InternalToken)
-	pendingJob := job.NewPendingWorkoutJob(logger, pool, workoutClient, tenantclient.NewClient(cfg.IdentityURL, cfg.InternalToken, tenantclient.DefaultTTL), notifications, notifier, pendingWorkoutTriggerHour)
+	pendingJob := job.NewPendingWorkoutJob(logger, pool, workoutClient, tenantclient.NewClient(cfg.IdentityURL, cfg.InternalToken, tenantclient.DefaultTTL), coachLinks, notifications, notifier, pendingWorkoutTriggerHour)
 	go pendingJob.Run(ctx)
 
 	server := &http.Server{

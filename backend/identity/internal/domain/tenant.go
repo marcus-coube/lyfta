@@ -39,6 +39,9 @@ const (
 	UserStatusInvited  UserStatus = "invited"
 	UserStatusActive   UserStatus = "active"
 	UserStatusDisabled UserStatus = "disabled"
+	// UserStatusInactive é o aluno desativado pelo professor/owner (P5.2): não
+	// loga, some da lista padrão e mantém todos os dados.
+	UserStatusInactive UserStatus = "inactive"
 )
 
 // Role é o papel do usuário dentro do tenant (ADR-002: atributo do usuário,
@@ -63,6 +66,9 @@ type User struct {
 	Status       UserStatus
 	Roles        []Role
 	CreatedAt    time.Time
+	// Phone e BirthDate (AAAA-MM-DD) são opcionais (P5.2).
+	Phone     *string
+	BirthDate *string
 	// CoachID/CoachName só vêm preenchidos na listagem, para aluno com vínculo
 	// (ADR-016).
 	CoachID   *string

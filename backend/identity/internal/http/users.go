@@ -180,7 +180,7 @@ func isKnownRole(role domain.Role) bool {
 
 func isKnownStatus(status domain.UserStatus) bool {
 	switch status {
-	case domain.UserStatusInvited, domain.UserStatusActive, domain.UserStatusDisabled:
+	case domain.UserStatusInvited, domain.UserStatusActive, domain.UserStatusInactive, domain.UserStatusDisabled:
 		return true
 	default:
 		return false

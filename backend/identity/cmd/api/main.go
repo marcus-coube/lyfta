@@ -110,7 +110,7 @@ func run(logger *slog.Logger) error {
 	limiter := ihttp.NewRateLimiter(limitStore, logger, cfg.TrustProxy)
 
 	userHandler := ihttp.NewUserHandler(logger, users, repo.NewCoachLinkRepo(pool))
-	router := ihttp.NewRouter(logger, cfg.CORSOrigins, jwtSigner, cfg.InternalToken, authHandler, invitationHandler, passwordResetHandler, userHandler, accountHandler, ihttp.NewTenantHandler(logger, tenants), limiter)
+	router := ihttp.NewRouter(logger, cfg.CORSOrigins, jwtSigner, cfg.InternalToken, authHandler, invitationHandler, passwordResetHandler, userHandler, accountHandler, ihttp.NewTenantHandler(logger, tenants), ihttp.NewStudentHandler(logger, users, repo.NewStudentRepo(pool), repo.NewCoachLinkRepo(pool)), limiter)
 
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,

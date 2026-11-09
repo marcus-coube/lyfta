@@ -35,7 +35,7 @@ Refs normativas: ADR-001, ADR-002, ADR-007 §3, ADR-008, ADR-013, ADR-016.
 horário local de cada um (teste do job com relógio fake); `PUT /v1/tenant` com
 fuso inválido = 422 `invalid_timezone`; teste de widget da seção Organização.
 
-## - [ ] P5.2 Cadastro e status do aluno (identity)
+## - [x] P5.2 Cadastro e status do aluno (identity)
 
 **Objetivo:** dados cadastrais e ciclo de vida do aluno sem apagar nada.
 **Passos:**
@@ -157,3 +157,42 @@ objetivo e o coach vê; teste de widget do formulário de lesão.
   é lido, sem UI (entra na P7.4).
 - Dívida: o app do owner não atualiza a claim `tz` local após o PUT (nada a
   consome ainda).
+
+### P5.2 (2026-11-09)
+
+- identity: migration `0014_student_registry` (`users.phone`, `users.birth_date`,
+  `inactive` no CHECK de status, tabela `user_status_events` com RLS e índice
+  `(tenant_id, user_id, created_at DESC)`). Inativar revoga os refresh tokens na
+  mesma transação; login já só enxerga `active` (`find_tenants_by_email`) e o
+  refresh rejeita status != `active`. O access token em circulação vale até
+  vencer (15 min).
+- Rotas (owner|coach; coach só os vinculados, os demais = 404
+  `student_not_found`): `GET /v1/students` (status omitido esconde os inativos;
+  `status=inactive` os lista; `q`, `coach_id` só do owner, `limit` <= 200 por
+  página, cursor keyset sobre toda a lista), `GET/PATCH /v1/students/{id}`,
+  `POST .../deactivate|reactivate` (corpo opcional `reason` <= 500),
+  `GET .../status-history` (<= 100, mais recente primeiro). `PUT .../coach`
+  segue só owner. Erros 409: `already_inactive`, `already_active`,
+  `invalid_status_transition` (aluno `invited`/`disabled`). PATCH: campo
+  omitido mantém, `""` em telefone/nascimento apaga; 422 `validation_error`.
+- `GET/PATCH /v1/me` (qualquer papel): o aluno edita telefone e nascimento; o
+  nome só o professor muda. `GET /v1/me` não estava no plano — entrou porque
+  sem ele o app não tem de onde ler os valores na tela Conta (P5.4).
+- `GET /v1/users` também esconde inativos por padrão (mesma regra do repo) e
+  aceita `status=inactive`. A ficha traz `pending_invitation` (id, datas,
+  `expired`) quando o aluno está `invited`, para o app reenviar.
+- M2M novo `GET /internal/v1/students/{id}?tenant_id=` -> `{id, status,
+  coach_id}`. `coachlink` do comms ganhou `StudentStatus`; o job de pendente
+  consulta o status de cada aluno que o workout devolve e pula quem não é
+  `active` (ou o identity não conhece). Falha do identity aborta a varredura
+  daquele fuso (`lastSwept` não avança; o próximo tick refaz e o dedupe protege
+  quem já recebeu). Assinatura de `NewPendingWorkoutJob` ganhou o parâmetro
+  `students`.
+- Exclusão de conta (ADR-008 §2): `Anonymize` apaga `user_status_events` do
+  usuário (o `reason` é texto livre) e zera telefone/nascimento. Por isso a
+  tabela concede DELETE ao `lyfta_app`; fora isso a aplicação só insere.
+- Decisão: histórico só registra inativar/reativar (não o `invited -> active`).
+- Sem mudança no app: a troca de `/v1/users?role=student` por `/v1/students` e
+  o fim do corte em 200 alunos na tela ficam na P5.4 (a API já pagina tudo).
+  Dívida: o app ainda não trata o status `inactive` (só aparece no filtro
+  explícito; nada que o app mostra hoje depende dele).

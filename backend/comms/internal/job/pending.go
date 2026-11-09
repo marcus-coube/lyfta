@@ -40,6 +40,15 @@ type pendingStudentsSource interface {
 	PendingStudents(ctx context.Context, since, until time.Time, tenantIDs []string) ([]workoutclient.PendingStudent, error)
 }
 
+// studentStatusSource consulta o status do aluno no identity
+// (coachlink.Client): aluno inativo não recebe o push (P5.2).
+type studentStatusSource interface {
+	StudentStatus(ctx context.Context, tenantID, studentID string) (status string, found bool, err error)
+}
+
+// statusActive é o status do aluno que treina (identity).
+const statusActive = "active"
+
 // tenantSource lista os tenants com o fuso de cada um (tenantclient.Client).
 type tenantSource interface {
 	List(ctx context.Context) ([]tenantclient.Tenant, error)
@@ -51,6 +60,7 @@ type PendingWorkoutJob struct {
 	pool        *pgxpool.Pool
 	workout     pendingStudentsSource
 	tenants     tenantSource
+	students    studentStatusSource
 	logs        *repo.NotificationLogRepo
 	notifier    *push.Notifier
 	triggerHour int
@@ -69,12 +79,13 @@ func NewPendingWorkoutJob(
 	pool *pgxpool.Pool,
 	workout pendingStudentsSource,
 	tenants tenantSource,
+	students studentStatusSource,
 	logs *repo.NotificationLogRepo,
 	notifier *push.Notifier,
 	triggerHour int,
 ) *PendingWorkoutJob {
 	return &PendingWorkoutJob{
-		logger: logger, pool: pool, workout: workout, tenants: tenants, logs: logs,
+		logger: logger, pool: pool, workout: workout, tenants: tenants, students: students, logs: logs,
 		notifier: notifier, triggerHour: triggerHour, now: time.Now,
 		lastSwept: map[string]string{},
 	}
@@ -201,12 +212,22 @@ func (j *PendingWorkoutJob) Sweep(ctx context.Context, since, until time.Time, t
 	if len(tenantIDs) == 0 {
 		return 0, 0, nil
 	}
-	students, err := j.workout.PendingStudents(ctx, since, until, tenantIDs)
+	pending, err := j.workout.PendingStudents(ctx, since, until, tenantIDs)
 	if err != nil {
 		return 0, 0, err
 	}
 
-	for _, s := range students {
+	for _, s := range pending {
+		// Aluno inativo (ou que o identity não conhece mais) fica fora. Falha
+		// do identity aborta a varredura: o próximo tick refaz, e o dedupe
+		// protege quem já recebeu.
+		status, found, statusErr := j.students.StudentStatus(ctx, s.TenantID, s.StudentID)
+		if statusErr != nil {
+			return sent, skippedDedupe, statusErr
+		}
+		if !found || status != statusActive {
+			continue
+		}
 		already, existsErr := j.logs.ExistsInRange(ctx, s.TenantID, s.StudentID, string(push.KindWorkoutPending), since, until)
 		if existsErr != nil {
 			j.logger.Error("pending_job_dedupe_check_failed", slog.Any("error", existsErr))

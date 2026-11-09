@@ -33,7 +33,7 @@ func (r *CoachLinkRepo) Reassign(ctx context.Context, tenantID, studentID, coach
 		if err := tx.QueryRow(ctx, `
 			SELECT EXISTS (SELECT 1 FROM users u
 			               JOIN user_roles r ON r.user_id = u.id AND r.role = 'student'
-			               WHERE u.id = $1 AND u.status IN ('invited', 'active', 'disabled')),
+			               WHERE u.id = $1 AND u.status IN ('invited', 'active', 'inactive', 'disabled')),
 			       EXISTS (SELECT 1 FROM users u
 			               JOIN user_roles r ON r.user_id = u.id AND r.role IN ('coach', 'owner')
 			               WHERE u.id = $2 AND u.status = 'active')`,

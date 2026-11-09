@@ -135,10 +135,12 @@ func (r *AuthRepo) FindUserByID(ctx context.Context, tenantID, userID string) (d
 	var u domain.User
 	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
 		const qUser = `
-			SELECT id, tenant_id, email, name, locale, status, created_at
+			SELECT id, tenant_id, email, name, locale, status, created_at,
+			       phone, birth_date::text
 			FROM users WHERE id = $1`
 		if err := tx.QueryRow(ctx, qUser, userID).Scan(
 			&u.ID, &u.TenantID, &u.Email, &u.Name, &u.Locale, &u.Status, &u.CreatedAt,
+			&u.Phone, &u.BirthDate,
 		); err != nil {
 			if err == pgx.ErrNoRows {
 				return ErrNotFound

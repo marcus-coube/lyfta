@@ -39,6 +39,78 @@ func NewAccountHandler(logger *slog.Logger, users *repo.UserRepo, auth *repo.Aut
 	return &AccountHandler{logger: logger, users: users, auth: auth, consents: consents, issuer: issuer, eraser: eraser, termsVersion: termsVersion}
 }
 
+type meResponse struct {
+	ID        string   `json:"id"`
+	Name      string   `json:"name"`
+	Email     string   `json:"email"`
+	Phone     *string  `json:"phone"`
+	BirthDate *string  `json:"birth_date"`
+	Locale    string   `json:"locale"`
+	Roles     []string `json:"roles"`
+}
+
+func (h *AccountHandler) writeMe(w http.ResponseWriter, r *http.Request, claims *security.Claims) {
+	user, err := h.auth.FindUserByID(r.Context(), claims.TenantID, claims.Subject)
+	if err != nil {
+		if err == repo.ErrNotFound {
+			writeError(w, errUnauthenticated())
+			return
+		}
+		h.logger.Error("me_get_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
+	}
+	roles := make([]string, 0, len(user.Roles))
+	for _, role := range user.Roles {
+		roles = append(roles, string(role))
+	}
+	writeJSON(w, http.StatusOK, meResponse{
+		ID: user.ID, Name: user.Name, Email: user.Email, Phone: user.Phone,
+		BirthDate: user.BirthDate, Locale: user.Locale, Roles: roles,
+	})
+}
+
+// GetMe — GET /v1/me: o cadastro do próprio usuário.
+func (h *AccountHandler) GetMe(w http.ResponseWriter, r *http.Request) {
+	claims, ok := ClaimsFromContext(r.Context())
+	if !ok {
+		writeError(w, errUnauthenticated())
+		return
+	}
+	h.writeMe(w, r, claims)
+}
+
+// PatchMe — PATCH /v1/me: o usuário edita o próprio telefone e nascimento
+// (P5.2; "" apaga). O nome não muda por aqui: quem edita o nome do aluno é o
+// professor.
+func (h *AccountHandler) PatchMe(w http.ResponseWriter, r *http.Request) {
+	claims, ok := ClaimsFromContext(r.Context())
+	if !ok {
+		writeError(w, errUnauthenticated())
+		return
+	}
+	var req patchProfileRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, errInvalidBody())
+		return
+	}
+	patch, field := req.toPatch(false)
+	if field != "" {
+		writeError(w, errUnprocessable(field))
+		return
+	}
+	if err := h.users.UpdateProfile(r.Context(), claims.TenantID, claims.Subject, patch); err != nil {
+		if err == repo.ErrNotFound {
+			writeError(w, errUnauthenticated())
+			return
+		}
+		h.logger.Error("me_patch_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
+	}
+	h.writeMe(w, r, claims)
+}
+
 type consentsResponse struct {
 	TermsVersion string `json:"terms_version"`
 	// Required são as finalidades sem as quais o papel do usuário não usa o

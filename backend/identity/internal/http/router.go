@@ -25,6 +25,7 @@ func NewRouter(
 	users *UserHandler,
 	account *AccountHandler,
 	tenant *TenantHandler,
+	students *StudentHandler,
 	limiter *RateLimiter,
 ) http.Handler {
 	r := chi.NewRouter()
@@ -55,6 +56,8 @@ func NewRouter(
 		// Fuso e configurações do tenant (P5.1): jobs que varrem tenants.
 		r.Get("/tenants", tenant.InternalList)
 		r.Get("/tenants/{id}", tenant.InternalGet)
+		// Status do aluno (P5.2): jobs ignoram inativos.
+		r.Get("/students/{id}", students.InternalStudent)
 	})
 
 	r.Route("/v1", func(r chi.Router) {
@@ -74,6 +77,8 @@ func NewRouter(
 			r.Use(RequireAuth(signer))
 			r.Get("/consents", account.GetConsents)
 			r.Put("/consents", account.PutConsents)
+			r.Get("/", account.GetMe)
+			r.Patch("/", account.PatchMe)
 			r.Delete("/", account.DeleteMe)
 		})
 
@@ -95,11 +100,19 @@ func NewRouter(
 			r.With(RequireRole(string(domain.RoleOwner))).Put("/", tenant.Put)
 		})
 
-		// Reatribuição do professor do aluno: só owner (ADR-016 §1).
+		// Alunos (P5.2): owner vê todos, coach só os vinculados a ele
+		// (ADR-016; o handler responde 404 nos outros). Reatribuir o
+		// professor é só do owner (ADR-016 §1).
 		r.Route("/students", func(r chi.Router) {
 			r.Use(RequireAuth(signer))
-			r.Use(RequireRole(string(domain.RoleOwner)))
-			r.Put("/{id}/coach", users.PutStudentCoach)
+			r.Use(RequireRole(string(domain.RoleOwner), string(domain.RoleCoach)))
+			r.Get("/", students.List)
+			r.Get("/{id}", students.Get)
+			r.Patch("/{id}", students.Patch)
+			r.Post("/{id}/deactivate", students.Deactivate)
+			r.Post("/{id}/reactivate", students.Reactivate)
+			r.Get("/{id}/status-history", students.StatusHistory)
+			r.With(RequireRole(string(domain.RoleOwner))).Put("/{id}/coach", users.PutStudentCoach)
 		})
 
 		r.Route("/invitations", func(r chi.Router) {

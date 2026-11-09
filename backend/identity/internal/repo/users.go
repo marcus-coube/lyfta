@@ -170,7 +170,8 @@ func (r *UserRepo) ListByTenant(ctx context.Context, tenantID string) ([]domain.
 }
 
 // UserFilter são os filtros da listagem de usuários do tenant (P1.6): a tela
-// de alunos do professor. Campos vazios não filtram.
+// de alunos do professor. Campos vazios não filtram — exceto Status, que vazio
+// esconde os inativos (P5.2): quem quer vê-los pede `inactive` de propósito.
 type UserFilter struct {
 	Role   domain.Role
 	Query  string
@@ -194,6 +195,8 @@ const (
 //
 // A busca cobre nome e e-mail, sem distinguir caixa; o cursor é keyset sobre
 // (nome, id), estável quando entra aluno novo no meio da lista.
+//
+// Status vazio esconde os alunos inativos; `status=inactive` os lista.
 func (r *UserRepo) List(ctx context.Context, tenantID string, f UserFilter) (users []domain.User, hasMore bool, err error) {
 	limit := f.Limit
 	if limit <= 0 {
@@ -208,6 +211,7 @@ func (r *UserRepo) List(ctx context.Context, tenantID string, f UserFilter) (use
 		// papéis (ADR-002), então um JOIN duplicaria linhas.
 		const q = `
 			SELECT u.id, u.tenant_id, u.email, u.name, u.locale, u.status, u.created_at,
+			       u.phone, u.birth_date::text,
 			       COALESCE(
 			           (SELECT array_agg(ur.role ORDER BY ur.role)
 			            FROM user_roles ur WHERE ur.user_id = u.id),
@@ -220,7 +224,7 @@ func (r *UserRepo) List(ctx context.Context, tenantID string, f UserFilter) (use
 			WHERE u.status NOT IN ('deleting', 'deleted')
 			  AND ($1::text IS NULL OR EXISTS (
 			          SELECT 1 FROM user_roles ur WHERE ur.user_id = u.id AND ur.role = $1))
-			  AND ($2::text IS NULL OR u.status = $2)
+			  AND (($2::text IS NULL AND u.status <> 'inactive') OR u.status = $2)
 			  AND ($3::text IS NULL OR u.name ILIKE $3 OR u.email ILIKE $3)
 			  AND ($4::text IS NULL OR (u.name, u.id::text) > ($4, $5))
 			  AND ($7::uuid IS NULL OR cs.coach_id = $7)
@@ -239,7 +243,7 @@ func (r *UserRepo) List(ctx context.Context, tenantID string, f UserFilter) (use
 				roles []string
 			)
 			if scanErr := rows.Scan(&u.ID, &u.TenantID, &u.Email, &u.Name, &u.Locale,
-				&u.Status, &u.CreatedAt, &roles, &u.CoachID, &u.CoachName); scanErr != nil {
+				&u.Status, &u.CreatedAt, &u.Phone, &u.BirthDate, &roles, &u.CoachID, &u.CoachName); scanErr != nil {
 				return fmt.Errorf("repo: ler usuário: %w", scanErr)
 			}
 			for _, role := range roles {
@@ -352,6 +356,8 @@ func (r *UserRepo) Anonymize(ctx context.Context, tenantID, userID string) error
 			`DELETE FROM password_resets WHERE user_id = $1`,
 			`DELETE FROM user_roles WHERE user_id = $1`,
 			`DELETE FROM coach_students WHERE student_id = $1`,
+			// `reason` é texto livre e pode citar a pessoa: o histórico sai junto.
+			`DELETE FROM user_status_events WHERE user_id = $1`,
 		} {
 			if _, err := tx.Exec(ctx, q, userID); err != nil {
 				return err
@@ -363,12 +369,49 @@ func (r *UserRepo) Anonymize(ctx context.Context, tenantID, userID string) error
 		_, err = tx.Exec(ctx, `
 			UPDATE users
 			SET email = 'deleted+' || id::text || '@deleted.invalid',
-			    name = 'deleted', password_hash = '', status = 'deleted'
+			    name = 'deleted', password_hash = '', status = 'deleted',
+			    phone = NULL, birth_date = NULL
 			WHERE id = $1`, userID)
 		return err
 	})
 	if err != nil {
 		return fmt.Errorf("repo: anonimizar usuário: %w", err)
+	}
+	return nil
+}
+
+// ProfilePatch é a edição parcial do cadastro (P5.2): nil mantém o valor;
+// string vazia em Phone/BirthDate apaga o campo.
+type ProfilePatch struct {
+	Name      *string
+	Phone     *string
+	BirthDate *string // AAAA-MM-DD
+}
+
+// UpdateProfile aplica o patch no usuário (não excluído). ErrNotFound se o id
+// não existe no tenant.
+func (r *UserRepo) UpdateProfile(ctx context.Context, tenantID, userID string, p ProfilePatch) error {
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		tag, err := tx.Exec(ctx, `
+			UPDATE users
+			SET name = COALESCE($2, name),
+			    phone = CASE WHEN $3::text IS NULL THEN phone ELSE NULLIF($3::text, '') END,
+			    birth_date = CASE WHEN $4::text IS NULL THEN birth_date ELSE NULLIF($4::text, '')::date END
+			WHERE id = $1 AND status NOT IN ('deleting', 'deleted')`,
+			userID, p.Name, p.Phone, p.BirthDate)
+		if err != nil {
+			return err
+		}
+		if tag.RowsAffected() == 0 {
+			return ErrNotFound
+		}
+		return nil
+	})
+	if err == ErrNotFound {
+		return err
+	}
+	if err != nil {
+		return fmt.Errorf("repo: atualizar cadastro: %w", err)
 	}
 	return nil
 }
