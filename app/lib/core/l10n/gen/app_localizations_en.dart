@@ -2029,6 +2029,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'The plan becomes read-only. Workout history stays in the charts and you can activate it again later.';
 
   @override
+  String get planArchiveDraftBody =>
+      'This plan was never published: once archived it becomes read-only and can\'t be activated. Duplicate it to reuse it.';
+
+  @override
   String get planArchived => 'Plan archived.';
 
   @override

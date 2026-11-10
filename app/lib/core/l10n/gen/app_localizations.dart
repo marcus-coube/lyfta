@@ -3651,6 +3651,12 @@ abstract class AppLocalizations {
   /// **'O plano fica somente leitura. O histórico de treinos continua nos gráficos e dá para ativá-lo de novo depois.'**
   String get planArchiveBody;
 
+  /// Corpo da confirmação de arquivar um plano sem versão publicada (P6.2: só volta duplicando).
+  ///
+  /// In pt, this message translates to:
+  /// **'Este plano nunca foi publicado: arquivado, fica somente leitura e não dá para ativá-lo. Para reaproveitar, duplique.'**
+  String get planArchiveDraftBody;
+
   /// Plano arquivado.
   ///
   /// In pt, this message translates to:

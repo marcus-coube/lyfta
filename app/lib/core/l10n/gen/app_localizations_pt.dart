@@ -2031,6 +2031,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'O plano fica somente leitura. O histórico de treinos continua nos gráficos e dá para ativá-lo de novo depois.';
 
   @override
+  String get planArchiveDraftBody =>
+      'Este plano nunca foi publicado: arquivado, fica somente leitura e não dá para ativá-lo. Para reaproveitar, duplique.';
+
+  @override
   String get planArchived => 'Plano arquivado.';
 
   @override
@@ -4134,6 +4138,10 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   @override
   String get planArchiveBody =>
       'O plano fica só de leitura. O histórico de treinos continua nos gráficos e pode ser ativado de novo mais tarde.';
+
+  @override
+  String get planArchiveDraftBody =>
+      'Este plano nunca foi publicado: arquivado, fica só de leitura e não pode ser ativado. Para o reaproveitar, duplique-o.';
 
   @override
   String get planArchived => 'Plano arquivado.';

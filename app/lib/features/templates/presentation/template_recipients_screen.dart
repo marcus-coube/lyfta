@@ -6,6 +6,7 @@ import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_error_state.dart';
 import '../../chat/data/participant_directory.dart';
+import '../../students/presentation/students_controller.dart';
 import '../data/template_repository.dart';
 import '../domain/template.dart';
 import 'batch_result_view.dart';
@@ -108,6 +109,8 @@ class _TemplateRecipientsScreenState
             planIds: chosen.map((r) => r.planId).toList(),
           );
       if (!mounted) return;
+      // A lista de alunos (outra aba, viva no shell) mostra a versão do plano.
+      ref.read(studentsProvider.notifier).refresh();
       setState(() {
         _planNames = {for (final r in chosen) r.planId: _nameOf(data, r)};
         _results = items;

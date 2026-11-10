@@ -48,7 +48,8 @@ type TemplateFilter struct {
 }
 
 // ListTemplates lista os modelos do tenant, mais recentemente alterados
-// primeiro, com contagens da última versão publicada.
+// primeiro, com contagens da última versão publicada — ou do rascunho, se o
+// modelo nunca foi publicado (senão "Salvar como modelo" listaria 0 dias).
 func (r *PlanRepo) ListTemplates(ctx context.Context, tenantID string, f TemplateFilter) (items []domain.TemplateSummary, hasMore bool, err error) {
 	limit := f.Limit
 	if limit <= 0 || limit > 100 {
@@ -75,8 +76,8 @@ func (r *PlanRepo) ListTemplates(ctx context.Context, tenantID string, f Templat
 				          JOIN workout_days d ON d.id = b.day_id
 				         WHERE d.plan_version_id = x.id) AS exercises
 				FROM workout_plan_versions x
-				WHERE x.plan_id = p.id AND x.published_at IS NOT NULL
-				ORDER BY x.version_no DESC LIMIT 1
+				WHERE x.plan_id = p.id
+				ORDER BY (x.published_at IS NOT NULL) DESC, x.version_no DESC LIMIT 1
 			) pv ON TRUE
 			WHERE p.kind = 'template'
 			  AND ($1 = 'all' OR ($1 = 'archived' AND p.status = 'archived')

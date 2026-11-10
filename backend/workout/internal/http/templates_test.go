@@ -456,6 +456,23 @@ func TestTemplateNeverLeaksToStudentSurfaces(t *testing.T) {
 	}
 }
 
+// Nunca publicado: as contagens vêm do rascunho (o "Salvar como modelo" nasce
+// assim e não pode aparecer com 0 dias); publicado, da versão publicada.
+func TestTemplateListCountsDraftOnly(t *testing.T) {
+	a := templateFixture(t)
+	id := a.newTemplate(t, a.coachA, "Rascunho 2 dias", false, "A", "B")
+	l := decodeInto[apiTemplateList](t, do(t, a.handler, http.MethodGet, "/v1/templates", a.coachA, nil).Body.Bytes())
+	if len(l.Items) != 1 || l.Items[0].PublishedVersionNo != 0 || l.Items[0].DaysCount != 2 || l.Items[0].ExercisesCount != 2 {
+		t.Fatalf("rascunho deveria trazer as próprias contagens: %+v", l.Items)
+	}
+	a.publishTemplate(t, a.coachA, id)
+	a.saveTemplate(t, a.coachA, id, "A")
+	l = decodeInto[apiTemplateList](t, do(t, a.handler, http.MethodGet, "/v1/templates", a.coachA, nil).Body.Bytes())
+	if len(l.Items) != 1 || l.Items[0].DaysCount != 2 {
+		t.Fatalf("com versão publicada, contam os dias dela (não do rascunho novo): %+v", l.Items)
+	}
+}
+
 func TestTemplateListSearchAndPaging(t *testing.T) {
 	a := templateFixture(t)
 	a.newTemplate(t, a.coachA, "Hipertrofia ABC", true, "A", "B", "C")

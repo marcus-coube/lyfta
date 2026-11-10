@@ -8,6 +8,7 @@ import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_shell_scaffold.dart';
 import '../../templates/data/template_repository.dart';
+import '../../templates/presentation/template_form_dialog.dart';
 import '../data/plan_repository.dart';
 import '../../../shared/domain/plan.dart';
 import '../../../shared/l10n/plan_l10n.dart';
@@ -243,56 +244,30 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
     if (_dirty && !_readOnly) await _save();
     if (!mounted || _error != null) return;
 
-    final controller = TextEditingController.fromValue(
-      TextEditingValue(
-        text: _title,
-        selection: TextSelection(baseOffset: 0, extentOffset: _title.length),
-      ),
+    final form = await showTemplateFormDialog(
+      context,
+      heading: l10n.builderSaveAsTemplateTitle,
+      initialTitle: _title,
+      confirmKey: const Key('save_as_template_confirm'),
     );
-    final title = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.builderSaveAsTemplateTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            LyTextField(
-              label: l10n.templatesTitleLabel,
-              controller: controller,
-              autofocus: true,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.commonCancel),
-          ),
-          TextButton(
-            key: const Key('save_as_template_confirm'),
-            onPressed: () {
-              final value = controller.text.trim();
-              Navigator.of(context).pop(value.isEmpty ? null : value);
-            },
-            child: Text(l10n.commonCreate),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
-    if (title == null || !mounted) return;
+    if (form == null || !mounted) return;
 
     try {
       final template = await ref
           .read(planRepositoryProvider)
-          .saveAsTemplate(widget.planId, title: title);
+          .saveAsTemplate(widget.planId, title: form.title);
       if (!mounted) return;
+      // O aviso sobrevive à tela (ScaffoldMessenger é do app): o router é
+      // capturado agora, e `persist: false` evita que a ação o deixe fixo
+      // cobrindo o botão principal das telas seguintes.
+      final router = GoRouter.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
+          persist: false,
           content: Text(l10n.builderSavedAsTemplate),
           action: SnackBarAction(
             label: l10n.builderOpenTemplate,
-            onPressed: () => context.push<void>('/plans/${template.id}'),
+            onPressed: () => router.push<void>('/plans/${template.id}'),
           ),
         ),
       );

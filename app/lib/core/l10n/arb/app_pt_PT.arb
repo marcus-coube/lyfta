@@ -592,6 +592,7 @@
   "planArchive": "Arquivar",
   "planArchiveTitle": "Arquivar este plano?",
   "planArchiveBody": "O plano fica só de leitura. O histórico de treinos continua nos gráficos e pode ser ativado de novo mais tarde.",
+  "planArchiveDraftBody": "Este plano nunca foi publicado: arquivado, fica só de leitura e não pode ser ativado. Para o reaproveitar, duplique-o.",
   "planArchived": "Plano arquivado.",
   "planView": "Ver",
   "planEdit": "Editar",

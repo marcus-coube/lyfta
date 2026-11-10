@@ -195,7 +195,9 @@ class StudentPlansTab extends ConsumerWidget {
     final ok = await _confirm(
       context,
       title: l10n.planArchiveTitle,
-      body: l10n.planArchiveBody,
+      body: plan.publishedVersionNo > 0
+          ? l10n.planArchiveBody
+          : l10n.planArchiveDraftBody,
       action: l10n.planArchive,
     );
     if (!ok || !context.mounted) return;

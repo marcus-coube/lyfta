@@ -1709,6 +1709,10 @@
   "@planArchiveBody": {
     "description": "Corpo da confirmação de arquivar."
   },
+  "planArchiveDraftBody": "Este plano nunca foi publicado: arquivado, fica somente leitura e não dá para ativá-lo. Para reaproveitar, duplique.",
+  "@planArchiveDraftBody": {
+    "description": "Corpo da confirmação de arquivar um plano sem versão publicada (P6.2: só volta duplicando)."
+  },
   "planArchived": "Plano arquivado.",
   "@planArchived": {
     "description": "Plano arquivado."

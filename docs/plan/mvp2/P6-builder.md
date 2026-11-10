@@ -268,9 +268,27 @@ de widget do cartão de superset; treino straight continua idêntico ao 1.0.
   outro aluno). (3) Paginação de modelos e da seleção de alunos é botão
   "Carregar mais", não rolagem infinita. (4) Lote da seleção limitado a 50 no
   cliente (teto do servidor). (5) `PlanRepository.saveDraft` ganhou
-  `description` (só enviada em modelo). (6) Não verificado manualmente em
-  emulador/Chrome — só testes de widget e `flutter analyze`; o Aceite "coach cria
-  modelo, aplica a 2 alunos e cada um vê o treino no Hoje" fica para o E2E.
+  `description` (só enviada em modelo).
+- **Verificação manual no Chrome (2026-11-10):** aceite cumprido — owner cria
+  modelo, publica, aplica a 2 alunos (2/2), publica v2, edita o plano de um
+  aluno (aparece "editado depois de aplicado"), reaplica aos 2 (v3 e v2) e a
+  aluna vê o conteúdo novo no Hoje; duplicar, arquivar rascunho (só Duplicar,
+  leitura) e salvar como modelo também passaram. Corrigido no caminho:
+  (a) criar modelo e "Salvar como modelo" descartavam os
+  `TextEditingController` logo após o `showDialog` voltar, com o diálogo ainda
+  animando — assert `_dependents.isEmpty` em debug; agora o diálogo
+  (`template_form_dialog.dart`) é dono dos controllers; (b) o aviso "Abrir" do
+  salvar como modelo ficava fixo (SnackBar com ação persiste por padrão no
+  Flutter 3.44) cobrindo o botão principal das telas seguintes — `persist:
+  false` e router capturado antes; (c) lista de alunos não recarregava depois
+  de aplicar/reaplicar; (d) confirmação de arquivar rascunho nunca publicado
+  prometia "ativar depois" (`planArchiveDraftBody`); (e) no backend, a lista de
+  modelos contava 0 dias para modelo só em rascunho — agora conta o rascunho
+  quando não há versão publicada.
+- **Pendência (P6.4):** no modo leitura os controles de bloco/exercício/série
+  (adicionar, remover, tipo do bloco) continuam visíveis, apenas inertes
+  (`IgnorePointer`); escondê-los exige passar `readOnly` pelos widgets do
+  bloco e do `SetEditor`.
 - **Testes:** `test/features/templates/assign_template_test.dart` (seleção
   múltipla + resultado parcial com `student_not_found`; reaplicar com destaque,
   aviso e resultado), `test/features/builder/presentation/plan_builder_archived_test.dart`

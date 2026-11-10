@@ -153,6 +153,8 @@ class _AssignTemplateScreenState extends ConsumerState<AssignTemplateScreen> {
             publish: _publish,
           );
       if (!mounted) return;
+      // A lista de alunos (outra aba, viva no shell) mostra o plano ativo.
+      ref.read(studentsProvider.notifier).refresh();
       setState(() => _results = items);
     } catch (error) {
       if (!mounted) return;

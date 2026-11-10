@@ -11,6 +11,7 @@ import '../../../shared/widgets/ly_error_state.dart';
 import '../../../shared/widgets/ly_skeleton.dart';
 import '../data/template_repository.dart';
 import '../domain/template.dart';
+import 'template_form_dialog.dart';
 import 'templates_controller.dart';
 
 /// Aba Modelos do coach (P6.3): biblioteca de modelos do tenant com busca,
@@ -48,54 +49,17 @@ class _TemplatesScreenState extends ConsumerState<TemplatesScreen> {
 
   Future<void> _create() async {
     final l10n = AppLocalizations.of(context);
-    final title = TextEditingController();
-    final description = TextEditingController();
-    final created = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.templatesNewTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            LyTextField(
-              label: l10n.templatesTitleLabel,
-              controller: title,
-              autofocus: true,
-            ),
-            const SizedBox(height: LySpace.x3),
-            LyTextField(
-              label: l10n.templatesDescriptionLabel,
-              controller: description,
-              minLines: 2,
-              maxLines: 4,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () {
-              if (title.text.trim().isEmpty) return;
-              Navigator.of(context).pop(true);
-            },
-            child: Text(l10n.commonCreate),
-          ),
-        ],
-      ),
+    final form = await showTemplateFormDialog(
+      context,
+      heading: l10n.templatesNewTitle,
+      withDescription: true,
     );
-    final name = title.text.trim();
-    final about = description.text.trim();
-    title.dispose();
-    description.dispose();
-    if (created != true || name.isEmpty || !mounted) return;
+    if (form == null || !mounted) return;
 
     try {
       final plan = await ref
           .read(templateRepositoryProvider)
-          .create(title: name, description: about);
+          .create(title: form.title, description: form.description);
       if (!mounted) return;
       await context.push<void>('/plans/${plan.id}');
       ref.read(templatesProvider.notifier).refresh();
