@@ -63,7 +63,7 @@ teste de handler do assign com um aluno fora do vínculo.
 override do coach aparece no `/me/today`; histórico de execuções do plano
 arquivado continua no gráfico de carga (ADR-004 §2); testes de handler.
 
-## - [ ] P6.3 App — modelos e atribuição em lote (Flutter)
+## - [x] P6.3 App — modelos e atribuição em lote (Flutter)
 
 **Objetivo:** fluxo "monta uma vez, aplica a muitos".
 **Passos:**
@@ -231,3 +231,51 @@ de widget do cartão de superset; treino straight continua idêntico ao 1.0.
   `activate`, depois do qual o plano é editável de novo. Arquivado nunca
   publicado não reativa (422) nem se edita: o caminho é duplicar.
 
+### P6.3 — modelos e atribuição em lote (app)
+
+- **Telas/rotas:** aba **Modelos** no shell do coach (entre Biblioteca e Chat;
+  `features/templates/`), `/templates/:id/assign` (seleção múltipla) e
+  `/templates/:id/recipients` (reaplicar). O modelo abre no **mesmo builder**
+  (`/plans/:id`), que detecta `kind=template` e mostra título + descrição
+  editáveis; sem tela nova de edição.
+- **Aba Treino da ficha:** plano em uso primeiro e com borda de destaque,
+  arquivados por último e esmaecidos; menu por plano (Ver/Editar, Ativar,
+  Duplicar, Arquivar) e botão **Aplicar modelo** (diálogo com busca, só modelos
+  publicados, "publicar já" desligado por padrão).
+- **Arquivado somente leitura (decisão 2026-11-10):** o builder abre plano ou
+  modelo arquivado em leitura (campos sem toque/foco, sem Salvar/Publicar, sem
+  adicionar/remover/mover dia) com banner e o caminho de volta: Ativar
+  (só se já foi publicado) e Duplicar no plano; Desarquivar no modelo. Arquivado
+  nunca publicado só oferece Duplicar (e no menu da ficha também). Se o 409
+  `plan_archived`/`template_archived` chegar ao salvar/publicar (arquivado em
+  outra tela), a mensagem i18n aparece e o builder recarrega em modo leitura.
+  Menu "Ativar" some no plano em uso e "Arquivar" some no em uso e no já
+  arquivado (evita o 409 `plan_is_active`).
+- **Resultado por item:** `BatchResultView` compartilhado (aplicar e reaplicar)
+  traduz o `error.code` de cada item; "Tentar de novo os que falharam" volta à
+  seleção só com eles. Reaplicar mostra `Na vN do modelo`, destaca "Editado
+  depois de aplicado" (cor de aviso), desabilita plano arquivado, tem
+  "Selecionar desatualizados" e confirma com o aviso de que os ajustes
+  individuais serão substituídos (com a contagem dos editados). Nomes dos alunos
+  vêm do diretório do identity (`participant_directory`), com o título do plano
+  como reserva.
+- **Salvar como modelo:** menu ⋮ do builder do plano do aluno (salva o
+  rascunho pendente antes, pede o título, avisa que nasce em rascunho e
+  oferece "Abrir").
+- **Desvios/dívidas:** (1) "Aplicar modelo" na ficha é só para **um** aluno
+  (a ficha já é de um aluno); vários = aba Modelos. (2) "Duplicar" na ficha
+  copia para o mesmo aluno (a API aceita `student_id`, o app ainda não oferece
+  outro aluno). (3) Paginação de modelos e da seleção de alunos é botão
+  "Carregar mais", não rolagem infinita. (4) Lote da seleção limitado a 50 no
+  cliente (teto do servidor). (5) `PlanRepository.saveDraft` ganhou
+  `description` (só enviada em modelo). (6) Não verificado manualmente em
+  emulador/Chrome — só testes de widget e `flutter analyze`; o Aceite "coach cria
+  modelo, aplica a 2 alunos e cada um vê o treino no Hoje" fica para o E2E.
+- **Testes:** `test/features/templates/assign_template_test.dart` (seleção
+  múltipla + resultado parcial com `student_not_found`; reaplicar com destaque,
+  aviso e resultado), `test/features/builder/presentation/plan_builder_archived_test.dart`
+  (leitura, Ativar, só-Duplicar, 409 vira mensagem + leitura, modo modelo),
+  `test/features/students/student_plans_tab_test.dart` (ordem/destaque,
+  confirmar ativar, menu do arquivado nunca publicado). Nos testes de builder o
+  layout é estreito: a fonte de teste (Ahem) estoura o botão "Adicionar dia" da
+  lista lateral de 240 px, que é artefato de teste.

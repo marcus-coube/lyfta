@@ -11,8 +11,9 @@ import '../../chat/presentation/chat_home_screen.dart';
 import '../../chat/presentation/conversations_controller.dart';
 import '../../library/presentation/library_screen.dart';
 import '../../students/presentation/students_screen.dart';
+import '../../templates/presentation/templates_screen.dart';
 
-/// Shell do professor — Alunos, Biblioteca e Chat. Lateral em telas largas
+/// Shell do professor — Alunos, Biblioteca, Modelos (P6.3) e Chat. Lateral em telas largas
 /// (web/desktop), barra inferior em mobile (`LyShellScaffold`, breakpoint
 /// ~840px). Alunos e Biblioteca são as telas reais do P1.6; o Chat é a do
 /// P3.5 (lista de conversas com o badge de não lidas na própria aba).
@@ -33,8 +34,18 @@ class _CoachShellScreenState extends ConsumerState<CoachShellScreen> {
     final unread = ref.watch(unreadTotalProvider);
 
     final destinations = [
-      LyShellDestination(icon: Icons.groups_outlined, label: l10n.homeCoachTabStudents),
-      LyShellDestination(icon: Icons.fitness_center_outlined, label: l10n.homeCoachTabLibrary),
+      LyShellDestination(
+        icon: Icons.groups_outlined,
+        label: l10n.homeCoachTabStudents,
+      ),
+      LyShellDestination(
+        icon: Icons.fitness_center_outlined,
+        label: l10n.homeCoachTabLibrary,
+      ),
+      LyShellDestination(
+        icon: Icons.dashboard_customize_outlined,
+        label: l10n.homeCoachTabTemplates,
+      ),
       LyShellDestination(
         icon: Icons.chat_bubble_outline,
         label: l10n.homeCoachTabChat,
@@ -57,6 +68,7 @@ class _CoachShellScreenState extends ConsumerState<CoachShellScreen> {
       body: switch (_index) {
         0 => const StudentsScreen(),
         1 => const LibraryScreen(),
+        2 => const TemplatesScreen(),
         _ => const ChatHomeScreen(isCoach: true),
       },
     );

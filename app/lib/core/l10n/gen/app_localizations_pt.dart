@@ -1773,6 +1773,333 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get evolutionSummaryNoInjuries => 'Sem lesões ativas';
+
+  @override
+  String get homeCoachTabTemplates => 'Modelos';
+
+  @override
+  String get templatesSearchLabel => 'Buscar modelo';
+
+  @override
+  String get templatesSearchHint => 'título do modelo';
+
+  @override
+  String get templatesFilterActive => 'Ativos';
+
+  @override
+  String get templatesFilterArchived => 'Arquivados';
+
+  @override
+  String get templatesNew => 'Novo modelo';
+
+  @override
+  String get templatesNewTitle => 'Novo modelo';
+
+  @override
+  String get templatesTitleLabel => 'Título';
+
+  @override
+  String get templatesDescriptionLabel => 'Descrição (opcional)';
+
+  @override
+  String get templatesEmpty =>
+      'Nenhum modelo ainda. Monte um treino uma vez e aplique a vários alunos.';
+
+  @override
+  String get templatesEmptyFiltered => 'Nenhum modelo encontrado.';
+
+  @override
+  String get templatesEmptyArchived => 'Nenhum modelo arquivado.';
+
+  @override
+  String templatesDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dias',
+      one: '1 dia',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String templatesExercises(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count exercícios',
+      one: '1 exercício',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String templatesAssignedTo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'aplicado a $count alunos',
+      one: 'aplicado a 1 aluno',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get templatesNotAssigned => 'ainda não aplicado';
+
+  @override
+  String get templatesUnpublishedChanges => 'alterações não publicadas';
+
+  @override
+  String get templatesMenuEdit => 'Editar';
+
+  @override
+  String get templatesMenuAssign => 'Aplicar a alunos';
+
+  @override
+  String get templatesMenuRecipients => 'Quem recebeu';
+
+  @override
+  String get templatesMenuArchive => 'Arquivar';
+
+  @override
+  String get templatesMenuUnarchive => 'Desarquivar';
+
+  @override
+  String get templatesArchivedToast => 'Modelo arquivado.';
+
+  @override
+  String get templatesUnarchivedToast => 'Modelo desarquivado.';
+
+  @override
+  String get assignTitle => 'Aplicar a alunos';
+
+  @override
+  String assignTemplateName(String title) {
+    return 'Modelo: $title';
+  }
+
+  @override
+  String assignSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alunos selecionados',
+      one: '1 aluno selecionado',
+      zero: 'Nenhum aluno selecionado',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String assignLimitReached(int max) {
+    return 'Limite de $max alunos por vez atingido.';
+  }
+
+  @override
+  String get assignPublishNow => 'Publicar já';
+
+  @override
+  String get assignPublishNowHint =>
+      'O treino entra na rotação do aluno agora. Desligado, cada aluno recebe um rascunho para você ajustar antes.';
+
+  @override
+  String get assignSubmit => 'Aplicar';
+
+  @override
+  String get batchResultTitle => 'Resultado';
+
+  @override
+  String batchResultSummary(int ok, int total) {
+    return '$ok de $total com sucesso.';
+  }
+
+  @override
+  String get batchItemOk => 'Plano criado';
+
+  @override
+  String batchItemReapplied(int version) {
+    return 'Versão $version publicada';
+  }
+
+  @override
+  String get batchBackToSelection => 'Tentar de novo os que falharam';
+
+  @override
+  String get batchDone => 'Concluir';
+
+  @override
+  String get recipientsTitle => 'Quem recebeu';
+
+  @override
+  String get recipientsEmpty =>
+      'Este modelo ainda não foi aplicado a nenhum aluno.';
+
+  @override
+  String recipientsCurrentVersion(int version) {
+    return 'versão atual v$version';
+  }
+
+  @override
+  String get recipientsUpToDate => 'Na versão atual';
+
+  @override
+  String recipientsOutdated(int version) {
+    return 'Na v$version do modelo';
+  }
+
+  @override
+  String get recipientsEdited => 'Editado depois de aplicado';
+
+  @override
+  String get recipientsArchived => 'Plano arquivado';
+
+  @override
+  String get recipientsSelectOutdated => 'Selecionar desatualizados';
+
+  @override
+  String get recipientsSubmit => 'Reaplicar';
+
+  @override
+  String get recipientsConfirmTitle => 'Reaplicar o modelo?';
+
+  @override
+  String recipientsConfirmBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alunos será substituído',
+      one: '1 aluno será substituído',
+    );
+    return 'O treino de $_temp0 pela versão atual do modelo e uma versão nova será publicada. Os ajustes individuais feitos nesses planos serão perdidos.';
+  }
+
+  @override
+  String recipientsConfirmEdited(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count deles foram editados depois de aplicados.',
+      one: '1 deles foi editado depois de aplicado.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get applyModelTitle => 'Aplicar modelo';
+
+  @override
+  String get applyModelEmpty =>
+      'Nenhum modelo publicado. Publique um na aba Modelos.';
+
+  @override
+  String get applyModelApplied => 'Modelo aplicado e em uso.';
+
+  @override
+  String get applyModelAppliedDraft => 'Modelo aplicado como rascunho.';
+
+  @override
+  String get planApplyTemplate => 'Aplicar modelo';
+
+  @override
+  String get planActivate => 'Ativar';
+
+  @override
+  String get planActivateTitle => 'Ativar este plano?';
+
+  @override
+  String get planActivateBody =>
+      'O aluno passa a treinar por este plano e o plano em uso é arquivado. A rotação recomeça no primeiro dia.';
+
+  @override
+  String get planActivated => 'Plano ativado.';
+
+  @override
+  String get planDuplicate => 'Duplicar';
+
+  @override
+  String get planDuplicated => 'Cópia criada em rascunho.';
+
+  @override
+  String get planArchive => 'Arquivar';
+
+  @override
+  String get planArchiveTitle => 'Arquivar este plano?';
+
+  @override
+  String get planArchiveBody =>
+      'O plano fica somente leitura. O histórico de treinos continua nos gráficos e dá para ativá-lo de novo depois.';
+
+  @override
+  String get planArchived => 'Plano arquivado.';
+
+  @override
+  String get planView => 'Ver';
+
+  @override
+  String get planEdit => 'Editar';
+
+  @override
+  String get studentWorkoutArchived => 'Arquivado';
+
+  @override
+  String get studentWorkoutFromTemplate => 'De modelo';
+
+  @override
+  String builderPublishTemplateBody(int version) {
+    return 'Publicar congela a versão $version do modelo. Aplicar a alunos copia sempre a última versão publicada; planos já aplicados não mudam.';
+  }
+
+  @override
+  String get builderSaveAsTemplate => 'Salvar como modelo';
+
+  @override
+  String get builderSaveAsTemplateTitle => 'Salvar como modelo';
+
+  @override
+  String get builderSavedAsTemplate =>
+      'Modelo criado em rascunho. Revise e publique para aplicar.';
+
+  @override
+  String get builderOpenTemplate => 'Abrir';
+
+  @override
+  String get builderReadOnlyPlan =>
+      'Plano arquivado: somente leitura. Ative para voltar a editar ou duplique para criar uma cópia.';
+
+  @override
+  String get builderReadOnlyPlanNeverPublished =>
+      'Plano arquivado sem versão publicada: somente leitura. Só dá para aproveitá-lo duplicando.';
+
+  @override
+  String get builderReadOnlyTemplate =>
+      'Modelo arquivado: somente leitura. Desarquive para voltar a editar.';
+
+  @override
+  String get errorPlanArchived =>
+      'Este plano está arquivado e não pode ser editado nem publicado. Ative-o ou duplique-o para continuar.';
+
+  @override
+  String get errorTemplateArchived =>
+      'Este modelo está arquivado. Desarquive-o para editar ou publicar.';
+
+  @override
+  String get errorTemplateNotOwned =>
+      'Só o autor do modelo ou o dono da academia pode alterá-lo.';
+
+  @override
+  String get errorTemplateNotPublished =>
+      'Publique o modelo antes de aplicá-lo.';
+
+  @override
+  String get errorPlanNotFromTemplate => 'Este plano não veio de um modelo.';
+
+  @override
+  String get errorPlanIsActive =>
+      'O plano em uso não pode ser arquivado. Ative outro plano antes.';
+
+  @override
+  String get errorPlanNotPublished => 'Publique o plano antes de ativá-lo.';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -3551,4 +3878,331 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get evolutionSummaryNoInjuries => 'Sem lesões ativas';
+
+  @override
+  String get homeCoachTabTemplates => 'Modelos';
+
+  @override
+  String get templatesSearchLabel => 'Pesquisar modelo';
+
+  @override
+  String get templatesSearchHint => 'título do modelo';
+
+  @override
+  String get templatesFilterActive => 'Ativos';
+
+  @override
+  String get templatesFilterArchived => 'Arquivados';
+
+  @override
+  String get templatesNew => 'Novo modelo';
+
+  @override
+  String get templatesNewTitle => 'Novo modelo';
+
+  @override
+  String get templatesTitleLabel => 'Título';
+
+  @override
+  String get templatesDescriptionLabel => 'Descrição (opcional)';
+
+  @override
+  String get templatesEmpty =>
+      'Ainda não há modelos. Monte um treino uma vez e aplique-o a vários alunos.';
+
+  @override
+  String get templatesEmptyFiltered => 'Nenhum modelo encontrado.';
+
+  @override
+  String get templatesEmptyArchived => 'Nenhum modelo arquivado.';
+
+  @override
+  String templatesDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dias',
+      one: '1 dia',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String templatesExercises(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count exercícios',
+      one: '1 exercício',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String templatesAssignedTo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'aplicado a $count alunos',
+      one: 'aplicado a 1 aluno',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get templatesNotAssigned => 'ainda não aplicado';
+
+  @override
+  String get templatesUnpublishedChanges => 'alterações não publicadas';
+
+  @override
+  String get templatesMenuEdit => 'Editar';
+
+  @override
+  String get templatesMenuAssign => 'Aplicar a alunos';
+
+  @override
+  String get templatesMenuRecipients => 'Quem recebeu';
+
+  @override
+  String get templatesMenuArchive => 'Arquivar';
+
+  @override
+  String get templatesMenuUnarchive => 'Desarquivar';
+
+  @override
+  String get templatesArchivedToast => 'Modelo arquivado.';
+
+  @override
+  String get templatesUnarchivedToast => 'Modelo desarquivado.';
+
+  @override
+  String get assignTitle => 'Aplicar a alunos';
+
+  @override
+  String assignTemplateName(String title) {
+    return 'Modelo: $title';
+  }
+
+  @override
+  String assignSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alunos selecionados',
+      one: '1 aluno selecionado',
+      zero: 'Nenhum aluno selecionado',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String assignLimitReached(int max) {
+    return 'Limite de $max alunos por vez atingido.';
+  }
+
+  @override
+  String get assignPublishNow => 'Publicar já';
+
+  @override
+  String get assignPublishNowHint =>
+      'O treino entra já na rotação do aluno. Desligado, cada aluno recebe um rascunho para ajustar antes.';
+
+  @override
+  String get assignSubmit => 'Aplicar';
+
+  @override
+  String get batchResultTitle => 'Resultado';
+
+  @override
+  String batchResultSummary(int ok, int total) {
+    return '$ok de $total com sucesso.';
+  }
+
+  @override
+  String get batchItemOk => 'Plano criado';
+
+  @override
+  String batchItemReapplied(int version) {
+    return 'Versão $version publicada';
+  }
+
+  @override
+  String get batchBackToSelection => 'Tentar de novo os que falharam';
+
+  @override
+  String get batchDone => 'Concluir';
+
+  @override
+  String get recipientsTitle => 'Quem recebeu';
+
+  @override
+  String get recipientsEmpty =>
+      'Este modelo ainda não foi aplicado a nenhum aluno.';
+
+  @override
+  String recipientsCurrentVersion(int version) {
+    return 'versão atual v$version';
+  }
+
+  @override
+  String get recipientsUpToDate => 'Na versão atual';
+
+  @override
+  String recipientsOutdated(int version) {
+    return 'Na v$version do modelo';
+  }
+
+  @override
+  String get recipientsEdited => 'Editado depois de aplicado';
+
+  @override
+  String get recipientsArchived => 'Plano arquivado';
+
+  @override
+  String get recipientsSelectOutdated => 'Selecionar desatualizados';
+
+  @override
+  String get recipientsSubmit => 'Reaplicar';
+
+  @override
+  String get recipientsConfirmTitle => 'Reaplicar o modelo?';
+
+  @override
+  String recipientsConfirmBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alunos será substituído',
+      one: '1 aluno será substituído',
+    );
+    return 'O treino de $_temp0 pela versão atual do modelo e será publicada uma versão nova. Os ajustes individuais feitos nesses planos serão perdidos.';
+  }
+
+  @override
+  String recipientsConfirmEdited(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count deles foram editados depois de aplicados.',
+      one: '1 deles foi editado depois de aplicado.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get applyModelTitle => 'Aplicar modelo';
+
+  @override
+  String get applyModelEmpty =>
+      'Nenhum modelo publicado. Publique um no separador Modelos.';
+
+  @override
+  String get applyModelApplied => 'Modelo aplicado e em uso.';
+
+  @override
+  String get applyModelAppliedDraft => 'Modelo aplicado como rascunho.';
+
+  @override
+  String get planApplyTemplate => 'Aplicar modelo';
+
+  @override
+  String get planActivate => 'Ativar';
+
+  @override
+  String get planActivateTitle => 'Ativar este plano?';
+
+  @override
+  String get planActivateBody =>
+      'O aluno passa a treinar por este plano e o plano em uso é arquivado. A rotação recomeça no primeiro dia.';
+
+  @override
+  String get planActivated => 'Plano ativado.';
+
+  @override
+  String get planDuplicate => 'Duplicar';
+
+  @override
+  String get planDuplicated => 'Cópia criada em rascunho.';
+
+  @override
+  String get planArchive => 'Arquivar';
+
+  @override
+  String get planArchiveTitle => 'Arquivar este plano?';
+
+  @override
+  String get planArchiveBody =>
+      'O plano fica só de leitura. O histórico de treinos continua nos gráficos e pode ser ativado de novo mais tarde.';
+
+  @override
+  String get planArchived => 'Plano arquivado.';
+
+  @override
+  String get planView => 'Ver';
+
+  @override
+  String get planEdit => 'Editar';
+
+  @override
+  String get studentWorkoutArchived => 'Arquivado';
+
+  @override
+  String get studentWorkoutFromTemplate => 'De modelo';
+
+  @override
+  String builderPublishTemplateBody(int version) {
+    return 'Publicar congela a versão $version do modelo. Aplicar a alunos copia sempre a última versão publicada; os planos já aplicados não mudam.';
+  }
+
+  @override
+  String get builderSaveAsTemplate => 'Guardar como modelo';
+
+  @override
+  String get builderSaveAsTemplateTitle => 'Guardar como modelo';
+
+  @override
+  String get builderSavedAsTemplate =>
+      'Modelo criado em rascunho. Reveja e publique para aplicar.';
+
+  @override
+  String get builderOpenTemplate => 'Abrir';
+
+  @override
+  String get builderReadOnlyPlan =>
+      'Plano arquivado: só de leitura. Ative-o para voltar a editar ou duplique para criar uma cópia.';
+
+  @override
+  String get builderReadOnlyPlanNeverPublished =>
+      'Plano arquivado sem versão publicada: só de leitura. Só se aproveita duplicando.';
+
+  @override
+  String get builderReadOnlyTemplate =>
+      'Modelo arquivado: só de leitura. Desarquive para voltar a editar.';
+
+  @override
+  String get errorPlanArchived =>
+      'Este plano está arquivado e não pode ser editado nem publicado. Ative-o ou duplique-o para continuar.';
+
+  @override
+  String get errorTemplateArchived =>
+      'Este modelo está arquivado. Desarquive-o para editar ou publicar.';
+
+  @override
+  String get errorTemplateNotOwned =>
+      'Só o autor do modelo ou o dono do ginásio pode alterá-lo.';
+
+  @override
+  String get errorTemplateNotPublished =>
+      'Publique o modelo antes de o aplicar.';
+
+  @override
+  String get errorPlanNotFromTemplate => 'Este plano não veio de um modelo.';
+
+  @override
+  String get errorPlanIsActive =>
+      'O plano em uso não pode ser arquivado. Ative outro plano antes.';
+
+  @override
+  String get errorPlanNotPublished => 'Publique o plano antes de o ativar.';
 }

@@ -3272,6 +3272,504 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Sem lesões ativas'**
   String get evolutionSummaryNoInjuries;
+
+  /// Aba Modelos do coach.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modelos'**
+  String get homeCoachTabTemplates;
+
+  /// Rótulo da busca de modelos.
+  ///
+  /// In pt, this message translates to:
+  /// **'Buscar modelo'**
+  String get templatesSearchLabel;
+
+  /// Dica da busca de modelos.
+  ///
+  /// In pt, this message translates to:
+  /// **'título do modelo'**
+  String get templatesSearchHint;
+
+  /// Filtro de modelos ativos.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ativos'**
+  String get templatesFilterActive;
+
+  /// Filtro de modelos arquivados.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivados'**
+  String get templatesFilterArchived;
+
+  /// Botão para criar modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Novo modelo'**
+  String get templatesNew;
+
+  /// Título do diálogo de novo modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Novo modelo'**
+  String get templatesNewTitle;
+
+  /// Campo de título do modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Título'**
+  String get templatesTitleLabel;
+
+  /// Campo de descrição do modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Descrição (opcional)'**
+  String get templatesDescriptionLabel;
+
+  /// Lista de modelos vazia.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum modelo ainda. Monte um treino uma vez e aplique a vários alunos.'**
+  String get templatesEmpty;
+
+  /// Busca de modelos sem resultado.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum modelo encontrado.'**
+  String get templatesEmptyFiltered;
+
+  /// Filtro de arquivados vazio.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum modelo arquivado.'**
+  String get templatesEmptyArchived;
+
+  /// Quantidade de dias de um modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 dia} other{{count} dias}}'**
+  String templatesDays(int count);
+
+  /// Quantidade de exercícios de um modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 exercício} other{{count} exercícios}}'**
+  String templatesExercises(int count);
+
+  /// Quantos alunos receberam o modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{aplicado a 1 aluno} other{aplicado a {count} alunos}}'**
+  String templatesAssignedTo(int count);
+
+  /// Modelo sem nenhum aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'ainda não aplicado'**
+  String get templatesNotAssigned;
+
+  /// Modelo publicado com rascunho aberto.
+  ///
+  /// In pt, this message translates to:
+  /// **'alterações não publicadas'**
+  String get templatesUnpublishedChanges;
+
+  /// Menu do modelo: abrir no builder.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editar'**
+  String get templatesMenuEdit;
+
+  /// Menu do modelo: aplicar em lote.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aplicar a alunos'**
+  String get templatesMenuAssign;
+
+  /// Menu do modelo: ver destinatários e reaplicar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Quem recebeu'**
+  String get templatesMenuRecipients;
+
+  /// Menu do modelo: arquivar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivar'**
+  String get templatesMenuArchive;
+
+  /// Menu do modelo: desarquivar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desarquivar'**
+  String get templatesMenuUnarchive;
+
+  /// Confirmação de arquivar modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modelo arquivado.'**
+  String get templatesArchivedToast;
+
+  /// Confirmação de desarquivar modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modelo desarquivado.'**
+  String get templatesUnarchivedToast;
+
+  /// Título da tela de aplicar modelo em lote.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aplicar a alunos'**
+  String get assignTitle;
+
+  /// Nome do modelo na tela de aplicar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modelo: {title}'**
+  String assignTemplateName(String title);
+
+  /// Contagem de alunos selecionados.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =0{Nenhum aluno selecionado} =1{1 aluno selecionado} other{{count} alunos selecionados}}'**
+  String assignSelected(int count);
+
+  /// Aviso do teto do lote.
+  ///
+  /// In pt, this message translates to:
+  /// **'Limite de {max} alunos por vez atingido.'**
+  String assignLimitReached(int max);
+
+  /// Opção de publicar ao aplicar o modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Publicar já'**
+  String get assignPublishNow;
+
+  /// Explica publicar já × rascunho.
+  ///
+  /// In pt, this message translates to:
+  /// **'O treino entra na rotação do aluno agora. Desligado, cada aluno recebe um rascunho para você ajustar antes.'**
+  String get assignPublishNowHint;
+
+  /// Botão de aplicar o modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aplicar'**
+  String get assignSubmit;
+
+  /// Título do resultado de um lote.
+  ///
+  /// In pt, this message translates to:
+  /// **'Resultado'**
+  String get batchResultTitle;
+
+  /// Resumo do resultado de um lote.
+  ///
+  /// In pt, this message translates to:
+  /// **'{ok} de {total} com sucesso.'**
+  String batchResultSummary(int ok, int total);
+
+  /// Item do lote aplicado com sucesso.
+  ///
+  /// In pt, this message translates to:
+  /// **'Plano criado'**
+  String get batchItemOk;
+
+  /// Item do lote reaplicado com sucesso.
+  ///
+  /// In pt, this message translates to:
+  /// **'Versão {version} publicada'**
+  String batchItemReapplied(int version);
+
+  /// Volta à seleção só com os itens que falharam.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tentar de novo os que falharam'**
+  String get batchBackToSelection;
+
+  /// Fecha o resultado de um lote.
+  ///
+  /// In pt, this message translates to:
+  /// **'Concluir'**
+  String get batchDone;
+
+  /// Título da tela de destinatários do modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Quem recebeu'**
+  String get recipientsTitle;
+
+  /// Modelo sem destinatários.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este modelo ainda não foi aplicado a nenhum aluno.'**
+  String get recipientsEmpty;
+
+  /// Versão publicada atual do modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'versão atual v{version}'**
+  String recipientsCurrentVersion(int version);
+
+  /// Destinatário já na versão atual.
+  ///
+  /// In pt, this message translates to:
+  /// **'Na versão atual'**
+  String get recipientsUpToDate;
+
+  /// Destinatário em versão antiga.
+  ///
+  /// In pt, this message translates to:
+  /// **'Na v{version} do modelo'**
+  String recipientsOutdated(int version);
+
+  /// Plano ajustado pelo coach depois da aplicação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editado depois de aplicado'**
+  String get recipientsEdited;
+
+  /// Destinatário com plano arquivado (não reaplicável).
+  ///
+  /// In pt, this message translates to:
+  /// **'Plano arquivado'**
+  String get recipientsArchived;
+
+  /// Seleciona quem não está na versão atual ou foi editado.
+  ///
+  /// In pt, this message translates to:
+  /// **'Selecionar desatualizados'**
+  String get recipientsSelectOutdated;
+
+  /// Botão de reaplicar o modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reaplicar'**
+  String get recipientsSubmit;
+
+  /// Título da confirmação de reaplicar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reaplicar o modelo?'**
+  String get recipientsConfirmTitle;
+
+  /// Aviso ao reaplicar.
+  ///
+  /// In pt, this message translates to:
+  /// **'O treino de {count, plural, =1{1 aluno será substituído} other{{count} alunos será substituído}} pela versão atual do modelo e uma versão nova será publicada. Os ajustes individuais feitos nesses planos serão perdidos.'**
+  String recipientsConfirmBody(int count);
+
+  /// Aviso de planos editados ao reaplicar.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 deles foi editado depois de aplicado.} other{{count} deles foram editados depois de aplicados.}}'**
+  String recipientsConfirmEdited(int count);
+
+  /// Diálogo de aplicar modelo na ficha do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aplicar modelo'**
+  String get applyModelTitle;
+
+  /// Sem modelo publicado para aplicar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum modelo publicado. Publique um na aba Modelos.'**
+  String get applyModelEmpty;
+
+  /// Modelo aplicado com publicação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modelo aplicado e em uso.'**
+  String get applyModelApplied;
+
+  /// Modelo aplicado sem publicar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modelo aplicado como rascunho.'**
+  String get applyModelAppliedDraft;
+
+  /// Botão na aba Treino da ficha.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aplicar modelo'**
+  String get planApplyTemplate;
+
+  /// Ativar plano.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ativar'**
+  String get planActivate;
+
+  /// Título da confirmação de ativar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ativar este plano?'**
+  String get planActivateTitle;
+
+  /// Corpo da confirmação de ativar.
+  ///
+  /// In pt, this message translates to:
+  /// **'O aluno passa a treinar por este plano e o plano em uso é arquivado. A rotação recomeça no primeiro dia.'**
+  String get planActivateBody;
+
+  /// Plano ativado.
+  ///
+  /// In pt, this message translates to:
+  /// **'Plano ativado.'**
+  String get planActivated;
+
+  /// Duplicar plano.
+  ///
+  /// In pt, this message translates to:
+  /// **'Duplicar'**
+  String get planDuplicate;
+
+  /// Plano duplicado.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cópia criada em rascunho.'**
+  String get planDuplicated;
+
+  /// Arquivar plano.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivar'**
+  String get planArchive;
+
+  /// Título da confirmação de arquivar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivar este plano?'**
+  String get planArchiveTitle;
+
+  /// Corpo da confirmação de arquivar.
+  ///
+  /// In pt, this message translates to:
+  /// **'O plano fica somente leitura. O histórico de treinos continua nos gráficos e dá para ativá-lo de novo depois.'**
+  String get planArchiveBody;
+
+  /// Plano arquivado.
+  ///
+  /// In pt, this message translates to:
+  /// **'Plano arquivado.'**
+  String get planArchived;
+
+  /// Abrir plano arquivado em modo leitura.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ver'**
+  String get planView;
+
+  /// Abrir plano no builder.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editar'**
+  String get planEdit;
+
+  /// Etiqueta de plano arquivado.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivado'**
+  String get studentWorkoutArchived;
+
+  /// Etiqueta de plano criado de modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'De modelo'**
+  String get studentWorkoutFromTemplate;
+
+  /// Corpo da confirmação de publicar modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Publicar congela a versão {version} do modelo. Aplicar a alunos copia sempre a última versão publicada; planos já aplicados não mudam.'**
+  String builderPublishTemplateBody(int version);
+
+  /// Ação do builder: plano vira modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Salvar como modelo'**
+  String get builderSaveAsTemplate;
+
+  /// Título do diálogo de salvar como modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Salvar como modelo'**
+  String get builderSaveAsTemplateTitle;
+
+  /// Confirmação de salvar como modelo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modelo criado em rascunho. Revise e publique para aplicar.'**
+  String get builderSavedAsTemplate;
+
+  /// Abre o modelo recém-criado.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abrir'**
+  String get builderOpenTemplate;
+
+  /// Aviso do plano arquivado.
+  ///
+  /// In pt, this message translates to:
+  /// **'Plano arquivado: somente leitura. Ative para voltar a editar ou duplique para criar uma cópia.'**
+  String get builderReadOnlyPlan;
+
+  /// Aviso do plano arquivado nunca publicado.
+  ///
+  /// In pt, this message translates to:
+  /// **'Plano arquivado sem versão publicada: somente leitura. Só dá para aproveitá-lo duplicando.'**
+  String get builderReadOnlyPlanNeverPublished;
+
+  /// Aviso do modelo arquivado.
+  ///
+  /// In pt, this message translates to:
+  /// **'Modelo arquivado: somente leitura. Desarquive para voltar a editar.'**
+  String get builderReadOnlyTemplate;
+
+  /// Erro 409 plan_archived.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este plano está arquivado e não pode ser editado nem publicado. Ative-o ou duplique-o para continuar.'**
+  String get errorPlanArchived;
+
+  /// Erro 409 template_archived.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este modelo está arquivado. Desarquive-o para editar ou publicar.'**
+  String get errorTemplateArchived;
+
+  /// Erro 403 template_not_owned.
+  ///
+  /// In pt, this message translates to:
+  /// **'Só o autor do modelo ou o dono da academia pode alterá-lo.'**
+  String get errorTemplateNotOwned;
+
+  /// Erro 422 template_not_published.
+  ///
+  /// In pt, this message translates to:
+  /// **'Publique o modelo antes de aplicá-lo.'**
+  String get errorTemplateNotPublished;
+
+  /// Erro 422 plan_not_from_template.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este plano não veio de um modelo.'**
+  String get errorPlanNotFromTemplate;
+
+  /// Erro 409 plan_is_active.
+  ///
+  /// In pt, this message translates to:
+  /// **'O plano em uso não pode ser arquivado. Ative outro plano antes.'**
+  String get errorPlanIsActive;
+
+  /// Erro 422 plan_not_published.
+  ///
+  /// In pt, this message translates to:
+  /// **'Publique o plano antes de ativá-lo.'**
+  String get errorPlanNotPublished;
 }
 
 class _AppLocalizationsDelegate

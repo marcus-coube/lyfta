@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/design_system/design_system.dart';
+import '../../../core/http/api_exception.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_shell_scaffold.dart';
+import '../../templates/data/template_repository.dart';
 import '../data/plan_repository.dart';
 import '../../../shared/domain/plan.dart';
 import '../../../shared/l10n/plan_l10n.dart';
 import 'widgets/exercise_picker.dart';
 import 'widgets/set_editor.dart';
 
-/// Editor do plano do aluno (P1.6).
+/// Editor do plano do aluno (P1.6) e, na mesma tela, do modelo de treino
+/// (P6.3, `kind=template`: sem aluno, com título e descrição editáveis).
+///
+/// Plano ou modelo **arquivado** abre em modo leitura (P6.2): o servidor
+/// responde 409 `plan_archived`/`template_archived` a rascunho e publicação, e
+/// a volta é só por Ativar/Desarquivar (ou Duplicar, no plano).
 ///
 /// O rascunho vive no estado **local** desta tela, não num provider: um
 /// editor de cinco níveis (dia → bloco → exercício → série) muda a cada
@@ -35,11 +43,15 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
   Plan? _plan;
   List<WorkoutDay> _days = [];
   String _title = '';
+  String _description = '';
   int _selectedDay = 0;
   bool _dirty = false;
   bool _loading = true;
   bool _saving = false;
   String? _error;
+
+  bool get _isTemplate => _plan?.isTemplate ?? false;
+  bool get _readOnly => _plan?.isArchived ?? false;
 
   @override
   void initState() {
@@ -58,6 +70,7 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
       setState(() {
         _plan = plan;
         _title = plan.title;
+        _description = plan.description;
         _days = plan.days;
         _selectedDay = 0;
         _dirty = false;
@@ -83,6 +96,7 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
       final plan = await ref.read(planRepositoryProvider).saveDraft(
             planId: widget.planId,
             title: _title,
+            description: _isTemplate ? _description : null,
             days: _days,
           );
       if (!mounted) return;
@@ -90,12 +104,13 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
         _plan = plan;
         _days = plan.days;
         _dirty = false;
-        _selectedDay = _selectedDay.clamp(0, plan.days.isEmpty ? 0 : plan.days.length - 1);
+        _selectedDay =
+            _selectedDay.clamp(0, plan.days.isEmpty ? 0 : plan.days.length - 1);
       });
       _toast(AppLocalizations.of(context).builderDraftSaved);
     } catch (error) {
       if (!mounted) return;
-      setState(() => _error = describeApiError(context, error));
+      await _onWriteError(error);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -109,11 +124,16 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
     if (!mounted || _error != null) return;
 
     final nextVersion = _plan?.version?.versionNo ?? 1;
+    final isTemplate = _isTemplate;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.builderPublishTitle),
-        content: Text(l10n.builderPublishBody(nextVersion)),
+        content: Text(
+          isTemplate
+              ? l10n.builderPublishTemplateBody(nextVersion)
+              : l10n.builderPublishBody(nextVersion),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -133,7 +153,8 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
       _error = null;
     });
     try {
-      final plan = await ref.read(planRepositoryProvider).publish(widget.planId);
+      final plan =
+          await ref.read(planRepositoryProvider).publish(widget.planId);
       if (!mounted) return;
       setState(() {
         _plan = plan;
@@ -143,15 +164,142 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
       _toast(l10n.builderPublished(plan.version?.versionNo ?? nextVersion));
     } catch (error) {
       if (!mounted) return;
-      setState(() => _error = describeApiError(context, error));
+      await _onWriteError(error);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
   }
 
+  /// Erro de rascunho/publicação. Plano arquivado por outra tela (409): mostra
+  /// a mensagem e recarrega, que vira modo leitura em vez de deixar o coach
+  /// editando algo que o servidor não aceita mais.
+  Future<void> _onWriteError(Object error) async {
+    final message = describeApiError(context, error);
+    final archived = error is ApiException &&
+        (error.code == 'plan_archived' || error.code == 'template_archived');
+    if (archived) await _load();
+    if (!mounted) return;
+    setState(() => _error = message);
+  }
+
   void _toast(String message) {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  /// Atualiza o plano carregado depois de ativar/desarquivar sem perder o aviso.
+  Future<void> _afterLifecycle(String message) async {
+    await _load();
+    if (mounted) _toast(message);
+  }
+
+  Future<void> _activate() async {
+    final plan = _plan!;
+    try {
+      await ref
+          .read(planRepositoryProvider)
+          .activate(studentId: plan.studentId, planId: plan.id);
+      if (!mounted) return;
+      await _afterLifecycle(AppLocalizations.of(context).planActivated);
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _error = describeApiError(context, error));
+    }
+  }
+
+  Future<void> _unarchiveTemplate() async {
+    try {
+      await ref.read(templateRepositoryProvider).unarchive(widget.planId);
+      if (!mounted) return;
+      await _afterLifecycle(
+        AppLocalizations.of(context).templatesUnarchivedToast,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _error = describeApiError(context, error));
+    }
+  }
+
+  /// Duplica para um rascunho novo e abre a cópia no lugar deste plano.
+  Future<void> _duplicate() async {
+    final l10n = AppLocalizations.of(context);
+    try {
+      final copy =
+          await ref.read(planRepositoryProvider).duplicate(widget.planId);
+      if (!mounted) return;
+      _toast(l10n.planDuplicated);
+      context.pushReplacement('/plans/${copy.id}');
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _error = describeApiError(context, error));
+    }
+  }
+
+  /// Copia a versão mais recente (a que o servidor tem) para um modelo novo em
+  /// rascunho. Salva antes se há edição pendente, senão o modelo nasceria sem
+  /// o que está na tela.
+  Future<void> _saveAsTemplate() async {
+    final l10n = AppLocalizations.of(context);
+    if (_dirty && !_readOnly) await _save();
+    if (!mounted || _error != null) return;
+
+    final controller = TextEditingController.fromValue(
+      TextEditingValue(
+        text: _title,
+        selection: TextSelection(baseOffset: 0, extentOffset: _title.length),
+      ),
+    );
+    final title = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.builderSaveAsTemplateTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            LyTextField(
+              label: l10n.templatesTitleLabel,
+              controller: controller,
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.commonCancel),
+          ),
+          TextButton(
+            key: const Key('save_as_template_confirm'),
+            onPressed: () {
+              final value = controller.text.trim();
+              Navigator.of(context).pop(value.isEmpty ? null : value);
+            },
+            child: Text(l10n.commonCreate),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (title == null || !mounted) return;
+
+    try {
+      final template = await ref
+          .read(planRepositoryProvider)
+          .saveAsTemplate(widget.planId, title: title);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.builderSavedAsTemplate),
+          action: SnackBarAction(
+            label: l10n.builderOpenTemplate,
+            onPressed: () => context.push<void>('/plans/${template.id}'),
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _error = describeApiError(context, error));
+    }
   }
 
   void _addDay() {
@@ -222,6 +370,18 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
                 ),
               ),
             ),
+          if (_plan != null && !_isTemplate)
+            PopupMenuButton<String>(
+              key: const Key('builder_menu'),
+              icon: const Icon(Icons.more_vert),
+              onSelected: (_) => _saveAsTemplate(),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'save_as_template',
+                  child: Text(l10n.builderSaveAsTemplate),
+                ),
+              ],
+            ),
         ],
       ),
       body: _loading
@@ -236,23 +396,80 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
                       padding: const EdgeInsets.all(LySpace.x3),
                       child: Text(_error!, style: LyType.bodySm(c.danger)),
                     ),
+                  if (_readOnly) _buildReadOnlyBanner(),
                   Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
-                        final wide = constraints.maxWidth >= lyShellRailBreakpoint;
+                        final wide =
+                            constraints.maxWidth >= lyShellRailBreakpoint;
                         return wide ? _buildWide() : _buildNarrow();
                       },
                     ),
                   ),
-                  _BuilderActions(
-                    dirty: _dirty,
-                    saving: _saving,
-                    onSave: _save,
-                    onPublish: _publish,
-                  ),
+                  if (!_readOnly)
+                    _BuilderActions(
+                      dirty: _dirty,
+                      saving: _saving,
+                      onSave: _save,
+                      onPublish: _publish,
+                    ),
                 ],
               ),
             ),
+    );
+  }
+
+  /// Plano/modelo arquivado: aviso de somente leitura com o caminho de volta.
+  /// Plano arquivado que nunca foi publicado não reativa (422): só se
+  /// aproveita duplicando.
+  Widget _buildReadOnlyBanner() {
+    final c = context.ly;
+    final l10n = AppLocalizations.of(context);
+    final plan = _plan!;
+    final canActivate = !plan.isTemplate && plan.publishedVersionNo > 0;
+
+    return Container(
+      key: const Key('builder_read_only_banner'),
+      width: double.infinity,
+      color: c.warning.withValues(alpha: 0.12),
+      padding: const EdgeInsets.all(LySpace.x3),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            plan.isTemplate
+                ? l10n.builderReadOnlyTemplate
+                : canActivate
+                    ? l10n.builderReadOnlyPlan
+                    : l10n.builderReadOnlyPlanNeverPublished,
+            style: LyType.bodySm(c.textPrimary),
+          ),
+          const SizedBox(height: LySpace.x2),
+          Wrap(
+            spacing: LySpace.x2,
+            children: [
+              if (plan.isTemplate)
+                TextButton(
+                  key: const Key('builder_unarchive'),
+                  onPressed: _unarchiveTemplate,
+                  child: Text(l10n.templatesMenuUnarchive),
+                ),
+              if (canActivate)
+                TextButton(
+                  key: const Key('builder_activate'),
+                  onPressed: _activate,
+                  child: Text(l10n.planActivate),
+                ),
+              if (!plan.isTemplate)
+                TextButton(
+                  key: const Key('builder_duplicate'),
+                  onPressed: _duplicate,
+                  child: Text(l10n.planDuplicate),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -275,6 +492,7 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
               onAdd: _addDay,
               onRemove: _removeDay,
               onMove: _moveDay,
+              readOnly: _readOnly,
             ),
           ),
         ),
@@ -294,6 +512,7 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
             selected: _selectedDay,
             onSelect: (index) => setState(() => _selectedDay = index),
             onAdd: _addDay,
+            readOnly: _readOnly,
           ),
         ),
         Expanded(child: _buildDayEditor()),
@@ -306,73 +525,136 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
     final l10n = AppLocalizations.of(context);
 
     if (_days.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(LySpace.x6),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                l10n.builderNoDays,
-                textAlign: TextAlign.center,
-                style: LyType.body(c.textSecondary),
-              ),
-              const SizedBox(height: LySpace.x4),
-              LyButton(
+      return ListView(
+        padding: const EdgeInsets.all(LySpace.x4),
+        children: [
+          if (_isTemplate) _buildTemplateHeader(),
+          const SizedBox(height: LySpace.x6),
+          Text(
+            l10n.builderNoDays,
+            textAlign: TextAlign.center,
+            style: LyType.body(c.textSecondary),
+          ),
+          if (!_readOnly) ...[
+            const SizedBox(height: LySpace.x4),
+            Center(
+              child: LyButton(
                 label: l10n.builderAddDay,
                 variant: LyButtonVariant.secondary,
                 expanded: false,
                 onPressed: _addDay,
               ),
-            ],
-          ),
-        ),
+            ),
+          ],
+        ],
       );
     }
 
     final day = _days[_selectedDay];
+    final editable = <Widget>[
+      TextFormField(
+        key: ValueKey('day-title-${day.label}-$_selectedDay'),
+        initialValue: day.title,
+        onChanged: (value) {
+          day.title = value;
+          _markDirty();
+        },
+        style: LyType.title(c.textPrimary),
+        decoration: InputDecoration(
+          labelText: l10n.builderDayTitle,
+          labelStyle: LyType.caption(c.textSecondary),
+        ),
+      ),
+      const SizedBox(height: LySpace.x4),
+      for (var i = 0; i < day.blocks.length; i++)
+        Padding(
+          key: ObjectKey(day.blocks[i]),
+          padding: const EdgeInsets.only(bottom: LySpace.x4),
+          child: _BlockCard(
+            block: day.blocks[i],
+            onChanged: _markDirty,
+            onAddExercise: () => _addExercise(day.blocks[i]),
+            onRemove: () => setState(() {
+              day.blocks.removeAt(i);
+              _dirty = true;
+            }),
+          ),
+        ),
+      LyButton(
+        label: l10n.builderAddBlock,
+        variant: LyButtonVariant.secondary,
+        icon: const Icon(Icons.add),
+        onPressed: () => setState(() {
+          day.blocks.add(Block());
+          _dirty = true;
+        }),
+      ),
+    ];
+    // Somente leitura (plano/modelo arquivado): o conteúdo fica visível e
+    // rolável, mas sem tocar nem focar nos campos.
     return ListView(
       padding: const EdgeInsets.all(LySpace.x4),
       children: [
-        TextFormField(
-          key: ValueKey('day-title-${day.label}-$_selectedDay'),
-          initialValue: day.title,
-          onChanged: (value) {
-            day.title = value;
-            _markDirty();
-          },
-          style: LyType.title(c.textPrimary),
-          decoration: InputDecoration(
-            labelText: l10n.builderDayTitle,
-            labelStyle: LyType.caption(c.textSecondary),
-          ),
-        ),
-        const SizedBox(height: LySpace.x4),
-        for (var i = 0; i < day.blocks.length; i++)
-          Padding(
-            key: ObjectKey(day.blocks[i]),
-            padding: const EdgeInsets.only(bottom: LySpace.x4),
-            child: _BlockCard(
-              block: day.blocks[i],
-              onChanged: _markDirty,
-              onAddExercise: () => _addExercise(day.blocks[i]),
-              onRemove: () => setState(() {
-                day.blocks.removeAt(i);
-                _dirty = true;
-              }),
+        if (_isTemplate) ...[
+          _buildTemplateHeader(),
+          const SizedBox(height: LySpace.x4),
+        ],
+        IgnorePointer(
+          ignoring: _readOnly,
+          child: ExcludeFocus(
+            excluding: _readOnly,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: editable,
             ),
           ),
-        LyButton(
-          label: l10n.builderAddBlock,
-          variant: LyButtonVariant.secondary,
-          icon: const Icon(Icons.add),
-          onPressed: () => setState(() {
-            day.blocks.add(Block());
-            _dirty = true;
-          }),
         ),
         const SizedBox(height: LySpace.x12),
       ],
+    );
+  }
+
+  /// Título e descrição do modelo (o plano do aluno não tem descrição).
+  Widget _buildTemplateHeader() {
+    final c = context.ly;
+    final l10n = AppLocalizations.of(context);
+    return IgnorePointer(
+      ignoring: _readOnly,
+      child: ExcludeFocus(
+        excluding: _readOnly,
+        child: Column(
+          children: [
+            TextFormField(
+              key: const Key('template_title'),
+              initialValue: _title,
+              onChanged: (value) {
+                _title = value;
+                _markDirty();
+              },
+              style: LyType.title(c.textPrimary),
+              decoration: InputDecoration(
+                labelText: l10n.templatesTitleLabel,
+                labelStyle: LyType.caption(c.textSecondary),
+              ),
+            ),
+            TextFormField(
+              key: const Key('template_description'),
+              initialValue: _description,
+              minLines: 1,
+              maxLines: 4,
+              onChanged: (value) {
+                _description = value;
+                _markDirty();
+              },
+              style: LyType.body(c.textPrimary),
+              decoration: InputDecoration(
+                labelText: l10n.templatesDescriptionLabel,
+                labelStyle: LyType.caption(c.textSecondary),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -387,6 +669,7 @@ class _DayList extends StatelessWidget {
     required this.onAdd,
     required this.onRemove,
     required this.onMove,
+    this.readOnly = false,
   });
 
   final List<WorkoutDay> days;
@@ -395,6 +678,7 @@ class _DayList extends StatelessWidget {
   final VoidCallback onAdd;
   final ValueChanged<int> onRemove;
   final void Function(int index, int delta) onMove;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -414,27 +698,41 @@ class _DayList extends StatelessWidget {
                 ? null
                 : Text(days[i].title, style: LyType.caption(c.textSecondary)),
             onTap: () => onSelect(i),
-            trailing: PopupMenuButton<String>(
-              icon: Icon(Icons.more_vert, size: 18, color: c.textSecondary),
-              onSelected: (action) => switch (action) {
-                'up' => onMove(i, -1),
-                'down' => onMove(i, 1),
-                _ => onRemove(i),
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(value: 'up', child: Text(l10n.builderMoveUp)),
-                PopupMenuItem(value: 'down', child: Text(l10n.builderMoveDown)),
-                PopupMenuItem(value: 'remove', child: Text(l10n.commonRemove)),
-              ],
-            ),
+            trailing: readOnly
+                ? null
+                : PopupMenuButton<String>(
+                    icon:
+                        Icon(Icons.more_vert, size: 18, color: c.textSecondary),
+                    onSelected: (action) => switch (action) {
+                      'up' => onMove(i, -1),
+                      'down' => onMove(i, 1),
+                      _ => onRemove(i),
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'up',
+                        child: Text(l10n.builderMoveUp),
+                      ),
+                      PopupMenuItem(
+                        value: 'down',
+                        child: Text(l10n.builderMoveDown),
+                      ),
+                      PopupMenuItem(
+                        value: 'remove',
+                        child: Text(l10n.commonRemove),
+                      ),
+                    ],
+                  ),
           ),
-        const SizedBox(height: LySpace.x2),
-        LyButton(
-          label: l10n.builderAddDay,
-          variant: LyButtonVariant.secondary,
-          icon: const Icon(Icons.add),
-          onPressed: onAdd,
-        ),
+        if (!readOnly) ...[
+          const SizedBox(height: LySpace.x2),
+          LyButton(
+            label: l10n.builderAddDay,
+            variant: LyButtonVariant.secondary,
+            icon: const Icon(Icons.add),
+            onPressed: onAdd,
+          ),
+        ],
       ],
     );
   }
@@ -447,12 +745,14 @@ class _DayChips extends StatelessWidget {
     required this.selected,
     required this.onSelect,
     required this.onAdd,
+    this.readOnly = false,
   });
 
   final List<WorkoutDay> days;
   final int selected;
   final ValueChanged<int> onSelect;
   final VoidCallback onAdd;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -464,21 +764,26 @@ class _DayChips extends StatelessWidget {
       children: [
         for (var i = 0; i < days.length; i++)
           Padding(
-            padding: const EdgeInsets.only(right: LySpace.x2, top: LySpace.x2, bottom: LySpace.x2),
+            padding: const EdgeInsets.only(
+              right: LySpace.x2,
+              top: LySpace.x2,
+              bottom: LySpace.x2,
+            ),
             child: ChoiceChip(
               selected: i == selected,
               onSelected: (_) => onSelect(i),
               label: Text(days[i].label),
             ),
           ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: LySpace.x2),
-          child: ActionChip(
-            avatar: Icon(Icons.add, size: 16, color: c.textSecondary),
-            label: Text(AppLocalizations.of(context).builderAddDay),
-            onPressed: onAdd,
+        if (!readOnly)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: LySpace.x2),
+            child: ActionChip(
+              avatar: Icon(Icons.add, size: 16, color: c.textSecondary),
+              label: Text(AppLocalizations.of(context).builderAddDay),
+              onPressed: onAdd,
+            ),
           ),
-        ),
       ],
     );
   }
@@ -609,7 +914,8 @@ class _BlockExerciseEditor extends StatelessWidget {
             IconButton(
               tooltip: l10n.commonRemove,
               onPressed: onRemove,
-              icon: Icon(Icons.delete_outline, size: 18, color: c.textSecondary),
+              icon:
+                  Icon(Icons.delete_outline, size: 18, color: c.textSecondary),
             ),
           ],
         ),

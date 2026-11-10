@@ -1771,4 +1771,332 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get evolutionSummaryNoInjuries => 'No active injuries';
+
+  @override
+  String get homeCoachTabTemplates => 'Templates';
+
+  @override
+  String get templatesSearchLabel => 'Search template';
+
+  @override
+  String get templatesSearchHint => 'template title';
+
+  @override
+  String get templatesFilterActive => 'Active';
+
+  @override
+  String get templatesFilterArchived => 'Archived';
+
+  @override
+  String get templatesNew => 'New template';
+
+  @override
+  String get templatesNewTitle => 'New template';
+
+  @override
+  String get templatesTitleLabel => 'Title';
+
+  @override
+  String get templatesDescriptionLabel => 'Description (optional)';
+
+  @override
+  String get templatesEmpty =>
+      'No templates yet. Build a workout once and apply it to many students.';
+
+  @override
+  String get templatesEmptyFiltered => 'No templates found.';
+
+  @override
+  String get templatesEmptyArchived => 'No archived templates.';
+
+  @override
+  String templatesDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String templatesExercises(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count exercises',
+      one: '1 exercise',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String templatesAssignedTo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'applied to $count students',
+      one: 'applied to 1 student',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get templatesNotAssigned => 'not applied yet';
+
+  @override
+  String get templatesUnpublishedChanges => 'unpublished changes';
+
+  @override
+  String get templatesMenuEdit => 'Edit';
+
+  @override
+  String get templatesMenuAssign => 'Apply to students';
+
+  @override
+  String get templatesMenuRecipients => 'Who received it';
+
+  @override
+  String get templatesMenuArchive => 'Archive';
+
+  @override
+  String get templatesMenuUnarchive => 'Unarchive';
+
+  @override
+  String get templatesArchivedToast => 'Template archived.';
+
+  @override
+  String get templatesUnarchivedToast => 'Template unarchived.';
+
+  @override
+  String get assignTitle => 'Apply to students';
+
+  @override
+  String assignTemplateName(String title) {
+    return 'Template: $title';
+  }
+
+  @override
+  String assignSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count students selected',
+      one: '1 student selected',
+      zero: 'No students selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String assignLimitReached(int max) {
+    return 'Limit of $max students at a time reached.';
+  }
+
+  @override
+  String get assignPublishNow => 'Publish now';
+
+  @override
+  String get assignPublishNowHint =>
+      'The workout enters the student\'s rotation right away. Off, each student gets a draft for you to adjust first.';
+
+  @override
+  String get assignSubmit => 'Apply';
+
+  @override
+  String get batchResultTitle => 'Result';
+
+  @override
+  String batchResultSummary(int ok, int total) {
+    return '$ok of $total succeeded.';
+  }
+
+  @override
+  String get batchItemOk => 'Plan created';
+
+  @override
+  String batchItemReapplied(int version) {
+    return 'Version $version published';
+  }
+
+  @override
+  String get batchBackToSelection => 'Retry the failed ones';
+
+  @override
+  String get batchDone => 'Done';
+
+  @override
+  String get recipientsTitle => 'Who received it';
+
+  @override
+  String get recipientsEmpty =>
+      'This template has not been applied to any student yet.';
+
+  @override
+  String recipientsCurrentVersion(int version) {
+    return 'current version v$version';
+  }
+
+  @override
+  String get recipientsUpToDate => 'On the current version';
+
+  @override
+  String recipientsOutdated(int version) {
+    return 'On template v$version';
+  }
+
+  @override
+  String get recipientsEdited => 'Edited after applying';
+
+  @override
+  String get recipientsArchived => 'Plan archived';
+
+  @override
+  String get recipientsSelectOutdated => 'Select outdated';
+
+  @override
+  String get recipientsSubmit => 'Reapply';
+
+  @override
+  String get recipientsConfirmTitle => 'Reapply the template?';
+
+  @override
+  String recipientsConfirmBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count students will be replaced',
+      one: '1 student will be replaced',
+    );
+    return 'The workout of $_temp0 by the current template version and a new version will be published. Individual adjustments made to those plans will be lost.';
+  }
+
+  @override
+  String recipientsConfirmEdited(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count of them were edited after applying.',
+      one: '1 of them was edited after applying.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get applyModelTitle => 'Apply template';
+
+  @override
+  String get applyModelEmpty =>
+      'No published templates. Publish one in the Templates tab.';
+
+  @override
+  String get applyModelApplied => 'Template applied and in use.';
+
+  @override
+  String get applyModelAppliedDraft => 'Template applied as a draft.';
+
+  @override
+  String get planApplyTemplate => 'Apply template';
+
+  @override
+  String get planActivate => 'Activate';
+
+  @override
+  String get planActivateTitle => 'Activate this plan?';
+
+  @override
+  String get planActivateBody =>
+      'The student will train with this plan and the plan in use is archived. The rotation restarts on the first day.';
+
+  @override
+  String get planActivated => 'Plan activated.';
+
+  @override
+  String get planDuplicate => 'Duplicate';
+
+  @override
+  String get planDuplicated => 'Copy created as a draft.';
+
+  @override
+  String get planArchive => 'Archive';
+
+  @override
+  String get planArchiveTitle => 'Archive this plan?';
+
+  @override
+  String get planArchiveBody =>
+      'The plan becomes read-only. Workout history stays in the charts and you can activate it again later.';
+
+  @override
+  String get planArchived => 'Plan archived.';
+
+  @override
+  String get planView => 'View';
+
+  @override
+  String get planEdit => 'Edit';
+
+  @override
+  String get studentWorkoutArchived => 'Archived';
+
+  @override
+  String get studentWorkoutFromTemplate => 'From template';
+
+  @override
+  String builderPublishTemplateBody(int version) {
+    return 'Publishing freezes version $version of the template. Applying to students always copies the latest published version; plans already applied do not change.';
+  }
+
+  @override
+  String get builderSaveAsTemplate => 'Save as template';
+
+  @override
+  String get builderSaveAsTemplateTitle => 'Save as template';
+
+  @override
+  String get builderSavedAsTemplate =>
+      'Template created as a draft. Review and publish it to apply.';
+
+  @override
+  String get builderOpenTemplate => 'Open';
+
+  @override
+  String get builderReadOnlyPlan =>
+      'Archived plan: read-only. Activate it to edit again or duplicate it to make a copy.';
+
+  @override
+  String get builderReadOnlyPlanNeverPublished =>
+      'Archived plan with no published version: read-only. The only way to reuse it is to duplicate it.';
+
+  @override
+  String get builderReadOnlyTemplate =>
+      'Archived template: read-only. Unarchive it to edit again.';
+
+  @override
+  String get errorPlanArchived =>
+      'This plan is archived and cannot be edited or published. Activate or duplicate it to continue.';
+
+  @override
+  String get errorTemplateArchived =>
+      'This template is archived. Unarchive it to edit or publish.';
+
+  @override
+  String get errorTemplateNotOwned =>
+      'Only the template author or the gym owner can change it.';
+
+  @override
+  String get errorTemplateNotPublished =>
+      'Publish the template before applying it.';
+
+  @override
+  String get errorPlanNotFromTemplate =>
+      'This plan did not come from a template.';
+
+  @override
+  String get errorPlanIsActive =>
+      'The plan in use cannot be archived. Activate another plan first.';
+
+  @override
+  String get errorPlanNotPublished => 'Publish the plan before activating it.';
 }

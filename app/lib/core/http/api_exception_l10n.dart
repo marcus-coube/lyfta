@@ -83,6 +83,21 @@ extension ApiExceptionL10n on ApiException {
         return l10n.errorInvalidTimezone;
       case 'no_coach':
         return l10n.errorNoCoach;
+      // Planos e modelos (P6.1/P6.2): arquivado é somente leitura.
+      case 'plan_archived':
+        return l10n.errorPlanArchived;
+      case 'template_archived':
+        return l10n.errorTemplateArchived;
+      case 'template_not_owned':
+        return l10n.errorTemplateNotOwned;
+      case 'template_not_published':
+        return l10n.errorTemplateNotPublished;
+      case 'plan_not_from_template':
+        return l10n.errorPlanNotFromTemplate;
+      case 'plan_is_active':
+        return l10n.errorPlanIsActive;
+      case 'plan_not_published':
+        return l10n.errorPlanNotPublished;
       case 'network_error':
         return l10n.errorNetwork;
       case 'internal_error':

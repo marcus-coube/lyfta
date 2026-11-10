@@ -240,6 +240,9 @@ class Plan {
     required this.versions,
     this.version,
     this.nextDayId,
+    this.kind = 'assigned',
+    this.description = '',
+    this.sourceTemplateId,
   });
 
   factory Plan.fromJson(Map<String, dynamic> json) {
@@ -257,6 +260,9 @@ class Plan {
           .map((raw) => PlanVersionRef.fromJson(raw as Map<String, dynamic>))
           .toList(),
       nextDayId: json['next_day_id'] as String?,
+      kind: json['kind'] as String? ?? 'assigned',
+      description: json['description'] as String? ?? '',
+      sourceTemplateId: json['source_template_id'] as String?,
     );
   }
 
@@ -264,12 +270,25 @@ class Plan {
   final String studentId;
   final String title;
   final String status;
+
+  /// `assigned` (plano de um aluno) ou `template` (modelo do tenant, P6.1).
+  final String kind;
+
+  /// Só o modelo tem descrição.
+  final String description;
+  final String? sourceTemplateId;
   final PlanVersionRef? version;
   final List<WorkoutDay> days;
   final List<PlanVersionRef> versions;
   final String? nextDayId;
 
   bool get isPublished => status == 'published';
+  bool get isTemplate => kind == 'template';
+
+  /// Plano (ou modelo) arquivado é somente leitura: o servidor responde 409
+  /// `plan_archived`/`template_archived` a rascunho e publicação. Reativar é
+  /// só pelo `activate` (plano) ou `unarchive` (modelo).
+  bool get isArchived => status == 'archived';
 
   /// Número da última versão publicada — 0 quando o plano nunca publicou.
   int get publishedVersionNo => versions
@@ -286,6 +305,8 @@ class PlanSummary {
     required this.publishedVersionNo,
     required this.hasDraft,
     required this.isActive,
+    this.kind = 'assigned',
+    this.sourceTemplateId,
   });
 
   factory PlanSummary.fromJson(Map<String, dynamic> json) {
@@ -296,6 +317,8 @@ class PlanSummary {
       publishedVersionNo: json['published_version_no'] as int? ?? 0,
       hasDraft: json['has_draft'] as bool? ?? false,
       isActive: json['is_active'] as bool? ?? false,
+      kind: json['kind'] as String? ?? 'assigned',
+      sourceTemplateId: json['source_template_id'] as String?,
     );
   }
 
@@ -305,4 +328,10 @@ class PlanSummary {
   final int publishedVersionNo;
   final bool hasDraft;
   final bool isActive;
+  final String kind;
+
+  /// Preenchido quando o plano nasceu de um modelo (ADR-018).
+  final String? sourceTemplateId;
+
+  bool get isArchived => status == 'archived';
 }

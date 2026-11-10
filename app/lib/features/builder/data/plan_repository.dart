@@ -19,7 +19,10 @@ class PlanRepository {
 
   /// Cria o plano em rascunho. A primeira versão só nasce quando a árvore é
   /// salva — plano recém-criado volta sem versão nenhuma.
-  Future<Plan> create({required String studentId, required String title}) async {
+  Future<Plan> create({
+    required String studentId,
+    required String title,
+  }) async {
     final json = await _send<Map<String, dynamic>>(
       () => _dio.post<Map<String, dynamic>>(
         '/v1/plans',
@@ -48,12 +51,14 @@ class PlanRepository {
     required String planId,
     required String title,
     required List<WorkoutDay> days,
+    String? description,
   }) async {
     final json = await _send<Map<String, dynamic>>(
       () => _dio.put<Map<String, dynamic>>(
         '/v1/plans/$planId/draft',
         data: {
           'title': title,
+          if (description != null) 'description': description,
           'days': days.map((d) => d.toJson()).toList(),
         },
       ),
@@ -67,6 +72,46 @@ class PlanRepository {
   Future<Plan> publish(String planId) async {
     final json = await _send<Map<String, dynamic>>(
       () => _dio.post<Map<String, dynamic>>('/v1/plans/$planId/publish'),
+    );
+    return Plan.fromJson(json!);
+  }
+
+  /// Copia a versão mais recente para um plano novo em rascunho, fora da
+  /// rotação (P6.2). Sem [studentId], fica com o mesmo aluno.
+  Future<Plan> duplicate(String planId, {String? studentId}) async {
+    final json = await _send<Map<String, dynamic>>(
+      () => _dio.post<Map<String, dynamic>>(
+        '/v1/plans/$planId/duplicate',
+        data: {if (studentId != null) 'student_id': studentId},
+      ),
+    );
+    return Plan.fromJson(json!);
+  }
+
+  /// Arquiva um plano que não está em uso (o ativo dá 409 `plan_is_active`).
+  Future<void> archive(String planId) => _send<Map<String, dynamic>>(
+        () => _dio.post<Map<String, dynamic>>('/v1/plans/$planId/archive'),
+      );
+
+  /// Faz deste o plano em uso do aluno (a rotação recomeça no 1º dia). É o
+  /// único caminho de volta de um plano arquivado.
+  Future<void> activate({
+    required String studentId,
+    required String planId,
+  }) =>
+      _send<Map<String, dynamic>>(
+        () => _dio.post<Map<String, dynamic>>(
+          '/v1/students/$studentId/plans/$planId/activate',
+        ),
+      );
+
+  /// Copia a versão mais recente para um modelo novo, em rascunho (P6.1).
+  Future<Plan> saveAsTemplate(String planId, {required String title}) async {
+    final json = await _send<Map<String, dynamic>>(
+      () => _dio.post<Map<String, dynamic>>(
+        '/v1/plans/$planId/save-as-template',
+        data: {'title': title},
+      ),
     );
     return Plan.fromJson(json!);
   }

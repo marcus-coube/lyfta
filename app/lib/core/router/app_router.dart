@@ -13,6 +13,8 @@ import '../../features/chat/presentation/chat_screen.dart';
 import '../../features/coach_shell/presentation/coach_shell_screen.dart';
 import '../../features/consent/presentation/consent_screen.dart';
 import '../../features/profile/presentation/my_goal_screen.dart';
+import '../../features/templates/presentation/assign_template_screen.dart';
+import '../../features/templates/presentation/template_recipients_screen.dart';
 import '../../features/student_shell/presentation/student_shell_screen.dart';
 import '../../features/students/presentation/student_detail_screen.dart';
 import '../../features/workout/presentation/session_player_screen.dart';
@@ -109,6 +111,22 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/plans/:id',
         builder: (context, state) => PlanBuilderScreen(
           planId: state.pathParameters['id']!,
+        ),
+      ),
+      // Aplicar modelo a vários alunos e reaplicar a quem já recebeu (P6.3).
+      // O modelo em si abre no builder (`/plans/:id`, modo modelo).
+      GoRoute(
+        path: '/templates/:id/assign',
+        builder: (context, state) => AssignTemplateScreen(
+          templateId: state.pathParameters['id']!,
+          templateTitle: state.extra as String?,
+        ),
+      ),
+      GoRoute(
+        path: '/templates/:id/recipients',
+        builder: (context, state) => TemplateRecipientsScreen(
+          templateId: state.pathParameters['id']!,
+          templateTitle: state.extra as String?,
         ),
       ),
       // A ficha do aluno (dados, treino, evolução e check-ins) é rota de

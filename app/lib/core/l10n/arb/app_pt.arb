@@ -685,33 +685,44 @@
   "@checkinCardScores": {
     "description": "Cabeçalho do card de check-in com as duas notas (1 a 5) que o aluno deu.",
     "placeholders": {
-      "rating": {"type": "int"},
-      "difficulty": {"type": "int"}
+      "rating": {
+        "type": "int"
+      },
+      "difficulty": {
+        "type": "int"
+      }
     }
   },
   "checkinCardPainWhere": "Dor em: {where}",
   "@checkinCardPainWhere": {
     "placeholders": {
-      "where": {"type": "String"}
+      "where": {
+        "type": "String"
+      }
     }
   },
   "checkinReviewed": "Visto",
   "checkinMarkReviewed": "Marcar como visto",
-
   "agendaLoadError": "Não foi possível carregar sua agenda.",
   "agendaStreakWeeks": "{count, plural, =1{1 semana seguida batendo a meta de treinos} other{{count} semanas seguidas batendo a meta de treinos}}",
   "@agendaStreakWeeks": {
     "description": "Streak simples da agenda: semanas consecutivas em que o aluno treinou pelo menos a meta semanal (anamnese; sem ela, os dias do rodízio A/B/C).",
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "agendaWeekRange": "{start} – {end}",
   "@agendaWeekRange": {
     "description": "Intervalo da semana visível na agenda, já formatado pelo intl (ex.: '7 de set – 13 de set').",
     "placeholders": {
-      "start": {"type": "String"},
-      "end": {"type": "String"}
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
     }
   },
   "agendaPreviousWeek": "Semana anterior",
@@ -725,14 +736,18 @@
   "@agendaSessionTitle": {
     "description": "Título do detalhe de um dia com treino sincronizado.",
     "placeholders": {
-      "label": {"type": "String"}
+      "label": {
+        "type": "String"
+      }
     }
   },
   "agendaPredictedTitle": "Treino previsto: {label}",
   "@agendaPredictedTitle": {
     "description": "Título do detalhe de um dia futuro projetado pela rotação.",
     "placeholders": {
-      "label": {"type": "String"}
+      "label": {
+        "type": "String"
+      }
     }
   },
   "agendaPredictedHint": "Projeção com base no seu rodízio atual — pode mudar conforme você treina.",
@@ -1200,7 +1215,9 @@
   "@profileWeeklyTargetOption": {
     "description": "Opção do seletor de meta semanal.",
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "profileMedicalNotesLabel": "Observações médicas",
@@ -1267,14 +1284,18 @@
   "@injurySinceOn": {
     "description": "Data de início da lesão, já formatada.",
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "injuryResolvedOn": "Resolvida em {date}",
   "@injuryResolvedOn": {
     "description": "Data de resolução da lesão, já formatada.",
     "placeholders": {
-      "date": {"type": "String"}
+      "date": {
+        "type": "String"
+      }
     }
   },
   "injuryResolve": "Marcar como resolvida",
@@ -1372,5 +1393,405 @@
   "evolutionSummaryNoInjuries": "Sem lesões ativas",
   "@evolutionSummaryNoInjuries": {
     "description": "Resumo do coach: aluno sem lesões ativas."
+  },
+  "homeCoachTabTemplates": "Modelos",
+  "@homeCoachTabTemplates": {
+    "description": "Aba Modelos do coach."
+  },
+  "templatesSearchLabel": "Buscar modelo",
+  "@templatesSearchLabel": {
+    "description": "Rótulo da busca de modelos."
+  },
+  "templatesSearchHint": "título do modelo",
+  "@templatesSearchHint": {
+    "description": "Dica da busca de modelos."
+  },
+  "templatesFilterActive": "Ativos",
+  "@templatesFilterActive": {
+    "description": "Filtro de modelos ativos."
+  },
+  "templatesFilterArchived": "Arquivados",
+  "@templatesFilterArchived": {
+    "description": "Filtro de modelos arquivados."
+  },
+  "templatesNew": "Novo modelo",
+  "@templatesNew": {
+    "description": "Botão para criar modelo."
+  },
+  "templatesNewTitle": "Novo modelo",
+  "@templatesNewTitle": {
+    "description": "Título do diálogo de novo modelo."
+  },
+  "templatesTitleLabel": "Título",
+  "@templatesTitleLabel": {
+    "description": "Campo de título do modelo."
+  },
+  "templatesDescriptionLabel": "Descrição (opcional)",
+  "@templatesDescriptionLabel": {
+    "description": "Campo de descrição do modelo."
+  },
+  "templatesEmpty": "Nenhum modelo ainda. Monte um treino uma vez e aplique a vários alunos.",
+  "@templatesEmpty": {
+    "description": "Lista de modelos vazia."
+  },
+  "templatesEmptyFiltered": "Nenhum modelo encontrado.",
+  "@templatesEmptyFiltered": {
+    "description": "Busca de modelos sem resultado."
+  },
+  "templatesEmptyArchived": "Nenhum modelo arquivado.",
+  "@templatesEmptyArchived": {
+    "description": "Filtro de arquivados vazio."
+  },
+  "templatesDays": "{count, plural, =1{1 dia} other{{count} dias}}",
+  "@templatesDays": {
+    "description": "Quantidade de dias de um modelo.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "templatesExercises": "{count, plural, =1{1 exercício} other{{count} exercícios}}",
+  "@templatesExercises": {
+    "description": "Quantidade de exercícios de um modelo.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "templatesAssignedTo": "{count, plural, =1{aplicado a 1 aluno} other{aplicado a {count} alunos}}",
+  "@templatesAssignedTo": {
+    "description": "Quantos alunos receberam o modelo.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "templatesNotAssigned": "ainda não aplicado",
+  "@templatesNotAssigned": {
+    "description": "Modelo sem nenhum aluno."
+  },
+  "templatesUnpublishedChanges": "alterações não publicadas",
+  "@templatesUnpublishedChanges": {
+    "description": "Modelo publicado com rascunho aberto."
+  },
+  "templatesMenuEdit": "Editar",
+  "@templatesMenuEdit": {
+    "description": "Menu do modelo: abrir no builder."
+  },
+  "templatesMenuAssign": "Aplicar a alunos",
+  "@templatesMenuAssign": {
+    "description": "Menu do modelo: aplicar em lote."
+  },
+  "templatesMenuRecipients": "Quem recebeu",
+  "@templatesMenuRecipients": {
+    "description": "Menu do modelo: ver destinatários e reaplicar."
+  },
+  "templatesMenuArchive": "Arquivar",
+  "@templatesMenuArchive": {
+    "description": "Menu do modelo: arquivar."
+  },
+  "templatesMenuUnarchive": "Desarquivar",
+  "@templatesMenuUnarchive": {
+    "description": "Menu do modelo: desarquivar."
+  },
+  "templatesArchivedToast": "Modelo arquivado.",
+  "@templatesArchivedToast": {
+    "description": "Confirmação de arquivar modelo."
+  },
+  "templatesUnarchivedToast": "Modelo desarquivado.",
+  "@templatesUnarchivedToast": {
+    "description": "Confirmação de desarquivar modelo."
+  },
+  "assignTitle": "Aplicar a alunos",
+  "@assignTitle": {
+    "description": "Título da tela de aplicar modelo em lote."
+  },
+  "assignTemplateName": "Modelo: {title}",
+  "@assignTemplateName": {
+    "description": "Nome do modelo na tela de aplicar.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "assignSelected": "{count, plural, =0{Nenhum aluno selecionado} =1{1 aluno selecionado} other{{count} alunos selecionados}}",
+  "@assignSelected": {
+    "description": "Contagem de alunos selecionados.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "assignLimitReached": "Limite de {max} alunos por vez atingido.",
+  "@assignLimitReached": {
+    "description": "Aviso do teto do lote.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "assignPublishNow": "Publicar já",
+  "@assignPublishNow": {
+    "description": "Opção de publicar ao aplicar o modelo."
+  },
+  "assignPublishNowHint": "O treino entra na rotação do aluno agora. Desligado, cada aluno recebe um rascunho para você ajustar antes.",
+  "@assignPublishNowHint": {
+    "description": "Explica publicar já × rascunho."
+  },
+  "assignSubmit": "Aplicar",
+  "@assignSubmit": {
+    "description": "Botão de aplicar o modelo."
+  },
+  "batchResultTitle": "Resultado",
+  "@batchResultTitle": {
+    "description": "Título do resultado de um lote."
+  },
+  "batchResultSummary": "{ok} de {total} com sucesso.",
+  "@batchResultSummary": {
+    "description": "Resumo do resultado de um lote.",
+    "placeholders": {
+      "ok": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "batchItemOk": "Plano criado",
+  "@batchItemOk": {
+    "description": "Item do lote aplicado com sucesso."
+  },
+  "batchItemReapplied": "Versão {version} publicada",
+  "@batchItemReapplied": {
+    "description": "Item do lote reaplicado com sucesso.",
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "batchBackToSelection": "Tentar de novo os que falharam",
+  "@batchBackToSelection": {
+    "description": "Volta à seleção só com os itens que falharam."
+  },
+  "batchDone": "Concluir",
+  "@batchDone": {
+    "description": "Fecha o resultado de um lote."
+  },
+  "recipientsTitle": "Quem recebeu",
+  "@recipientsTitle": {
+    "description": "Título da tela de destinatários do modelo."
+  },
+  "recipientsEmpty": "Este modelo ainda não foi aplicado a nenhum aluno.",
+  "@recipientsEmpty": {
+    "description": "Modelo sem destinatários."
+  },
+  "recipientsCurrentVersion": "versão atual v{version}",
+  "@recipientsCurrentVersion": {
+    "description": "Versão publicada atual do modelo.",
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "recipientsUpToDate": "Na versão atual",
+  "@recipientsUpToDate": {
+    "description": "Destinatário já na versão atual."
+  },
+  "recipientsOutdated": "Na v{version} do modelo",
+  "@recipientsOutdated": {
+    "description": "Destinatário em versão antiga.",
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "recipientsEdited": "Editado depois de aplicado",
+  "@recipientsEdited": {
+    "description": "Plano ajustado pelo coach depois da aplicação."
+  },
+  "recipientsArchived": "Plano arquivado",
+  "@recipientsArchived": {
+    "description": "Destinatário com plano arquivado (não reaplicável)."
+  },
+  "recipientsSelectOutdated": "Selecionar desatualizados",
+  "@recipientsSelectOutdated": {
+    "description": "Seleciona quem não está na versão atual ou foi editado."
+  },
+  "recipientsSubmit": "Reaplicar",
+  "@recipientsSubmit": {
+    "description": "Botão de reaplicar o modelo."
+  },
+  "recipientsConfirmTitle": "Reaplicar o modelo?",
+  "@recipientsConfirmTitle": {
+    "description": "Título da confirmação de reaplicar."
+  },
+  "recipientsConfirmBody": "O treino de {count, plural, =1{1 aluno será substituído} other{{count} alunos será substituído}} pela versão atual do modelo e uma versão nova será publicada. Os ajustes individuais feitos nesses planos serão perdidos.",
+  "@recipientsConfirmBody": {
+    "description": "Aviso ao reaplicar.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipientsConfirmEdited": "{count, plural, =1{1 deles foi editado depois de aplicado.} other{{count} deles foram editados depois de aplicados.}}",
+  "@recipientsConfirmEdited": {
+    "description": "Aviso de planos editados ao reaplicar.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "applyModelTitle": "Aplicar modelo",
+  "@applyModelTitle": {
+    "description": "Diálogo de aplicar modelo na ficha do aluno."
+  },
+  "applyModelEmpty": "Nenhum modelo publicado. Publique um na aba Modelos.",
+  "@applyModelEmpty": {
+    "description": "Sem modelo publicado para aplicar."
+  },
+  "applyModelApplied": "Modelo aplicado e em uso.",
+  "@applyModelApplied": {
+    "description": "Modelo aplicado com publicação."
+  },
+  "applyModelAppliedDraft": "Modelo aplicado como rascunho.",
+  "@applyModelAppliedDraft": {
+    "description": "Modelo aplicado sem publicar."
+  },
+  "planApplyTemplate": "Aplicar modelo",
+  "@planApplyTemplate": {
+    "description": "Botão na aba Treino da ficha."
+  },
+  "planActivate": "Ativar",
+  "@planActivate": {
+    "description": "Ativar plano."
+  },
+  "planActivateTitle": "Ativar este plano?",
+  "@planActivateTitle": {
+    "description": "Título da confirmação de ativar."
+  },
+  "planActivateBody": "O aluno passa a treinar por este plano e o plano em uso é arquivado. A rotação recomeça no primeiro dia.",
+  "@planActivateBody": {
+    "description": "Corpo da confirmação de ativar."
+  },
+  "planActivated": "Plano ativado.",
+  "@planActivated": {
+    "description": "Plano ativado."
+  },
+  "planDuplicate": "Duplicar",
+  "@planDuplicate": {
+    "description": "Duplicar plano."
+  },
+  "planDuplicated": "Cópia criada em rascunho.",
+  "@planDuplicated": {
+    "description": "Plano duplicado."
+  },
+  "planArchive": "Arquivar",
+  "@planArchive": {
+    "description": "Arquivar plano."
+  },
+  "planArchiveTitle": "Arquivar este plano?",
+  "@planArchiveTitle": {
+    "description": "Título da confirmação de arquivar."
+  },
+  "planArchiveBody": "O plano fica somente leitura. O histórico de treinos continua nos gráficos e dá para ativá-lo de novo depois.",
+  "@planArchiveBody": {
+    "description": "Corpo da confirmação de arquivar."
+  },
+  "planArchived": "Plano arquivado.",
+  "@planArchived": {
+    "description": "Plano arquivado."
+  },
+  "planView": "Ver",
+  "@planView": {
+    "description": "Abrir plano arquivado em modo leitura."
+  },
+  "planEdit": "Editar",
+  "@planEdit": {
+    "description": "Abrir plano no builder."
+  },
+  "studentWorkoutArchived": "Arquivado",
+  "@studentWorkoutArchived": {
+    "description": "Etiqueta de plano arquivado."
+  },
+  "studentWorkoutFromTemplate": "De modelo",
+  "@studentWorkoutFromTemplate": {
+    "description": "Etiqueta de plano criado de modelo."
+  },
+  "builderPublishTemplateBody": "Publicar congela a versão {version} do modelo. Aplicar a alunos copia sempre a última versão publicada; planos já aplicados não mudam.",
+  "@builderPublishTemplateBody": {
+    "description": "Corpo da confirmação de publicar modelo.",
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "builderSaveAsTemplate": "Salvar como modelo",
+  "@builderSaveAsTemplate": {
+    "description": "Ação do builder: plano vira modelo."
+  },
+  "builderSaveAsTemplateTitle": "Salvar como modelo",
+  "@builderSaveAsTemplateTitle": {
+    "description": "Título do diálogo de salvar como modelo."
+  },
+  "builderSavedAsTemplate": "Modelo criado em rascunho. Revise e publique para aplicar.",
+  "@builderSavedAsTemplate": {
+    "description": "Confirmação de salvar como modelo."
+  },
+  "builderOpenTemplate": "Abrir",
+  "@builderOpenTemplate": {
+    "description": "Abre o modelo recém-criado."
+  },
+  "builderReadOnlyPlan": "Plano arquivado: somente leitura. Ative para voltar a editar ou duplique para criar uma cópia.",
+  "@builderReadOnlyPlan": {
+    "description": "Aviso do plano arquivado."
+  },
+  "builderReadOnlyPlanNeverPublished": "Plano arquivado sem versão publicada: somente leitura. Só dá para aproveitá-lo duplicando.",
+  "@builderReadOnlyPlanNeverPublished": {
+    "description": "Aviso do plano arquivado nunca publicado."
+  },
+  "builderReadOnlyTemplate": "Modelo arquivado: somente leitura. Desarquive para voltar a editar.",
+  "@builderReadOnlyTemplate": {
+    "description": "Aviso do modelo arquivado."
+  },
+  "errorPlanArchived": "Este plano está arquivado e não pode ser editado nem publicado. Ative-o ou duplique-o para continuar.",
+  "@errorPlanArchived": {
+    "description": "Erro 409 plan_archived."
+  },
+  "errorTemplateArchived": "Este modelo está arquivado. Desarquive-o para editar ou publicar.",
+  "@errorTemplateArchived": {
+    "description": "Erro 409 template_archived."
+  },
+  "errorTemplateNotOwned": "Só o autor do modelo ou o dono da academia pode alterá-lo.",
+  "@errorTemplateNotOwned": {
+    "description": "Erro 403 template_not_owned."
+  },
+  "errorTemplateNotPublished": "Publique o modelo antes de aplicá-lo.",
+  "@errorTemplateNotPublished": {
+    "description": "Erro 422 template_not_published."
+  },
+  "errorPlanNotFromTemplate": "Este plano não veio de um modelo.",
+  "@errorPlanNotFromTemplate": {
+    "description": "Erro 422 plan_not_from_template."
+  },
+  "errorPlanIsActive": "O plano em uso não pode ser arquivado. Ative outro plano antes.",
+  "@errorPlanIsActive": {
+    "description": "Erro 409 plan_is_active."
+  },
+  "errorPlanNotPublished": "Publique o plano antes de ativá-lo.",
+  "@errorPlanNotPublished": {
+    "description": "Erro 422 plan_not_published."
   }
 }
