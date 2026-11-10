@@ -629,5 +629,17 @@
   "planNextDay": "Próximo dia",
   "planNextDayTitle": "Próximo treino do aluno",
   "planNextDayCurrent": "Próximo agora",
-  "planNextDaySet": "Próximo dia: {label}."
+  "planNextDaySet": "Próximo dia: {label}.",
+  "sessionBlockRound": "Ronda {number} de {total}",
+  "@sessionBlockRound": {
+    "placeholders": {
+      "number": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "sessionBlockSuperset": "Alterne os exercícios sem descansar entre eles; descanse só no fim de cada ronda.",
+  "sessionBlockCircuit": "Faça os exercícios em sequência, sem descansar entre eles; descanse no fim de cada ronda.",
+  "sessionBlockDropset": "Ao terminar a série, reduza a carga e continue logo a seguir, quase sem descanso.",
+  "sessionBlockRestPause": "Faça a série perto da falha, descanse alguns segundos e continue com a mesma carga.",
+  "sessionBlockNow": "Agora"
 }

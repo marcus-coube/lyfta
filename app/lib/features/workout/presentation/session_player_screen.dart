@@ -11,9 +11,11 @@ import '../../../shared/l10n/plan_l10n.dart';
 import '../../../shared/widgets/exercise_media.dart';
 import '../../../shared/widgets/ly_shell_scaffold.dart';
 import '../../checkin/presentation/checkin_sheet.dart';
+import '../domain/block_runner.dart';
 import '../domain/today.dart';
 import 'rest_timer_controller.dart';
 import 'session_controller.dart';
+import 'widgets/block_card.dart';
 import 'widgets/rest_timer_bar.dart';
 import 'widgets/session_summary_sheet.dart';
 import 'widgets/set_row.dart';
@@ -109,7 +111,7 @@ class _SessionBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final runs = state.today.runs;
+    final runners = BlockRunner.fromRuns(state.today.runs);
 
     return Column(
       children: [
@@ -122,12 +124,16 @@ class _SessionBody extends ConsumerWidget {
               constraints: const BoxConstraints(maxWidth: lyShellRailBreakpoint),
               child: ListView.separated(
                 padding: const EdgeInsets.all(LySpace.x4),
-                itemCount: runs.length,
+                itemCount: runners.length,
                 separatorBuilder: (_, __) => const SizedBox(height: LySpace.x4),
-                itemBuilder: (context, index) => _ExerciseCard(
-                  run: runs[index],
-                  state: state,
-                ),
+                itemBuilder: (context, index) {
+                  final runner = runners[index];
+                  // Straight: um cartão por exercício, idêntico ao 1.0.
+                  if (!runner.isGrouped) {
+                    return _ExerciseCard(run: runner.runs.single, state: state);
+                  }
+                  return BlockCard(runner: runner, state: state);
+                },
               ),
             ),
           ),

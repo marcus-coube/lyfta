@@ -2184,6 +2184,30 @@ class AppLocalizationsPt extends AppLocalizations {
   String planNextDaySet(String label) {
     return 'Próximo dia: $label.';
   }
+
+  @override
+  String sessionBlockRound(int number, int total) {
+    return 'Rodada $number de $total';
+  }
+
+  @override
+  String get sessionBlockSuperset =>
+      'Alterne os exercícios sem descansar entre eles; descanse só ao fim de cada rodada.';
+
+  @override
+  String get sessionBlockCircuit =>
+      'Faça os exercícios em sequência, sem descansar entre eles; descanse ao fim de cada rodada.';
+
+  @override
+  String get sessionBlockDropset =>
+      'Ao terminar a série, reduza a carga e continue logo em seguida, quase sem descanso.';
+
+  @override
+  String get sessionBlockRestPause =>
+      'Faça a série perto da falha, descanse poucos segundos e continue com a mesma carga.';
+
+  @override
+  String get sessionBlockNow => 'Agora';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -4373,4 +4397,28 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   String planNextDaySet(String label) {
     return 'Próximo dia: $label.';
   }
+
+  @override
+  String sessionBlockRound(int number, int total) {
+    return 'Ronda $number de $total';
+  }
+
+  @override
+  String get sessionBlockSuperset =>
+      'Alterne os exercícios sem descansar entre eles; descanse só no fim de cada ronda.';
+
+  @override
+  String get sessionBlockCircuit =>
+      'Faça os exercícios em sequência, sem descansar entre eles; descanse no fim de cada ronda.';
+
+  @override
+  String get sessionBlockDropset =>
+      'Ao terminar a série, reduza a carga e continue logo a seguir, quase sem descanso.';
+
+  @override
+  String get sessionBlockRestPause =>
+      'Faça a série perto da falha, descanse alguns segundos e continue com a mesma carga.';
+
+  @override
+  String get sessionBlockNow => 'Agora';
 }

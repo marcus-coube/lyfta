@@ -95,7 +95,7 @@ teste de widget da seleção múltipla e do resultado parcial.
 **Aceite:** reordenar e publicar mantém a ordem no Hoje do aluno; teste de
 widget do reordenar e do "copiar para as próximas".
 
-## - [ ] P6.5 App — player por bloco (Flutter)
+## - [x] P6.5 App — player por bloco (Flutter)
 
 **Objetivo:** o aluno executa o bloco como foi prescrito. Hoje o player é uma
 lista plana de exercícios e o bloco é só um rótulo.
@@ -349,3 +349,35 @@ de widget do cartão de superset; treino straight continua idêntico ao 1.0.
   próximas, descanso do bloco, leitura), `student_plans_tab_test.dart`
   (próximo dia). Os testes de layout largo ignoram o overflow do "Adicionar dia"
   (artefato da fonte de teste, ver P6.3).
+
+### P6.5 — player por bloco (app)
+
+- **`BlockRunner`** (`features/workout/domain/block_runner.dart`, puro): quebra o
+  dia achatado (`Today.runs`) em runners — um por exercício no `straight`
+  (cartão e rótulo idênticos ao 1.0, `_ExerciseCard` intocado), um por bloco nos
+  demais. `superset`/`circuit` ordenam por rodada (exercício com menos séries
+  sai das rodadas finais); `dropset`/`rest_pause` encadeiam exercício a
+  exercício. O `set_no` continua o de `ExerciseRun.setNoAt`: o evento por série
+  (`exercise_id` + `set_no`) e a fila offline (ADR-003) não mudaram, nem o
+  backend.
+- **Descanso (decisão):** em bloco por rodada, depois de uma série que **não
+  fecha** a rodada vale só o `rest_seconds` prescrito na série (ausente = 0, o
+  timer não dispara); a série que fecha a rodada usa o da série ou, na falta, o
+  do bloco. Consequência a conhecer: se o coach preencheu descanso em todas as
+  séries de um bi-set (o builder copia o da série anterior), o aluno descansa
+  entre A e B — é o que está prescrito. Dropset/rest-pause: `set ?? bloco`, como
+  no straight.
+- **"Pular" e corrigir:** não há evento de pulo; as linhas seguem todas
+  tocáveis e `BlockRunner.current` marca "Agora" no primeiro pendente **depois**
+  da última série registrada (registrar B1 sem A1 leva a condução a A2; o A1
+  pulado volta no fim). Corrigir é revisão como antes e não reinicia o descanso.
+- **UI:** `widgets/block_card.dart` — um cartão por bloco com o rótulo do tipo
+  e a explicação do método (`sessionBlock*` nas 3 ARBs); rodadas com cabeçalho
+  "Rodada n de N" e o exercício em cada passo; o `SetRow` é o mesmo do straight.
+  A notificação de fim de descanso anuncia o exercício do próximo passo.
+- **Testes:** `domain/block_runner_test.dart` (A1→B1→…, circuito 3×2, série
+  desigual, descanso por rodada/por série, dropset, straight, pular, `set_no`
+  entre blocos) e `presentation/block_card_test.dart` (cartão de superset:
+  ordem visual, "Agora", descanso zero entre A1 e B1 e 90 s ao fechar a rodada).
+- **Não verificado:** player no emulador/aparelho com superset real (só
+  unit/widget); layout do cartão em tela estreita.

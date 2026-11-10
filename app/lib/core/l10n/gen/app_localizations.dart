@@ -3878,6 +3878,42 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Próximo dia: {label}.'**
   String planNextDaySet(String label);
+
+  /// Cabeçalho da rodada de um bi-set ou circuito.
+  ///
+  /// In pt, this message translates to:
+  /// **'Rodada {number} de {total}'**
+  String sessionBlockRound(int number, int total);
+
+  /// No description provided for @sessionBlockSuperset.
+  ///
+  /// In pt, this message translates to:
+  /// **'Alterne os exercícios sem descansar entre eles; descanse só ao fim de cada rodada.'**
+  String get sessionBlockSuperset;
+
+  /// No description provided for @sessionBlockCircuit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Faça os exercícios em sequência, sem descansar entre eles; descanse ao fim de cada rodada.'**
+  String get sessionBlockCircuit;
+
+  /// No description provided for @sessionBlockDropset.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ao terminar a série, reduza a carga e continue logo em seguida, quase sem descanso.'**
+  String get sessionBlockDropset;
+
+  /// No description provided for @sessionBlockRestPause.
+  ///
+  /// In pt, this message translates to:
+  /// **'Faça a série perto da falha, descanse poucos segundos e continue com a mesma carga.'**
+  String get sessionBlockRestPause;
+
+  /// No description provided for @sessionBlockNow.
+  ///
+  /// In pt, this message translates to:
+  /// **'Agora'**
+  String get sessionBlockNow;
 }
 
 class _AppLocalizationsDelegate

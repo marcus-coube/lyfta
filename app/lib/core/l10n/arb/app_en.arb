@@ -652,5 +652,17 @@
   "planNextDay": "Next day",
   "planNextDayTitle": "Student's next workout",
   "planNextDayCurrent": "Next now",
-  "planNextDaySet": "Next day: {label}."
+  "planNextDaySet": "Next day: {label}.",
+  "sessionBlockRound": "Round {number} of {total}",
+  "@sessionBlockRound": {
+    "placeholders": {
+      "number": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "sessionBlockSuperset": "Alternate the exercises without resting between them; rest only at the end of each round.",
+  "sessionBlockCircuit": "Do the exercises back to back with no rest between them; rest at the end of each round.",
+  "sessionBlockDropset": "When the set ends, lower the weight and keep going right away, with almost no rest.",
+  "sessionBlockRestPause": "Take the set close to failure, rest a few seconds and continue with the same weight.",
+  "sessionBlockNow": "Now"
 }

@@ -2183,4 +2183,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String planNextDaySet(String label) {
     return 'Next day: $label.';
   }
+
+  @override
+  String sessionBlockRound(int number, int total) {
+    return 'Round $number of $total';
+  }
+
+  @override
+  String get sessionBlockSuperset =>
+      'Alternate the exercises without resting between them; rest only at the end of each round.';
+
+  @override
+  String get sessionBlockCircuit =>
+      'Do the exercises back to back with no rest between them; rest at the end of each round.';
+
+  @override
+  String get sessionBlockDropset =>
+      'When the set ends, lower the weight and keep going right away, with almost no rest.';
+
+  @override
+  String get sessionBlockRestPause =>
+      'Take the set close to failure, rest a few seconds and continue with the same weight.';
+
+  @override
+  String get sessionBlockNow => 'Now';
 }

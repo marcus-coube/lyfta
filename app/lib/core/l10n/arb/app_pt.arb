@@ -1893,5 +1893,18 @@
         "type": "String"
       }
     }
-  }
+  },
+  "sessionBlockRound": "Rodada {number} de {total}",
+  "@sessionBlockRound": {
+    "description": "Cabeçalho da rodada de um bi-set ou circuito.",
+    "placeholders": {
+      "number": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "sessionBlockSuperset": "Alterne os exercícios sem descansar entre eles; descanse só ao fim de cada rodada.",
+  "sessionBlockCircuit": "Faça os exercícios em sequência, sem descansar entre eles; descanse ao fim de cada rodada.",
+  "sessionBlockDropset": "Ao terminar a série, reduza a carga e continue logo em seguida, quase sem descanso.",
+  "sessionBlockRestPause": "Faça a série perto da falha, descanse poucos segundos e continue com a mesma carga.",
+  "sessionBlockNow": "Agora"
 }
