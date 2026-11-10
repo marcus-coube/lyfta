@@ -16,7 +16,7 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
   - `lib/core/design_system/` — tokens, tema e componentes `Ly*` (fonte de verdade do DS).
   - `lib/features/` — features por domínio (`auth/` = login visual, único hoje).
 - `backend/` — microserviços Go: `identity` (8081), `workout` (8082),
-  `assessment` (8083) e `comms` (8084) existem. Stack pinada, portas e bancos em
+  `assessment` (8083), `comms` (8084) e `billing` (8085, 2.0) existem. Stack pinada, portas e bancos em
   [backend/README.md](backend/README.md). Futuro: cada serviço em repo próprio —
   **nunca** importar código entre serviços (duplicar é o certo: ver o
   `internal/security` de cada um).
@@ -107,7 +107,7 @@ bioimpedância e anamnese (meta semanal só do coach), e no app a lista de
 alunos paginada com "último treino" (`POST /v1/students/overview` no
 workout), ficha `/students/:id` (Dados/Treino/Evolução/Check-ins), "Meus
 dados" e "Meu objetivo" do aluno. Ninguém usa o app ainda: contratos podem
-mudar em vez de acumular dívida. **P6 fechada (5/5, 2026-11-10):** (modelos e ciclo de vida no `workout`; no app, aba Modelos, aplicar/reaplicar em lote e ficha com Aplicar modelo/Duplicar/Arquivar/Ativar, arquivado somente leitura; builder com reordenar por alça, duplicar dia/bloco, histórico de versões e próximo dia; player por bloco: bi-set/circuito conduzidos por rodada e dropset/rest-pause encadeados, via `BlockRunner`). Próximo: P7.1. Financeiro do 2.0 é o sexto serviço, `billing` (8085), **só
+mudar em vez de acumular dívida. **P6 fechada (5/5, 2026-11-10):** (modelos e ciclo de vida no `workout`; no app, aba Modelos, aplicar/reaplicar em lote e ficha com Aplicar modelo/Duplicar/Arquivar/Ativar, arquivado somente leitura; builder com reordenar por alça, duplicar dia/bloco, histórico de versões e próximo dia; player por bloco: bi-set/circuito conduzidos por rodada e dropset/rest-pause encadeados, via `BlockRunner`). **P7.1 pronta** (11/19): `billing` (8085, `lyfta_billing`) com bootstrap, schema do ADR-007 e RLS; a API vem na P7.2. Próximo: P7.2. Financeiro do 2.0 é o sexto serviço, `billing`, **só
 com baixa manual** — PIX adiado; acesso do coach configurável por organização ([ADR-017](docs/adr/ADR-017-financeiro-servico-billing-baixa-manual.md));
 modelos de treino aplicados por cópia ([ADR-018](docs/adr/ADR-018-modelos-de-treino-por-copia.md)).
 Tudo só em emulador: o que depende de

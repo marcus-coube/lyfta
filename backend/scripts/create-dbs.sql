@@ -8,3 +8,5 @@ SELECT 'CREATE DATABASE lyfta_assessment'
 WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'lyfta_assessment')\gexec
 SELECT 'CREATE DATABASE lyfta_comms'
 WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'lyfta_comms')\gexec
+SELECT 'CREATE DATABASE lyfta_billing'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'lyfta_billing')\gexec

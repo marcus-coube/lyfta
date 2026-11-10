@@ -1,7 +1,7 @@
 # Lyfta — Backend (microserviços Go)
 
 Arquitetura: [ADR-013](../docs/adr/ADR-013-microservicos-db-por-servico.md) —
-4 serviços, cada um com projeto Go e banco PostgreSQL próprios. Hoje vivem neste
+6 serviços (o 6º, `billing`, é do 2.0), cada um com projeto Go e banco PostgreSQL próprios. Hoje vivem neste
 repositório; no futuro cada um vira um repositório separado (não criar dependência
 de código entre serviços — só HTTP).
 
@@ -13,6 +13,7 @@ de código entre serviços — só HTTP).
 | `workout/` | 8082 | `lyfta_workout` | Biblioteca de exercícios, templates (ADR-004), execução, sync offline (ADR-003), mídia |
 | `assessment/` | 8083 | `lyfta_assessment` | Medidas, bioimpedância, fotos de evolução, anamnese e lesões |
 | `comms/` | 8084 | `lyfta_comms` | Chat (WS+REST), check-in de treino, push FCM |
+| `billing/` | 8085 | `lyfta_billing` | Financeiro (ADR-007/017): planos de mensalidade, assinaturas, faturas, baixa manual |
 
 ## Stack pinada (não trocar sem ADR)
 
@@ -89,9 +90,9 @@ ser o último do `X-Forwarded-For`). LGPD (P4.5): `TERMS_VERSION`
 `ASSESSMENT_URL` e `COMMS_URL` (identity, para a exclusão de conta) e
 `IDENTITY_URL` (assessment, para o consentimento de outra pessoa) — M2M com
 `INTERNAL_TOKEN`. Vínculo professor↔aluno (P4.7, ADR-016): `IDENTITY_URL` e
-`COACH_LINK_CACHE_TTL` (padrão `30s`) em workout, assessment e comms.
+`COACH_LINK_CACHE_TTL` (padrão `30s`) em workout, assessment, comms e billing.
 
 ## Bancos locais
 
 Criados no Postgres local da máquina de dev:
-`lyfta_identity`, `lyfta_workout`, `lyfta_assessment`, `lyfta_comms`.
+`lyfta_identity`, `lyfta_workout`, `lyfta_assessment`, `lyfta_comms`, `lyfta_billing`.

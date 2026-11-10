@@ -11,7 +11,7 @@ Depende de: P5.1 (fuso do tenant), P5.2 (status do aluno).
 
 ---
 
-## - [ ] P7.1 Serviço `billing`: bootstrap e schema (Go)
+## - [x] P7.1 Serviço `billing`: bootstrap e schema (Go)
 
 **Objetivo:** sexto serviço (8085, `lyfta_billing`) com o modelo inteiro do ADR-007.
 **Passos:**
@@ -169,3 +169,31 @@ identity (pendente + billing fora do ar) e no billing (idempotência do DELETE).
 ## Notas de execução
 
 (o agente anota aqui descobertas, dívidas e desvios aprovados)
+
+**P7.1 (Mac, 2026-11-10)**
+- Bootstrap duplicado do `assessment` (`security`, `obs`, `coachlink`, `repo`
+  com `WithTenant`, middlewares, Sentry/Recover). Sem S3 nem `consent`: o
+  financeiro não tem mídia nem finalidade de consentimento (o campo `Consents`
+  do JWT fica só por paridade). Rotas: `/healthz` e `/v1/whoami`; o
+  `coachlink` já vem no pacote, sem ser ligado ao router (a API é a P7.2).
+- Migrations 0001–0004 (up/down/up verificado): customers+plans, subscriptions
+  +invoices (trigger de fatura paga imutável), payments (trigger append-only)
+  +`payment_provider_events`, role `lyfta_app`. RLS forçada, `tenant_id` e
+  `UNIQUE (tenant_id, id)` nas tabelas pai; FKs compostas `(tenant_id, id)`
+  entre tabelas filhas garantem pai do mesmo tenant.
+- `billing_customers` tem PK `(tenant_id, student_id)` e a assinatura tem FK
+  para ele: criar assinatura **exige** o customer já gravado (P7.2 grava a cópia
+  do identity antes, na mesma transação).
+- Desvio pequeno: o índice único parcial de assinatura vale para
+  `status IN ('active','paused')`, não só `active` — assim retomar uma pausada
+  nunca colide com assinatura nova criada durante a pausa. Se a P7.2 preferir
+  o literal, é trocar o predicado do índice.
+- Trigger da fatura paga: só sai de `paid` para `open|overdue` com `paid_at`
+  NULL e demais campos iguais (o estorno); `DELETE` de paga é bloqueado. O
+  CHECK `(status='paid') = (paid_at IS NOT NULL)` obriga a P7.2 a setar os dois
+  juntos. `payments`: único UPDATE permitido é preencher `reversed_by`; o
+  estorno é um payment novo com `reversal_of`.
+- Dívida: `billing/.env` local não foi criado pelo agente (precisa da
+  `JWT_PUBLIC_KEY` do identity): copiar `.env.example` e colar a pública antes
+  de subir o serviço pela launch config `billing`. O CI não precisa: descobre o
+  serviço por `backend/billing/go.mod`, cria `lyfta_billing` e roda as migrations.
