@@ -109,6 +109,11 @@ func NewRouter(
 			r.Post("/plans/{id}/publish", planHandler.Publish)
 			r.Post("/plans/{id}/save-as-template", planHandler.SaveAsTemplate)
 
+			// Ciclo de vida do plano do aluno (P6.2).
+			r.Post("/plans/{id}/duplicate", planHandler.Duplicate)
+			r.Post("/plans/{id}/archive", planHandler.Archive)
+			r.Get("/plans/{id}/versions", planHandler.Versions)
+
 			// Modelos de treino (ADR-018, P6.1): do tenant — qualquer coach
 			// lista e aplica; editar e arquivar é do autor ou do owner. Ler e
 			// editar a árvore reusa /plans/{id}.
@@ -128,6 +133,8 @@ func NewRouter(
 			r.Route("/students/{id}", func(r chi.Router) {
 				r.Use(RequireStudentLink(logger, linker))
 				r.Get("/plans", planHandler.ListByStudent)
+				r.Post("/plans/{plan_id}/activate", planHandler.Activate)
+				r.Put("/plan/next-day", planHandler.SetNextDay)
 				// O mesmo progresso, com o aluno na URL: é o que a tela do
 				// professor acompanha (P2.5).
 				r.Get("/exercises/logged", historyHandler.StudentLogged)

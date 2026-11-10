@@ -36,7 +36,7 @@ func newExecFixture(t *testing.T, labels ...string) execFixture {
 	if _, _, err := plans.ReplaceDraft(ctx, tenantID, plan.ID, "", draftDays(exercise.ID, labels...)); err != nil {
 		t.Fatalf("gravar rascunho: %v", err)
 	}
-	version, _, err := plans.PublishDraft(ctx, tenantID, plan.ID)
+	version, _, err := plans.PublishDraft(ctx, tenantID, plan.ID, "")
 	if err != nil {
 		t.Fatalf("publicar: %v", err)
 	}
@@ -279,7 +279,7 @@ func TestPreviousLoadCrossesPlans(t *testing.T) {
 	if _, _, err := f.plans.ReplaceDraft(ctx, f.tenantID, novo.ID, "", draftDays(f.exerciseID, "X")); err != nil {
 		t.Fatalf("rascunho do plano 2: %v", err)
 	}
-	v2, _, err := f.plans.PublishDraft(ctx, f.tenantID, novo.ID)
+	v2, _, err := f.plans.PublishDraft(ctx, f.tenantID, novo.ID, "")
 	if err != nil {
 		t.Fatalf("publicar plano 2: %v", err)
 	}

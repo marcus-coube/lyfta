@@ -23,7 +23,7 @@ func publishedTemplate(t *testing.T, plans *repo.PlanRepo, tenantID, coachID, ex
 	if _, _, err := plans.ReplaceDraft(ctx, tenantID, tpl.ID, "", draftDays(exerciseID, "A", "B")); err != nil {
 		t.Fatalf("salvar modelo: %v", err)
 	}
-	if _, state, err := plans.PublishDraft(ctx, tenantID, tpl.ID); err != nil || state.PlanID != "" {
+	if _, state, err := plans.PublishDraft(ctx, tenantID, tpl.ID, ""); err != nil || state.PlanID != "" {
 		t.Fatalf("publicar modelo (sem rotação): %v %+v", err, state)
 	}
 	return tpl

@@ -3,15 +3,15 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** P6.2 — planos do aluno: duplicar, arquivar, ativar, versões, próximo dia (workout). **Fase P5 fechada (5/5).**
+**Próxima tarefa:** P6.3 — app: modelos e atribuição em lote (Flutter). **Fase P5 fechada (5/5).**
 
 | Fase | Progresso | Situação |
 |---|---|---|
 | P5 — Alunos | 5/5 | fechada |
-| P6 — Builder | 1/5 | em andamento |
+| P6 — Builder | 2/5 | em andamento |
 | P7 — Financeiro | 0/5 | não iniciada |
 | P8 — Dashboard e release | 0/4 | não iniciada |
-| **Total** | **6/19** | |
+| **Total** | **7/19** | |
 
 ## Bancos locais
 
@@ -44,3 +44,4 @@ Os quatro bancos do 1.0 seguem na tabela do [STATUS do 1.0](../mvp1/STATUS.md).
 | 2026-11-09 | **P5.5 concluída — fase P5 fechada (5/5):** app — "Objetivo e saúde" na aba Dados da ficha (objetivo, experiência, meta semanal, observações médicas, notas privadas do coach, lesões com adicionar/resolver/reabrir/remover) e tela "Meu objetivo" do aluno (`/goal`, pela Conta e sugerida uma vez no primeiro acesso); lesões ativas e objetivo no Resumo da Evolução do coach; `weekly_target` passa a ser a meta do streak da Agenda (fallback: tamanho do rodízio). Sem mudança de backend; decisões: aluno vê/edita as próprias lesões e a meta semanal é só do coach (`/me` ignora `weekly_target`) |
 | 2026-11-09 | **P6.1 concluída:** workout `0019_plan_templates` (modelo = plano `kind=template`, procedência `source_template_id`/`source_version_no`/`edited_after_source`), `/v1/templates` (lista com busca e cursor, criar, arquivar, atribuir em lote por cópia, destinatários, reaplicar), `save-as-template`; rotas de plano aceitam modelo (autor/owner escreve) |
 | 2026-11-10 | **Ajustes na P6.1 (decisão do usuário):** `POST /v1/templates/{id}/unarchive`; `coach_id` do plano criado (assign e `POST /v1/plans`) = professor vinculado ao aluno (fallback: quem atribuiu), `coach_id` removido do corpo do `POST /plans`; existência do aluno validada no identity (M2M `students/statuses`) — `student_not_found` por item no assign; aluno inativo recebe plano |
+| 2026-11-10 | **P6.2 concluída:** workout `0020_plan_version_author` (`published_by`), `POST /v1/plans/{id}/duplicate|archive`, `GET /v1/plans/{id}/versions` (autor + contagens), `POST /v1/students/{id}/plans/{plan_id}/activate` (rotação recomeça no 1º dia; arquivar o ativo = 409 `plan_is_active`) e `PUT /v1/students/{id}/plan/next-day` (override do coach, reflete no `/me/today`) |

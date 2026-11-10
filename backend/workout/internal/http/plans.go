@@ -352,7 +352,7 @@ func (h *PlanHandler) Publish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	version, _, err := h.plans.PublishDraft(r.Context(), claims.TenantID, plan.ID)
+	version, _, err := h.plans.PublishDraft(r.Context(), claims.TenantID, plan.ID, claims.Subject)
 	var incomplete repo.IncompletePlanError
 	switch {
 	case errors.Is(err, repo.ErrNotFound):

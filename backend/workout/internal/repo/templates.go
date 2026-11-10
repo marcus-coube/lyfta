@@ -181,8 +181,10 @@ func (r *PlanRepo) UnarchiveTemplate(ctx context.Context, tenantID, templateID s
 // versão publicada do modelo, lida uma vez pelo chamador e copiada para cada
 // aluno (a versão é imutável, ADR-004 §1).
 type AssignParams struct {
-	TenantID        string
-	CoachID         string
+	TenantID string
+	CoachID  string
+	// ActorID é quem atribuiu (autor da versão publicada).
+	ActorID         string
 	StudentID       string
 	Template        domain.Plan
 	TemplateVersion domain.PlanVersion
@@ -213,7 +215,7 @@ func (r *PlanRepo) AssignTemplate(ctx context.Context, p AssignParams) (domain.P
 			return err
 		}
 		if p.Publish {
-			if _, _, err := publishDraftTx(ctx, tx, p.TenantID, plan.ID); err != nil {
+			if _, _, err := publishDraftTx(ctx, tx, p.TenantID, plan.ID, p.ActorID); err != nil {
 				return err
 			}
 			plan.Status = domain.PlanStatusPublished
@@ -260,7 +262,9 @@ func (r *PlanRepo) ListRecipients(ctx context.Context, tenantID, templateID stri
 
 // ReapplyParams é a reaplicação do modelo a um plano de aluno.
 type ReapplyParams struct {
-	TenantID        string
+	TenantID string
+	// ActorID é quem reaplicou (autor da versão publicada).
+	ActorID         string
 	PlanID          string
 	Template        domain.Plan
 	TemplateVersion domain.PlanVersion
@@ -295,7 +299,7 @@ func (r *PlanRepo) ReapplyTemplate(ctx context.Context, p ReapplyParams) (domain
 			return err
 		}
 		var err error
-		version, _, err = publishDraftTx(ctx, tx, p.TenantID, p.PlanID)
+		version, _, err = publishDraftTx(ctx, tx, p.TenantID, p.PlanID, p.ActorID)
 		return err
 	})
 	if errors.Is(err, pgx.ErrNoRows) {

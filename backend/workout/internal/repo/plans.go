@@ -708,7 +708,7 @@ func insertTreeTx(ctx context.Context, tx pgx.Tx, tenantID, versionID string, da
 // rotação dele para a versão (ADR-004 §1 e §3). Tudo numa transação: publicar
 // sem atualizar o estado deixaria o aluno lendo a versão anterior. Modelo só
 // congela a versão: não há rotação (ADR-018 §4) — o estado volta zerado.
-func (r *PlanRepo) PublishDraft(ctx context.Context, tenantID, planID string) (domain.PlanVersion, domain.StudentPlanState, error) {
+func (r *PlanRepo) PublishDraft(ctx context.Context, tenantID, planID, actorID string) (domain.PlanVersion, domain.StudentPlanState, error) {
 	var (
 		version domain.PlanVersion
 		state   domain.StudentPlanState
@@ -716,7 +716,7 @@ func (r *PlanRepo) PublishDraft(ctx context.Context, tenantID, planID string) (d
 
 	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
 		var err error
-		version, state, err = publishDraftTx(ctx, tx, tenantID, planID)
+		version, state, err = publishDraftTx(ctx, tx, tenantID, planID, actorID)
 		return err
 	})
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -732,7 +732,7 @@ func (r *PlanRepo) PublishDraft(ctx context.Context, tenantID, planID string) (d
 	return version, state, nil
 }
 
-func publishDraftTx(ctx context.Context, tx pgx.Tx, tenantID, planID string) (version domain.PlanVersion, state domain.StudentPlanState, err error) {
+func publishDraftTx(ctx context.Context, tx pgx.Tx, tenantID, planID, actorID string) (version domain.PlanVersion, state domain.StudentPlanState, err error) {
 	var plan domain.Plan
 	if err = scanPlan(tx.QueryRow(ctx, `
 		SELECT `+planColumns+`
@@ -758,8 +758,8 @@ func publishDraftTx(ctx context.Context, tx pgx.Tx, tenantID, planID string) (ve
 	}
 
 	if err = tx.QueryRow(ctx, `
-		UPDATE workout_plan_versions SET published_at = now() WHERE id = $1
-		RETURNING published_at`, version.ID).Scan(&version.PublishedAt); err != nil {
+		UPDATE workout_plan_versions SET published_at = now(), published_by = $2 WHERE id = $1
+		RETURNING published_at`, version.ID, nullString(actorID)).Scan(&version.PublishedAt); err != nil {
 		return
 	}
 

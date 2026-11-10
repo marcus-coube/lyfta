@@ -64,7 +64,7 @@ func TestPublishThenEditCreatesV2(t *testing.T) {
 		t.Fatalf("esperava v1 com 2 dias, veio v%d com %d", v1.VersionNo, len(days))
 	}
 
-	published, state, err := plans.PublishDraft(ctx, tenantID, plan.ID)
+	published, state, err := plans.PublishDraft(ctx, tenantID, plan.ID, "")
 	if err != nil {
 		t.Fatalf("publicar: %v", err)
 	}
@@ -101,7 +101,7 @@ func TestPublishThenEditCreatesV2(t *testing.T) {
 		t.Fatalf("v1 deveria manter 40 kg, veio %v", got)
 	}
 
-	if _, _, err := plans.PublishDraft(ctx, tenantID, plan.ID); err != nil {
+	if _, _, err := plans.PublishDraft(ctx, tenantID, plan.ID, ""); err != nil {
 		t.Fatalf("publicar v2: %v", err)
 	}
 	updated, err := plans.GetPlan(ctx, tenantID, plan.ID)
@@ -126,7 +126,7 @@ func TestPublishKeepsRotationLabel(t *testing.T) {
 	if _, _, err := plans.ReplaceDraft(ctx, tenantID, plan.ID, "", draftDays(exercise.ID, "A", "B")); err != nil {
 		t.Fatalf("gravar rascunho: %v", err)
 	}
-	if _, _, err := plans.PublishDraft(ctx, tenantID, plan.ID); err != nil {
+	if _, _, err := plans.PublishDraft(ctx, tenantID, plan.ID, ""); err != nil {
 		t.Fatalf("publicar v1: %v", err)
 	}
 
@@ -149,7 +149,7 @@ func TestPublishKeepsRotationLabel(t *testing.T) {
 	if _, _, err := plans.ReplaceDraft(ctx, tenantID, plan.ID, "", draftDays(exercise.ID, "A", "B")); err != nil {
 		t.Fatalf("editar rascunho: %v", err)
 	}
-	_, state, err := plans.PublishDraft(ctx, tenantID, plan.ID)
+	_, state, err := plans.PublishDraft(ctx, tenantID, plan.ID, "")
 	if err != nil {
 		t.Fatalf("publicar v2: %v", err)
 	}
@@ -195,7 +195,7 @@ func TestPublishRejectsIncomplete(t *testing.T) {
 			if _, _, err := plans.ReplaceDraft(ctx, tenantID, plan.ID, "", tc.days); err != nil {
 				t.Fatalf("gravar rascunho: %v", err)
 			}
-			_, _, err := plans.PublishDraft(ctx, tenantID, plan.ID)
+			_, _, err := plans.PublishDraft(ctx, tenantID, plan.ID, "")
 			var incomplete repo.IncompletePlanError
 			if !errors.As(err, &incomplete) {
 				t.Fatalf("esperava plano incompleto, veio %v", err)
@@ -211,10 +211,10 @@ func TestPublishRejectsIncomplete(t *testing.T) {
 		if _, _, err := plans.ReplaceDraft(ctx, tenantID, plan.ID, "", draftDays(exercise.ID, "A")); err != nil {
 			t.Fatalf("gravar rascunho: %v", err)
 		}
-		if _, _, err := plans.PublishDraft(ctx, tenantID, plan.ID); err != nil {
+		if _, _, err := plans.PublishDraft(ctx, tenantID, plan.ID, ""); err != nil {
 			t.Fatalf("publicar: %v", err)
 		}
-		if _, _, err := plans.PublishDraft(ctx, tenantID, plan.ID); !errors.Is(err, repo.ErrNoDraft) {
+		if _, _, err := plans.PublishDraft(ctx, tenantID, plan.ID, ""); !errors.Is(err, repo.ErrNoDraft) {
 			t.Fatalf("esperava ErrNoDraft ao publicar duas vezes, veio %v", err)
 		}
 	})
@@ -254,7 +254,7 @@ func TestPlanIsolationBetweenTenants(t *testing.T) {
 	if _, _, err := plans.ReplaceDraft(ctx, tenantA, plan.ID, "", draftDays(exercise.ID, "A")); err != nil {
 		t.Fatalf("gravar rascunho: %v", err)
 	}
-	if _, _, err := plans.PublishDraft(ctx, tenantA, plan.ID); err != nil {
+	if _, _, err := plans.PublishDraft(ctx, tenantA, plan.ID, ""); err != nil {
 		t.Fatalf("publicar: %v", err)
 	}
 

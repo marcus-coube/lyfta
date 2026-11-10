@@ -44,7 +44,7 @@ modelo depois não muda nenhum — teste); modelo sem versão publicada = 422
 `template_not_published`; reaplicar gera versão nova só nos planos escolhidos;
 teste de handler do assign com um aluno fora do vínculo.
 
-## - [ ] P6.2 Planos do aluno: duplicar, arquivar, ativar, versões, próximo dia (workout)
+## - [x] P6.2 Planos do aluno: duplicar, arquivar, ativar, versões, próximo dia (workout)
 
 **Objetivo:** o coach administra o ciclo de vida dos planos de cada aluno.
 **Passos:**
@@ -194,3 +194,37 @@ de widget do cartão de superset; treino straight continua idêntico ao 1.0.
 - **Reapply (decisões mantidas):** `plan_archived` por item para plano
   arquivado/substituído (reativaria sem o coach pedir) e publicar ativa o plano
   (reaplicar num plano só-rascunho o põe na rotação).
+
+### P6.2 — ciclo de vida dos planos do aluno (workout)
+
+- **Migration `0020_plan_version_author`** (aplicada up/down/up): `workout_plan_versions.published_by`
+  (UUID, sem FK). O plano pedia "autor" na lista de versões e a tabela não
+  guardava quem publicou — desvio mínimo: a coluna é gravada no mesmo UPDATE de
+  `published_at` (o último que o trigger 0012 aceita). `PublishDraft` ganhou o
+  parâmetro `actorID` (quem publica, atribui ou reaplica; versões antigas ficam
+  NULL e o JSON omite `published_by`).
+- **Rotas** (todas sob owner/coach): `POST /v1/plans/{id}/duplicate`
+  `{student_id?}` (201, rascunho), `POST /v1/plans/{id}/archive` (200),
+  `GET /v1/plans/{id}/versions`, `POST /v1/students/{id}/plans/{plan_id}/activate`
+  e `PUT /v1/students/{id}/plan/next-day` `{day_id}` (as duas últimas com o vínculo
+  checado pelo middleware da rota; devolvem `{plan_id, active_version_id,
+  next_day_id, next_day_label}`).
+- **Duplicar:** copia a versão mais recente (rascunho aberto, senão a última
+  publicada), sem procedência de modelo, fora da rotação; plano sem versão vira
+  plano vazio. Destino (`student_id` do corpo ou o do plano) passa pelo vínculo,
+  pela existência no identity e por `coach_id` = professor vinculado ao destino
+  (mesmas regras do `POST /plans`). Modelo na origem = 404 `not_found`.
+- **Arquivar:** só plano de aluno (modelo tem rota própria; id de modelo = 404);
+  o ativo dá 409 `plan_is_active`; idempotente (já arquivado = 200).
+- **Ativar:** última versão publicada, rotação recomeça no primeiro dia, ativo
+  anterior vira `archived`; sem versão publicada = 422 `plan_not_published`;
+  plano de outro aluno/modelo = 404 `not_found`; ativar o ativo é idempotente
+  e **não** reinicia a rotação.
+- **Próximo dia:** reusa `SetNextDay` do override do aluno (`day_not_in_plan` 422,
+  aluno sem plano 404 `not_found`); o `/me/today` e o pull leem o mesmo
+  `student_plan_state`, então refletem de imediato. O item 5 (campos de
+  `GET /students/{id}/plans`) já estava feito na P6.1.
+- **Pendência/dívida:** `PUT .../draft` e `publish` num plano **arquivado**
+  continuam permitidos e publicar o reativa (comportamento do 1.0, mantido); se
+  a P6.3 quiser bloquear edição de arquivado, é um 409 novo.
+

@@ -316,7 +316,7 @@ func (h *PlanHandler) AssignTemplate(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		plan, err := h.plans.AssignTemplate(r.Context(), repo.AssignParams{
-			TenantID: claims.TenantID, CoachID: coachID, StudentID: studentID,
+			TenantID: claims.TenantID, CoachID: coachID, ActorID: claims.Subject, StudentID: studentID,
 			Template: tpl, TemplateVersion: version, Days: days, Publish: req.Publish,
 		})
 		if err != nil {
@@ -471,7 +471,7 @@ func (h *PlanHandler) ReapplyTemplate(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		v, err := h.plans.ReapplyTemplate(r.Context(), repo.ReapplyParams{
-			TenantID: claims.TenantID, PlanID: id, Template: tpl, TemplateVersion: version, Days: days,
+			TenantID: claims.TenantID, ActorID: claims.Subject, PlanID: id, Template: tpl, TemplateVersion: version, Days: days,
 		})
 		if err != nil {
 			item.Error = h.batchError(err, "template_reapply_failed")

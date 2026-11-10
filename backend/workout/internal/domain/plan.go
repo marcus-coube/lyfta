@@ -180,3 +180,13 @@ type TemplateRecipient struct {
 	Plan
 	IsActive bool
 }
+
+// VersionSummary é o cabeçalho de uma versão com o tamanho do conteúdo — a
+// linha do histórico de versões (P6.2). PublishedBy é vazio em rascunho e em
+// versões anteriores ao registro de autoria.
+type VersionSummary struct {
+	PlanVersion
+	PublishedBy    string
+	DaysCount      int
+	ExercisesCount int
+}

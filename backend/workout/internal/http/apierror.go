@@ -110,6 +110,14 @@ var (
 	errPlanArchived = func() APIError {
 		return newAPIError(http.StatusConflict, "plan_archived")
 	}
+	// Arquivar o plano ativo do aluno: ative outro antes (P6.2).
+	errPlanIsActive = func() APIError {
+		return newAPIError(http.StatusConflict, "plan_is_active")
+	}
+	// Ativar exige versão publicada.
+	errPlanNotPublished = func() APIError {
+		return newAPIError(http.StatusUnprocessableEntity, "plan_not_published")
+	}
 	errInvalidCursor = func() APIError {
 		return newAPIError(http.StatusBadRequest, "invalid_cursor")
 	}
