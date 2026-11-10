@@ -20,8 +20,9 @@ var (
 	ErrTemplateNotPublished = errors.New("repo: modelo sem versão publicada")
 	// ErrNotRecipient: o plano não nasceu deste modelo.
 	ErrNotRecipient = errors.New("repo: plano não pertence aos destinatários do modelo")
-	// ErrPlanArchived: plano arquivado não é reaplicado (reativaria o plano
-	// sem o coach ter pedido).
+	// ErrPlanArchived: plano arquivado não é editado, publicado nem
+	// reaplicado (reativaria o plano sem o coach ter pedido); volta pelo
+	// activate (P6.2).
 	ErrPlanArchived = errors.New("repo: plano arquivado")
 )
 

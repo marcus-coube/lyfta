@@ -224,7 +224,10 @@ de widget do cartão de superset; treino straight continua idêntico ao 1.0.
   aluno sem plano 404 `not_found`); o `/me/today` e o pull leem o mesmo
   `student_plan_state`, então refletem de imediato. O item 5 (campos de
   `GET /students/{id}/plans`) já estava feito na P6.1.
-- **Pendência/dívida:** `PUT .../draft` e `publish` num plano **arquivado**
-  continuam permitidos e publicar o reativa (comportamento do 1.0, mantido); se
-  a P6.3 quiser bloquear edição de arquivado, é um 409 novo.
+- **Arquivado é somente leitura (decisão do usuário, 2026-11-10):** `PUT .../draft`
+  e `publish` num plano do aluno arquivado dão 409 `plan_archived` (modelo
+  arquivado segue com `template_archived`); a checagem fica no repo, sob o
+  `FOR UPDATE` do plano. Publicar não reativa mais — a única volta é o
+  `activate`, depois do qual o plano é editável de novo. Arquivado nunca
+  publicado não reativa (422) nem se edita: o caminho é duplicar.
 

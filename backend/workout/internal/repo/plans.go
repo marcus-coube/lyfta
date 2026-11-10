@@ -559,9 +559,13 @@ func (r *PlanRepo) SaveDraft(ctx context.Context, tenantID, planID string, in Dr
 	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
 		// FOR UPDATE serializa dois coaches salvando o mesmo plano: sem ele,
 		// dois DELETE+INSERT concorrentes poderiam intercalar dias.
-		var exists string
-		if err := tx.QueryRow(ctx, `SELECT id FROM workout_plans WHERE id = $1 FOR UPDATE`, planID).Scan(&exists); err != nil {
+		// Plano arquivado não se edita (P6.2): reative-o antes.
+		var status domain.PlanStatus
+		if err := tx.QueryRow(ctx, `SELECT status FROM workout_plans WHERE id = $1 FOR UPDATE`, planID).Scan(&status); err != nil {
 			return err
+		}
+		if status == domain.PlanStatusArchived {
+			return ErrPlanArchived
 		}
 		if _, err := tx.Exec(ctx, `
 			UPDATE workout_plans
@@ -585,7 +589,7 @@ func (r *PlanRepo) SaveDraft(ctx context.Context, tenantID, planID string, in Dr
 		return domain.PlanVersion{}, nil, ErrNotFound
 	}
 	var unknown UnknownExerciseError
-	if errors.As(err, &unknown) {
+	if errors.As(err, &unknown) || errors.Is(err, ErrPlanArchived) {
 		return domain.PlanVersion{}, nil, err
 	}
 	if err != nil {
@@ -723,7 +727,7 @@ func (r *PlanRepo) PublishDraft(ctx context.Context, tenantID, planID, actorID s
 		return domain.PlanVersion{}, domain.StudentPlanState{}, ErrNotFound
 	}
 	var incomplete IncompletePlanError
-	if errors.As(err, &incomplete) || errors.Is(err, ErrNoDraft) {
+	if errors.As(err, &incomplete) || errors.Is(err, ErrNoDraft) || errors.Is(err, ErrPlanArchived) {
 		return domain.PlanVersion{}, domain.StudentPlanState{}, err
 	}
 	if err != nil {
@@ -737,6 +741,11 @@ func publishDraftTx(ctx context.Context, tx pgx.Tx, tenantID, planID, actorID st
 	if err = scanPlan(tx.QueryRow(ctx, `
 		SELECT `+planColumns+`
 		FROM workout_plans p WHERE p.id = $1 FOR UPDATE`, planID), &plan); err != nil {
+		return
+	}
+	// Publicar não reativa plano arquivado (P6.2): reativar é o activate.
+	if plan.Status == domain.PlanStatusArchived {
+		err = ErrPlanArchived
 		return
 	}
 

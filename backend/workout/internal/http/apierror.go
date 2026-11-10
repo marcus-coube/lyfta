@@ -107,6 +107,7 @@ var (
 	errPlanNotFromTemplate = func() APIError {
 		return newAPIError(http.StatusUnprocessableEntity, "plan_not_from_template")
 	}
+	// Plano do aluno arquivado não é editado, publicado nem reaplicado (P6.2).
 	errPlanArchived = func() APIError {
 		return newAPIError(http.StatusConflict, "plan_archived")
 	}

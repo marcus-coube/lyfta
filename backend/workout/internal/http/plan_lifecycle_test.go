@@ -159,6 +159,26 @@ func TestPlanLifecycle(t *testing.T) {
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("ativar modelo: %d", rec.Code)
 	}
+
+	// Arquivado não se edita nem se publica (publicar o reativaria por fora
+	// do activate): 409 plan_archived, rotação intacta.
+	rec = do(t, a.handler, http.MethodPut, "/v1/plans/"+p2+"/draft", a.coachA, draftBody(a.exerciseID, "X"))
+	if rec.Code != http.StatusConflict || decodeError(t, rec).Code != "plan_archived" {
+		t.Fatalf("editar arquivado: %d %s", rec.Code, rec.Body.String())
+	}
+	rec = do(t, a.handler, http.MethodPost, "/v1/plans/"+p2+"/publish", a.coachA, nil)
+	if rec.Code != http.StatusConflict || decodeError(t, rec).Code != "plan_archived" {
+		t.Fatalf("publicar arquivado: %d %s", rec.Code, rec.Body.String())
+	}
+	if got := a.today(t); got.Plan.ID != p1 {
+		t.Fatalf("tentar publicar arquivado não pode trocar o treino: %+v", got.Plan)
+	}
+	// Reativado pelo activate, volta a ser editável.
+	if rec = do(t, a.handler, http.MethodPost, "/v1/students/"+a.s1+"/plans/"+p2+"/activate", a.coachA, nil); rec.Code != http.StatusOK {
+		t.Fatalf("reativar P2: %d %s", rec.Code, rec.Body.String())
+	}
+	a.saveTemplate(t, a.coachA, p2, "X")
+	a.publishTemplate(t, a.coachA, p2)
 }
 
 // Duplicar para outro aluno aplica vínculo, existência e a regra do coach_id.

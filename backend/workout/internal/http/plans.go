@@ -314,6 +314,9 @@ func (h *PlanHandler) UpdateDraft(w http.ResponseWriter, r *http.Request) {
 	case errors.As(err, &unknown):
 		writeError(w, errUnknownExercise(unknown.ExerciseID))
 		return
+	case errors.Is(err, repo.ErrPlanArchived):
+		writeError(w, archivedError(plan))
+		return
 	case err != nil:
 		h.logger.Error("plan_draft_failed", slog.Any("error", err))
 		writeError(w, errInternal())
@@ -363,6 +366,9 @@ func (h *PlanHandler) Publish(w http.ResponseWriter, r *http.Request) {
 		return
 	case errors.As(err, &incomplete):
 		writeError(w, errPlanIncomplete(incomplete.Reason, incomplete.DayID))
+		return
+	case errors.Is(err, repo.ErrPlanArchived):
+		writeError(w, archivedError(plan))
 		return
 	case err != nil:
 		h.logger.Error("plan_publish_failed", slog.Any("error", err))
@@ -678,4 +684,13 @@ func requestLocaleOrDefault(r *http.Request) domain.Locale {
 		return domain.LocaleSource
 	}
 	return locale
+}
+
+// archivedError: plano do aluno arquivado = 409 plan_archived (reativar pelo
+// activate); modelo arquivado = 409 template_archived (unarchive).
+func archivedError(plan domain.Plan) APIError {
+	if plan.Kind == domain.PlanKindTemplate {
+		return errTemplateArchived()
+	}
+	return errPlanArchived()
 }
