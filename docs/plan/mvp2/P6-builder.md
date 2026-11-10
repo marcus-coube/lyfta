@@ -80,7 +80,7 @@ arquivado continua no gráfico de carga (ADR-004 §2); testes de handler.
 **Aceite:** coach cria modelo, aplica a 2 alunos e cada um vê o treino no Hoje;
 teste de widget da seleção múltipla e do resultado parcial.
 
-## - [ ] P6.4 App — ergonomia do builder (Flutter)
+## - [x] P6.4 App — ergonomia do builder (Flutter)
 
 **Objetivo:** montar um treino de 6 dias sem repetição manual.
 **Passos:**
@@ -285,10 +285,8 @@ de widget do cartão de superset; treino straight continua idêntico ao 1.0.
   prometia "ativar depois" (`planArchiveDraftBody`); (e) no backend, a lista de
   modelos contava 0 dias para modelo só em rascunho — agora conta o rascunho
   quando não há versão publicada.
-- **Pendência (P6.4):** no modo leitura os controles de bloco/exercício/série
-  (adicionar, remover, tipo do bloco) continuam visíveis, apenas inertes
-  (`IgnorePointer`); escondê-los exige passar `readOnly` pelos widgets do
-  bloco e do `SetEditor`.
+- **Pendência (resolvida na P6.4):** controles de bloco/exercício/série em modo
+  leitura — agora escondidos (ver P6.4).
 - **Testes:** `test/features/templates/assign_template_test.dart` (seleção
   múltipla + resultado parcial com `student_not_found`; reaplicar com destaque,
   aviso e resultado), `test/features/builder/presentation/plan_builder_archived_test.dart`
@@ -297,3 +295,46 @@ de widget do cartão de superset; treino straight continua idêntico ao 1.0.
   confirmar ativar, menu do arquivado nunca publicado). Nos testes de builder o
   layout é estreito: a fonte de teste (Ahem) estoura o botão "Adicionar dia" da
   lista lateral de 240 px, que é artefato de teste.
+
+### P6.4 — ergonomia do builder (app)
+
+- **Reordenar:** dias (lista lateral do layout largo, alça + menu), blocos e
+  exercícios por alça (`ReorderableListView`, `buildDefaultDragHandles: false`,
+  `onReorderItem`; sem dependência nova). No layout estreito a lista lateral
+  não existe, então o menu do dia (mover/duplicar/remover) fica ao lado do
+  título do dia. Quem estava aberto continua aberto depois de arrastar.
+- **Duplicar:** dia (rótulo = primeira letra livre, não "a n-ésima" — corrige
+  também o "Adicionar dia", que depois de remover o A nascia "C" e colidia) e
+  bloco; cópia profunda (`copy()` em `Block`/`BlockExercise`/`WorkoutDay`).
+- **Séries:** "Copiar para as próximas" e "Remover" dividem o menu ⋮ da linha
+  (um ícone a mais quebrava o teste de 296 px do `SetEditor`); duplicar segue
+  visível. A cópia troca os objetos das séries seguintes (a chave por objeto
+  recria os controllers). **Descanso do bloco:** vale para a série **sem
+  anterior para copiar** (1ª série do exercício novo e "adicionar série" em
+  lista vazia); "adicionar série" com anterior copia o descanso da anterior
+  ("igual à anterior" prevaleceu sobre "padrão do bloco").
+- **Histórico:** ícone na AppBar abre um bottom sheet com a lista da P6.2
+  (versão, data, autor — nome via diretório do identity, reserva sem nome —,
+  dias e exercícios). Versão publicada abre em leitura (`?version=N`) com banner
+  e "Voltar à versão atual"; a entrada de rascunho recarrega o plano para
+  edição. Edição pendente é salva antes de abrir (como no "salvar como modelo").
+  "Salvar como modelo" some enquanto se vê versão antiga (ele copia a última).
+- **Banners:** "alterações não publicadas" no rascunho (versão rascunho ou
+  edição pendente); lesões ativas do aluno (P5.3, recolhível, aberta por
+  padrão; some sem lesão, sem permissão ou sem rede).
+- **Leitura de verdade (pendência da P6.3):** `readOnly` passa por bloco,
+  exercício e `SetEditor`; somem alça, tipo do bloco (vira texto), adicionar,
+  duplicar, copiar e remover; os campos seguem inertes por `IgnorePointer`.
+- **Próximo dia (ficha, aba Treino):** item "Próximo dia" no menu do plano em
+  uso; o diálogo lista os dias da versão publicada (`GET /plans/{id}?version=N`
+  já traz `next_day_id` do plano ativo), marca o atual e chama
+  `PUT /students/{id}/plan/next-day`; atualiza lista e `studentsProvider`.
+- **Não verificado à mão:** reordenar → publicar → ver a ordem no Hoje do aluno
+  (a ordem enviada é a do array, coberta pelo teste do builder e pelo backend
+  da P1.4); arrastar no toque real (só testado com gesto simulado).
+- **Testes:** `plan_builder_ergonomics_test.dart` (arrastar bloco, arrastar dia,
+  duplicar bloco/dia, banner de rascunho, histórico→leitura→voltar, lesões
+  recolhíveis, menu do dia no estreito), `set_editor_test.dart` (copiar para as
+  próximas, descanso do bloco, leitura), `student_plans_tab_test.dart`
+  (próximo dia). Os testes de layout largo ignoram o overflow do "Adicionar dia"
+  (artefato da fonte de teste, ver P6.3).

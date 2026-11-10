@@ -1797,5 +1797,101 @@
   "errorPlanNotPublished": "Publique o plano antes de ativá-lo.",
   "@errorPlanNotPublished": {
     "description": "Erro 422 plan_not_published."
+  },
+  "builderDuplicateDay": "Duplicar dia",
+  "@builderDuplicateDay": {
+    "description": "Ação do menu do dia."
+  },
+  "builderDuplicateBlock": "Duplicar bloco",
+  "@builderDuplicateBlock": {
+    "description": "Ação do menu do bloco."
+  },
+  "builderReorderHandle": "Arrastar para reordenar",
+  "@builderReorderHandle": {
+    "description": "Dica da alça de reordenar."
+  },
+  "builderCopyToNext": "Copiar para as próximas",
+  "@builderCopyToNext": {
+    "description": "Copia a série para todas as seguintes."
+  },
+  "builderUnpublishedChanges": "Alterações não publicadas. O aluno continua vendo a última versão publicada.",
+  "@builderUnpublishedChanges": {
+    "description": "Banner do rascunho."
+  },
+  "builderHistory": "Histórico de versões",
+  "@builderHistory": {
+    "description": "Título do histórico."
+  },
+  "builderHistoryEmpty": "Nenhuma versão ainda.",
+  "@builderHistoryEmpty": {
+    "description": "Histórico vazio."
+  },
+  "builderHistoryBy": "por {name}",
+  "@builderHistoryBy": {
+    "description": "Autor da versão.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "builderHistoryCounts": "{days, plural, one{1 dia} other{{days} dias}} · {exercises, plural, one{1 exercício} other{{exercises} exercícios}}",
+  "@builderHistoryCounts": {
+    "description": "Tamanho da versão.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "exercises": {
+        "type": "int"
+      }
+    }
+  },
+  "builderViewingVersion": "Você está vendo a versão {version}, somente leitura.",
+  "@builderViewingVersion": {
+    "description": "Banner da versão antiga.",
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "builderBackToCurrent": "Voltar à versão atual",
+  "@builderBackToCurrent": {
+    "description": "Sai da versão do histórico."
+  },
+  "builderInjuriesActive": "{count, plural, one{1 lesão ativa} other{{count} lesões ativas}}",
+  "@builderInjuriesActive": {
+    "description": "Banner de lesões no builder.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "builderInjuriesToggle": "Mostrar ou recolher lesões",
+  "@builderInjuriesToggle": {
+    "description": "Tooltip do banner de lesões."
+  },
+  "planNextDay": "Próximo dia",
+  "@planNextDay": {
+    "description": "Menu do plano em uso."
+  },
+  "planNextDayTitle": "Próximo treino do aluno",
+  "@planNextDayTitle": {
+    "description": "Título do diálogo."
+  },
+  "planNextDayCurrent": "Próximo agora",
+  "@planNextDayCurrent": {
+    "description": "Marca o dia atual."
+  },
+  "planNextDaySet": "Próximo dia: {label}.",
+  "@planNextDaySet": {
+    "description": "Confirmação.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
   }
 }

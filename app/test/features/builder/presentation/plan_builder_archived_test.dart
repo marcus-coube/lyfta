@@ -98,7 +98,9 @@ void main() {
 
     expect(find.byKey(const Key('builder_read_only_banner')), findsOneWidget);
     expect(find.text('Publicar'), findsNothing);
-    expect(find.text('Adicionar bloco'), findsOneWidget);
+    // Os controles de estrutura somem (não só ficam inertes).
+    expect(find.text('Adicionar bloco'), findsNothing);
+    expect(find.text('Adicionar dia'), findsNothing);
     expect(find.byKey(const Key('builder_duplicate')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('builder_activate')));

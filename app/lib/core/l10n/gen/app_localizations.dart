@@ -3776,6 +3776,108 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Publique o plano antes de ativá-lo.'**
   String get errorPlanNotPublished;
+
+  /// Ação do menu do dia.
+  ///
+  /// In pt, this message translates to:
+  /// **'Duplicar dia'**
+  String get builderDuplicateDay;
+
+  /// Ação do menu do bloco.
+  ///
+  /// In pt, this message translates to:
+  /// **'Duplicar bloco'**
+  String get builderDuplicateBlock;
+
+  /// Dica da alça de reordenar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arrastar para reordenar'**
+  String get builderReorderHandle;
+
+  /// Copia a série para todas as seguintes.
+  ///
+  /// In pt, this message translates to:
+  /// **'Copiar para as próximas'**
+  String get builderCopyToNext;
+
+  /// Banner do rascunho.
+  ///
+  /// In pt, this message translates to:
+  /// **'Alterações não publicadas. O aluno continua vendo a última versão publicada.'**
+  String get builderUnpublishedChanges;
+
+  /// Título do histórico.
+  ///
+  /// In pt, this message translates to:
+  /// **'Histórico de versões'**
+  String get builderHistory;
+
+  /// Histórico vazio.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma versão ainda.'**
+  String get builderHistoryEmpty;
+
+  /// Autor da versão.
+  ///
+  /// In pt, this message translates to:
+  /// **'por {name}'**
+  String builderHistoryBy(String name);
+
+  /// Tamanho da versão.
+  ///
+  /// In pt, this message translates to:
+  /// **'{days, plural, one{1 dia} other{{days} dias}} · {exercises, plural, one{1 exercício} other{{exercises} exercícios}}'**
+  String builderHistoryCounts(int days, int exercises);
+
+  /// Banner da versão antiga.
+  ///
+  /// In pt, this message translates to:
+  /// **'Você está vendo a versão {version}, somente leitura.'**
+  String builderViewingVersion(int version);
+
+  /// Sai da versão do histórico.
+  ///
+  /// In pt, this message translates to:
+  /// **'Voltar à versão atual'**
+  String get builderBackToCurrent;
+
+  /// Banner de lesões no builder.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, one{1 lesão ativa} other{{count} lesões ativas}}'**
+  String builderInjuriesActive(int count);
+
+  /// Tooltip do banner de lesões.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mostrar ou recolher lesões'**
+  String get builderInjuriesToggle;
+
+  /// Menu do plano em uso.
+  ///
+  /// In pt, this message translates to:
+  /// **'Próximo dia'**
+  String get planNextDay;
+
+  /// Título do diálogo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Próximo treino do aluno'**
+  String get planNextDayTitle;
+
+  /// Marca o dia atual.
+  ///
+  /// In pt, this message translates to:
+  /// **'Próximo agora'**
+  String get planNextDayCurrent;
+
+  /// Confirmação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Próximo dia: {label}.'**
+  String planNextDaySet(String label);
 }
 
 class _AppLocalizationsDelegate

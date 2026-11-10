@@ -238,6 +238,62 @@ class StudentPlansTab extends ConsumerWidget {
     }
   }
 
+  /// Override do próximo dia da rotação (P6.4): o coach escolhe, entre os dias
+  /// da versão em uso, qual o aluno treina a seguir.
+  Future<void> _nextDay(
+    BuildContext context,
+    WidgetRef ref,
+    PlanSummary plan,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final repo = ref.read(planRepositoryProvider);
+    try {
+      // A versão em uso é a última publicada (publicar já a põe na rotação);
+      // o `next_day_id` só vem quando o plano é o ativo do aluno.
+      final loaded =
+          await repo.byId(plan.id, version: '${plan.publishedVersionNo}');
+      if (!context.mounted) return;
+      final dayId = await showDialog<String>(
+        context: context,
+        builder: (context) => SimpleDialog(
+          title: Text(l10n.planNextDayTitle),
+          children: [
+            for (final day in loaded.days)
+              SimpleDialogOption(
+                key: Key('next_day_${day.id}'),
+                onPressed: () => Navigator.of(context).pop(day.id),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        day.title.isEmpty
+                            ? day.label
+                            : '${day.label} · ${day.title}',
+                      ),
+                    ),
+                    if (day.id == loaded.nextDayId)
+                      Text(
+                        l10n.planNextDayCurrent,
+                        style: LyType.caption(context.ly.accent),
+                      ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      );
+      if (dayId == null || !context.mounted) return;
+      await repo.setNextDay(studentId: studentId, dayId: dayId);
+      if (!context.mounted) return;
+      final label = loaded.days.firstWhere((d) => d.id == dayId).label;
+      _refresh(ref);
+      _toast(context, l10n.planNextDaySet(label));
+    } catch (error) {
+      if (!context.mounted) return;
+      _toast(context, describeApiError(context, error));
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = context.ly;
@@ -301,6 +357,7 @@ class StudentPlansTab extends ConsumerWidget {
               onDuplicate: () => _duplicate(context, ref, plan),
               onArchive: () => _archive(context, ref, plan),
               onActivate: () => _activate(context, ref, plan),
+              onNextDay: () => _nextDay(context, ref, plan),
             ),
             const SizedBox(height: LySpace.x2),
           ],
@@ -310,7 +367,7 @@ class StudentPlansTab extends ConsumerWidget {
   }
 }
 
-enum _PlanAction { open, duplicate, archive, activate }
+enum _PlanAction { open, duplicate, archive, activate, nextDay }
 
 /// Cartão de um plano: o em uso ganha borda de destaque e a etiqueta "Em uso";
 /// o arquivado fica esmaecido e só oferece Ativar (se já foi publicado) e
@@ -322,6 +379,7 @@ class _PlanCard extends StatelessWidget {
     required this.onDuplicate,
     required this.onArchive,
     required this.onActivate,
+    required this.onNextDay,
   });
 
   final PlanSummary plan;
@@ -329,6 +387,7 @@ class _PlanCard extends StatelessWidget {
   final VoidCallback onDuplicate;
   final VoidCallback onArchive;
   final VoidCallback onActivate;
+  final VoidCallback onNextDay;
 
   @override
   Widget build(BuildContext context) {
@@ -378,6 +437,7 @@ class _PlanCard extends StatelessWidget {
                 _PlanAction.duplicate => onDuplicate(),
                 _PlanAction.archive => onArchive(),
                 _PlanAction.activate => onActivate(),
+                _PlanAction.nextDay => onNextDay(),
               },
               itemBuilder: (context) => [
                 PopupMenuItem(
@@ -392,6 +452,12 @@ class _PlanCard extends StatelessWidget {
                   PopupMenuItem(
                     value: _PlanAction.activate,
                     child: Text(l10n.planActivate),
+                  ),
+                // Só o plano em uso tem rotação para ajustar.
+                if (plan.isActive && plan.publishedVersionNo > 0)
+                  PopupMenuItem(
+                    value: _PlanAction.nextDay,
+                    child: Text(l10n.planNextDay),
                   ),
                 PopupMenuItem(
                   value: _PlanAction.duplicate,

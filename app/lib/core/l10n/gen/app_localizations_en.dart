@@ -2103,4 +2103,84 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorPlanNotPublished => 'Publish the plan before activating it.';
+
+  @override
+  String get builderDuplicateDay => 'Duplicate day';
+
+  @override
+  String get builderDuplicateBlock => 'Duplicate block';
+
+  @override
+  String get builderReorderHandle => 'Drag to reorder';
+
+  @override
+  String get builderCopyToNext => 'Copy to the next sets';
+
+  @override
+  String get builderUnpublishedChanges =>
+      'Unpublished changes. The student still sees the last published version.';
+
+  @override
+  String get builderHistory => 'Version history';
+
+  @override
+  String get builderHistoryEmpty => 'No versions yet.';
+
+  @override
+  String builderHistoryBy(String name) {
+    return 'by $name';
+  }
+
+  @override
+  String builderHistoryCounts(int days, int exercises) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      exercises,
+      locale: localeName,
+      other: '$exercises exercises',
+      one: '1 exercise',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String builderViewingVersion(int version) {
+    return 'You are viewing version $version, read-only.';
+  }
+
+  @override
+  String get builderBackToCurrent => 'Back to current version';
+
+  @override
+  String builderInjuriesActive(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count active injuries',
+      one: '1 active injury',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get builderInjuriesToggle => 'Show or hide injuries';
+
+  @override
+  String get planNextDay => 'Next day';
+
+  @override
+  String get planNextDayTitle => 'Student\'s next workout';
+
+  @override
+  String get planNextDayCurrent => 'Next now';
+
+  @override
+  String planNextDaySet(String label) {
+    return 'Next day: $label.';
+  }
 }

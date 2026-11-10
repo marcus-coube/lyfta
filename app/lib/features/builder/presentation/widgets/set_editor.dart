@@ -15,15 +15,25 @@ import '../../../../shared/l10n/plan_l10n.dart';
 ///
 /// As séries são objetos mutáveis editados no lugar; [onChanged] só avisa a
 /// tela que algo mudou (para habilitar o salvar), não carrega o novo valor.
+///
+/// Em [readOnly] (plano arquivado, versão do histórico) as ações de estrutura
+/// — adicionar, duplicar, copiar para as próximas, remover, unidade — somem.
 class SetEditor extends StatelessWidget {
   const SetEditor({
     required this.sets,
     required this.onChanged,
+    this.readOnly = false,
+    this.defaultRestSeconds,
     super.key,
   });
 
   final List<PrescribedSet> sets;
   final VoidCallback onChanged;
+  final bool readOnly;
+
+  /// Descanso padrão do bloco: a série que nasce sem anterior para copiar usa
+  /// este valor. Série adicionada depois copia a anterior (descanso incluso).
+  final int? defaultRestSeconds;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +50,19 @@ class SetEditor extends StatelessWidget {
             child: _SetRow(
               set: sets[i],
               index: i,
+              readOnly: readOnly,
               onChanged: onChanged,
+              onCopyToNext: i < sets.length - 1
+                  ? () {
+                      // Objetos novos (e não só campos copiados): cada linha
+                      // guarda os controllers do que mostrou na 1ª montagem, e
+                      // a chave por objeto os recria com o valor novo.
+                      for (var j = i + 1; j < sets.length; j++) {
+                        sets[j] = sets[i].copy();
+                      }
+                      onChanged();
+                    }
+                  : null,
               onDuplicate: () {
                 // Duplicar é o gesto mais usado do editor: séries de um
                 // exercício quase sempre repetem a anterior com um ajuste.
@@ -55,20 +77,26 @@ class SetEditor extends StatelessWidget {
                   : null,
             ),
           ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            key: const Key('set-editor-add'),
-            onPressed: () {
-              // A série nova nasce como cópia da última: continuar a
-              // prescrição é mais comum do que começar do zero.
-              sets.add(sets.isEmpty ? PrescribedSet() : sets.last.copy());
-              onChanged();
-            },
-            icon: Icon(Icons.add, size: 18, color: c.accent),
-            label: Text(l10n.builderAddSet, style: LyType.label(c.accent)),
+        if (!readOnly)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              key: const Key('set-editor-add'),
+              onPressed: () {
+                // A série nova nasce como cópia da última: continuar a
+                // prescrição é mais comum do que começar do zero. Sem
+                // anterior, vale o descanso padrão do bloco.
+                sets.add(
+                  sets.isEmpty
+                      ? PrescribedSet(restSeconds: defaultRestSeconds)
+                      : sets.last.copy(),
+                );
+                onChanged();
+              },
+              icon: Icon(Icons.add, size: 18, color: c.accent),
+              label: Text(l10n.builderAddSet, style: LyType.label(c.accent)),
+            ),
           ),
-        ),
       ],
     );
   }
@@ -81,15 +109,19 @@ class _SetRow extends StatefulWidget {
   const _SetRow({
     required this.set,
     required this.index,
+    required this.readOnly,
     required this.onChanged,
     required this.onDuplicate,
+    required this.onCopyToNext,
     required this.onRemove,
   });
 
   final PrescribedSet set;
   final int index;
+  final bool readOnly;
   final VoidCallback onChanged;
   final VoidCallback onDuplicate;
+  final VoidCallback? onCopyToNext;
   final VoidCallback? onRemove;
 
   @override
@@ -210,6 +242,7 @@ class _SetRowState extends State<_SetRow> {
         key: Key('set-${widget.index}-unit'),
         tooltip: l10n.builderTargetUnit,
         icon: Icon(Icons.swap_vert, size: 18, color: c.textSecondary),
+        enabled: !widget.readOnly,
         onSelected: _changeUnit,
         itemBuilder: (context) => [
           for (final option in TargetUnit.values)
@@ -237,12 +270,29 @@ class _SetRowState extends State<_SetRow> {
       onPressed: widget.onDuplicate,
       icon: Icon(Icons.copy_outlined, size: 18, color: c.textSecondary),
     );
-    final remove = IconButton(
-      key: Key('set-${widget.index}-remove'),
-      tooltip: l10n.commonRemove,
-      onPressed: widget.onRemove,
-      icon: Icon(Icons.close, size: 18, color: c.textSecondary),
+    // Remover e copiar para as próximas dividem um menu: ficam longe do
+    // gesto mais usado (duplicar) e não custam largura a mais na linha.
+    final more = PopupMenuButton<String>(
+      key: Key('set-${widget.index}-menu'),
+      icon: Icon(Icons.more_vert, size: 18, color: c.textSecondary),
+      onSelected: (action) =>
+          action == 'copy' ? widget.onCopyToNext!() : widget.onRemove!(),
+      itemBuilder: (context) => [
+        if (widget.onCopyToNext != null)
+          PopupMenuItem(
+            key: Key('set-${widget.index}-copy-next'),
+            value: 'copy',
+            child: Text(l10n.builderCopyToNext),
+          ),
+        PopupMenuItem(
+          key: Key('set-${widget.index}-remove'),
+          value: 'remove',
+          enabled: widget.onRemove != null,
+          child: Text(l10n.commonRemove),
+        ),
+      ],
     );
+    final actions = widget.readOnly ? const <Widget>[] : [duplicate, more];
     const gap = SizedBox(width: LySpace.x2);
 
     return LayoutBuilder(
@@ -251,7 +301,7 @@ class _SetRowState extends State<_SetRow> {
           return Row(
             children: [
               number, repsMin, gap, repsMax, gap, target, unitMenu, gap, rest,
-              duplicate, remove,
+              ...actions,
             ],
           );
         }
@@ -261,7 +311,7 @@ class _SetRowState extends State<_SetRow> {
         // um quarto. Duplicar continua à vista: é o gesto mais usado.
         return Column(
           children: [
-            Row(children: [number, repsMin, gap, repsMax, duplicate, remove]),
+            Row(children: [number, repsMin, gap, repsMax, ...actions]),
             const SizedBox(height: LySpace.x2),
             Row(
               children: [

@@ -7,6 +7,9 @@ import '../../../core/http/api_exception.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_shell_scaffold.dart';
+import '../../evolution/domain/evolution_scope.dart';
+import '../../profile/presentation/profile_controller.dart';
+import '../../../shared/l10n/profile_l10n.dart';
 import '../../templates/data/template_repository.dart';
 import '../../templates/presentation/template_form_dialog.dart';
 import '../data/plan_repository.dart';
@@ -14,6 +17,7 @@ import '../../../shared/domain/plan.dart';
 import '../../../shared/l10n/plan_l10n.dart';
 import 'widgets/exercise_picker.dart';
 import 'widgets/set_editor.dart';
+import 'widgets/version_history_sheet.dart';
 
 /// Editor do plano do aluno (P1.6) e, na mesma tela, do modelo de treino
 /// (P6.3, `kind=template`: sem aluno, com título e descrição editáveis).
@@ -21,6 +25,11 @@ import 'widgets/set_editor.dart';
 /// Plano ou modelo **arquivado** abre em modo leitura (P6.2): o servidor
 /// responde 409 `plan_archived`/`template_archived` a rascunho e publicação, e
 /// a volta é só por Ativar/Desarquivar (ou Duplicar, no plano).
+///
+/// Ergonomia (P6.4): dias, blocos e exercícios se reordenam arrastando; dia e
+/// bloco se duplicam; a série se copia para as próximas; o histórico de
+/// versões abre cada versão em leitura; o rascunho mostra o aviso de
+/// "alterações não publicadas" e as lesões ativas do aluno ficam no topo.
 ///
 /// O rascunho vive no estado **local** desta tela, não num provider: um
 /// editor de cinco níveis (dia → bloco → exercício → série) muda a cada
@@ -51,8 +60,11 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
   bool _saving = false;
   String? _error;
 
+  /// Versão do histórico aberta em leitura; nulo = o plano atual.
+  int? _viewingVersion;
+
   bool get _isTemplate => _plan?.isTemplate ?? false;
-  bool get _readOnly => _plan?.isArchived ?? false;
+  bool get _readOnly => (_plan?.isArchived ?? false) || _viewingVersion != null;
 
   @override
   void initState() {
@@ -76,6 +88,7 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
         _selectedDay = 0;
         _dirty = false;
         _loading = false;
+        _viewingVersion = null;
       });
     } catch (error) {
       if (!mounted) return;
@@ -83,6 +96,36 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
         _error = describeApiError(context, error);
         _loading = false;
       });
+    }
+  }
+
+  /// Abre a versão [versionNo] do histórico em leitura. Edição pendente é
+  /// salva antes (como no "salvar como modelo"), para não se perder.
+  Future<void> _openHistory() async {
+    if (_dirty && !_readOnly) await _save();
+    if (!mounted || _error != null) return;
+    final picked = await showVersionHistory(context, planId: widget.planId);
+    if (picked == null || !mounted) return;
+    if (picked.isDraft) {
+      await _load();
+      return;
+    }
+    try {
+      final plan = await ref
+          .read(planRepositoryProvider)
+          .byId(widget.planId, version: '${picked.versionNo}');
+      if (!mounted) return;
+      setState(() {
+        _plan = plan;
+        _days = plan.days;
+        _selectedDay = 0;
+        _dirty = false;
+        _error = null;
+        _viewingVersion = picked.versionNo;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _error = describeApiError(context, error));
     }
   }
 
@@ -277,9 +320,20 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
     }
   }
 
+  /// O rótulo segue o alfabeto (A, B, C… é como o professor pensa a rotação),
+  /// pegando a primeira letra livre: depois de remover o A, o dia novo não pode
+  /// nascer "C" por ser o terceiro da lista.
+  String _nextLabel() {
+    final used = _days.map((d) => d.label).toSet();
+    for (var i = 0; i < 26; i++) {
+      final label = String.fromCharCode('A'.codeUnitAt(0) + i);
+      if (!used.contains(label)) return label;
+    }
+    return '${_days.length + 1}';
+  }
+
   void _addDay() {
-    // O rótulo segue o alfabeto: A, B, C… é como o professor pensa a rotação.
-    final label = String.fromCharCode('A'.codeUnitAt(0) + _days.length);
+    final label = _nextLabel();
     setState(() {
       _days.add(WorkoutDay(label: label));
       _selectedDay = _days.length - 1;
@@ -308,6 +362,40 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
     });
   }
 
+  void _duplicateDay(int index) {
+    setState(() {
+      _days.insert(index + 1, _days[index].copy(label: _nextLabel()));
+      _selectedDay = index + 1;
+      _dirty = true;
+    });
+  }
+
+  /// Arrastar na lista de dias; quem estava aberto continua aberto.
+  void _reorderDay(int oldIndex, int newIndex) {
+    if (newIndex == oldIndex) return;
+    setState(() {
+      final open = _days[_selectedDay];
+      _days.insert(newIndex, _days.removeAt(oldIndex));
+      _selectedDay = _days.indexOf(open);
+      _dirty = true;
+    });
+  }
+
+  void _reorderBlock(WorkoutDay day, int oldIndex, int newIndex) {
+    if (newIndex == oldIndex) return;
+    setState(() {
+      day.blocks.insert(newIndex, day.blocks.removeAt(oldIndex));
+      _dirty = true;
+    });
+  }
+
+  void _duplicateBlock(WorkoutDay day, int index) {
+    setState(() {
+      day.blocks.insert(index + 1, day.blocks[index].copy());
+      _dirty = true;
+    });
+  }
+
   Future<void> _addExercise(Block block) async {
     final exercise = await showExercisePicker(context);
     if (exercise == null) return;
@@ -316,7 +404,14 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
         BlockExercise(
           exerciseId: exercise.id,
           exercise: exercise,
-          sets: [PrescribedSet(repsMin: 8, repsMax: 12, restSeconds: 60)],
+          // Descanso padrão do bloco na série nova.
+          sets: [
+            PrescribedSet(
+              repsMin: 8,
+              repsMax: 12,
+              restSeconds: block.restSeconds,
+            ),
+          ],
         ),
       );
       _dirty = true;
@@ -345,7 +440,14 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
                 ),
               ),
             ),
-          if (_plan != null && !_isTemplate)
+          if (_plan != null && (_plan!.versions.isNotEmpty))
+            IconButton(
+              key: const Key('builder_history'),
+              tooltip: l10n.builderHistory,
+              icon: const Icon(Icons.history),
+              onPressed: _openHistory,
+            ),
+          if (_plan != null && !_isTemplate && _viewingVersion == null)
             PopupMenuButton<String>(
               key: const Key('builder_menu'),
               icon: const Icon(Icons.more_vert),
@@ -371,7 +473,14 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
                       padding: const EdgeInsets.all(LySpace.x3),
                       child: Text(_error!, style: LyType.bodySm(c.danger)),
                     ),
-                  if (_readOnly) _buildReadOnlyBanner(),
+                  if (_viewingVersion != null)
+                    _buildViewingVersionBanner()
+                  else if (_readOnly)
+                    _buildReadOnlyBanner()
+                  else if (_dirty || (_plan?.version?.isDraft ?? false))
+                    _buildUnpublishedBanner(),
+                  if (!_isTemplate && (_plan?.studentId ?? '').isNotEmpty)
+                    _InjuriesBanner(studentId: _plan!.studentId),
                   Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
@@ -391,6 +500,51 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
                 ],
               ),
             ),
+    );
+  }
+
+  /// Rascunho com edição que o aluno ainda não vê.
+  Widget _buildUnpublishedBanner() {
+    final c = context.ly;
+    return Container(
+      key: const Key('builder_unpublished_banner'),
+      width: double.infinity,
+      color: c.accent.withValues(alpha: 0.12),
+      padding: const EdgeInsets.symmetric(
+        horizontal: LySpace.x3,
+        vertical: LySpace.x2,
+      ),
+      child: Text(
+        AppLocalizations.of(context).builderUnpublishedChanges,
+        style: LyType.bodySm(c.textPrimary),
+      ),
+    );
+  }
+
+  /// Versão do histórico aberta: leitura, com a volta para o plano atual.
+  Widget _buildViewingVersionBanner() {
+    final c = context.ly;
+    final l10n = AppLocalizations.of(context);
+    return Container(
+      key: const Key('builder_viewing_version_banner'),
+      width: double.infinity,
+      color: c.warning.withValues(alpha: 0.12),
+      padding: const EdgeInsets.all(LySpace.x3),
+      child: Wrap(
+        spacing: LySpace.x2,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(
+            l10n.builderViewingVersion(_viewingVersion!),
+            style: LyType.bodySm(c.textPrimary),
+          ),
+          TextButton(
+            key: const Key('builder_back_to_current'),
+            onPressed: _load,
+            child: Text(l10n.builderBackToCurrent),
+          ),
+        ],
+      ),
     );
   }
 
@@ -467,6 +621,8 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
               onAdd: _addDay,
               onRemove: _removeDay,
               onMove: _moveDay,
+              onDuplicate: _duplicateDay,
+              onReorder: _reorderDay,
               readOnly: _readOnly,
             ),
           ),
@@ -490,12 +646,12 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
             readOnly: _readOnly,
           ),
         ),
-        Expanded(child: _buildDayEditor()),
+        Expanded(child: _buildDayEditor(withDayMenu: true)),
       ],
     );
   }
 
-  Widget _buildDayEditor() {
+  Widget _buildDayEditor({bool withDayMenu = false}) {
     final c = context.ly;
     final l10n = AppLocalizations.of(context);
 
@@ -527,46 +683,76 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
 
     final day = _days[_selectedDay];
     final editable = <Widget>[
-      TextFormField(
-        key: ValueKey('day-title-${day.label}-$_selectedDay'),
-        initialValue: day.title,
-        onChanged: (value) {
-          day.title = value;
-          _markDirty();
-        },
-        style: LyType.title(c.textPrimary),
-        decoration: InputDecoration(
-          labelText: l10n.builderDayTitle,
-          labelStyle: LyType.caption(c.textSecondary),
-        ),
+      Row(
+        children: [
+          Expanded(
+            child: TextFormField(
+              key: ValueKey('day-title-${day.label}-$_selectedDay'),
+              initialValue: day.title,
+              onChanged: (value) {
+                day.title = value;
+                _markDirty();
+              },
+              style: LyType.title(c.textPrimary),
+              decoration: InputDecoration(
+                labelText: l10n.builderDayTitle,
+                labelStyle: LyType.caption(c.textSecondary),
+              ),
+            ),
+          ),
+          // Layout estreito não tem a lista de dias: o menu do dia vem aqui.
+          if (withDayMenu && !_readOnly)
+            _DayMenu(
+              key: const Key('day_menu'),
+              onMoveUp: () => _moveDay(_selectedDay, -1),
+              onMoveDown: () => _moveDay(_selectedDay, 1),
+              onDuplicate: () => _duplicateDay(_selectedDay),
+              onRemove: () => _removeDay(_selectedDay),
+            ),
+        ],
       ),
       const SizedBox(height: LySpace.x4),
-      for (var i = 0; i < day.blocks.length; i++)
-        Padding(
-          key: ObjectKey(day.blocks[i]),
-          padding: const EdgeInsets.only(bottom: LySpace.x4),
-          child: _BlockCard(
-            block: day.blocks[i],
-            onChanged: _markDirty,
-            onAddExercise: () => _addExercise(day.blocks[i]),
-            onRemove: () => setState(() {
-              day.blocks.removeAt(i);
-              _dirty = true;
-            }),
-          ),
-        ),
-      LyButton(
-        label: l10n.builderAddBlock,
-        variant: LyButtonVariant.secondary,
-        icon: const Icon(Icons.add),
-        onPressed: () => setState(() {
-          day.blocks.add(Block());
-          _dirty = true;
-        }),
+      // Blocos reordenáveis por alça (sem rolagem própria: quem rola é a
+      // lista da tela).
+      ReorderableListView(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        buildDefaultDragHandles: false,
+        onReorderItem: (from, to) => _reorderBlock(day, from, to),
+        children: [
+          for (var i = 0; i < day.blocks.length; i++)
+            Padding(
+              key: ObjectKey(day.blocks[i]),
+              padding: const EdgeInsets.only(bottom: LySpace.x4),
+              child: _BlockCard(
+                index: i,
+                block: day.blocks[i],
+                readOnly: _readOnly,
+                onChanged: _markDirty,
+                onAddExercise: () => _addExercise(day.blocks[i]),
+                onDuplicate: () => _duplicateBlock(day, i),
+                onRemove: () => setState(() {
+                  day.blocks.removeAt(i);
+                  _dirty = true;
+                }),
+              ),
+            ),
+        ],
       ),
+      if (!_readOnly)
+        LyButton(
+          label: l10n.builderAddBlock,
+          variant: LyButtonVariant.secondary,
+          icon: const Icon(Icons.add),
+          onPressed: () => setState(() {
+            day.blocks.add(Block());
+            _dirty = true;
+          }),
+        ),
     ];
-    // Somente leitura (plano/modelo arquivado): o conteúdo fica visível e
-    // rolável, mas sem tocar nem focar nos campos.
+    // Somente leitura (plano/modelo arquivado, versão do histórico): o
+    // conteúdo fica visível e rolável; os controles de estrutura somem e os
+    // campos ficam sem toque nem foco.
     return ListView(
       padding: const EdgeInsets.all(LySpace.x4),
       children: [
@@ -634,8 +820,9 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
   }
 }
 
-/// Lista de dias do layout largo, com reordenação por setas (mover item é o
-/// que define a posição enviada ao servidor).
+/// Lista de dias do layout largo: a posição enviada ao servidor é a ordem
+/// desta lista, que se reordena arrastando a alça (ou pelo menu, que serve
+/// também ao teclado e ao leitor de tela).
 class _DayList extends StatelessWidget {
   const _DayList({
     required this.days,
@@ -644,6 +831,8 @@ class _DayList extends StatelessWidget {
     required this.onAdd,
     required this.onRemove,
     required this.onMove,
+    required this.onDuplicate,
+    required this.onReorder,
     this.readOnly = false,
   });
 
@@ -653,6 +842,8 @@ class _DayList extends StatelessWidget {
   final VoidCallback onAdd;
   final ValueChanged<int> onRemove;
   final void Function(int index, int delta) onMove;
+  final ValueChanged<int> onDuplicate;
+  final void Function(int oldIndex, int newIndex) onReorder;
   final bool readOnly;
 
   @override
@@ -660,54 +851,102 @@ class _DayList extends StatelessWidget {
     final c = context.ly;
     final l10n = AppLocalizations.of(context);
 
-    return ListView(
-      padding: const EdgeInsets.all(LySpace.x3),
-      children: [
-        for (var i = 0; i < days.length; i++)
-          ListTile(
-            selected: i == selected,
-            selectedTileColor: c.surfaceElevated,
-            shape: const RoundedRectangleBorder(borderRadius: LyRadius.md),
-            title: Text(days[i].label, style: LyType.label(c.textPrimary)),
-            subtitle: days[i].title.isEmpty
-                ? null
-                : Text(days[i].title, style: LyType.caption(c.textSecondary)),
-            onTap: () => onSelect(i),
-            trailing: readOnly
-                ? null
-                : PopupMenuButton<String>(
-                    icon:
-                        Icon(Icons.more_vert, size: 18, color: c.textSecondary),
-                    onSelected: (action) => switch (action) {
-                      'up' => onMove(i, -1),
-                      'down' => onMove(i, 1),
-                      _ => onRemove(i),
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'up',
-                        child: Text(l10n.builderMoveUp),
-                      ),
-                      PopupMenuItem(
-                        value: 'down',
-                        child: Text(l10n.builderMoveDown),
-                      ),
-                      PopupMenuItem(
-                        value: 'remove',
-                        child: Text(l10n.commonRemove),
-                      ),
-                    ],
+    Widget tile(int i) => ListTile(
+          key: ObjectKey(days[i]),
+          selected: i == selected,
+          selectedTileColor: c.surfaceElevated,
+          shape: const RoundedRectangleBorder(borderRadius: LyRadius.md),
+          title: Text(days[i].label, style: LyType.label(c.textPrimary)),
+          subtitle: days[i].title.isEmpty
+              ? null
+              : Text(days[i].title, style: LyType.caption(c.textSecondary)),
+          onTap: () => onSelect(i),
+          leading: readOnly
+              ? null
+              : ReorderableDragStartListener(
+                  index: i,
+                  child: Tooltip(
+                    message: l10n.builderReorderHandle,
+                    child: Icon(
+                      Icons.drag_indicator,
+                      size: 20,
+                      color: c.textSecondary,
+                    ),
                   ),
-          ),
-        if (!readOnly) ...[
-          const SizedBox(height: LySpace.x2),
-          LyButton(
-            label: l10n.builderAddDay,
-            variant: LyButtonVariant.secondary,
-            icon: const Icon(Icons.add),
-            onPressed: onAdd,
-          ),
-        ],
+                ),
+          trailing: readOnly
+              ? null
+              : _DayMenu(
+                  onMoveUp: () => onMove(i, -1),
+                  onMoveDown: () => onMove(i, 1),
+                  onDuplicate: () => onDuplicate(i),
+                  onRemove: () => onRemove(i),
+                ),
+        );
+
+    final addButton = Padding(
+      padding: const EdgeInsets.only(top: LySpace.x2),
+      child: LyButton(
+        label: l10n.builderAddDay,
+        variant: LyButtonVariant.secondary,
+        icon: const Icon(Icons.add),
+        onPressed: onAdd,
+      ),
+    );
+
+    if (readOnly) {
+      return ListView(
+        padding: const EdgeInsets.all(LySpace.x3),
+        children: [for (var i = 0; i < days.length; i++) tile(i)],
+      );
+    }
+    return ReorderableListView(
+      key: const Key('day_list'),
+      padding: const EdgeInsets.all(LySpace.x3),
+      buildDefaultDragHandles: false,
+      onReorderItem: onReorder,
+      footer: addButton,
+      children: [for (var i = 0; i < days.length; i++) tile(i)],
+    );
+  }
+}
+
+/// Menu de um dia: mover, duplicar e remover.
+class _DayMenu extends StatelessWidget {
+  const _DayMenu({
+    required this.onMoveUp,
+    required this.onMoveDown,
+    required this.onDuplicate,
+    required this.onRemove,
+    super.key,
+  });
+
+  final VoidCallback onMoveUp;
+  final VoidCallback onMoveDown;
+  final VoidCallback onDuplicate;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ly;
+    final l10n = AppLocalizations.of(context);
+
+    return PopupMenuButton<String>(
+      icon: Icon(Icons.more_vert, size: 18, color: c.textSecondary),
+      onSelected: (action) => switch (action) {
+        'up' => onMoveUp(),
+        'down' => onMoveDown(),
+        'duplicate' => onDuplicate(),
+        _ => onRemove(),
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(value: 'up', child: Text(l10n.builderMoveUp)),
+        PopupMenuItem(value: 'down', child: Text(l10n.builderMoveDown)),
+        PopupMenuItem(
+          value: 'duplicate',
+          child: Text(l10n.builderDuplicateDay),
+        ),
+        PopupMenuItem(value: 'remove', child: Text(l10n.commonRemove)),
       ],
     );
   }
@@ -764,18 +1003,47 @@ class _DayChips extends StatelessWidget {
   }
 }
 
+/// Alça de arrastar: some em leitura. O índice é o da lista reordenável mais
+/// próxima (blocos no dia, exercícios no bloco).
+class _DragHandle extends StatelessWidget {
+  const _DragHandle({required this.index});
+
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ly;
+    return ReorderableDragStartListener(
+      index: index,
+      child: Padding(
+        padding: const EdgeInsets.only(right: LySpace.x2),
+        child: Tooltip(
+          message: AppLocalizations.of(context).builderReorderHandle,
+          child: Icon(Icons.drag_indicator, size: 20, color: c.textSecondary),
+        ),
+      ),
+    );
+  }
+}
+
 /// Um bloco do dia: tipo, descanso e os exercícios com suas séries.
 class _BlockCard extends StatelessWidget {
   const _BlockCard({
+    required this.index,
     required this.block,
+    required this.readOnly,
     required this.onChanged,
     required this.onAddExercise,
+    required this.onDuplicate,
     required this.onRemove,
   });
 
+  final int index;
   final Block block;
+  final bool readOnly;
   final VoidCallback onChanged;
   final VoidCallback onAddExercise;
+  final VoidCallback onDuplicate;
   final VoidCallback onRemove;
 
   @override
@@ -790,28 +1058,37 @@ class _BlockCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              DropdownButton<BlockType>(
-                value: block.blockType,
-                underline: const SizedBox.shrink(),
-                items: [
-                  for (final type in BlockType.values)
-                    DropdownMenuItem(
-                      value: type,
-                      child: Text(
-                        blockTypeLabel(l10n, type),
+              if (!readOnly) _DragHandle(index: index),
+              Flexible(
+                child: readOnly
+                    ? Text(
+                        blockTypeLabel(l10n, block.blockType),
                         style: LyType.label(c.textPrimary),
+                      )
+                    : DropdownButton<BlockType>(
+                        value: block.blockType,
+                        isExpanded: true,
+                        underline: const SizedBox.shrink(),
+                        items: [
+                          for (final type in BlockType.values)
+                            DropdownMenuItem(
+                              value: type,
+                              child: Text(
+                                blockTypeLabel(l10n, type),
+                                style: LyType.label(c.textPrimary),
+                              ),
+                            ),
+                        ],
+                        onChanged: (type) {
+                          if (type == null) return;
+                          block.blockType = type;
+                          onChanged();
+                        },
                       ),
-                    ),
-                ],
-                onChanged: (type) {
-                  if (type == null) return;
-                  block.blockType = type;
-                  onChanged();
-                },
               ),
-              const Spacer(),
+              const SizedBox(width: LySpace.x2),
               SizedBox(
-                width: 120,
+                width: 110,
                 child: TextFormField(
                   initialValue: block.restSeconds.toString(),
                   keyboardType: TextInputType.number,
@@ -827,32 +1104,61 @@ class _BlockCard extends StatelessWidget {
                   ),
                 ),
               ),
-              IconButton(
-                tooltip: l10n.commonRemove,
-                onPressed: onRemove,
-                icon: Icon(Icons.close, size: 18, color: c.textSecondary),
-              ),
+              if (!readOnly)
+                PopupMenuButton<String>(
+                  key: const Key('block_menu'),
+                  icon: Icon(Icons.more_vert, size: 18, color: c.textSecondary),
+                  onSelected: (action) =>
+                      action == 'duplicate' ? onDuplicate() : onRemove(),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'duplicate',
+                      child: Text(l10n.builderDuplicateBlock),
+                    ),
+                    PopupMenuItem(
+                      value: 'remove',
+                      child: Text(l10n.commonRemove),
+                    ),
+                  ],
+                ),
             ],
           ),
           const SizedBox(height: LySpace.x3),
-          for (var i = 0; i < block.exercises.length; i++)
-            Padding(
-              key: ObjectKey(block.exercises[i]),
-              padding: const EdgeInsets.only(bottom: LySpace.x4),
-              child: _BlockExerciseEditor(
-                item: block.exercises[i],
-                onChanged: onChanged,
-                onRemove: () {
-                  block.exercises.removeAt(i);
-                  onChanged();
-                },
-              ),
-            ),
-          TextButton.icon(
-            onPressed: onAddExercise,
-            icon: Icon(Icons.add, size: 18, color: c.accent),
-            label: Text(l10n.builderAddExercise, style: LyType.label(c.accent)),
+          ReorderableListView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            buildDefaultDragHandles: false,
+            onReorderItem: (from, to) {
+              if (to == from) return;
+              block.exercises.insert(to, block.exercises.removeAt(from));
+              onChanged();
+            },
+            children: [
+              for (var i = 0; i < block.exercises.length; i++)
+                Padding(
+                  key: ObjectKey(block.exercises[i]),
+                  padding: const EdgeInsets.only(bottom: LySpace.x4),
+                  child: _BlockExerciseEditor(
+                    index: i,
+                    item: block.exercises[i],
+                    readOnly: readOnly,
+                    defaultRestSeconds: block.restSeconds,
+                    onChanged: onChanged,
+                    onRemove: () {
+                      block.exercises.removeAt(i);
+                      onChanged();
+                    },
+                  ),
+                ),
+            ],
           ),
+          if (!readOnly)
+            TextButton.icon(
+              onPressed: onAddExercise,
+              icon: Icon(Icons.add, size: 18, color: c.accent),
+              label:
+                  Text(l10n.builderAddExercise, style: LyType.label(c.accent)),
+            ),
         ],
       ),
     );
@@ -861,12 +1167,18 @@ class _BlockCard extends StatelessWidget {
 
 class _BlockExerciseEditor extends StatelessWidget {
   const _BlockExerciseEditor({
+    required this.index,
     required this.item,
+    required this.readOnly,
+    required this.defaultRestSeconds,
     required this.onChanged,
     required this.onRemove,
   });
 
+  final int index;
   final BlockExercise item;
+  final bool readOnly;
+  final int defaultRestSeconds;
   final VoidCallback onChanged;
   final VoidCallback onRemove;
 
@@ -880,22 +1192,118 @@ class _BlockExerciseEditor extends StatelessWidget {
       children: [
         Row(
           children: [
+            if (!readOnly) _DragHandle(index: index),
             Expanded(
               child: Text(
                 item.exercise?.name ?? l10n.builderUnknownExercise,
                 style: LyType.label(c.textPrimary),
               ),
             ),
-            IconButton(
-              tooltip: l10n.commonRemove,
-              onPressed: onRemove,
-              icon:
-                  Icon(Icons.delete_outline, size: 18, color: c.textSecondary),
-            ),
+            if (!readOnly)
+              IconButton(
+                tooltip: l10n.commonRemove,
+                onPressed: onRemove,
+                icon: Icon(
+                  Icons.delete_outline,
+                  size: 18,
+                  color: c.textSecondary,
+                ),
+              ),
           ],
         ),
-        SetEditor(sets: item.sets, onChanged: onChanged),
+        SetEditor(
+          sets: item.sets,
+          onChanged: onChanged,
+          readOnly: readOnly,
+          defaultRestSeconds: defaultRestSeconds,
+        ),
       ],
+    );
+  }
+}
+
+/// Lesões ativas do aluno no topo do builder (P5.3), recolhível. Sem lesão
+/// ativa, ou sem permissão/rede, não ocupa espaço: o builder não depende dela.
+class _InjuriesBanner extends ConsumerStatefulWidget {
+  const _InjuriesBanner({required this.studentId});
+
+  final String studentId;
+
+  @override
+  ConsumerState<_InjuriesBanner> createState() => _InjuriesBannerState();
+}
+
+class _InjuriesBannerState extends ConsumerState<_InjuriesBanner> {
+  bool _open = true;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ly;
+    final l10n = AppLocalizations.of(context);
+    final active = ref
+            .watch(injuriesProvider(EvolutionScope.student(widget.studentId)))
+            .valueOrNull
+            ?.where((i) => i.active)
+            .toList() ??
+        const [];
+    if (active.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      key: const Key('builder_injuries_banner'),
+      width: double.infinity,
+      color: c.danger.withValues(alpha: 0.10),
+      padding: const EdgeInsets.symmetric(
+        horizontal: LySpace.x3,
+        vertical: LySpace.x1,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            key: const Key('builder_injuries_toggle'),
+            onTap: () => setState(() => _open = !_open),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: LySpace.x2),
+              child: Row(
+                children: [
+                  Icon(Icons.healing_outlined, size: 18, color: c.danger),
+                  const SizedBox(width: LySpace.x2),
+                  Expanded(
+                    child: Text(
+                      l10n.builderInjuriesActive(active.length),
+                      style: LyType.label(c.textPrimary),
+                    ),
+                  ),
+                  Tooltip(
+                    message: l10n.builderInjuriesToggle,
+                    child: Icon(
+                      _open ? Icons.expand_less : Icons.expand_more,
+                      color: c.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_open)
+            Padding(
+              padding: const EdgeInsets.only(bottom: LySpace.x2),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final injury in active)
+                    Text(
+                      [
+                        bodyRegionLabel(l10n, injury.bodyRegion),
+                        if (injury.description.isNotEmpty) injury.description,
+                      ].join(' · '),
+                      style: LyType.bodySm(c.textSecondary),
+                    ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

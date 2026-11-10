@@ -95,6 +95,99 @@ void main() {
     expect(sets.single.restSeconds, 120);
   });
 
+  testWidgets('copiar para as próximas sobrescreve as seguintes e a última não oferece',
+      (tester) async {
+    final sets = await _pumpEditor(
+      tester,
+      sets: [
+        PrescribedSet(repsMin: 5, repsMax: 6, targetLoadKg: 60, restSeconds: 90),
+        PrescribedSet(repsMin: 12, targetLoadKg: 20),
+        PrescribedSet(repsMin: 15, targetLoadKg: 10),
+      ],
+    );
+
+    // A última não tem próximas: o item nem existe no menu.
+    await tester.tap(find.byKey(const Key('set-2-menu')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('set-2-copy-next')), findsNothing);
+    await tester.tapAt(const Offset(1, 1));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('set-0-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('set-0-copy-next')));
+    await tester.pumpAndSettle();
+
+    expect(sets.length, 3);
+    for (final set in sets.skip(1)) {
+      expect(set.repsMin, 5);
+      expect(set.targetLoadKg, 60);
+      expect(set.restSeconds, 90);
+    }
+    // A tela mostra o valor novo (os campos foram recriados, não só o modelo).
+    final reps = tester.widget<TextField>(
+      find.descendant(
+        of: find.byKey(const Key('set-2-reps-min')),
+        matching: find.byType(TextField),
+      ),
+    );
+    expect(reps.controller?.text, '5');
+    expect(identical(sets[1], sets[2]), isFalse);
+  });
+
+  testWidgets('sem série anterior a nova usa o descanso padrão do bloco',
+      (tester) async {
+    final sets = <PrescribedSet>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: LyTheme.dark(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: StatefulBuilder(
+            builder: (context, setState) => SingleChildScrollView(
+              child: SetEditor(
+                sets: sets,
+                defaultRestSeconds: 75,
+                onChanged: () => setState(() {}),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(const Key('set-editor-add')));
+    await tester.pumpAndSettle();
+
+    expect(sets.single.restSeconds, 75);
+  });
+
+  testWidgets('em leitura não há adicionar, duplicar, copiar nem remover',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: LyTheme.dark(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: SetEditor(
+              sets: [PrescribedSet(repsMin: 8), PrescribedSet(repsMin: 10)],
+              readOnly: true,
+              onChanged: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('set-editor-add')), findsNothing);
+    expect(find.byKey(const Key('set-0-duplicate')), findsNothing);
+    expect(find.byKey(const Key('set-0-menu')), findsNothing);
+    expect(find.byKey(const Key('set-1-reps-min')), findsOneWidget);
+  });
+
   testWidgets('duplicar cria a série logo abaixo, sem mexer na original',
       (tester) async {
     final sets = await _pumpEditor(
@@ -140,13 +233,17 @@ void main() {
       sets: [PrescribedSet(repsMin: 8), PrescribedSet(repsMin: 10)],
     );
 
+    await tester.tap(find.byKey(const Key('set-1-menu')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('set-1-remove')));
     await tester.pumpAndSettle();
     expect(sets.length, 1);
 
-    final removeButton =
-        tester.widget<IconButton>(find.byKey(const Key('set-0-remove')));
-    expect(removeButton.onPressed, isNull);
+    await tester.tap(find.byKey(const Key('set-0-menu')));
+    await tester.pumpAndSettle();
+    final removeItem =
+        tester.widget<PopupMenuItem<String>>(find.byKey(const Key('set-0-remove')));
+    expect(removeItem.enabled, isFalse);
   });
 
   // Regressão: no celular (coluna única do builder) os 4 campos + 3 botões

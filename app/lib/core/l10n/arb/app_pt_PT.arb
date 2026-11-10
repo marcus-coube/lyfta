@@ -612,5 +612,22 @@
   "errorTemplateNotPublished": "Publique o modelo antes de o aplicar.",
   "errorPlanNotFromTemplate": "Este plano não veio de um modelo.",
   "errorPlanIsActive": "O plano em uso não pode ser arquivado. Ative outro plano antes.",
-  "errorPlanNotPublished": "Publique o plano antes de o ativar."
+  "errorPlanNotPublished": "Publique o plano antes de o ativar.",
+  "builderDuplicateDay": "Duplicar dia",
+  "builderDuplicateBlock": "Duplicar bloco",
+  "builderReorderHandle": "Arrastar para reordenar",
+  "builderCopyToNext": "Copiar para as seguintes",
+  "builderUnpublishedChanges": "Alterações não publicadas. O aluno continua a ver a última versão publicada.",
+  "builderHistory": "Histórico de versões",
+  "builderHistoryEmpty": "Ainda sem versões.",
+  "builderHistoryBy": "por {name}",
+  "builderHistoryCounts": "{days, plural, one{1 dia} other{{days} dias}} · {exercises, plural, one{1 exercício} other{{exercises} exercícios}}",
+  "builderViewingVersion": "Está a ver a versão {version}, só de leitura.",
+  "builderBackToCurrent": "Voltar à versão atual",
+  "builderInjuriesActive": "{count, plural, one{1 lesão ativa} other{{count} lesões ativas}}",
+  "builderInjuriesToggle": "Mostrar ou recolher lesões",
+  "planNextDay": "Próximo dia",
+  "planNextDayTitle": "Próximo treino do aluno",
+  "planNextDayCurrent": "Próximo agora",
+  "planNextDaySet": "Próximo dia: {label}."
 }

@@ -116,6 +116,29 @@ class PlanRepository {
     return Plan.fromJson(json!);
   }
 
+  /// Histórico de versões (mais recente primeiro, como o servidor devolve).
+  Future<List<PlanVersionSummary>> versions(String planId) async {
+    final json = await _send<Map<String, dynamic>>(
+      () => _dio.get<Map<String, dynamic>>('/v1/plans/$planId/versions'),
+    );
+    return (json!['items'] as List<dynamic>? ?? const [])
+        .map((raw) => PlanVersionSummary.fromJson(raw as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Coach escolhe o próximo dia da rotação do aluno (ADR-004 §3). O dia tem
+  /// de ser da versão ativa; o aluno vê a troca no Hoje.
+  Future<void> setNextDay({
+    required String studentId,
+    required String dayId,
+  }) =>
+      _send<Map<String, dynamic>>(
+        () => _dio.put<Map<String, dynamic>>(
+          '/v1/students/$studentId/plan/next-day',
+          data: {'day_id': dayId},
+        ),
+      );
+
   Future<List<PlanSummary>> byStudent(String studentId) async {
     final json = await _send<Map<String, dynamic>>(
       () => _dio.get<Map<String, dynamic>>('/v1/students/$studentId/plans'),

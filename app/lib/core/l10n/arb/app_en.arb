@@ -635,5 +635,22 @@
   "errorTemplateNotPublished": "Publish the template before applying it.",
   "errorPlanNotFromTemplate": "This plan did not come from a template.",
   "errorPlanIsActive": "The plan in use cannot be archived. Activate another plan first.",
-  "errorPlanNotPublished": "Publish the plan before activating it."
+  "errorPlanNotPublished": "Publish the plan before activating it.",
+  "builderDuplicateDay": "Duplicate day",
+  "builderDuplicateBlock": "Duplicate block",
+  "builderReorderHandle": "Drag to reorder",
+  "builderCopyToNext": "Copy to the next sets",
+  "builderUnpublishedChanges": "Unpublished changes. The student still sees the last published version.",
+  "builderHistory": "Version history",
+  "builderHistoryEmpty": "No versions yet.",
+  "builderHistoryBy": "by {name}",
+  "builderHistoryCounts": "{days, plural, one{1 day} other{{days} days}} · {exercises, plural, one{1 exercise} other{{exercises} exercises}}",
+  "builderViewingVersion": "You are viewing version {version}, read-only.",
+  "builderBackToCurrent": "Back to current version",
+  "builderInjuriesActive": "{count, plural, one{1 active injury} other{{count} active injuries}}",
+  "builderInjuriesToggle": "Show or hide injuries",
+  "planNextDay": "Next day",
+  "planNextDayTitle": "Student's next workout",
+  "planNextDayCurrent": "Next now",
+  "planNextDaySet": "Next day: {label}."
 }

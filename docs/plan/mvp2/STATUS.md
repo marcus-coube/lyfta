@@ -3,15 +3,15 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** P6.4 — app: ergonomia do builder (Flutter). **Fase P5 fechada (5/5).**
+**Próxima tarefa:** P6.5 — app: player por bloco (Flutter). **Fase P5 fechada (5/5).**
 
 | Fase | Progresso | Situação |
 |---|---|---|
 | P5 — Alunos | 5/5 | fechada |
-| P6 — Builder | 3/5 | em andamento |
+| P6 — Builder | 4/5 | em andamento |
 | P7 — Financeiro | 0/5 | não iniciada |
 | P8 — Dashboard e release | 0/4 | não iniciada |
-| **Total** | **8/19** | |
+| **Total** | **9/19** | |
 
 ## Bancos locais
 
@@ -46,3 +46,4 @@ Os quatro bancos do 1.0 seguem na tabela do [STATUS do 1.0](../mvp1/STATUS.md).
 | 2026-11-10 | **Ajustes na P6.1 (decisão do usuário):** `POST /v1/templates/{id}/unarchive`; `coach_id` do plano criado (assign e `POST /v1/plans`) = professor vinculado ao aluno (fallback: quem atribuiu), `coach_id` removido do corpo do `POST /plans`; existência do aluno validada no identity (M2M `students/statuses`) — `student_not_found` por item no assign; aluno inativo recebe plano |
 | 2026-11-10 | **P6.2 concluída:** workout `0020_plan_version_author` (`published_by`), `POST /v1/plans/{id}/duplicate|archive`, `GET /v1/plans/{id}/versions` (autor + contagens), `POST /v1/students/{id}/plans/{plan_id}/activate` (rotação recomeça no 1º dia; arquivar o ativo = 409 `plan_is_active`) e `PUT /v1/students/{id}/plan/next-day` (override do coach, reflete no `/me/today`) |
 | 2026-11-10 | **P6.3 concluída:** app — aba Modelos no shell do coach (busca, criar, arquivar/desarquivar), builder em modo modelo (título + descrição), aplicar a vários alunos com resultado por aluno, reaplicar a quem recebeu (aviso e destaque do editado), "Salvar como modelo" e aba Treino da ficha com Aplicar modelo/Duplicar/Arquivar/Ativar; plano ou modelo arquivado abre em leitura e o 409 `plan_archived` vira mensagem i18n |
+| 2026-11-10 | **P6.4 concluída:** app — reordenar dias/blocos/exercícios por alça, duplicar dia e bloco, copiar série para as próximas, histórico de versões em leitura, banners de rascunho não publicado e de lesões ativas, override do próximo dia na ficha; modo leitura esconde de fato os controles de estrutura |

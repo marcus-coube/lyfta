@@ -107,7 +107,7 @@ bioimpedância e anamnese (meta semanal só do coach), e no app a lista de
 alunos paginada com "último treino" (`POST /v1/students/overview` no
 workout), ficha `/students/:id` (Dados/Treino/Evolução/Check-ins), "Meus
 dados" e "Meu objetivo" do aluno. Ninguém usa o app ainda: contratos podem
-mudar em vez de acumular dívida. P6.1–P6.3 prontas (modelos e ciclo de vida no `workout`; no app, aba Modelos, aplicar/reaplicar em lote e ficha com Aplicar modelo/Duplicar/Arquivar/Ativar, arquivado somente leitura). Próximo: P6.4. Financeiro do 2.0 é o sexto serviço, `billing` (8085), **só
+mudar em vez de acumular dívida. P6.1–P6.4 prontas (modelos e ciclo de vida no `workout`; no app, aba Modelos, aplicar/reaplicar em lote e ficha com Aplicar modelo/Duplicar/Arquivar/Ativar, arquivado somente leitura; builder com reordenar por alça, duplicar dia/bloco, histórico de versões e próximo dia). Próximo: P6.5. Financeiro do 2.0 é o sexto serviço, `billing` (8085), **só
 com baixa manual** — PIX adiado; acesso do coach configurável por organização ([ADR-017](docs/adr/ADR-017-financeiro-servico-billing-baixa-manual.md));
 modelos de treino aplicados por cópia ([ADR-018](docs/adr/ADR-018-modelos-de-treino-por-copia.md)).
 Tudo só em emulador: o que depende de

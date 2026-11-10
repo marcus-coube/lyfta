@@ -47,6 +47,29 @@ class _FakePlans extends PlanRepository {
   final activated = <String>[];
   final duplicated = <String>[];
   final archived = <String>[];
+  final nextDays = <String>[];
+
+  @override
+  Future<Plan> byId(String id, {String? version}) async => Plan(
+        id: id,
+        studentId: 's1',
+        title: 'Plano em uso',
+        status: 'published',
+        nextDayId: 'dB',
+        days: [
+          WorkoutDay(id: 'dA', label: 'A', title: 'Peito'),
+          WorkoutDay(id: 'dB', label: 'B'),
+          WorkoutDay(id: 'dC', label: 'C'),
+        ],
+        versions: const [],
+      );
+
+  @override
+  Future<void> setNextDay({
+    required String studentId,
+    required String dayId,
+  }) async =>
+      nextDays.add(dayId);
 
   @override
   Future<List<PlanSummary>> byStudent(String studentId) async => const [
@@ -180,5 +203,28 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Arquivar'), findsNothing);
     expect(find.text('Ativar'), findsNothing);
+  });
+
+  testWidgets('próximo dia: só no plano em uso, marca o atual e envia o escolhido',
+      (tester) async {
+    final plans = await _pump(tester);
+
+    await tester.tap(find.byKey(const Key('plan_menu_old')));
+    await tester.pumpAndSettle();
+    expect(find.text('Próximo dia'), findsNothing);
+    await tester.tapAt(const Offset(1, 1));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('plan_menu_live')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Próximo dia'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Próximo agora'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('next_day_dC')));
+    await tester.pumpAndSettle();
+
+    expect(plans.nextDays, ['dC']);
+    expect(find.text('Próximo dia: C.'), findsOneWidget);
   });
 }

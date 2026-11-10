@@ -2104,6 +2104,86 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get errorPlanNotPublished => 'Publique o plano antes de ativá-lo.';
+
+  @override
+  String get builderDuplicateDay => 'Duplicar dia';
+
+  @override
+  String get builderDuplicateBlock => 'Duplicar bloco';
+
+  @override
+  String get builderReorderHandle => 'Arrastar para reordenar';
+
+  @override
+  String get builderCopyToNext => 'Copiar para as próximas';
+
+  @override
+  String get builderUnpublishedChanges =>
+      'Alterações não publicadas. O aluno continua vendo a última versão publicada.';
+
+  @override
+  String get builderHistory => 'Histórico de versões';
+
+  @override
+  String get builderHistoryEmpty => 'Nenhuma versão ainda.';
+
+  @override
+  String builderHistoryBy(String name) {
+    return 'por $name';
+  }
+
+  @override
+  String builderHistoryCounts(int days, int exercises) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days dias',
+      one: '1 dia',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      exercises,
+      locale: localeName,
+      other: '$exercises exercícios',
+      one: '1 exercício',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String builderViewingVersion(int version) {
+    return 'Você está vendo a versão $version, somente leitura.';
+  }
+
+  @override
+  String get builderBackToCurrent => 'Voltar à versão atual';
+
+  @override
+  String builderInjuriesActive(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lesões ativas',
+      one: '1 lesão ativa',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get builderInjuriesToggle => 'Mostrar ou recolher lesões';
+
+  @override
+  String get planNextDay => 'Próximo dia';
+
+  @override
+  String get planNextDayTitle => 'Próximo treino do aluno';
+
+  @override
+  String get planNextDayCurrent => 'Próximo agora';
+
+  @override
+  String planNextDaySet(String label) {
+    return 'Próximo dia: $label.';
+  }
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -4213,4 +4293,84 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get errorPlanNotPublished => 'Publique o plano antes de o ativar.';
+
+  @override
+  String get builderDuplicateDay => 'Duplicar dia';
+
+  @override
+  String get builderDuplicateBlock => 'Duplicar bloco';
+
+  @override
+  String get builderReorderHandle => 'Arrastar para reordenar';
+
+  @override
+  String get builderCopyToNext => 'Copiar para as seguintes';
+
+  @override
+  String get builderUnpublishedChanges =>
+      'Alterações não publicadas. O aluno continua a ver a última versão publicada.';
+
+  @override
+  String get builderHistory => 'Histórico de versões';
+
+  @override
+  String get builderHistoryEmpty => 'Ainda sem versões.';
+
+  @override
+  String builderHistoryBy(String name) {
+    return 'por $name';
+  }
+
+  @override
+  String builderHistoryCounts(int days, int exercises) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days dias',
+      one: '1 dia',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      exercises,
+      locale: localeName,
+      other: '$exercises exercícios',
+      one: '1 exercício',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String builderViewingVersion(int version) {
+    return 'Está a ver a versão $version, só de leitura.';
+  }
+
+  @override
+  String get builderBackToCurrent => 'Voltar à versão atual';
+
+  @override
+  String builderInjuriesActive(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lesões ativas',
+      one: '1 lesão ativa',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get builderInjuriesToggle => 'Mostrar ou recolher lesões';
+
+  @override
+  String get planNextDay => 'Próximo dia';
+
+  @override
+  String get planNextDayTitle => 'Próximo treino do aluno';
+
+  @override
+  String get planNextDayCurrent => 'Próximo agora';
+
+  @override
+  String planNextDaySet(String label) {
+    return 'Próximo dia: $label.';
+  }
 }

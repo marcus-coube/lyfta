@@ -131,6 +131,14 @@ class BlockExercise {
 
   final String exerciseId;
 
+  /// Cópia profunda (duplicar bloco): séries novas, mesmo exercício.
+  BlockExercise copy() => BlockExercise(
+        exerciseId: exerciseId,
+        exercise: exercise,
+        notes: notes,
+        sets: sets.map((s) => s.copy()).toList(),
+      );
+
   /// Resumo do exercício resolvido pelo backend (nome no idioma do usuário,
   /// mídia reassinada) — é o que evita uma chamada à biblioteca por linha.
   final Exercise? exercise;
@@ -166,6 +174,13 @@ class Block {
   int restSeconds;
   final List<BlockExercise> exercises;
 
+  /// Cópia profunda (duplicar bloco/dia).
+  Block copy() => Block(
+        blockType: blockType,
+        restSeconds: restSeconds,
+        exercises: exercises.map((e) => e.copy()).toList(),
+      );
+
   Map<String, dynamic> toJson() => {
         'block_type': blockType.code,
         'rest_seconds': restSeconds,
@@ -199,6 +214,13 @@ class WorkoutDay {
   String title;
   final List<Block> blocks;
 
+  /// Cópia profunda sem id (duplicar dia): só existe na tela até salvar.
+  WorkoutDay copy({required String label}) => WorkoutDay(
+        label: label,
+        title: title,
+        blocks: blocks.map((b) => b.copy()).toList(),
+      );
+
   /// A posição sai da **ordem do array** enviado (P1.4): reordenar é mover o
   /// item na lista, e o cliente não manda índice nenhum.
   Map<String, dynamic> toJson() => {
@@ -227,6 +249,39 @@ class PlanVersionRef {
   final String id;
   final int versionNo;
   final bool isDraft;
+}
+
+/// Linha do histórico de versões (`GET /v1/plans/{id}/versions`, P6.2).
+class PlanVersionSummary {
+  const PlanVersionSummary({
+    required this.versionNo,
+    required this.isDraft,
+    required this.daysCount,
+    required this.exercisesCount,
+    this.publishedAt,
+    this.publishedBy,
+  });
+
+  factory PlanVersionSummary.fromJson(Map<String, dynamic> json) {
+    final at = json['published_at'] as String?;
+    return PlanVersionSummary(
+      versionNo: json['version_no'] as int,
+      isDraft: json['is_draft'] as bool? ?? false,
+      daysCount: json['days_count'] as int? ?? 0,
+      exercisesCount: json['exercises_count'] as int? ?? 0,
+      publishedAt: at == null ? null : DateTime.tryParse(at)?.toLocal(),
+      publishedBy: json['published_by'] as String?,
+    );
+  }
+
+  final int versionNo;
+  final bool isDraft;
+  final int daysCount;
+  final int exercisesCount;
+  final DateTime? publishedAt;
+
+  /// Quem publicou; versões anteriores à P6.2 não têm autor.
+  final String? publishedBy;
 }
 
 /// O plano do aluno com a versão carregada (rascunho ou publicada).
