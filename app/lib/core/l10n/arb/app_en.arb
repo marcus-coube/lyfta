@@ -664,5 +664,163 @@
   "sessionBlockCircuit": "Do the exercises back to back with no rest between them; rest at the end of each round.",
   "sessionBlockDropset": "When the set ends, lower the weight and keep going right away, with almost no rest.",
   "sessionBlockRestPause": "Take the set close to failure, rest a few seconds and continue with the same weight.",
-  "sessionBlockNow": "Now"
+  "sessionBlockNow": "Now",
+  "homeCoachTabBilling": "Billing",
+  "billingTabInvoices": "Invoices",
+  "billingTabPlans": "Plans",
+  "studentTabBilling": "Billing",
+  "billingDelinquent": "Delinquent",
+  "invoiceStatusOpen": "Open",
+  "invoiceStatusOverdue": "Overdue",
+  "invoiceStatusPaid": "Paid",
+  "invoiceStatusCanceled": "Canceled",
+  "subscriptionStatusActive": "Active",
+  "subscriptionStatusPaused": "Paused",
+  "subscriptionStatusCanceled": "Canceled",
+  "invoicesFilterAll": "All",
+  "invoicesPeriodAll": "All months",
+  "invoicesEmpty": "No invoices yet. They show up once a student has a subscription.",
+  "invoicesEmptyFiltered": "No invoices match these filters.",
+  "invoicesColStudent": "Student",
+  "invoicesColDue": "Due date",
+  "invoicesColAmount": "Amount",
+  "invoicesColStatus": "Status",
+  "invoiceDueOn": "Due {date}",
+  "@invoiceDueOn": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "invoicePaidOn": "Paid on {date}",
+  "@invoicePaidOn": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "invoiceAccountDeleted": "account deleted",
+  "invoiceActionPay": "Mark as paid",
+  "invoiceActionReverse": "Reverse",
+  "invoiceDetailTitle": "Invoice for {period}",
+  "@invoiceDetailTitle": {
+    "placeholders": {
+      "period": {"type": "String"}
+    }
+  },
+  "invoicePaymentsTitle": "Payments",
+  "invoicePaymentsEmpty": "No payments recorded.",
+  "invoicePaymentManual": "Manual payment",
+  "invoicePaymentReversed": "Reversed payment",
+  "invoicePaymentReversal": "Reversal",
+  "payDialogTitle": "Mark as paid",
+  "payDialogBody": "Confirm receiving {amount} from {name}? The invoice is settled in full.",
+  "@payDialogBody": {
+    "placeholders": {
+      "amount": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "payDateLabel": "Payment date",
+  "payDateToday": "Today",
+  "payNoteLabel": "Note (optional)",
+  "payConfirm": "Confirm",
+  "payDone": "Payment recorded.",
+  "reverseDialogTitle": "Reverse payment",
+  "reverseDialogBody": "Reverse {amount} from {name}? The invoice goes back to open or overdue.",
+  "@reverseDialogBody": {
+    "placeholders": {
+      "amount": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "reverseReasonLabel": "Reason for the reversal",
+  "reverseConfirm": "Reverse",
+  "reverseDone": "Payment reversed.",
+  "billingPlansEmpty": "No membership plans yet. Create the first one to subscribe your students.",
+  "billingPlansArchivedSection": "Archived",
+  "billingPlanNew": "New plan",
+  "billingPlanEdit": "Edit plan",
+  "billingPlanNameLabel": "Plan name",
+  "billingPlanAmountLabel": "Monthly amount",
+  "billingPlanEditHint": "Existing subscriptions keep the amount they already have.",
+  "billingPlanPerMonth": "{amount} per month",
+  "@billingPlanPerMonth": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "billingPlanArchive": "Archive",
+  "billingPlanArchiveTitle": "Archive {name}?",
+  "@billingPlanArchiveTitle": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "billingPlanArchiveBody": "The plan stops being offered for new subscriptions. Existing subscriptions stay as they are.",
+  "billingPlanSaved": "Plan saved.",
+  "billingPlanArchived": "Plan archived.",
+  "subscriptionTitle": "Subscription",
+  "subscriptionNone": "This student has no subscription.",
+  "subscriptionCreate": "Create subscription",
+  "subscriptionEdit": "Edit",
+  "subscriptionPause": "Pause",
+  "subscriptionResume": "Resume",
+  "subscriptionCancel": "Cancel subscription",
+  "subscriptionSummary": "Due on day {day} of every month",
+  "@subscriptionSummary": {
+    "placeholders": {
+      "day": {"type": "int"}
+    }
+  },
+  "subscriptionStartsOn": "Since {date}",
+  "@subscriptionStartsOn": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "subscriptionPlanLabel": "Membership plan",
+  "subscriptionPlanHint": "Choose a plan",
+  "subscriptionAmountLabel": "Amount",
+  "subscriptionDueDayLabel": "Due day",
+  "subscriptionStartsOnLabel": "Start",
+  "subscriptionEditHint": "Amount and due day apply from the next invoice on.",
+  "subscriptionNoPlansOwner": "Create a membership plan in the Billing tab before subscribing the student.",
+  "subscriptionNoPlansCoach": "There is no active membership plan. Ask whoever runs the organization to create one.",
+  "subscriptionCreated": "Subscription created.",
+  "subscriptionUpdated": "Subscription updated.",
+  "subscriptionPaused": "Subscription paused.",
+  "subscriptionResumed": "Subscription resumed.",
+  "subscriptionCanceled": "Subscription canceled.",
+  "subscriptionCancelTitle": "Cancel {name}'s subscription?",
+  "@subscriptionCancelTitle": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "subscriptionCancelBody": "Open invoices due in the future are canceled. Overdue ones remain to be collected.",
+  "studentInvoicesTitle": "Invoices and payments",
+  "studentInvoicesEmpty": "No invoices yet.",
+  "studentDeactivateSubscriptionTitle": "Subscription still active",
+  "studentDeactivateSubscriptionBody": "{name} was deactivated, but the subscription is still active and keeps generating invoices. Cancel it now?",
+  "@studentDeactivateSubscriptionBody": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "studentDeactivateSubscriptionKeep": "Keep",
+  "organizationCoachBillingTitle": "Coaches manage billing for their own students",
+  "organizationCoachBillingOn": "On: the coach sees subscriptions and invoices of their own students, creates and edits subscriptions and marks payments. Plans, reversals and the organization's revenue stay with you only.",
+  "organizationCoachBillingOff": "Off: the coach only sees the \"delinquent\" badge on their own students, with no amounts.",
+  "organizationCoachBillingSaved": "Coach billing access updated.",
+  "accountInvoicesTitle": "My payments",
+  "accountInvoicesSubtitle": "Invoices and the status of each month",
+  "myInvoicesEmpty": "You don't have any payments yet.",
+  "errorBillingAccessDenied": "You don't have access to this part of billing.",
+  "errorInvoiceAlreadyPaid": "This invoice is already paid.",
+  "errorInvoiceCanceled": "This invoice is canceled.",
+  "errorPaymentAlreadyReversed": "This payment was already reversed.",
+  "errorPaymentIsReversal": "A reversal cannot be reversed.",
+  "errorIdempotencyConflict": "That payment attempt was already used on another invoice. Close and try again.",
+  "errorBillingPlanArchived": "This membership plan is archived. Pick another one.",
+  "errorSubscriptionExists": "This student already has an active or paused subscription.",
+  "errorInvalidSubscriptionState": "The subscription's current state doesn't allow this action."
 }

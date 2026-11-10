@@ -3914,6 +3914,612 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Agora'**
   String get sessionBlockNow;
+
+  /// Aba do professor com faturas e planos de mensalidade.
+  ///
+  /// In pt, this message translates to:
+  /// **'Financeiro'**
+  String get homeCoachTabBilling;
+
+  /// Aba de faturas no Financeiro.
+  ///
+  /// In pt, this message translates to:
+  /// **'Faturas'**
+  String get billingTabInvoices;
+
+  /// Aba de planos de mensalidade no Financeiro (owner).
+  ///
+  /// In pt, this message translates to:
+  /// **'Planos'**
+  String get billingTabPlans;
+
+  /// Aba Financeiro da ficha do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Financeiro'**
+  String get studentTabBilling;
+
+  /// Selo do aluno com fatura vencida.
+  ///
+  /// In pt, this message translates to:
+  /// **'Inadimplente'**
+  String get billingDelinquent;
+
+  /// Status da fatura: aguardando pagamento.
+  ///
+  /// In pt, this message translates to:
+  /// **'Em aberto'**
+  String get invoiceStatusOpen;
+
+  /// Status da fatura: passou do vencimento sem pagamento.
+  ///
+  /// In pt, this message translates to:
+  /// **'Vencida'**
+  String get invoiceStatusOverdue;
+
+  /// Status da fatura: quitada.
+  ///
+  /// In pt, this message translates to:
+  /// **'Paga'**
+  String get invoiceStatusPaid;
+
+  /// Status da fatura: cancelada.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelada'**
+  String get invoiceStatusCanceled;
+
+  /// Status da assinatura.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ativa'**
+  String get subscriptionStatusActive;
+
+  /// Status da assinatura.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pausada'**
+  String get subscriptionStatusPaused;
+
+  /// Status da assinatura.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelada'**
+  String get subscriptionStatusCanceled;
+
+  /// Filtro de faturas sem restrição de status.
+  ///
+  /// In pt, this message translates to:
+  /// **'Todas'**
+  String get invoicesFilterAll;
+
+  /// Filtro de faturas sem restrição de mês.
+  ///
+  /// In pt, this message translates to:
+  /// **'Todos os meses'**
+  String get invoicesPeriodAll;
+
+  /// Lista de faturas vazia.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma fatura ainda. Elas aparecem quando um aluno tem assinatura.'**
+  String get invoicesEmpty;
+
+  /// Lista de faturas vazia com filtro.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma fatura com esses filtros.'**
+  String get invoicesEmptyFiltered;
+
+  /// Coluna da tabela de faturas.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aluno'**
+  String get invoicesColStudent;
+
+  /// Coluna da tabela de faturas.
+  ///
+  /// In pt, this message translates to:
+  /// **'Vencimento'**
+  String get invoicesColDue;
+
+  /// Coluna da tabela de faturas.
+  ///
+  /// In pt, this message translates to:
+  /// **'Valor'**
+  String get invoicesColAmount;
+
+  /// Coluna da tabela de faturas.
+  ///
+  /// In pt, this message translates to:
+  /// **'Situação'**
+  String get invoicesColStatus;
+
+  /// Vencimento da fatura.
+  ///
+  /// In pt, this message translates to:
+  /// **'Vence em {date}'**
+  String invoiceDueOn(String date);
+
+  /// Data do pagamento da fatura.
+  ///
+  /// In pt, this message translates to:
+  /// **'Paga em {date}'**
+  String invoicePaidOn(String date);
+
+  /// Selo do titular que excluiu a conta (ADR-017 §5).
+  ///
+  /// In pt, this message translates to:
+  /// **'conta excluída'**
+  String get invoiceAccountDeleted;
+
+  /// Ação de registrar o pagamento manual.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dar baixa'**
+  String get invoiceActionPay;
+
+  /// Ação de estornar um pagamento.
+  ///
+  /// In pt, this message translates to:
+  /// **'Estornar'**
+  String get invoiceActionReverse;
+
+  /// Título do detalhe da fatura.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fatura de {period}'**
+  String invoiceDetailTitle(String period);
+
+  /// Seção de pagamentos no detalhe da fatura.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pagamentos'**
+  String get invoicePaymentsTitle;
+
+  /// Sem pagamentos na fatura.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum pagamento registrado.'**
+  String get invoicePaymentsEmpty;
+
+  /// Tipo do pagamento registrado à mão.
+  ///
+  /// In pt, this message translates to:
+  /// **'Baixa manual'**
+  String get invoicePaymentManual;
+
+  /// Pagamento que foi estornado.
+  ///
+  /// In pt, this message translates to:
+  /// **'Baixa estornada'**
+  String get invoicePaymentReversed;
+
+  /// Lançamento de estorno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Estorno'**
+  String get invoicePaymentReversal;
+
+  /// Título do diálogo de baixa.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dar baixa'**
+  String get payDialogTitle;
+
+  /// Confirmação da baixa.
+  ///
+  /// In pt, this message translates to:
+  /// **'Confirmar o recebimento de {amount} de {name}? A fatura é quitada por inteiro.'**
+  String payDialogBody(String amount, String name);
+
+  /// Campo de data da baixa.
+  ///
+  /// In pt, this message translates to:
+  /// **'Data do pagamento'**
+  String get payDateLabel;
+
+  /// Valor padrão do campo de data.
+  ///
+  /// In pt, this message translates to:
+  /// **'Hoje'**
+  String get payDateToday;
+
+  /// Campo de observação da baixa.
+  ///
+  /// In pt, this message translates to:
+  /// **'Observação (opcional)'**
+  String get payNoteLabel;
+
+  /// Botão de confirmar a baixa.
+  ///
+  /// In pt, this message translates to:
+  /// **'Confirmar baixa'**
+  String get payConfirm;
+
+  /// Confirmação da baixa.
+  ///
+  /// In pt, this message translates to:
+  /// **'Baixa registrada.'**
+  String get payDone;
+
+  /// Título do diálogo de estorno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Estornar pagamento'**
+  String get reverseDialogTitle;
+
+  /// Confirmação do estorno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Estornar {amount} de {name}? A fatura volta a ficar em aberto ou vencida.'**
+  String reverseDialogBody(String amount, String name);
+
+  /// Campo obrigatório do estorno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Motivo do estorno'**
+  String get reverseReasonLabel;
+
+  /// Botão de confirmar o estorno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Estornar'**
+  String get reverseConfirm;
+
+  /// Confirmação do estorno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pagamento estornado.'**
+  String get reverseDone;
+
+  /// Lista de planos vazia.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum plano de mensalidade. Crie o primeiro para assinar seus alunos.'**
+  String get billingPlansEmpty;
+
+  /// Seção de planos arquivados.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivados'**
+  String get billingPlansArchivedSection;
+
+  /// Criar plano de mensalidade.
+  ///
+  /// In pt, this message translates to:
+  /// **'Novo plano'**
+  String get billingPlanNew;
+
+  /// Editar plano de mensalidade.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editar plano'**
+  String get billingPlanEdit;
+
+  /// Campo do plano.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome do plano'**
+  String get billingPlanNameLabel;
+
+  /// Campo do plano.
+  ///
+  /// In pt, this message translates to:
+  /// **'Valor mensal'**
+  String get billingPlanAmountLabel;
+
+  /// Aviso ao editar o valor do plano.
+  ///
+  /// In pt, this message translates to:
+  /// **'As assinaturas existentes mantêm o valor que já têm.'**
+  String get billingPlanEditHint;
+
+  /// Valor do plano.
+  ///
+  /// In pt, this message translates to:
+  /// **'{amount} por mês'**
+  String billingPlanPerMonth(String amount);
+
+  /// Arquivar plano.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivar'**
+  String get billingPlanArchive;
+
+  /// Título da confirmação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivar {name}?'**
+  String billingPlanArchiveTitle(String name);
+
+  /// Corpo da confirmação.
+  ///
+  /// In pt, this message translates to:
+  /// **'O plano deixa de aparecer ao assinar novos alunos. As assinaturas existentes continuam como estão.'**
+  String get billingPlanArchiveBody;
+
+  /// Confirmação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Plano salvo.'**
+  String get billingPlanSaved;
+
+  /// Confirmação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Plano arquivado.'**
+  String get billingPlanArchived;
+
+  /// Seção da assinatura na ficha.
+  ///
+  /// In pt, this message translates to:
+  /// **'Assinatura'**
+  String get subscriptionTitle;
+
+  /// Sem assinatura.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este aluno não tem assinatura.'**
+  String get subscriptionNone;
+
+  /// Ação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Criar assinatura'**
+  String get subscriptionCreate;
+
+  /// Ação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editar'**
+  String get subscriptionEdit;
+
+  /// Ação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pausar'**
+  String get subscriptionPause;
+
+  /// Ação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Retomar'**
+  String get subscriptionResume;
+
+  /// Ação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelar assinatura'**
+  String get subscriptionCancel;
+
+  /// Resumo da assinatura.
+  ///
+  /// In pt, this message translates to:
+  /// **'Vence todo dia {day}'**
+  String subscriptionSummary(int day);
+
+  /// Início da assinatura.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desde {date}'**
+  String subscriptionStartsOn(String date);
+
+  /// Campo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Plano de mensalidade'**
+  String get subscriptionPlanLabel;
+
+  /// Dica do campo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Escolha um plano'**
+  String get subscriptionPlanHint;
+
+  /// Campo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Valor'**
+  String get subscriptionAmountLabel;
+
+  /// Campo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dia do vencimento'**
+  String get subscriptionDueDayLabel;
+
+  /// Campo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Início'**
+  String get subscriptionStartsOnLabel;
+
+  /// Aviso ao editar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Valor e vencimento valem a partir da próxima fatura.'**
+  String get subscriptionEditHint;
+
+  /// Sem planos (owner).
+  ///
+  /// In pt, this message translates to:
+  /// **'Crie um plano de mensalidade na aba Financeiro antes de assinar o aluno.'**
+  String get subscriptionNoPlansOwner;
+
+  /// Sem planos (coach).
+  ///
+  /// In pt, this message translates to:
+  /// **'Não há plano de mensalidade ativo. Peça ao responsável pela organização para criar um.'**
+  String get subscriptionNoPlansCoach;
+
+  /// Confirmação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Assinatura criada.'**
+  String get subscriptionCreated;
+
+  /// Confirmação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Assinatura atualizada.'**
+  String get subscriptionUpdated;
+
+  /// Confirmação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Assinatura pausada.'**
+  String get subscriptionPaused;
+
+  /// Confirmação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Assinatura retomada.'**
+  String get subscriptionResumed;
+
+  /// Confirmação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Assinatura cancelada.'**
+  String get subscriptionCanceled;
+
+  /// Título da confirmação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelar a assinatura de {name}?'**
+  String subscriptionCancelTitle(String name);
+
+  /// Corpo da confirmação.
+  ///
+  /// In pt, this message translates to:
+  /// **'As faturas em aberto com vencimento futuro serão canceladas. As já vencidas continuam para cobrança.'**
+  String get subscriptionCancelBody;
+
+  /// Seção da ficha.
+  ///
+  /// In pt, this message translates to:
+  /// **'Faturas e pagamentos'**
+  String get studentInvoicesTitle;
+
+  /// Sem faturas na ficha.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma fatura ainda.'**
+  String get studentInvoicesEmpty;
+
+  /// Aviso após inativar aluno com assinatura.
+  ///
+  /// In pt, this message translates to:
+  /// **'Assinatura ainda ativa'**
+  String get studentDeactivateSubscriptionTitle;
+
+  /// Aviso após inativar aluno com assinatura.
+  ///
+  /// In pt, this message translates to:
+  /// **'{name} foi inativado, mas a assinatura continua ativa e segue gerando faturas. Cancelar agora?'**
+  String studentDeactivateSubscriptionBody(String name);
+
+  /// Manter a assinatura.
+  ///
+  /// In pt, this message translates to:
+  /// **'Manter'**
+  String get studentDeactivateSubscriptionKeep;
+
+  /// Toggle da organização (ADR-017 §3).
+  ///
+  /// In pt, this message translates to:
+  /// **'Professores gerenciam o financeiro dos próprios alunos'**
+  String get organizationCoachBillingTitle;
+
+  /// O que o modo ligado libera.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ligado: o professor vê assinaturas e faturas dos próprios alunos, cria e altera assinaturas e dá baixa. Planos, estorno e a receita da organização continuam só com você.'**
+  String get organizationCoachBillingOn;
+
+  /// O que o modo desligado libera.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desligado: o professor vê só o selo \"inadimplente\" dos próprios alunos, sem valores.'**
+  String get organizationCoachBillingOff;
+
+  /// Confirmação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Acesso do professor ao financeiro atualizado.'**
+  String get organizationCoachBillingSaved;
+
+  /// Item da Conta do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Minhas mensalidades'**
+  String get accountInvoicesTitle;
+
+  /// Subtítulo do item.
+  ///
+  /// In pt, this message translates to:
+  /// **'Faturas e situação de cada mês'**
+  String get accountInvoicesSubtitle;
+
+  /// Lista do aluno vazia.
+  ///
+  /// In pt, this message translates to:
+  /// **'Você ainda não tem mensalidades.'**
+  String get myInvoicesEmpty;
+
+  /// Erro billing_access_denied.
+  ///
+  /// In pt, this message translates to:
+  /// **'Você não tem acesso a essa parte do financeiro.'**
+  String get errorBillingAccessDenied;
+
+  /// Erro invoice_already_paid.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esta fatura já está paga.'**
+  String get errorInvoiceAlreadyPaid;
+
+  /// Erro invoice_canceled.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esta fatura está cancelada.'**
+  String get errorInvoiceCanceled;
+
+  /// Erro payment_already_reversed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este pagamento já foi estornado.'**
+  String get errorPaymentAlreadyReversed;
+
+  /// Erro payment_is_reversal.
+  ///
+  /// In pt, this message translates to:
+  /// **'Um estorno não pode ser estornado.'**
+  String get errorPaymentIsReversal;
+
+  /// Erro idempotency_key_conflict.
+  ///
+  /// In pt, this message translates to:
+  /// **'Essa tentativa de baixa já foi usada em outra fatura. Feche e tente de novo.'**
+  String get errorIdempotencyConflict;
+
+  /// Erro plan_archived do billing.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este plano de mensalidade está arquivado. Escolha outro.'**
+  String get errorBillingPlanArchived;
+
+  /// Erro subscription_exists.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este aluno já tem uma assinatura ativa ou pausada.'**
+  String get errorSubscriptionExists;
+
+  /// Erro invalid_subscription_state.
+  ///
+  /// In pt, this message translates to:
+  /// **'A situação atual da assinatura não permite essa ação.'**
+  String get errorInvalidSubscriptionState;
 }
 
 class _AppLocalizationsDelegate

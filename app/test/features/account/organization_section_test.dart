@@ -37,14 +37,20 @@ class _FakeTenantRepository extends TenantRepository {
     timezone: 'America/Sao_Paulo',
     coachBillingAccess: 'status_only',
   );
-  final updates = <({String? name, String? timezone})>[];
+  final updates = <({String? name, String? timezone, String? access})>[];
 
   @override
   Future<TenantSettings> get() async => current;
 
   @override
-  Future<TenantSettings> update({String? name, String? timezone}) async {
-    updates.add((name: name, timezone: timezone));
+  Future<TenantSettings> update({
+    String? name,
+    String? timezone,
+    String? coachBillingAccess,
+  }) async {
+    updates.add(
+      (name: name, timezone: timezone, access: coachBillingAccess),
+    );
     if (updateError != null) throw updateError!;
     current = TenantSettings(
       id: current.id,
@@ -52,7 +58,7 @@ class _FakeTenantRepository extends TenantRepository {
       slug: current.slug,
       locale: current.locale,
       timezone: timezone ?? current.timezone,
-      coachBillingAccess: current.coachBillingAccess,
+      coachBillingAccess: coachBillingAccess ?? current.coachBillingAccess,
     );
     return current;
   }
@@ -118,6 +124,27 @@ void main() {
     expect(tenants.updates.single.timezone, 'Europe/Lisbon');
     expect(find.text(l10n.organizationSaved), findsOneWidget);
     expect(find.textContaining('Europe/Lisbon'), findsOneWidget);
+  });
+
+  testWidgets(
+      'toggle do financeiro explica cada modo e salva na hora (ADR-017 §3)',
+      (tester) async {
+    final tenants = await _pump(tester);
+
+    expect(find.text(l10n.organizationCoachBillingTitle), findsOneWidget);
+    expect(find.text(l10n.organizationCoachBillingOff), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('organization_coach_billing')));
+    await tester.pumpAndSettle();
+
+    expect(tenants.updates.single.access, 'own_students');
+    expect(tenants.updates.single.name, isNull);
+    expect(find.text(l10n.organizationCoachBillingOn), findsOneWidget);
+    expect(find.text(l10n.organizationCoachBillingSaved), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('organization_coach_billing')));
+    await tester.pumpAndSettle();
+    expect(tenants.updates.last.access, 'status_only');
   });
 
   testWidgets('fuso digitado em "Outro" inválido mostra o erro do servidor',

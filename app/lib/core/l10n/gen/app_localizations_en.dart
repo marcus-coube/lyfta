@@ -2207,4 +2207,346 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sessionBlockNow => 'Now';
+
+  @override
+  String get homeCoachTabBilling => 'Billing';
+
+  @override
+  String get billingTabInvoices => 'Invoices';
+
+  @override
+  String get billingTabPlans => 'Plans';
+
+  @override
+  String get studentTabBilling => 'Billing';
+
+  @override
+  String get billingDelinquent => 'Delinquent';
+
+  @override
+  String get invoiceStatusOpen => 'Open';
+
+  @override
+  String get invoiceStatusOverdue => 'Overdue';
+
+  @override
+  String get invoiceStatusPaid => 'Paid';
+
+  @override
+  String get invoiceStatusCanceled => 'Canceled';
+
+  @override
+  String get subscriptionStatusActive => 'Active';
+
+  @override
+  String get subscriptionStatusPaused => 'Paused';
+
+  @override
+  String get subscriptionStatusCanceled => 'Canceled';
+
+  @override
+  String get invoicesFilterAll => 'All';
+
+  @override
+  String get invoicesPeriodAll => 'All months';
+
+  @override
+  String get invoicesEmpty =>
+      'No invoices yet. They show up once a student has a subscription.';
+
+  @override
+  String get invoicesEmptyFiltered => 'No invoices match these filters.';
+
+  @override
+  String get invoicesColStudent => 'Student';
+
+  @override
+  String get invoicesColDue => 'Due date';
+
+  @override
+  String get invoicesColAmount => 'Amount';
+
+  @override
+  String get invoicesColStatus => 'Status';
+
+  @override
+  String invoiceDueOn(String date) {
+    return 'Due $date';
+  }
+
+  @override
+  String invoicePaidOn(String date) {
+    return 'Paid on $date';
+  }
+
+  @override
+  String get invoiceAccountDeleted => 'account deleted';
+
+  @override
+  String get invoiceActionPay => 'Mark as paid';
+
+  @override
+  String get invoiceActionReverse => 'Reverse';
+
+  @override
+  String invoiceDetailTitle(String period) {
+    return 'Invoice for $period';
+  }
+
+  @override
+  String get invoicePaymentsTitle => 'Payments';
+
+  @override
+  String get invoicePaymentsEmpty => 'No payments recorded.';
+
+  @override
+  String get invoicePaymentManual => 'Manual payment';
+
+  @override
+  String get invoicePaymentReversed => 'Reversed payment';
+
+  @override
+  String get invoicePaymentReversal => 'Reversal';
+
+  @override
+  String get payDialogTitle => 'Mark as paid';
+
+  @override
+  String payDialogBody(String amount, String name) {
+    return 'Confirm receiving $amount from $name? The invoice is settled in full.';
+  }
+
+  @override
+  String get payDateLabel => 'Payment date';
+
+  @override
+  String get payDateToday => 'Today';
+
+  @override
+  String get payNoteLabel => 'Note (optional)';
+
+  @override
+  String get payConfirm => 'Confirm';
+
+  @override
+  String get payDone => 'Payment recorded.';
+
+  @override
+  String get reverseDialogTitle => 'Reverse payment';
+
+  @override
+  String reverseDialogBody(String amount, String name) {
+    return 'Reverse $amount from $name? The invoice goes back to open or overdue.';
+  }
+
+  @override
+  String get reverseReasonLabel => 'Reason for the reversal';
+
+  @override
+  String get reverseConfirm => 'Reverse';
+
+  @override
+  String get reverseDone => 'Payment reversed.';
+
+  @override
+  String get billingPlansEmpty =>
+      'No membership plans yet. Create the first one to subscribe your students.';
+
+  @override
+  String get billingPlansArchivedSection => 'Archived';
+
+  @override
+  String get billingPlanNew => 'New plan';
+
+  @override
+  String get billingPlanEdit => 'Edit plan';
+
+  @override
+  String get billingPlanNameLabel => 'Plan name';
+
+  @override
+  String get billingPlanAmountLabel => 'Monthly amount';
+
+  @override
+  String get billingPlanEditHint =>
+      'Existing subscriptions keep the amount they already have.';
+
+  @override
+  String billingPlanPerMonth(String amount) {
+    return '$amount per month';
+  }
+
+  @override
+  String get billingPlanArchive => 'Archive';
+
+  @override
+  String billingPlanArchiveTitle(String name) {
+    return 'Archive $name?';
+  }
+
+  @override
+  String get billingPlanArchiveBody =>
+      'The plan stops being offered for new subscriptions. Existing subscriptions stay as they are.';
+
+  @override
+  String get billingPlanSaved => 'Plan saved.';
+
+  @override
+  String get billingPlanArchived => 'Plan archived.';
+
+  @override
+  String get subscriptionTitle => 'Subscription';
+
+  @override
+  String get subscriptionNone => 'This student has no subscription.';
+
+  @override
+  String get subscriptionCreate => 'Create subscription';
+
+  @override
+  String get subscriptionEdit => 'Edit';
+
+  @override
+  String get subscriptionPause => 'Pause';
+
+  @override
+  String get subscriptionResume => 'Resume';
+
+  @override
+  String get subscriptionCancel => 'Cancel subscription';
+
+  @override
+  String subscriptionSummary(int day) {
+    return 'Due on day $day of every month';
+  }
+
+  @override
+  String subscriptionStartsOn(String date) {
+    return 'Since $date';
+  }
+
+  @override
+  String get subscriptionPlanLabel => 'Membership plan';
+
+  @override
+  String get subscriptionPlanHint => 'Choose a plan';
+
+  @override
+  String get subscriptionAmountLabel => 'Amount';
+
+  @override
+  String get subscriptionDueDayLabel => 'Due day';
+
+  @override
+  String get subscriptionStartsOnLabel => 'Start';
+
+  @override
+  String get subscriptionEditHint =>
+      'Amount and due day apply from the next invoice on.';
+
+  @override
+  String get subscriptionNoPlansOwner =>
+      'Create a membership plan in the Billing tab before subscribing the student.';
+
+  @override
+  String get subscriptionNoPlansCoach =>
+      'There is no active membership plan. Ask whoever runs the organization to create one.';
+
+  @override
+  String get subscriptionCreated => 'Subscription created.';
+
+  @override
+  String get subscriptionUpdated => 'Subscription updated.';
+
+  @override
+  String get subscriptionPaused => 'Subscription paused.';
+
+  @override
+  String get subscriptionResumed => 'Subscription resumed.';
+
+  @override
+  String get subscriptionCanceled => 'Subscription canceled.';
+
+  @override
+  String subscriptionCancelTitle(String name) {
+    return 'Cancel $name\'s subscription?';
+  }
+
+  @override
+  String get subscriptionCancelBody =>
+      'Open invoices due in the future are canceled. Overdue ones remain to be collected.';
+
+  @override
+  String get studentInvoicesTitle => 'Invoices and payments';
+
+  @override
+  String get studentInvoicesEmpty => 'No invoices yet.';
+
+  @override
+  String get studentDeactivateSubscriptionTitle => 'Subscription still active';
+
+  @override
+  String studentDeactivateSubscriptionBody(String name) {
+    return '$name was deactivated, but the subscription is still active and keeps generating invoices. Cancel it now?';
+  }
+
+  @override
+  String get studentDeactivateSubscriptionKeep => 'Keep';
+
+  @override
+  String get organizationCoachBillingTitle =>
+      'Coaches manage billing for their own students';
+
+  @override
+  String get organizationCoachBillingOn =>
+      'On: the coach sees subscriptions and invoices of their own students, creates and edits subscriptions and marks payments. Plans, reversals and the organization\'s revenue stay with you only.';
+
+  @override
+  String get organizationCoachBillingOff =>
+      'Off: the coach only sees the \"delinquent\" badge on their own students, with no amounts.';
+
+  @override
+  String get organizationCoachBillingSaved => 'Coach billing access updated.';
+
+  @override
+  String get accountInvoicesTitle => 'My payments';
+
+  @override
+  String get accountInvoicesSubtitle => 'Invoices and the status of each month';
+
+  @override
+  String get myInvoicesEmpty => 'You don\'t have any payments yet.';
+
+  @override
+  String get errorBillingAccessDenied =>
+      'You don\'t have access to this part of billing.';
+
+  @override
+  String get errorInvoiceAlreadyPaid => 'This invoice is already paid.';
+
+  @override
+  String get errorInvoiceCanceled => 'This invoice is canceled.';
+
+  @override
+  String get errorPaymentAlreadyReversed =>
+      'This payment was already reversed.';
+
+  @override
+  String get errorPaymentIsReversal => 'A reversal cannot be reversed.';
+
+  @override
+  String get errorIdempotencyConflict =>
+      'That payment attempt was already used on another invoice. Close and try again.';
+
+  @override
+  String get errorBillingPlanArchived =>
+      'This membership plan is archived. Pick another one.';
+
+  @override
+  String get errorSubscriptionExists =>
+      'This student already has an active or paused subscription.';
+
+  @override
+  String get errorInvalidSubscriptionState =>
+      'The subscription\'s current state doesn\'t allow this action.';
 }

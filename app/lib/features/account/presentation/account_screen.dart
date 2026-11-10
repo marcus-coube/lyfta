@@ -80,6 +80,15 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.push('/goal'),
             ),
+            ListTile(
+              key: const Key('account_invoices'),
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.receipt_long_outlined),
+              title: Text(l10n.accountInvoicesTitle),
+              subtitle: Text(l10n.accountInvoicesSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/my-invoices'),
+            ),
             const SizedBox(height: LySpace.x4),
             _Section(l10n.accountPrivacySection),
             SwitchListTile(

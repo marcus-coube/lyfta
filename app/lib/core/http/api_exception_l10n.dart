@@ -98,6 +98,25 @@ extension ApiExceptionL10n on ApiException {
         return l10n.errorPlanIsActive;
       case 'plan_not_published':
         return l10n.errorPlanNotPublished;
+      // Financeiro (ADR-017, P7.4).
+      case 'billing_access_denied':
+        return l10n.errorBillingAccessDenied;
+      case 'invoice_already_paid':
+        return l10n.errorInvoiceAlreadyPaid;
+      case 'invoice_canceled':
+        return l10n.errorInvoiceCanceled;
+      case 'payment_already_reversed':
+        return l10n.errorPaymentAlreadyReversed;
+      case 'payment_is_reversal':
+        return l10n.errorPaymentIsReversal;
+      case 'idempotency_key_conflict':
+        return l10n.errorIdempotencyConflict;
+      case 'billing_plan_archived':
+        return l10n.errorBillingPlanArchived;
+      case 'subscription_exists':
+        return l10n.errorSubscriptionExists;
+      case 'invalid_subscription_state':
+        return l10n.errorInvalidSubscriptionState;
       case 'network_error':
         return l10n.errorNetwork;
       case 'internal_error':

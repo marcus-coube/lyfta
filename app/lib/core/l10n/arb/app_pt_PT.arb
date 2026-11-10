@@ -641,5 +641,163 @@
   "sessionBlockCircuit": "Faça os exercícios em sequência, sem descansar entre eles; descanse no fim de cada ronda.",
   "sessionBlockDropset": "Ao terminar a série, reduza a carga e continue logo a seguir, quase sem descanso.",
   "sessionBlockRestPause": "Faça a série perto da falha, descanse alguns segundos e continue com a mesma carga.",
-  "sessionBlockNow": "Agora"
+  "sessionBlockNow": "Agora",
+  "homeCoachTabBilling": "Financeiro",
+  "billingTabInvoices": "Faturas",
+  "billingTabPlans": "Planos",
+  "studentTabBilling": "Financeiro",
+  "billingDelinquent": "Inadimplente",
+  "invoiceStatusOpen": "Em aberto",
+  "invoiceStatusOverdue": "Vencida",
+  "invoiceStatusPaid": "Paga",
+  "invoiceStatusCanceled": "Cancelada",
+  "subscriptionStatusActive": "Ativa",
+  "subscriptionStatusPaused": "Pausada",
+  "subscriptionStatusCanceled": "Cancelada",
+  "invoicesFilterAll": "Todas",
+  "invoicesPeriodAll": "Todos os meses",
+  "invoicesEmpty": "Ainda não há faturas. Aparecem quando um aluno tem subscrição.",
+  "invoicesEmptyFiltered": "Nenhuma fatura com estes filtros.",
+  "invoicesColStudent": "Aluno",
+  "invoicesColDue": "Vencimento",
+  "invoicesColAmount": "Valor",
+  "invoicesColStatus": "Situação",
+  "invoiceDueOn": "Vence em {date}",
+  "@invoiceDueOn": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "invoicePaidOn": "Paga em {date}",
+  "@invoicePaidOn": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "invoiceAccountDeleted": "conta eliminada",
+  "invoiceActionPay": "Registar pagamento",
+  "invoiceActionReverse": "Estornar",
+  "invoiceDetailTitle": "Fatura de {period}",
+  "@invoiceDetailTitle": {
+    "placeholders": {
+      "period": {"type": "String"}
+    }
+  },
+  "invoicePaymentsTitle": "Pagamentos",
+  "invoicePaymentsEmpty": "Nenhum pagamento registado.",
+  "invoicePaymentManual": "Pagamento manual",
+  "invoicePaymentReversed": "Pagamento estornado",
+  "invoicePaymentReversal": "Estorno",
+  "payDialogTitle": "Registar pagamento",
+  "payDialogBody": "Confirmar o recebimento de {amount} de {name}? A fatura fica quitada na totalidade.",
+  "@payDialogBody": {
+    "placeholders": {
+      "amount": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "payDateLabel": "Data do pagamento",
+  "payDateToday": "Hoje",
+  "payNoteLabel": "Observação (opcional)",
+  "payConfirm": "Confirmar pagamento",
+  "payDone": "Pagamento registado.",
+  "reverseDialogTitle": "Estornar pagamento",
+  "reverseDialogBody": "Estornar {amount} de {name}? A fatura volta a ficar em aberto ou vencida.",
+  "@reverseDialogBody": {
+    "placeholders": {
+      "amount": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "reverseReasonLabel": "Motivo do estorno",
+  "reverseConfirm": "Estornar",
+  "reverseDone": "Pagamento estornado.",
+  "billingPlansEmpty": "Nenhum plano de mensalidade. Crie o primeiro para subscrever os seus alunos.",
+  "billingPlansArchivedSection": "Arquivados",
+  "billingPlanNew": "Novo plano",
+  "billingPlanEdit": "Editar plano",
+  "billingPlanNameLabel": "Nome do plano",
+  "billingPlanAmountLabel": "Valor mensal",
+  "billingPlanEditHint": "As subscrições existentes mantêm o valor que já têm.",
+  "billingPlanPerMonth": "{amount} por mês",
+  "@billingPlanPerMonth": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "billingPlanArchive": "Arquivar",
+  "billingPlanArchiveTitle": "Arquivar {name}?",
+  "@billingPlanArchiveTitle": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "billingPlanArchiveBody": "O plano deixa de aparecer ao subscrever novos alunos. As subscrições existentes continuam como estão.",
+  "billingPlanSaved": "Plano guardado.",
+  "billingPlanArchived": "Plano arquivado.",
+  "subscriptionTitle": "Subscrição",
+  "subscriptionNone": "Este aluno não tem subscrição.",
+  "subscriptionCreate": "Criar subscrição",
+  "subscriptionEdit": "Editar",
+  "subscriptionPause": "Pausar",
+  "subscriptionResume": "Retomar",
+  "subscriptionCancel": "Cancelar subscrição",
+  "subscriptionSummary": "Vence todos os dias {day}",
+  "@subscriptionSummary": {
+    "placeholders": {
+      "day": {"type": "int"}
+    }
+  },
+  "subscriptionStartsOn": "Desde {date}",
+  "@subscriptionStartsOn": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "subscriptionPlanLabel": "Plano de mensalidade",
+  "subscriptionPlanHint": "Escolha um plano",
+  "subscriptionAmountLabel": "Valor",
+  "subscriptionDueDayLabel": "Dia do vencimento",
+  "subscriptionStartsOnLabel": "Início",
+  "subscriptionEditHint": "Valor e vencimento valem a partir da próxima fatura.",
+  "subscriptionNoPlansOwner": "Crie um plano de mensalidade no separador Financeiro antes de subscrever o aluno.",
+  "subscriptionNoPlansCoach": "Não há plano de mensalidade ativo. Peça ao responsável pela organização para criar um.",
+  "subscriptionCreated": "Subscrição criada.",
+  "subscriptionUpdated": "Subscrição atualizada.",
+  "subscriptionPaused": "Subscrição pausada.",
+  "subscriptionResumed": "Subscrição retomada.",
+  "subscriptionCanceled": "Subscrição cancelada.",
+  "subscriptionCancelTitle": "Cancelar a subscrição de {name}?",
+  "@subscriptionCancelTitle": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "subscriptionCancelBody": "As faturas em aberto com vencimento futuro serão canceladas. As já vencidas continuam para cobrança.",
+  "studentInvoicesTitle": "Faturas e pagamentos",
+  "studentInvoicesEmpty": "Ainda não há faturas.",
+  "studentDeactivateSubscriptionTitle": "Subscrição ainda ativa",
+  "studentDeactivateSubscriptionBody": "{name} foi inativado, mas a subscrição continua ativa e segue a gerar faturas. Cancelar agora?",
+  "@studentDeactivateSubscriptionBody": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "studentDeactivateSubscriptionKeep": "Manter",
+  "organizationCoachBillingTitle": "Os professores gerem o financeiro dos próprios alunos",
+  "organizationCoachBillingOn": "Ligado: o professor vê subscrições e faturas dos próprios alunos, cria e altera subscrições e regista pagamentos. Planos, estornos e a receita da organização continuam só consigo.",
+  "organizationCoachBillingOff": "Desligado: o professor vê só o selo \"inadimplente\" dos próprios alunos, sem valores.",
+  "organizationCoachBillingSaved": "Acesso do professor ao financeiro atualizado.",
+  "accountInvoicesTitle": "As minhas mensalidades",
+  "accountInvoicesSubtitle": "Faturas e situação de cada mês",
+  "myInvoicesEmpty": "Ainda não tem mensalidades.",
+  "errorBillingAccessDenied": "Não tem acesso a esta parte do financeiro.",
+  "errorInvoiceAlreadyPaid": "Esta fatura já está paga.",
+  "errorInvoiceCanceled": "Esta fatura está cancelada.",
+  "errorPaymentAlreadyReversed": "Este pagamento já foi estornado.",
+  "errorPaymentIsReversal": "Um estorno não pode ser estornado.",
+  "errorIdempotencyConflict": "Esta tentativa de pagamento já foi usada noutra fatura. Feche e tente de novo.",
+  "errorBillingPlanArchived": "Este plano de mensalidade está arquivado. Escolha outro.",
+  "errorSubscriptionExists": "Este aluno já tem uma subscrição ativa ou pausada.",
+  "errorInvalidSubscriptionState": "A situação atual da subscrição não permite esta ação."
 }

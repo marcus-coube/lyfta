@@ -28,6 +28,11 @@ class AppConfig {
     defaultValue: 'http://localhost:8084',
   );
 
+  static const String billingBaseUrl = String.fromEnvironment(
+    'BILLING_BASE_URL',
+    defaultValue: 'http://localhost:8085',
+  );
+
   /// Versão vigente dos termos de uso e da política de privacidade
   /// (ADR-008 §6). Tem de ser a mesma do `TERMS_VERSION` do `identity` e a que
   /// consta nos textos de `assets/legal/` — o backend recusa o aceite com

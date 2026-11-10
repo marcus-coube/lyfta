@@ -6,6 +6,8 @@ import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_error_state.dart';
 import '../../../shared/widgets/ly_skeleton.dart';
+import '../../billing/presentation/billing_providers.dart';
+import '../../billing/presentation/student_billing_tab.dart';
 import '../../checkin/presentation/coach_checkins_tab.dart';
 import '../../evolution/domain/evolution_scope.dart';
 import '../../evolution/presentation/evolution_screen.dart';
@@ -19,7 +21,10 @@ enum StudentTab {
   data,
   workout,
   evolution,
-  checkins;
+  checkins,
+
+  /// Só owner e coach `own_students` (P7.4); sempre a última.
+  billing;
 
   static StudentTab parse(String? raw) => StudentTab.values.firstWhere(
         (t) => t.name == raw,
@@ -27,9 +32,9 @@ enum StudentTab {
       );
 }
 
-/// Ficha do aluno vista pelo professor (P5.4): Dados, Treino, Evolução e
-/// Check-ins. É rota de primeira classe — recarregar a página na web não
-/// perde onde o professor estava.
+/// Ficha do aluno vista pelo professor (P5.4): Dados, Treino, Evolução,
+/// Check-ins e, quando o papel permite, Financeiro (P7.4). É rota de primeira
+/// classe — recarregar a página na web não perde onde o professor estava.
 class StudentDetailScreen extends ConsumerStatefulWidget {
   const StudentDetailScreen({
     required this.studentId,
@@ -52,15 +57,28 @@ class StudentDetailScreen extends ConsumerStatefulWidget {
 
 class _StudentDetailScreenState extends ConsumerState<StudentDetailScreen>
     with SingleTickerProviderStateMixin {
-  late final _tabs = TabController(
-    length: StudentTab.values.length,
-    vsync: this,
-    initialIndex: widget.initialTab.index,
-  );
+  TabController? _tabs;
+
+  /// O controlador acompanha a quantidade de abas (o Financeiro aparece
+  /// quando a configuração da organização chega) sem perder a aba atual.
+  TabController _controller(int length) {
+    final current = _tabs;
+    if (current != null && current.length == length) return current;
+    final index = current?.index ?? widget.initialTab.index;
+    if (current != null) {
+      // O TabBar antigo ainda está na árvore neste build: descarta depois.
+      WidgetsBinding.instance.addPostFrameCallback((_) => current.dispose());
+    }
+    return _tabs = TabController(
+      length: length,
+      vsync: this,
+      initialIndex: index.clamp(0, length - 1),
+    );
+  }
 
   @override
   void dispose() {
-    _tabs.dispose();
+    _tabs?.dispose();
     super.dispose();
   }
 
@@ -75,6 +93,11 @@ class _StudentDetailScreenState extends ConsumerState<StudentDetailScreen>
     final title =
         student?.name ?? widget.studentName ?? l10n.studentDetailTitle;
 
+    final showBilling = ref.watch(billingAccessProvider).canOperate;
+    final tabs = _controller(
+      showBilling ? StudentTab.values.length : StudentTab.values.length - 1,
+    );
+
     Widget body;
     if (student != null) {
       body = Column(
@@ -82,7 +105,7 @@ class _StudentDetailScreenState extends ConsumerState<StudentDetailScreen>
           ColoredBox(
             color: c.surface,
             child: TabBar(
-              controller: _tabs,
+              controller: tabs,
               labelColor: c.accent,
               unselectedLabelColor: c.textSecondary,
               indicatorColor: c.accent,
@@ -93,12 +116,13 @@ class _StudentDetailScreenState extends ConsumerState<StudentDetailScreen>
                 Tab(text: l10n.studentTabWorkout),
                 Tab(text: l10n.studentTabEvolution),
                 Tab(child: CheckinsTabLabel(studentId: student.id)),
+                if (showBilling) Tab(text: l10n.studentTabBilling),
               ],
             ),
           ),
           Expanded(
             child: TabBarView(
-              controller: _tabs,
+              controller: tabs,
               children: [
                 StudentDataTab(student: student),
                 StudentPlansTab(studentId: student.id),
@@ -107,6 +131,11 @@ class _StudentDetailScreenState extends ConsumerState<StudentDetailScreen>
                   showCheckins: false,
                 ),
                 CoachCheckinsTab(studentId: student.id),
+                if (showBilling)
+                  StudentBillingTab(
+                    studentId: student.id,
+                    studentName: student.name,
+                  ),
               ],
             ),
           ),

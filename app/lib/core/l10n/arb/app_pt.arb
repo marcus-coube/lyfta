@@ -1906,5 +1906,444 @@
   "sessionBlockCircuit": "Faça os exercícios em sequência, sem descansar entre eles; descanse ao fim de cada rodada.",
   "sessionBlockDropset": "Ao terminar a série, reduza a carga e continue logo em seguida, quase sem descanso.",
   "sessionBlockRestPause": "Faça a série perto da falha, descanse poucos segundos e continue com a mesma carga.",
-  "sessionBlockNow": "Agora"
+  "sessionBlockNow": "Agora",
+  "homeCoachTabBilling": "Financeiro",
+  "@homeCoachTabBilling": {
+    "description": "Aba do professor com faturas e planos de mensalidade."
+  },
+  "billingTabInvoices": "Faturas",
+  "@billingTabInvoices": {
+    "description": "Aba de faturas no Financeiro."
+  },
+  "billingTabPlans": "Planos",
+  "@billingTabPlans": {
+    "description": "Aba de planos de mensalidade no Financeiro (owner)."
+  },
+  "studentTabBilling": "Financeiro",
+  "@studentTabBilling": {
+    "description": "Aba Financeiro da ficha do aluno."
+  },
+  "billingDelinquent": "Inadimplente",
+  "@billingDelinquent": {
+    "description": "Selo do aluno com fatura vencida."
+  },
+  "invoiceStatusOpen": "Em aberto",
+  "@invoiceStatusOpen": {
+    "description": "Status da fatura: aguardando pagamento."
+  },
+  "invoiceStatusOverdue": "Vencida",
+  "@invoiceStatusOverdue": {
+    "description": "Status da fatura: passou do vencimento sem pagamento."
+  },
+  "invoiceStatusPaid": "Paga",
+  "@invoiceStatusPaid": {
+    "description": "Status da fatura: quitada."
+  },
+  "invoiceStatusCanceled": "Cancelada",
+  "@invoiceStatusCanceled": {
+    "description": "Status da fatura: cancelada."
+  },
+  "subscriptionStatusActive": "Ativa",
+  "@subscriptionStatusActive": {
+    "description": "Status da assinatura."
+  },
+  "subscriptionStatusPaused": "Pausada",
+  "@subscriptionStatusPaused": {
+    "description": "Status da assinatura."
+  },
+  "subscriptionStatusCanceled": "Cancelada",
+  "@subscriptionStatusCanceled": {
+    "description": "Status da assinatura."
+  },
+  "invoicesFilterAll": "Todas",
+  "@invoicesFilterAll": {
+    "description": "Filtro de faturas sem restrição de status."
+  },
+  "invoicesPeriodAll": "Todos os meses",
+  "@invoicesPeriodAll": {
+    "description": "Filtro de faturas sem restrição de mês."
+  },
+  "invoicesEmpty": "Nenhuma fatura ainda. Elas aparecem quando um aluno tem assinatura.",
+  "@invoicesEmpty": {
+    "description": "Lista de faturas vazia."
+  },
+  "invoicesEmptyFiltered": "Nenhuma fatura com esses filtros.",
+  "@invoicesEmptyFiltered": {
+    "description": "Lista de faturas vazia com filtro."
+  },
+  "invoicesColStudent": "Aluno",
+  "@invoicesColStudent": {
+    "description": "Coluna da tabela de faturas."
+  },
+  "invoicesColDue": "Vencimento",
+  "@invoicesColDue": {
+    "description": "Coluna da tabela de faturas."
+  },
+  "invoicesColAmount": "Valor",
+  "@invoicesColAmount": {
+    "description": "Coluna da tabela de faturas."
+  },
+  "invoicesColStatus": "Situação",
+  "@invoicesColStatus": {
+    "description": "Coluna da tabela de faturas."
+  },
+  "invoiceDueOn": "Vence em {date}",
+  "@invoiceDueOn": {
+    "description": "Vencimento da fatura.",
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "invoicePaidOn": "Paga em {date}",
+  "@invoicePaidOn": {
+    "description": "Data do pagamento da fatura.",
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "invoiceAccountDeleted": "conta excluída",
+  "@invoiceAccountDeleted": {
+    "description": "Selo do titular que excluiu a conta (ADR-017 §5)."
+  },
+  "invoiceActionPay": "Dar baixa",
+  "@invoiceActionPay": {
+    "description": "Ação de registrar o pagamento manual."
+  },
+  "invoiceActionReverse": "Estornar",
+  "@invoiceActionReverse": {
+    "description": "Ação de estornar um pagamento."
+  },
+  "invoiceDetailTitle": "Fatura de {period}",
+  "@invoiceDetailTitle": {
+    "description": "Título do detalhe da fatura.",
+    "placeholders": {
+      "period": {"type": "String"}
+    }
+  },
+  "invoicePaymentsTitle": "Pagamentos",
+  "@invoicePaymentsTitle": {
+    "description": "Seção de pagamentos no detalhe da fatura."
+  },
+  "invoicePaymentsEmpty": "Nenhum pagamento registrado.",
+  "@invoicePaymentsEmpty": {
+    "description": "Sem pagamentos na fatura."
+  },
+  "invoicePaymentManual": "Baixa manual",
+  "@invoicePaymentManual": {
+    "description": "Tipo do pagamento registrado à mão."
+  },
+  "invoicePaymentReversed": "Baixa estornada",
+  "@invoicePaymentReversed": {
+    "description": "Pagamento que foi estornado."
+  },
+  "invoicePaymentReversal": "Estorno",
+  "@invoicePaymentReversal": {
+    "description": "Lançamento de estorno."
+  },
+  "payDialogTitle": "Dar baixa",
+  "@payDialogTitle": {
+    "description": "Título do diálogo de baixa."
+  },
+  "payDialogBody": "Confirmar o recebimento de {amount} de {name}? A fatura é quitada por inteiro.",
+  "@payDialogBody": {
+    "description": "Confirmação da baixa.",
+    "placeholders": {
+      "amount": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "payDateLabel": "Data do pagamento",
+  "@payDateLabel": {
+    "description": "Campo de data da baixa."
+  },
+  "payDateToday": "Hoje",
+  "@payDateToday": {
+    "description": "Valor padrão do campo de data."
+  },
+  "payNoteLabel": "Observação (opcional)",
+  "@payNoteLabel": {
+    "description": "Campo de observação da baixa."
+  },
+  "payConfirm": "Confirmar baixa",
+  "@payConfirm": {
+    "description": "Botão de confirmar a baixa."
+  },
+  "payDone": "Baixa registrada.",
+  "@payDone": {
+    "description": "Confirmação da baixa."
+  },
+  "reverseDialogTitle": "Estornar pagamento",
+  "@reverseDialogTitle": {
+    "description": "Título do diálogo de estorno."
+  },
+  "reverseDialogBody": "Estornar {amount} de {name}? A fatura volta a ficar em aberto ou vencida.",
+  "@reverseDialogBody": {
+    "description": "Confirmação do estorno.",
+    "placeholders": {
+      "amount": {"type": "String"},
+      "name": {"type": "String"}
+    }
+  },
+  "reverseReasonLabel": "Motivo do estorno",
+  "@reverseReasonLabel": {
+    "description": "Campo obrigatório do estorno."
+  },
+  "reverseConfirm": "Estornar",
+  "@reverseConfirm": {
+    "description": "Botão de confirmar o estorno."
+  },
+  "reverseDone": "Pagamento estornado.",
+  "@reverseDone": {
+    "description": "Confirmação do estorno."
+  },
+  "billingPlansEmpty": "Nenhum plano de mensalidade. Crie o primeiro para assinar seus alunos.",
+  "@billingPlansEmpty": {
+    "description": "Lista de planos vazia."
+  },
+  "billingPlansArchivedSection": "Arquivados",
+  "@billingPlansArchivedSection": {
+    "description": "Seção de planos arquivados."
+  },
+  "billingPlanNew": "Novo plano",
+  "@billingPlanNew": {
+    "description": "Criar plano de mensalidade."
+  },
+  "billingPlanEdit": "Editar plano",
+  "@billingPlanEdit": {
+    "description": "Editar plano de mensalidade."
+  },
+  "billingPlanNameLabel": "Nome do plano",
+  "@billingPlanNameLabel": {
+    "description": "Campo do plano."
+  },
+  "billingPlanAmountLabel": "Valor mensal",
+  "@billingPlanAmountLabel": {
+    "description": "Campo do plano."
+  },
+  "billingPlanEditHint": "As assinaturas existentes mantêm o valor que já têm.",
+  "@billingPlanEditHint": {
+    "description": "Aviso ao editar o valor do plano."
+  },
+  "billingPlanPerMonth": "{amount} por mês",
+  "@billingPlanPerMonth": {
+    "description": "Valor do plano.",
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "billingPlanArchive": "Arquivar",
+  "@billingPlanArchive": {
+    "description": "Arquivar plano."
+  },
+  "billingPlanArchiveTitle": "Arquivar {name}?",
+  "@billingPlanArchiveTitle": {
+    "description": "Título da confirmação.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "billingPlanArchiveBody": "O plano deixa de aparecer ao assinar novos alunos. As assinaturas existentes continuam como estão.",
+  "@billingPlanArchiveBody": {
+    "description": "Corpo da confirmação."
+  },
+  "billingPlanSaved": "Plano salvo.",
+  "@billingPlanSaved": {
+    "description": "Confirmação."
+  },
+  "billingPlanArchived": "Plano arquivado.",
+  "@billingPlanArchived": {
+    "description": "Confirmação."
+  },
+  "subscriptionTitle": "Assinatura",
+  "@subscriptionTitle": {
+    "description": "Seção da assinatura na ficha."
+  },
+  "subscriptionNone": "Este aluno não tem assinatura.",
+  "@subscriptionNone": {
+    "description": "Sem assinatura."
+  },
+  "subscriptionCreate": "Criar assinatura",
+  "@subscriptionCreate": {
+    "description": "Ação."
+  },
+  "subscriptionEdit": "Editar",
+  "@subscriptionEdit": {
+    "description": "Ação."
+  },
+  "subscriptionPause": "Pausar",
+  "@subscriptionPause": {
+    "description": "Ação."
+  },
+  "subscriptionResume": "Retomar",
+  "@subscriptionResume": {
+    "description": "Ação."
+  },
+  "subscriptionCancel": "Cancelar assinatura",
+  "@subscriptionCancel": {
+    "description": "Ação."
+  },
+  "subscriptionSummary": "Vence todo dia {day}",
+  "@subscriptionSummary": {
+    "description": "Resumo da assinatura.",
+    "placeholders": {
+      "day": {"type": "int"}
+    }
+  },
+  "subscriptionStartsOn": "Desde {date}",
+  "@subscriptionStartsOn": {
+    "description": "Início da assinatura.",
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "subscriptionPlanLabel": "Plano de mensalidade",
+  "@subscriptionPlanLabel": {
+    "description": "Campo."
+  },
+  "subscriptionPlanHint": "Escolha um plano",
+  "@subscriptionPlanHint": {
+    "description": "Dica do campo."
+  },
+  "subscriptionAmountLabel": "Valor",
+  "@subscriptionAmountLabel": {
+    "description": "Campo."
+  },
+  "subscriptionDueDayLabel": "Dia do vencimento",
+  "@subscriptionDueDayLabel": {
+    "description": "Campo."
+  },
+  "subscriptionStartsOnLabel": "Início",
+  "@subscriptionStartsOnLabel": {
+    "description": "Campo."
+  },
+  "subscriptionEditHint": "Valor e vencimento valem a partir da próxima fatura.",
+  "@subscriptionEditHint": {
+    "description": "Aviso ao editar."
+  },
+  "subscriptionNoPlansOwner": "Crie um plano de mensalidade na aba Financeiro antes de assinar o aluno.",
+  "@subscriptionNoPlansOwner": {
+    "description": "Sem planos (owner)."
+  },
+  "subscriptionNoPlansCoach": "Não há plano de mensalidade ativo. Peça ao responsável pela organização para criar um.",
+  "@subscriptionNoPlansCoach": {
+    "description": "Sem planos (coach)."
+  },
+  "subscriptionCreated": "Assinatura criada.",
+  "@subscriptionCreated": {
+    "description": "Confirmação."
+  },
+  "subscriptionUpdated": "Assinatura atualizada.",
+  "@subscriptionUpdated": {
+    "description": "Confirmação."
+  },
+  "subscriptionPaused": "Assinatura pausada.",
+  "@subscriptionPaused": {
+    "description": "Confirmação."
+  },
+  "subscriptionResumed": "Assinatura retomada.",
+  "@subscriptionResumed": {
+    "description": "Confirmação."
+  },
+  "subscriptionCanceled": "Assinatura cancelada.",
+  "@subscriptionCanceled": {
+    "description": "Confirmação."
+  },
+  "subscriptionCancelTitle": "Cancelar a assinatura de {name}?",
+  "@subscriptionCancelTitle": {
+    "description": "Título da confirmação.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "subscriptionCancelBody": "As faturas em aberto com vencimento futuro serão canceladas. As já vencidas continuam para cobrança.",
+  "@subscriptionCancelBody": {
+    "description": "Corpo da confirmação."
+  },
+  "studentInvoicesTitle": "Faturas e pagamentos",
+  "@studentInvoicesTitle": {
+    "description": "Seção da ficha."
+  },
+  "studentInvoicesEmpty": "Nenhuma fatura ainda.",
+  "@studentInvoicesEmpty": {
+    "description": "Sem faturas na ficha."
+  },
+  "studentDeactivateSubscriptionTitle": "Assinatura ainda ativa",
+  "@studentDeactivateSubscriptionTitle": {
+    "description": "Aviso após inativar aluno com assinatura."
+  },
+  "studentDeactivateSubscriptionBody": "{name} foi inativado, mas a assinatura continua ativa e segue gerando faturas. Cancelar agora?",
+  "@studentDeactivateSubscriptionBody": {
+    "description": "Aviso após inativar aluno com assinatura.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "studentDeactivateSubscriptionKeep": "Manter",
+  "@studentDeactivateSubscriptionKeep": {
+    "description": "Manter a assinatura."
+  },
+  "organizationCoachBillingTitle": "Professores gerenciam o financeiro dos próprios alunos",
+  "@organizationCoachBillingTitle": {
+    "description": "Toggle da organização (ADR-017 §3)."
+  },
+  "organizationCoachBillingOn": "Ligado: o professor vê assinaturas e faturas dos próprios alunos, cria e altera assinaturas e dá baixa. Planos, estorno e a receita da organização continuam só com você.",
+  "@organizationCoachBillingOn": {
+    "description": "O que o modo ligado libera."
+  },
+  "organizationCoachBillingOff": "Desligado: o professor vê só o selo \"inadimplente\" dos próprios alunos, sem valores.",
+  "@organizationCoachBillingOff": {
+    "description": "O que o modo desligado libera."
+  },
+  "organizationCoachBillingSaved": "Acesso do professor ao financeiro atualizado.",
+  "@organizationCoachBillingSaved": {
+    "description": "Confirmação."
+  },
+  "accountInvoicesTitle": "Minhas mensalidades",
+  "@accountInvoicesTitle": {
+    "description": "Item da Conta do aluno."
+  },
+  "accountInvoicesSubtitle": "Faturas e situação de cada mês",
+  "@accountInvoicesSubtitle": {
+    "description": "Subtítulo do item."
+  },
+  "myInvoicesEmpty": "Você ainda não tem mensalidades.",
+  "@myInvoicesEmpty": {
+    "description": "Lista do aluno vazia."
+  },
+  "errorBillingAccessDenied": "Você não tem acesso a essa parte do financeiro.",
+  "@errorBillingAccessDenied": {
+    "description": "Erro billing_access_denied."
+  },
+  "errorInvoiceAlreadyPaid": "Esta fatura já está paga.",
+  "@errorInvoiceAlreadyPaid": {
+    "description": "Erro invoice_already_paid."
+  },
+  "errorInvoiceCanceled": "Esta fatura está cancelada.",
+  "@errorInvoiceCanceled": {
+    "description": "Erro invoice_canceled."
+  },
+  "errorPaymentAlreadyReversed": "Este pagamento já foi estornado.",
+  "@errorPaymentAlreadyReversed": {
+    "description": "Erro payment_already_reversed."
+  },
+  "errorPaymentIsReversal": "Um estorno não pode ser estornado.",
+  "@errorPaymentIsReversal": {
+    "description": "Erro payment_is_reversal."
+  },
+  "errorIdempotencyConflict": "Essa tentativa de baixa já foi usada em outra fatura. Feche e tente de novo.",
+  "@errorIdempotencyConflict": {
+    "description": "Erro idempotency_key_conflict."
+  },
+  "errorBillingPlanArchived": "Este plano de mensalidade está arquivado. Escolha outro.",
+  "@errorBillingPlanArchived": {
+    "description": "Erro plan_archived do billing."
+  },
+  "errorSubscriptionExists": "Este aluno já tem uma assinatura ativa ou pausada.",
+  "@errorSubscriptionExists": {
+    "description": "Erro subscription_exists."
+  },
+  "errorInvalidSubscriptionState": "A situação atual da assinatura não permite essa ação.",
+  "@errorInvalidSubscriptionState": {
+    "description": "Erro invalid_subscription_state."
+  }
 }

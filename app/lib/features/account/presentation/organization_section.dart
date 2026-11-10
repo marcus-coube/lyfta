@@ -26,7 +26,7 @@ const commonTimezones = <String>[
 ];
 
 /// Seção "Organização" da tela Conta do owner (P5.1): nome e fuso do tenant.
-/// O toggle de acesso do coach ao financeiro entra na P7.4.
+/// O toggle de acesso do professor ao financeiro (ADR-017 §3) salva na hora.
 class OrganizationSection extends ConsumerStatefulWidget {
   const OrganizationSection({super.key});
 
@@ -40,6 +40,7 @@ class _OrganizationSectionState extends ConsumerState<OrganizationSection> {
   String? _timezone;
   String? _loadedFor;
   bool _saving = false;
+  bool _savingAccess = false;
 
   @override
   void dispose() {
@@ -91,6 +92,29 @@ class _OrganizationSectionState extends ConsumerState<OrganizationSection> {
       }
     } finally {
       if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _setCoachAccess(bool ownStudents) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _savingAccess = true);
+    try {
+      await ref.read(tenantRepositoryProvider).update(
+            coachBillingAccess: ownStudents ? 'own_students' : 'status_only',
+          );
+      ref.invalidate(tenantSettingsProvider);
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.organizationCoachBillingSaved)),
+      );
+    } catch (error) {
+      if (mounted) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(describeApiError(context, error))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _savingAccess = false);
     }
   }
 
@@ -150,13 +174,25 @@ class _OrganizationSectionState extends ConsumerState<OrganizationSection> {
                   onTap: _saving ? null : _pickTimezone,
                 ),
                 const SizedBox(height: LySpace.x2),
+                SwitchListTile(
+                  key: const Key('organization_coach_billing'),
+                  contentPadding: EdgeInsets.zero,
+                  value: data.coachBillingAccess == 'own_students',
+                  onChanged: _savingAccess ? null : _setCoachAccess,
+                  title: Text(l10n.organizationCoachBillingTitle),
+                  subtitle: Text(
+                    data.coachBillingAccess == 'own_students'
+                        ? l10n.organizationCoachBillingOn
+                        : l10n.organizationCoachBillingOff,
+                  ),
+                ),
+                const SizedBox(height: LySpace.x2),
                 LyButton(
                   key: const Key('organization_save'),
                   label: l10n.commonSave,
                   loading: _saving,
-                  onPressed: _saving || _name.text.trim().isEmpty
-                      ? null
-                      : _save,
+                  onPressed:
+                      _saving || _name.text.trim().isEmpty ? null : _save,
                 ),
               ],
             );

@@ -6,12 +6,15 @@ import 'package:lyfta/core/auth/auth_controller.dart';
 import 'package:lyfta/core/auth/auth_state.dart';
 import 'package:lyfta/core/design_system/design_system.dart';
 import 'package:lyfta/core/l10n/gen/app_localizations.dart';
+import 'package:lyfta/features/billing/data/billing_repository.dart';
 import 'package:lyfta/features/students/data/student_overview_repository.dart';
 import 'package:lyfta/features/students/data/student_repository.dart';
 import 'package:lyfta/features/students/domain/student.dart';
 import 'package:lyfta/features/students/domain/student_overview.dart';
 import 'package:lyfta/features/students/presentation/students_controller.dart';
 import 'package:lyfta/features/students/presentation/students_screen.dart';
+
+import '../billing/billing_fakes.dart';
 
 class _TestAuth extends AuthController {
   _TestAuth({required this.isOwner});
@@ -108,6 +111,7 @@ Future<_FakeStudents> _pump(
   bool isOwner = false,
   Size size = const Size(900, 1600),
   _FakeOverview? overview,
+  FakeBillingRepository? billing,
 }) async {
   final fake = _FakeStudents(students);
   overview ??= _FakeOverview();
@@ -121,6 +125,8 @@ Future<_FakeStudents> _pump(
         authControllerProvider.overrideWith(() => _TestAuth(isOwner: isOwner)),
         studentRepositoryProvider.overrideWithValue(fake),
         studentOverviewRepositoryProvider.overrideWithValue(overview),
+        billingRepositoryProvider
+            .overrideWithValue(billing ?? FakeBillingRepository()),
       ],
       child: MaterialApp(
         theme: LyTheme.dark(),
@@ -290,5 +296,30 @@ void main() {
     );
     expect(tester.takeException(), isNull);
     expect(find.text('Ana Alves'), findsOneWidget);
+  });
+
+  testWidgets('selo inadimplente vem em lote, uma consulta por página',
+      (tester) async {
+    final billing = FakeBillingRepository(
+      statuses: {'id-Ana Alves': 'delinquent', 'id-Bruno Costa': 'ok'},
+    );
+    await _pump(
+      tester,
+      [_student('Ana Alves'), _student('Bruno Costa')],
+      billing: billing,
+    );
+
+    expect(find.byKey(const Key('delinquent_badge')), findsOneWidget);
+    expect(billing.statusCalls, hasLength(1));
+    expect(billing.statusCalls.single, ['id-Ana Alves', 'id-Bruno Costa']);
+  });
+
+  testWidgets('billing fora do ar: a lista aparece sem selo', (tester) async {
+    final billing = FakeBillingRepository()
+      ..statusError = Exception('billing fora do ar');
+    await _pump(tester, [_student('Ana Alves')], billing: billing);
+
+    expect(find.text('Ana Alves'), findsOneWidget);
+    expect(find.byKey(const Key('delinquent_badge')), findsNothing);
   });
 }

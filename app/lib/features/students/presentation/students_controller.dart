@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/http/providers.dart';
+import '../../billing/data/billing_repository.dart';
+import '../../billing/presentation/billing_providers.dart';
 import '../data/student_overview_repository.dart';
 import '../data/student_repository.dart';
 import '../domain/student.dart';
@@ -43,10 +45,20 @@ final studentOverviewRepositoryProvider =
 /// Um aluno com o plano que ele está fazendo agora e o último treino, se
 /// houver (nulos também quando o `workout` não respondeu).
 class StudentRow {
-  const StudentRow({required this.student, this.overview});
+  const StudentRow({
+    required this.student,
+    this.overview,
+    this.billingStatus,
+  });
 
   final Student student;
   final StudentOverview? overview;
+
+  /// `ok`, `delinquent` ou `none` (P7.4); nulo quando o `billing` não
+  /// respondeu.
+  final String? billingStatus;
+
+  bool get isDelinquent => billingStatus == 'delinquent';
 
   ActivePlan? get activePlan => overview?.activePlan;
   DateTime? get lastSessionAt => overview?.lastSessionAt;
@@ -89,7 +101,8 @@ class StudentsState {
 }
 
 /// Lista de alunos do professor, paginada pelo cursor do servidor e já
-/// cruzada com o plano ativo e o último treino de cada um.
+/// cruzada com o plano ativo, o último treino e o selo de inadimplência de
+/// cada um.
 ///
 /// São dois serviços: a lista vem do `identity` (quem é aluno do tenant) e
 /// plano/último treino vêm do `workout` (ADR-013 §2 — nenhum lê o banco do
@@ -113,7 +126,9 @@ class StudentsController extends AsyncNotifier<StudentsState> {
     ref
       ..watch(studentQueryProvider)
       ..watch(studentStatusFilterProvider)
-      ..watch(studentCoachFilterProvider);
+      ..watch(studentCoachFilterProvider)
+      // Baixa, estorno ou assinatura mudam o selo "inadimplente".
+      ..watch(billingVersionProvider);
     final page = await _fetch(cursor: null);
     return StudentsState(
       rows: await _withOverview(page.items),
@@ -142,9 +157,22 @@ class StudentsController extends AsyncNotifier<StudentsState> {
       // sem plano/último treino e o professor ainda consegue trabalhar.
       overview = const {};
     }
+    Map<String, String> billing;
+    try {
+      billing = await ref
+          .read(billingRepositoryProvider)
+          .studentStatuses([for (final s in students) s.id]);
+    } catch (_) {
+      // Idem para o `billing`: sem selo, a lista continua.
+      billing = const {};
+    }
     return [
       for (final s in students)
-        StudentRow(student: s, overview: overview[s.id]),
+        StudentRow(
+          student: s,
+          overview: overview[s.id],
+          billingStatus: billing[s.id],
+        ),
     ];
   }
 

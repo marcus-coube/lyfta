@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/ly_theme.dart';
 import '../tokens/ly_spacing.dart';
@@ -22,6 +23,7 @@ class LyTextField extends StatefulWidget {
     this.minLines,
     this.maxLines,
     this.maxLength,
+    this.inputFormatters,
     this.showPasswordLabel,
     this.hidePasswordLabel,
   }) : assert(
@@ -51,6 +53,9 @@ class LyTextField extends StatefulWidget {
   final int? minLines;
   final int? maxLines;
   final int? maxLength;
+
+  /// Máscaras/filtros de entrada (ex.: campo de valor em reais).
+  final List<TextInputFormatter>? inputFormatters;
 
   /// Rótulo do botão de alternar visibilidade quando a senha está oculta —
   /// obrigatório se `obscure: true` (o DS não conhece l10n, quem chama traz
@@ -83,6 +88,7 @@ class _LyTextFieldState extends State<LyTextField> {
           minLines: widget.obscure ? 1 : widget.minLines,
           maxLines: widget.obscure ? 1 : widget.maxLines,
           maxLength: widget.maxLength,
+          inputFormatters: widget.inputFormatters,
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,
           onSubmitted: widget.onSubmitted,

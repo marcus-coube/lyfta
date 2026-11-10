@@ -7,6 +7,9 @@ import 'package:lyfta/core/auth/auth_state.dart';
 import 'package:lyfta/core/design_system/design_system.dart';
 import 'package:lyfta/core/http/api_exception.dart';
 import 'package:lyfta/core/l10n/gen/app_localizations.dart';
+import 'package:lyfta/features/billing/data/billing_repository.dart';
+import 'package:lyfta/features/billing/domain/billing_models.dart';
+import 'package:lyfta/features/billing/presentation/billing_providers.dart';
 import 'package:lyfta/features/builder/data/plan_repository.dart';
 import 'package:lyfta/features/evolution/domain/evolution_scope.dart';
 import 'package:lyfta/features/profile/data/profile_repository.dart';
@@ -16,6 +19,8 @@ import 'package:lyfta/features/students/domain/student.dart';
 import 'package:lyfta/features/students/presentation/student_data_tab.dart';
 import 'package:lyfta/features/students/presentation/students_controller.dart';
 import 'package:lyfta/shared/domain/plan.dart';
+
+import '../billing/billing_fakes.dart';
 
 class _TestAuth extends AuthController {
   _TestAuth({required this.isOwner});
@@ -140,6 +145,8 @@ Future<_FakeStudents> _pump(
   WidgetTester tester,
   Student student, {
   bool isOwner = false,
+  FakeBillingRepository? billing,
+  BillingAccess access = BillingAccess.none,
 }) async {
   final fake = _FakeStudents(student);
   tester.view.physicalSize = const Size(900, 1600);
@@ -153,6 +160,9 @@ Future<_FakeStudents> _pump(
         studentRepositoryProvider.overrideWithValue(fake),
         planRepositoryProvider.overrideWithValue(_FakePlans()),
         profileRepositoryProvider.overrideWithValue(_FakeProfiles()),
+        billingAccessProvider.overrideWithValue(access),
+        billingRepositoryProvider
+            .overrideWithValue(billing ?? FakeBillingRepository()),
       ],
       child: MaterialApp(
         theme: LyTheme.dark(),
@@ -298,5 +308,81 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(fake.reassigned, [('aluno-1', 'coach-b')]);
+  });
+
+  testWidgets(
+      'inativar aluno com assinatura ativa oferece o atalho para cancelar',
+      (tester) async {
+    final billing = FakeBillingRepository(
+      plans: [
+        const BillingPlan(
+          id: 'plan-1',
+          name: 'Mensal',
+          amountCents: 15000,
+          currency: 'BRL',
+          active: true,
+        ),
+      ],
+      subscriptions: [
+        Subscription(
+          id: 'sub-1',
+          studentId: 'aluno-1',
+          billingPlanId: 'plan-1',
+          amountCents: 15000,
+          currency: 'BRL',
+          dueDay: 10,
+          startsOn: DateTime(2026, 10, 1),
+          status: 'active',
+          customer: const BillingCustomer(name: 'Ana Alves', email: 'a@x.com'),
+        ),
+      ],
+    );
+    final fake = await _pump(
+      tester,
+      _active,
+      billing: billing,
+      access: BillingAccess.owner,
+    );
+
+    await tester.tap(find.byKey(const Key('student_deactivate')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('student_status_confirm')));
+    await tester.pumpAndSettle();
+
+    expect(fake.deactivations, hasLength(1));
+    expect(find.text('Assinatura ainda ativa'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('student_cancel_subscription')));
+    await tester.pumpAndSettle();
+    expect(billing.transitions, [('sub-1', 'cancel')]);
+  });
+
+  testWidgets('inativar sem assinatura ativa não mostra o aviso',
+      (tester) async {
+    await _pump(
+      tester,
+      _active,
+      billing: FakeBillingRepository(),
+      access: BillingAccess.owner,
+    );
+
+    await tester.tap(find.byKey(const Key('student_deactivate')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('student_status_confirm')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Assinatura ainda ativa'), findsNothing);
+  });
+
+  testWidgets('coach só com status vê o selo, sem aviso nem valores',
+      (tester) async {
+    await _pump(
+      tester,
+      _active,
+      billing: FakeBillingRepository(statuses: {'aluno-1': 'delinquent'}),
+      access: BillingAccess.statusOnly,
+    );
+
+    expect(find.byKey(const Key('delinquent_badge')), findsOneWidget);
   });
 }

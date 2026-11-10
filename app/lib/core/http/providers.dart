@@ -67,3 +67,15 @@ final commsApiClientProvider = Provider<ApiClient>((ref) {
     onSessionExpired: () => ref.read(authControllerProvider.notifier).signOut(),
   );
 });
+
+/// Cliente HTTP do serviço `billing` (financeiro — ADR-017, P7.4). Mesma
+/// sessão dos demais.
+final billingApiClientProvider = Provider<ApiClient>((ref) {
+  return ApiClient(
+    baseUrl: AppConfig.billingBaseUrl,
+    tokenStorage: ref.watch(tokenStorageProvider),
+    refreshTokens: (refreshToken) =>
+        ref.read(authControllerProvider.notifier).refreshSession(refreshToken),
+    onSessionExpired: () => ref.read(authControllerProvider.notifier).signOut(),
+  );
+});

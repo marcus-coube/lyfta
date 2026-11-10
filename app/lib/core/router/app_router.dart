@@ -8,6 +8,7 @@ import '../../features/auth/presentation/invite_accept_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/reset_password_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
+import '../../features/billing/presentation/my_invoices_screen.dart';
 import '../../features/builder/presentation/plan_builder_screen.dart';
 import '../../features/chat/presentation/chat_screen.dart';
 import '../../features/coach_shell/presentation/coach_shell_screen.dart';
@@ -71,6 +72,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/account',
         builder: (context, state) => const AccountScreen(),
+      ),
+      GoRoute(
+        path: '/my-invoices',
+        builder: (context, state) => const MyInvoicesScreen(),
       ),
       GoRoute(
         path: '/goal',

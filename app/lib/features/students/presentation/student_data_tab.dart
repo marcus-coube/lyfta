@@ -7,6 +7,10 @@ import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_date_field.dart';
+import '../../billing/data/billing_repository.dart';
+import '../../billing/domain/billing_models.dart';
+import '../../billing/presentation/billing_providers.dart';
+import '../../billing/presentation/delinquent_badge.dart';
 import '../../evolution/domain/evolution_scope.dart';
 import '../../profile/presentation/health_section.dart';
 import '../domain/student.dart';
@@ -271,17 +275,70 @@ class _StatusSectionState extends ConsumerState<_StatusSection> {
     );
   }
 
-  Future<void> _run(Future<void> Function() action, String done) async {
+  Future<bool> _run(Future<void> Function() action, String done) async {
     setState(() => _busy = true);
     try {
       await action();
-      if (!mounted) return;
+      if (!mounted) return true;
       _invalidateStudent(ref, widget.student.id);
       _snack(context, done);
+      return true;
     } catch (error) {
       if (mounted) _snack(context, describeApiError(context, error));
+      return false;
     } finally {
       if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  /// Assinatura ativa do aluno, para quem opera o financeiro (P7.4). Qualquer
+  /// falha vira "não sei": o aviso é cortesia e não pode travar a inativação.
+  Future<Subscription?> _activeSubscription() async {
+    if (!ref.read(billingAccessProvider).canOperate) return null;
+    try {
+      final subs = await ref
+          .read(billingRepositoryProvider)
+          .subscriptions(studentId: widget.student.id);
+      return subs.where((s) => s.isActive).firstOrNull;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Depois de inativar: a assinatura continua gerando fatura até ser
+  /// cancelada, então oferece o atalho.
+  Future<void> _offerCancelSubscription(Subscription sub) async {
+    final l10n = AppLocalizations.of(context);
+    final cancel = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.studentDeactivateSubscriptionTitle),
+        content: Text(
+          l10n.studentDeactivateSubscriptionBody(widget.student.name),
+        ),
+        actions: [
+          TextButton(
+            key: const Key('student_keep_subscription'),
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.studentDeactivateSubscriptionKeep),
+          ),
+          TextButton(
+            key: const Key('student_cancel_subscription'),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.subscriptionCancel),
+          ),
+        ],
+      ),
+    );
+    if (cancel != true || !mounted) return;
+    try {
+      await ref
+          .read(billingRepositoryProvider)
+          .transitionSubscription(sub.id, 'cancel');
+      refreshBilling(ref);
+      if (mounted) _snack(context, l10n.subscriptionCanceled);
+    } catch (error) {
+      if (mounted) _snack(context, describeApiError(context, error));
     }
   }
 
@@ -293,12 +350,17 @@ class _StatusSectionState extends ConsumerState<_StatusSection> {
       confirmLabel: l10n.studentDeactivateConfirm,
     );
     if (reason == null || !mounted) return;
-    await _run(
+    final subscription = await _activeSubscription();
+    if (!mounted) return;
+    final ok = await _run(
       () => ref
           .read(studentRepositoryProvider)
           .deactivate(widget.student.id, reason: reason),
       l10n.studentDeactivated,
     );
+    if (ok && subscription != null && mounted) {
+      await _offerCancelSubscription(subscription);
+    }
   }
 
   Future<void> _reactivate() async {
@@ -343,6 +405,10 @@ class _StatusSectionState extends ConsumerState<_StatusSection> {
             student.isInactive ? c.textSecondary : c.textPrimary,
           ),
         ),
+        if (ref.watch(billingAccessProvider) != BillingAccess.none) ...[
+          const SizedBox(height: LySpace.x2),
+          DelinquentBadge(studentId: student.id),
+        ],
         if (student.isPending && invitation != null) ...[
           const SizedBox(height: LySpace.x2),
           Text(

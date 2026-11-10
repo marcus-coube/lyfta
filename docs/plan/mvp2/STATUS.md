@@ -3,15 +3,15 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** P7.4 — App: financeiro do owner e faturas do aluno (Flutter) (ver [P7-financeiro.md](P7-financeiro.md)). **Fases P5 e P6 fechadas.**
+**Próxima tarefa:** P7.5 — Exclusão de conta com financeiro (identity, billing, Flutter) (ver [P7-financeiro.md](P7-financeiro.md)). **Fases P5 e P6 fechadas.**
 
 | Fase | Progresso | Situação |
 |---|---|---|
 | P5 — Alunos | 5/5 | fechada |
 | P6 — Builder | 5/5 | fechada |
-| P7 — Financeiro | 3/5 | em andamento |
+| P7 — Financeiro | 4/5 | em andamento |
 | P8 — Dashboard e release | 0/4 | não iniciada |
-| **Total** | **13/19** | |
+| **Total** | **14/19** | |
 
 ## Bancos locais
 
@@ -51,3 +51,4 @@ Os quatro bancos do 1.0 seguem na tabela do [STATUS do 1.0](../mvp1/STATUS.md).
 | 2026-11-10 | **P7.1 concluída:** sexto serviço `billing` (8085, `lyfta_billing`) no molde do assessment — `/healthz`, `/v1/whoami`, `security`/`obs`/`coachlink`/`repo` duplicados; migrations 0001–0004 com o modelo do ADR-007 (customers, plans, subscriptions, invoices com trigger de fatura paga imutável, payments append-only, provider_events), RLS forçada e teste de isolamento; teste varre o schema contra coluna monetária não-inteira. Índice de assinatura única vale para active+paused |
 | 2026-11-10 | **P7.2 concluída:** API do financeiro no `billing` — planos, assinaturas (pausar/retomar/cancelar), faturas, baixa manual idempotente (`Idempotency-Key`, migration 0005), estorno, status derivado `ok|delinquent|none`, `/me/invoices` e a matriz owner / coach `own_students` / `status_only` (cache de 30 s do modo); M2M novo `GET /internal/v1/students/{id}` no identity |
 | 2026-11-10 | **P7.3 concluída:** job do `billing` (tick de 15 min, `pg_try_advisory_lock`, tenants do identity com cache de 10 min) gera a fatura do mês corrente das assinaturas `active` e vence as `open` no fuso de cada tenant; idempotente, relógio injetável, teste de virada de mês SP × Lisboa e do lock |
+| 2026-11-10 | **P7.4 concluída:** app — aba Financeiro no shell do owner e do coach `own_students` (faturas com filtros/tabela, baixa idempotente, estorno com motivo, planos só owner), aba Financeiro na ficha (assinatura criar/editar/pausar/cancelar + histórico), selo "inadimplente" na lista e na ficha, toggle `coach_billing_access` na Organização, aviso ao inativar com assinatura ativa e "Minhas mensalidades" do aluno; dinheiro em centavos com máscara pt/en sem `double` |

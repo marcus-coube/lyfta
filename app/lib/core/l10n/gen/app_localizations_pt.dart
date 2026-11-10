@@ -2208,6 +2208,348 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get sessionBlockNow => 'Agora';
+
+  @override
+  String get homeCoachTabBilling => 'Financeiro';
+
+  @override
+  String get billingTabInvoices => 'Faturas';
+
+  @override
+  String get billingTabPlans => 'Planos';
+
+  @override
+  String get studentTabBilling => 'Financeiro';
+
+  @override
+  String get billingDelinquent => 'Inadimplente';
+
+  @override
+  String get invoiceStatusOpen => 'Em aberto';
+
+  @override
+  String get invoiceStatusOverdue => 'Vencida';
+
+  @override
+  String get invoiceStatusPaid => 'Paga';
+
+  @override
+  String get invoiceStatusCanceled => 'Cancelada';
+
+  @override
+  String get subscriptionStatusActive => 'Ativa';
+
+  @override
+  String get subscriptionStatusPaused => 'Pausada';
+
+  @override
+  String get subscriptionStatusCanceled => 'Cancelada';
+
+  @override
+  String get invoicesFilterAll => 'Todas';
+
+  @override
+  String get invoicesPeriodAll => 'Todos os meses';
+
+  @override
+  String get invoicesEmpty =>
+      'Nenhuma fatura ainda. Elas aparecem quando um aluno tem assinatura.';
+
+  @override
+  String get invoicesEmptyFiltered => 'Nenhuma fatura com esses filtros.';
+
+  @override
+  String get invoicesColStudent => 'Aluno';
+
+  @override
+  String get invoicesColDue => 'Vencimento';
+
+  @override
+  String get invoicesColAmount => 'Valor';
+
+  @override
+  String get invoicesColStatus => 'Situação';
+
+  @override
+  String invoiceDueOn(String date) {
+    return 'Vence em $date';
+  }
+
+  @override
+  String invoicePaidOn(String date) {
+    return 'Paga em $date';
+  }
+
+  @override
+  String get invoiceAccountDeleted => 'conta excluída';
+
+  @override
+  String get invoiceActionPay => 'Dar baixa';
+
+  @override
+  String get invoiceActionReverse => 'Estornar';
+
+  @override
+  String invoiceDetailTitle(String period) {
+    return 'Fatura de $period';
+  }
+
+  @override
+  String get invoicePaymentsTitle => 'Pagamentos';
+
+  @override
+  String get invoicePaymentsEmpty => 'Nenhum pagamento registrado.';
+
+  @override
+  String get invoicePaymentManual => 'Baixa manual';
+
+  @override
+  String get invoicePaymentReversed => 'Baixa estornada';
+
+  @override
+  String get invoicePaymentReversal => 'Estorno';
+
+  @override
+  String get payDialogTitle => 'Dar baixa';
+
+  @override
+  String payDialogBody(String amount, String name) {
+    return 'Confirmar o recebimento de $amount de $name? A fatura é quitada por inteiro.';
+  }
+
+  @override
+  String get payDateLabel => 'Data do pagamento';
+
+  @override
+  String get payDateToday => 'Hoje';
+
+  @override
+  String get payNoteLabel => 'Observação (opcional)';
+
+  @override
+  String get payConfirm => 'Confirmar baixa';
+
+  @override
+  String get payDone => 'Baixa registrada.';
+
+  @override
+  String get reverseDialogTitle => 'Estornar pagamento';
+
+  @override
+  String reverseDialogBody(String amount, String name) {
+    return 'Estornar $amount de $name? A fatura volta a ficar em aberto ou vencida.';
+  }
+
+  @override
+  String get reverseReasonLabel => 'Motivo do estorno';
+
+  @override
+  String get reverseConfirm => 'Estornar';
+
+  @override
+  String get reverseDone => 'Pagamento estornado.';
+
+  @override
+  String get billingPlansEmpty =>
+      'Nenhum plano de mensalidade. Crie o primeiro para assinar seus alunos.';
+
+  @override
+  String get billingPlansArchivedSection => 'Arquivados';
+
+  @override
+  String get billingPlanNew => 'Novo plano';
+
+  @override
+  String get billingPlanEdit => 'Editar plano';
+
+  @override
+  String get billingPlanNameLabel => 'Nome do plano';
+
+  @override
+  String get billingPlanAmountLabel => 'Valor mensal';
+
+  @override
+  String get billingPlanEditHint =>
+      'As assinaturas existentes mantêm o valor que já têm.';
+
+  @override
+  String billingPlanPerMonth(String amount) {
+    return '$amount por mês';
+  }
+
+  @override
+  String get billingPlanArchive => 'Arquivar';
+
+  @override
+  String billingPlanArchiveTitle(String name) {
+    return 'Arquivar $name?';
+  }
+
+  @override
+  String get billingPlanArchiveBody =>
+      'O plano deixa de aparecer ao assinar novos alunos. As assinaturas existentes continuam como estão.';
+
+  @override
+  String get billingPlanSaved => 'Plano salvo.';
+
+  @override
+  String get billingPlanArchived => 'Plano arquivado.';
+
+  @override
+  String get subscriptionTitle => 'Assinatura';
+
+  @override
+  String get subscriptionNone => 'Este aluno não tem assinatura.';
+
+  @override
+  String get subscriptionCreate => 'Criar assinatura';
+
+  @override
+  String get subscriptionEdit => 'Editar';
+
+  @override
+  String get subscriptionPause => 'Pausar';
+
+  @override
+  String get subscriptionResume => 'Retomar';
+
+  @override
+  String get subscriptionCancel => 'Cancelar assinatura';
+
+  @override
+  String subscriptionSummary(int day) {
+    return 'Vence todo dia $day';
+  }
+
+  @override
+  String subscriptionStartsOn(String date) {
+    return 'Desde $date';
+  }
+
+  @override
+  String get subscriptionPlanLabel => 'Plano de mensalidade';
+
+  @override
+  String get subscriptionPlanHint => 'Escolha um plano';
+
+  @override
+  String get subscriptionAmountLabel => 'Valor';
+
+  @override
+  String get subscriptionDueDayLabel => 'Dia do vencimento';
+
+  @override
+  String get subscriptionStartsOnLabel => 'Início';
+
+  @override
+  String get subscriptionEditHint =>
+      'Valor e vencimento valem a partir da próxima fatura.';
+
+  @override
+  String get subscriptionNoPlansOwner =>
+      'Crie um plano de mensalidade na aba Financeiro antes de assinar o aluno.';
+
+  @override
+  String get subscriptionNoPlansCoach =>
+      'Não há plano de mensalidade ativo. Peça ao responsável pela organização para criar um.';
+
+  @override
+  String get subscriptionCreated => 'Assinatura criada.';
+
+  @override
+  String get subscriptionUpdated => 'Assinatura atualizada.';
+
+  @override
+  String get subscriptionPaused => 'Assinatura pausada.';
+
+  @override
+  String get subscriptionResumed => 'Assinatura retomada.';
+
+  @override
+  String get subscriptionCanceled => 'Assinatura cancelada.';
+
+  @override
+  String subscriptionCancelTitle(String name) {
+    return 'Cancelar a assinatura de $name?';
+  }
+
+  @override
+  String get subscriptionCancelBody =>
+      'As faturas em aberto com vencimento futuro serão canceladas. As já vencidas continuam para cobrança.';
+
+  @override
+  String get studentInvoicesTitle => 'Faturas e pagamentos';
+
+  @override
+  String get studentInvoicesEmpty => 'Nenhuma fatura ainda.';
+
+  @override
+  String get studentDeactivateSubscriptionTitle => 'Assinatura ainda ativa';
+
+  @override
+  String studentDeactivateSubscriptionBody(String name) {
+    return '$name foi inativado, mas a assinatura continua ativa e segue gerando faturas. Cancelar agora?';
+  }
+
+  @override
+  String get studentDeactivateSubscriptionKeep => 'Manter';
+
+  @override
+  String get organizationCoachBillingTitle =>
+      'Professores gerenciam o financeiro dos próprios alunos';
+
+  @override
+  String get organizationCoachBillingOn =>
+      'Ligado: o professor vê assinaturas e faturas dos próprios alunos, cria e altera assinaturas e dá baixa. Planos, estorno e a receita da organização continuam só com você.';
+
+  @override
+  String get organizationCoachBillingOff =>
+      'Desligado: o professor vê só o selo \"inadimplente\" dos próprios alunos, sem valores.';
+
+  @override
+  String get organizationCoachBillingSaved =>
+      'Acesso do professor ao financeiro atualizado.';
+
+  @override
+  String get accountInvoicesTitle => 'Minhas mensalidades';
+
+  @override
+  String get accountInvoicesSubtitle => 'Faturas e situação de cada mês';
+
+  @override
+  String get myInvoicesEmpty => 'Você ainda não tem mensalidades.';
+
+  @override
+  String get errorBillingAccessDenied =>
+      'Você não tem acesso a essa parte do financeiro.';
+
+  @override
+  String get errorInvoiceAlreadyPaid => 'Esta fatura já está paga.';
+
+  @override
+  String get errorInvoiceCanceled => 'Esta fatura está cancelada.';
+
+  @override
+  String get errorPaymentAlreadyReversed => 'Este pagamento já foi estornado.';
+
+  @override
+  String get errorPaymentIsReversal => 'Um estorno não pode ser estornado.';
+
+  @override
+  String get errorIdempotencyConflict =>
+      'Essa tentativa de baixa já foi usada em outra fatura. Feche e tente de novo.';
+
+  @override
+  String get errorBillingPlanArchived =>
+      'Este plano de mensalidade está arquivado. Escolha outro.';
+
+  @override
+  String get errorSubscriptionExists =>
+      'Este aluno já tem uma assinatura ativa ou pausada.';
+
+  @override
+  String get errorInvalidSubscriptionState =>
+      'A situação atual da assinatura não permite essa ação.';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -4421,4 +4763,346 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get sessionBlockNow => 'Agora';
+
+  @override
+  String get homeCoachTabBilling => 'Financeiro';
+
+  @override
+  String get billingTabInvoices => 'Faturas';
+
+  @override
+  String get billingTabPlans => 'Planos';
+
+  @override
+  String get studentTabBilling => 'Financeiro';
+
+  @override
+  String get billingDelinquent => 'Inadimplente';
+
+  @override
+  String get invoiceStatusOpen => 'Em aberto';
+
+  @override
+  String get invoiceStatusOverdue => 'Vencida';
+
+  @override
+  String get invoiceStatusPaid => 'Paga';
+
+  @override
+  String get invoiceStatusCanceled => 'Cancelada';
+
+  @override
+  String get subscriptionStatusActive => 'Ativa';
+
+  @override
+  String get subscriptionStatusPaused => 'Pausada';
+
+  @override
+  String get subscriptionStatusCanceled => 'Cancelada';
+
+  @override
+  String get invoicesFilterAll => 'Todas';
+
+  @override
+  String get invoicesPeriodAll => 'Todos os meses';
+
+  @override
+  String get invoicesEmpty =>
+      'Ainda não há faturas. Aparecem quando um aluno tem subscrição.';
+
+  @override
+  String get invoicesEmptyFiltered => 'Nenhuma fatura com estes filtros.';
+
+  @override
+  String get invoicesColStudent => 'Aluno';
+
+  @override
+  String get invoicesColDue => 'Vencimento';
+
+  @override
+  String get invoicesColAmount => 'Valor';
+
+  @override
+  String get invoicesColStatus => 'Situação';
+
+  @override
+  String invoiceDueOn(String date) {
+    return 'Vence em $date';
+  }
+
+  @override
+  String invoicePaidOn(String date) {
+    return 'Paga em $date';
+  }
+
+  @override
+  String get invoiceAccountDeleted => 'conta eliminada';
+
+  @override
+  String get invoiceActionPay => 'Registar pagamento';
+
+  @override
+  String get invoiceActionReverse => 'Estornar';
+
+  @override
+  String invoiceDetailTitle(String period) {
+    return 'Fatura de $period';
+  }
+
+  @override
+  String get invoicePaymentsTitle => 'Pagamentos';
+
+  @override
+  String get invoicePaymentsEmpty => 'Nenhum pagamento registado.';
+
+  @override
+  String get invoicePaymentManual => 'Pagamento manual';
+
+  @override
+  String get invoicePaymentReversed => 'Pagamento estornado';
+
+  @override
+  String get invoicePaymentReversal => 'Estorno';
+
+  @override
+  String get payDialogTitle => 'Registar pagamento';
+
+  @override
+  String payDialogBody(String amount, String name) {
+    return 'Confirmar o recebimento de $amount de $name? A fatura fica quitada na totalidade.';
+  }
+
+  @override
+  String get payDateLabel => 'Data do pagamento';
+
+  @override
+  String get payDateToday => 'Hoje';
+
+  @override
+  String get payNoteLabel => 'Observação (opcional)';
+
+  @override
+  String get payConfirm => 'Confirmar pagamento';
+
+  @override
+  String get payDone => 'Pagamento registado.';
+
+  @override
+  String get reverseDialogTitle => 'Estornar pagamento';
+
+  @override
+  String reverseDialogBody(String amount, String name) {
+    return 'Estornar $amount de $name? A fatura volta a ficar em aberto ou vencida.';
+  }
+
+  @override
+  String get reverseReasonLabel => 'Motivo do estorno';
+
+  @override
+  String get reverseConfirm => 'Estornar';
+
+  @override
+  String get reverseDone => 'Pagamento estornado.';
+
+  @override
+  String get billingPlansEmpty =>
+      'Nenhum plano de mensalidade. Crie o primeiro para subscrever os seus alunos.';
+
+  @override
+  String get billingPlansArchivedSection => 'Arquivados';
+
+  @override
+  String get billingPlanNew => 'Novo plano';
+
+  @override
+  String get billingPlanEdit => 'Editar plano';
+
+  @override
+  String get billingPlanNameLabel => 'Nome do plano';
+
+  @override
+  String get billingPlanAmountLabel => 'Valor mensal';
+
+  @override
+  String get billingPlanEditHint =>
+      'As subscrições existentes mantêm o valor que já têm.';
+
+  @override
+  String billingPlanPerMonth(String amount) {
+    return '$amount por mês';
+  }
+
+  @override
+  String get billingPlanArchive => 'Arquivar';
+
+  @override
+  String billingPlanArchiveTitle(String name) {
+    return 'Arquivar $name?';
+  }
+
+  @override
+  String get billingPlanArchiveBody =>
+      'O plano deixa de aparecer ao subscrever novos alunos. As subscrições existentes continuam como estão.';
+
+  @override
+  String get billingPlanSaved => 'Plano guardado.';
+
+  @override
+  String get billingPlanArchived => 'Plano arquivado.';
+
+  @override
+  String get subscriptionTitle => 'Subscrição';
+
+  @override
+  String get subscriptionNone => 'Este aluno não tem subscrição.';
+
+  @override
+  String get subscriptionCreate => 'Criar subscrição';
+
+  @override
+  String get subscriptionEdit => 'Editar';
+
+  @override
+  String get subscriptionPause => 'Pausar';
+
+  @override
+  String get subscriptionResume => 'Retomar';
+
+  @override
+  String get subscriptionCancel => 'Cancelar subscrição';
+
+  @override
+  String subscriptionSummary(int day) {
+    return 'Vence todos os dias $day';
+  }
+
+  @override
+  String subscriptionStartsOn(String date) {
+    return 'Desde $date';
+  }
+
+  @override
+  String get subscriptionPlanLabel => 'Plano de mensalidade';
+
+  @override
+  String get subscriptionPlanHint => 'Escolha um plano';
+
+  @override
+  String get subscriptionAmountLabel => 'Valor';
+
+  @override
+  String get subscriptionDueDayLabel => 'Dia do vencimento';
+
+  @override
+  String get subscriptionStartsOnLabel => 'Início';
+
+  @override
+  String get subscriptionEditHint =>
+      'Valor e vencimento valem a partir da próxima fatura.';
+
+  @override
+  String get subscriptionNoPlansOwner =>
+      'Crie um plano de mensalidade no separador Financeiro antes de subscrever o aluno.';
+
+  @override
+  String get subscriptionNoPlansCoach =>
+      'Não há plano de mensalidade ativo. Peça ao responsável pela organização para criar um.';
+
+  @override
+  String get subscriptionCreated => 'Subscrição criada.';
+
+  @override
+  String get subscriptionUpdated => 'Subscrição atualizada.';
+
+  @override
+  String get subscriptionPaused => 'Subscrição pausada.';
+
+  @override
+  String get subscriptionResumed => 'Subscrição retomada.';
+
+  @override
+  String get subscriptionCanceled => 'Subscrição cancelada.';
+
+  @override
+  String subscriptionCancelTitle(String name) {
+    return 'Cancelar a subscrição de $name?';
+  }
+
+  @override
+  String get subscriptionCancelBody =>
+      'As faturas em aberto com vencimento futuro serão canceladas. As já vencidas continuam para cobrança.';
+
+  @override
+  String get studentInvoicesTitle => 'Faturas e pagamentos';
+
+  @override
+  String get studentInvoicesEmpty => 'Ainda não há faturas.';
+
+  @override
+  String get studentDeactivateSubscriptionTitle => 'Subscrição ainda ativa';
+
+  @override
+  String studentDeactivateSubscriptionBody(String name) {
+    return '$name foi inativado, mas a subscrição continua ativa e segue a gerar faturas. Cancelar agora?';
+  }
+
+  @override
+  String get studentDeactivateSubscriptionKeep => 'Manter';
+
+  @override
+  String get organizationCoachBillingTitle =>
+      'Os professores gerem o financeiro dos próprios alunos';
+
+  @override
+  String get organizationCoachBillingOn =>
+      'Ligado: o professor vê subscrições e faturas dos próprios alunos, cria e altera subscrições e regista pagamentos. Planos, estornos e a receita da organização continuam só consigo.';
+
+  @override
+  String get organizationCoachBillingOff =>
+      'Desligado: o professor vê só o selo \"inadimplente\" dos próprios alunos, sem valores.';
+
+  @override
+  String get organizationCoachBillingSaved =>
+      'Acesso do professor ao financeiro atualizado.';
+
+  @override
+  String get accountInvoicesTitle => 'As minhas mensalidades';
+
+  @override
+  String get accountInvoicesSubtitle => 'Faturas e situação de cada mês';
+
+  @override
+  String get myInvoicesEmpty => 'Ainda não tem mensalidades.';
+
+  @override
+  String get errorBillingAccessDenied =>
+      'Não tem acesso a esta parte do financeiro.';
+
+  @override
+  String get errorInvoiceAlreadyPaid => 'Esta fatura já está paga.';
+
+  @override
+  String get errorInvoiceCanceled => 'Esta fatura está cancelada.';
+
+  @override
+  String get errorPaymentAlreadyReversed => 'Este pagamento já foi estornado.';
+
+  @override
+  String get errorPaymentIsReversal => 'Um estorno não pode ser estornado.';
+
+  @override
+  String get errorIdempotencyConflict =>
+      'Esta tentativa de pagamento já foi usada noutra fatura. Feche e tente de novo.';
+
+  @override
+  String get errorBillingPlanArchived =>
+      'Este plano de mensalidade está arquivado. Escolha outro.';
+
+  @override
+  String get errorSubscriptionExists =>
+      'Este aluno já tem uma subscrição ativa ou pausada.';
+
+  @override
+  String get errorInvalidSubscriptionState =>
+      'A situação atual da subscrição não permite esta ação.';
 }

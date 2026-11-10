@@ -34,8 +34,8 @@ class TenantSettings {
   /// Nome IANA (ADR-007 §3).
   final String timezone;
 
-  /// `status_only` | `own_students` (ADR-017 §3); a tela que o controla é a
-  /// do financeiro (P7.4).
+  /// `status_only` | `own_students` (ADR-017 §3); o owner troca na seção
+  /// Organização da Conta (P7.4).
   final String coachBillingAccess;
 }
 
@@ -52,13 +52,19 @@ class TenantRepository {
 
   /// Só owner. Campo nulo não é enviado e o servidor mantém o valor atual.
   /// Fuso inválido vira `invalid_timezone` (422).
-  Future<TenantSettings> update({String? name, String? timezone}) =>
+  Future<TenantSettings> update({
+    String? name,
+    String? timezone,
+    String? coachBillingAccess,
+  }) =>
       _call(() async {
         final response = await _dio.put<Map<String, dynamic>>(
           '/v1/tenant',
           data: {
             if (name != null) 'name': name,
             if (timezone != null) 'timezone': timezone,
+            if (coachBillingAccess != null)
+              'coach_billing_access': coachBillingAccess,
           },
         );
         return TenantSettings.fromJson(response.data!);

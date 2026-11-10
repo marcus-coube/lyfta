@@ -108,7 +108,7 @@ da matriz de acesso nos dois modos (trocar o modo vale em até 30 s); testes de 
 (São Paulo e Lisboa) gera uma fatura por assinatura e vence no dia certo de
 cada tenant; duas instâncias simultâneas não duplicam (teste do lock).
 
-## - [ ] P7.4 App — financeiro do owner e faturas do aluno (Flutter)
+## - [x] P7.4 App — financeiro do owner e faturas do aluno (Flutter)
 
 **Objetivo:** o owner opera o financeiro sem planilha.
 **Passos:**
@@ -269,3 +269,68 @@ identity (pendente + billing fora do ar) e no billing (idempotência do DELETE).
   rodar 2x não duplica, vence no dia local certo), fronteira de vencimento
   entre fusos, nada antes do mês de `starts_on`, só `open` vira `overdue`, e
   lock (tick com o lock tomado não roda; 4 ticks concorrentes = 1 fatura).
+
+**P7.4 (Mac, 2026-11-10)**
+- `features/billing/` (domain, data, presentation) + `shared/money/money.dart`
+  (`formatCents`, `maskCents`, `parseCents`, `MoneyInputFormatter`) e
+  `shared/widgets/ly_money_field.dart`. Dinheiro é `int` de centavos de ponta a
+  ponta: o campo lê só os dígitos (os dois últimos são os centavos) e monta o
+  texto com `NumberFormat.decimalPattern` sobre inteiros, sem `double`. A única
+  conversão para fracionário é a exibição (`formatCents` →
+  `NumberFormat.simpleCurrency`), segura com o teto de R$ 10 milhões. Colar
+  `1.234,56` (pt) ou `1,234.56` (en) dá `123456`. `LyTextField` ganhou
+  `inputFormatters`. `AppConfig.billingBaseUrl` (`BILLING_BASE_URL`, padrão
+  `http://localhost:8085`) e `billingApiClientProvider`.
+- Acesso: `billingAccessProvider` (owner / `coachOperator` / `statusOnly` /
+  `none`). O coach lê `coach_billing_access` de `GET /v1/tenant` (todo papel
+  lê) — não precisou de mudança no backend; enquanto carrega, o coach não tem
+  aba. A configuração fica viva a sessão toda: se o owner desligar o acesso, o
+  coach só percebe ao receber 403 `billing_access_denied` (a lista invalida o
+  tenant e a aba some) ou ao reabrir o app. Dívida baixa, consistente com o
+  cache de 30 s do billing.
+- Shell do coach: abas guardadas por identidade (`_CoachTab`), não por índice,
+  porque o Financeiro aparece quando a configuração chega. Financeiro =
+  Faturas (filtros de situação e mês, tabela >= 840 px, cursor) e Planos (só
+  owner: criar, editar, arquivar; arquivado é só leitura — a API não tem
+  "desarquivar"). Dar baixa = diálogo de confirmação (valor integral, data
+  opcional, observação) com `Idempotency-Key` gerada **por abertura do
+  diálogo** (repetir depois de queda de rede não duplica); hoje = não manda data
+  (o servidor usa o relógio dele e o fuso do tenant). Estornar (owner) busca
+  `GET /invoices/{id}` para achar a baixa vigente, exige motivo. Toque na
+  fatura abre o detalhe com pagamentos e estornos. **Cancelar fatura
+  (`POST /invoices/{id}/cancel`, owner) ficou de fora** — não consta nos passos
+  do plano; a rota existe quando o owner precisar.
+- Ficha: aba Financeiro (sempre a última; só owner e coach `own_students`) com
+  a assinatura vigente (criar com plano/valor/dia 1–28/início, editar valor e
+  dia — valem da próxima fatura —, pausar, retomar, cancelar com confirmação) e
+  o histórico de faturas. Valor igual ao do plano não é enviado (o servidor usa
+  o do plano). O `TabController` acompanha a quantidade de abas sem perder a
+  atual.
+- Selo "inadimplente": `StudentRow.billingStatus` vem de uma consulta em lote
+  por página (`students/status`, 1 chamada ≤ 50 ids) junto do overview do
+  workout; falha do billing = sem selo, a lista segue. Na ficha, `DelinquentBadge`
+  na aba Dados. `billingVersionProvider` sobe a cada baixa/estorno/assinatura e
+  recarrega lista e selo. Fatura de conta excluída mostra o selo "conta
+  excluída" (a P7.5 é que liga o `account_deleted` no servidor).
+- Inativar aluno com assinatura ativa: depois de inativar, diálogo "Assinatura
+  ainda ativa" com atalho "Cancelar assinatura" (a consulta da assinatura é
+  cortesia: erro = sem aviso).
+- Organização: `SwitchListTile` (salva na hora) com texto diferente para cada
+  modo. "Minhas mensalidades" (`/my-invoices`) na Conta do aluno, só leitura.
+- `plan_archived` do billing é remapeado no repositório para
+  `billing_plan_archived` (o mesmo código existe no workout com outro sentido).
+  Erros novos nas 3 ARBs: `billing_access_denied`, `invoice_already_paid`,
+  `invoice_canceled`, `payment_already_reversed`, `payment_is_reversal`,
+  `idempotency_key_conflict`, `subscription_exists`,
+  `invalid_subscription_state` (sem o `status` no texto).
+- Testes (+34): máscara pt/en, lista/filtro/baixa/estorno/matriz, planos,
+  assinatura (criar, valor próprio em centavos, pausar/retomar/cancelar),
+  matriz de acesso, shell por papel, selo na lista e na ficha, aviso ao
+  inativar, "Minhas mensalidades", toggle da Organização. `FakeBillingRepository`
+  em `test/features/billing/billing_fakes.dart`.
+- Pendente de verificação manual (nada foi rodado contra o billing real): fluxo
+  completo no Chrome com owner (criar plano, assinar, baixa, estorno), coach
+  nos dois modos, aluno em "Minhas mensalidades". Exige `billing/.env` com
+  `IDENTITY_URL` e `INTERNAL_TOKEN` (pendência da P7.1/P7.2) e CORS do billing
+  incluindo a origem do Chrome.
+

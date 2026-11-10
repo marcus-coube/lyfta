@@ -12,6 +12,7 @@ import '../../../shared/widgets/ly_error_state.dart';
 import '../../../shared/widgets/ly_skeleton.dart';
 import '../../chat/presentation/conversations_controller.dart';
 import '../domain/student.dart';
+import '../../billing/presentation/billing_format.dart';
 import 'student_status.dart';
 import 'students_controller.dart';
 
@@ -403,6 +404,10 @@ class _StudentTile extends StatelessWidget {
                         style: LyType.caption(_statusColor(c, student.status)),
                       ),
                     ],
+                    if (row.isDelinquent) ...[
+                      const SizedBox(width: LySpace.x2),
+                      const DelinquentChip(),
+                    ],
                   ],
                 ),
                 const SizedBox(height: LySpace.x1),
@@ -569,9 +574,17 @@ class _StudentTableRow extends StatelessWidget {
           ),
           Expanded(
             flex: _colStatus,
-            child: Text(
-              studentStatusLabel(l10n, student.status),
-              style: LyType.body(_statusColor(c, student.status)),
+            child: Wrap(
+              spacing: LySpace.x2,
+              runSpacing: LySpace.x1,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  studentStatusLabel(l10n, student.status),
+                  style: LyType.body(_statusColor(c, student.status)),
+                ),
+                if (row.isDelinquent) const DelinquentChip(),
+              ],
             ),
           ),
           IconButton(
