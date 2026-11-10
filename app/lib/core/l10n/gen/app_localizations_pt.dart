@@ -598,11 +598,6 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String studentsPlanDraft(String title) {
-    return '$title · rascunho';
-  }
-
-  @override
   String get builderPublishTitle => 'Publicar treino?';
 
   @override
@@ -843,9 +838,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get evolutionSummaryPhotoCount => 'Fotos de evolução';
-
-  @override
-  String get evolutionStudentTitle => 'Evolução';
 
   @override
   String get evolutionMeasurementsSection => 'Medidas corporais';
@@ -1306,6 +1298,14 @@ class AppLocalizationsPt extends AppLocalizations {
       'Você não autorizou esse uso dos seus dados. Ajuste em Conta > Privacidade.';
 
   @override
+  String get errorInvitationNotFound =>
+      'Esse convite não existe mais. Atualize a ficha do aluno.';
+
+  @override
+  String get errorInvitationAlreadyAccepted =>
+      'Esse convite já foi aceito — o aluno já tem acesso.';
+
+  @override
   String get errorStudentConsentRequired =>
       'O aluno não autorizou o uso dos dados de saúde. Só ele pode mudar isso, em Conta > Privacidade.';
 
@@ -1374,6 +1374,214 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get todayDoneOfflineBody =>
       'Ele fica salvo no aparelho e sincroniza sozinho quando a conexão voltar. O próximo treino aparece em seguida.';
+
+  @override
+  String get studentsFilterActive => 'Ativos';
+
+  @override
+  String get studentsFilterInactive => 'Inativos';
+
+  @override
+  String get studentsFilterInvited => 'Convites pendentes';
+
+  @override
+  String get studentsFilterCoachLabel => 'Professor';
+
+  @override
+  String get studentsFilterCoachAll => 'Todos os professores';
+
+  @override
+  String get studentsEmptyFiltered =>
+      'Nenhum aluno encontrado com esses filtros.';
+
+  @override
+  String get studentsLoadMoreError => 'Não foi possível carregar mais alunos.';
+
+  @override
+  String get studentsColName => 'Aluno';
+
+  @override
+  String get studentsColCoach => 'Professor';
+
+  @override
+  String get studentsColPlan => 'Plano';
+
+  @override
+  String get studentsColLastWorkout => 'Último treino';
+
+  @override
+  String get studentsLastWorkoutNever => 'Nunca treinou';
+
+  @override
+  String get studentsLastWorkoutToday => 'Hoje';
+
+  @override
+  String get studentsLastWorkoutYesterday => 'Ontem';
+
+  @override
+  String studentsLastWorkoutDaysAgo(int days) {
+    return 'Há $days dias';
+  }
+
+  @override
+  String get studentsColStatus => 'Status';
+
+  @override
+  String get studentStatusActive => 'Ativo';
+
+  @override
+  String get studentStatusInactive => 'Inativo';
+
+  @override
+  String get studentStatusInvited => 'Convite pendente';
+
+  @override
+  String get studentStatusDisabled => 'Bloqueado';
+
+  @override
+  String get studentDetailTitle => 'Aluno';
+
+  @override
+  String get studentTabData => 'Dados';
+
+  @override
+  String get studentTabWorkout => 'Treino';
+
+  @override
+  String get studentTabEvolution => 'Evolução';
+
+  @override
+  String get studentTabCheckins => 'Check-ins';
+
+  @override
+  String get studentDataSectionRegistry => 'Cadastro';
+
+  @override
+  String get studentDataNameLabel => 'Nome';
+
+  @override
+  String get studentDataEmailLabel => 'E-mail';
+
+  @override
+  String get studentDataSaved => 'Dados salvos.';
+
+  @override
+  String get profilePhoneLabel => 'Telefone';
+
+  @override
+  String get profileBirthLabel => 'Nascimento';
+
+  @override
+  String get profileBirthEmpty => 'Não informado';
+
+  @override
+  String get profileBirthClear => 'Limpar data';
+
+  @override
+  String get accountProfileSection => 'Meus dados';
+
+  @override
+  String get accountProfileSaved => 'Dados salvos.';
+
+  @override
+  String get studentStatusSection => 'Situação';
+
+  @override
+  String get studentDeactivate => 'Inativar aluno';
+
+  @override
+  String studentDeactivateTitle(String name) {
+    return 'Inativar $name?';
+  }
+
+  @override
+  String get studentDeactivateBody =>
+      'O aluno perde o acesso ao app e sai da lista padrão. Treinos, medidas e conversas ficam guardados, e você pode reativar quando quiser.';
+
+  @override
+  String get studentDeactivateConfirm => 'Inativar';
+
+  @override
+  String get studentDeactivated => 'Aluno inativado.';
+
+  @override
+  String get studentReactivate => 'Reativar aluno';
+
+  @override
+  String studentReactivateTitle(String name) {
+    return 'Reativar $name?';
+  }
+
+  @override
+  String get studentReactivateBody => 'O aluno volta a poder entrar no app.';
+
+  @override
+  String get studentReactivateConfirm => 'Reativar';
+
+  @override
+  String get studentReactivated => 'Aluno reativado.';
+
+  @override
+  String get studentReasonLabel => 'Motivo (opcional)';
+
+  @override
+  String get studentInvitePending => 'Convite enviado, ainda não aceito.';
+
+  @override
+  String get studentInviteExpired =>
+      'O convite expirou. Reenvie para o aluno poder entrar.';
+
+  @override
+  String get studentInviteResend => 'Reenviar convite';
+
+  @override
+  String get studentInviteResent => 'Convite reenviado.';
+
+  @override
+  String get studentCoachSection => 'Professor';
+
+  @override
+  String get studentCoachNone => 'Sem professor';
+
+  @override
+  String get studentHistorySection => 'Histórico de status';
+
+  @override
+  String get studentHistoryEmpty => 'Nenhuma mudança de status.';
+
+  @override
+  String studentHistoryEntry(String from, String to) {
+    return '$from → $to';
+  }
+
+  @override
+  String studentHistoryBy(String name) {
+    return 'por $name';
+  }
+
+  @override
+  String get studentWorkoutEmpty => 'Nenhum plano ainda. Crie o primeiro.';
+
+  @override
+  String get errorAlreadyInactive => 'Este aluno já está inativo.';
+
+  @override
+  String get errorAlreadyActive => 'Este aluno já está ativo.';
+
+  @override
+  String get errorInvalidStatusTransition =>
+      'Este aluno ainda não aceitou o convite ou está bloqueado, então o status não pode ser mudado.';
+
+  @override
+  String get studentWorkoutDraft => 'Rascunho';
+
+  @override
+  String studentWorkoutVersion(int version) {
+    return 'v$version';
+  }
+
+  @override
+  String get studentWorkoutInUse => 'Em uso';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -1974,11 +2182,6 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   }
 
   @override
-  String studentsPlanDraft(String title) {
-    return '$title · rascunho';
-  }
-
-  @override
   String get builderPublishTitle => 'Publicar treino?';
 
   @override
@@ -2220,9 +2423,6 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get evolutionSummaryPhotoCount => 'Fotografias de evolução';
-
-  @override
-  String get evolutionStudentTitle => 'Evolução';
 
   @override
   String get evolutionMeasurementsSection => 'Medidas corporais';
@@ -2685,6 +2885,14 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
       'Não autorizou esta utilização dos seus dados. Ajuste em Conta > Privacidade.';
 
   @override
+  String get errorInvitationNotFound =>
+      'Este convite já não existe. Atualize a ficha do aluno.';
+
+  @override
+  String get errorInvitationAlreadyAccepted =>
+      'Este convite já foi aceite — o aluno já tem acesso.';
+
+  @override
   String get errorStudentConsentRequired =>
       'O aluno não autorizou a utilização dos dados de saúde. Só ele pode alterar isto, em Conta > Privacidade.';
 
@@ -2753,4 +2961,212 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   @override
   String get todayDoneOfflineBody =>
       'Fica guardado no dispositivo e sincroniza sozinho quando a ligação voltar. O próximo treino aparece a seguir.';
+
+  @override
+  String get studentsFilterActive => 'Ativos';
+
+  @override
+  String get studentsFilterInactive => 'Inativos';
+
+  @override
+  String get studentsFilterInvited => 'Convites pendentes';
+
+  @override
+  String get studentsFilterCoachLabel => 'Professor';
+
+  @override
+  String get studentsFilterCoachAll => 'Todos os professores';
+
+  @override
+  String get studentsEmptyFiltered =>
+      'Nenhum aluno encontrado com esses filtros.';
+
+  @override
+  String get studentsLoadMoreError => 'Não foi possível carregar mais alunos.';
+
+  @override
+  String get studentsColName => 'Aluno';
+
+  @override
+  String get studentsColCoach => 'Professor';
+
+  @override
+  String get studentsColPlan => 'Plano';
+
+  @override
+  String get studentsColLastWorkout => 'Último treino';
+
+  @override
+  String get studentsLastWorkoutNever => 'Nunca treinou';
+
+  @override
+  String get studentsLastWorkoutToday => 'Hoje';
+
+  @override
+  String get studentsLastWorkoutYesterday => 'Ontem';
+
+  @override
+  String studentsLastWorkoutDaysAgo(int days) {
+    return 'Há $days dias';
+  }
+
+  @override
+  String get studentsColStatus => 'Estado';
+
+  @override
+  String get studentStatusActive => 'Ativo';
+
+  @override
+  String get studentStatusInactive => 'Inativo';
+
+  @override
+  String get studentStatusInvited => 'Convite pendente';
+
+  @override
+  String get studentStatusDisabled => 'Bloqueado';
+
+  @override
+  String get studentDetailTitle => 'Aluno';
+
+  @override
+  String get studentTabData => 'Dados';
+
+  @override
+  String get studentTabWorkout => 'Treino';
+
+  @override
+  String get studentTabEvolution => 'Evolução';
+
+  @override
+  String get studentTabCheckins => 'Check-ins';
+
+  @override
+  String get studentDataSectionRegistry => 'Cadastro';
+
+  @override
+  String get studentDataNameLabel => 'Nome';
+
+  @override
+  String get studentDataEmailLabel => 'E-mail';
+
+  @override
+  String get studentDataSaved => 'Dados guardados.';
+
+  @override
+  String get profilePhoneLabel => 'Telefone';
+
+  @override
+  String get profileBirthLabel => 'Nascimento';
+
+  @override
+  String get profileBirthEmpty => 'Não informado';
+
+  @override
+  String get profileBirthClear => 'Limpar data';
+
+  @override
+  String get accountProfileSection => 'Os meus dados';
+
+  @override
+  String get accountProfileSaved => 'Dados guardados.';
+
+  @override
+  String get studentStatusSection => 'Situação';
+
+  @override
+  String get studentDeactivate => 'Inativar aluno';
+
+  @override
+  String studentDeactivateTitle(String name) {
+    return 'Inativar $name?';
+  }
+
+  @override
+  String get studentDeactivateBody =>
+      'O aluno perde o acesso à app e sai da lista padrão. Treinos, medidas e conversas ficam guardados, e podes reativar quando quiseres.';
+
+  @override
+  String get studentDeactivateConfirm => 'Inativar';
+
+  @override
+  String get studentDeactivated => 'Aluno inativado.';
+
+  @override
+  String get studentReactivate => 'Reativar aluno';
+
+  @override
+  String studentReactivateTitle(String name) {
+    return 'Reativar $name?';
+  }
+
+  @override
+  String get studentReactivateBody => 'O aluno volta a poder entrar na app.';
+
+  @override
+  String get studentReactivateConfirm => 'Reativar';
+
+  @override
+  String get studentReactivated => 'Aluno reativado.';
+
+  @override
+  String get studentReasonLabel => 'Motivo (opcional)';
+
+  @override
+  String get studentInvitePending => 'Convite enviado, ainda não aceito.';
+
+  @override
+  String get studentInviteExpired =>
+      'O convite expirou. Reenvia para o aluno poder entrar.';
+
+  @override
+  String get studentInviteResend => 'Reenviar convite';
+
+  @override
+  String get studentInviteResent => 'Convite reenviado.';
+
+  @override
+  String get studentCoachSection => 'Professor';
+
+  @override
+  String get studentCoachNone => 'Sem professor';
+
+  @override
+  String get studentHistorySection => 'Histórico de status';
+
+  @override
+  String get studentHistoryEmpty => 'Nenhuma mudança de status.';
+
+  @override
+  String studentHistoryEntry(String from, String to) {
+    return '$from → $to';
+  }
+
+  @override
+  String studentHistoryBy(String name) {
+    return 'por $name';
+  }
+
+  @override
+  String get studentWorkoutEmpty => 'Ainda sem planos. Cria o primeiro.';
+
+  @override
+  String get errorAlreadyInactive => 'Este aluno já está inativo.';
+
+  @override
+  String get errorAlreadyActive => 'Este aluno já está ativo.';
+
+  @override
+  String get errorInvalidStatusTransition =>
+      'Este aluno ainda não aceitou o convite ou está bloqueado, por isso o estado não pode ser alterado.';
+
+  @override
+  String get studentWorkoutDraft => 'Rascunho';
+
+  @override
+  String studentWorkoutVersion(int version) {
+    return 'v$version';
+  }
+
+  @override
+  String get studentWorkoutInUse => 'Em uso';
 }

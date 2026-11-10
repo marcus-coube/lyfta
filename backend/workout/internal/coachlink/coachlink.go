@@ -106,6 +106,28 @@ func (c *Client) CanAccessStudent(ctx context.Context, tenantID, userID string, 
 	return ok, nil
 }
 
+// VisibleStudents filtra os ids para os que o ator pode ver: owner vê todos
+// (sem chamada); coach, só os do conjunto vinculado. Ids fora do vínculo
+// somem do resultado, sem erro.
+func (c *Client) VisibleStudents(ctx context.Context, tenantID, userID string, roles []string, studentIDs []string) ([]string, error) {
+	for _, role := range roles {
+		if role == "owner" {
+			return studentIDs, nil
+		}
+	}
+	students, err := c.StudentsOf(ctx, tenantID, userID)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]string, 0, len(studentIDs))
+	for _, id := range studentIDs {
+		if _, ok := students[id]; ok {
+			out = append(out, id)
+		}
+	}
+	return out, nil
+}
+
 func (c *Client) get(ctx context.Context, target string, out any) (int, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
 	if err != nil {

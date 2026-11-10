@@ -10,6 +10,11 @@ final consentStatusProvider = FutureProvider.autoDispose<ConsentStatus>((ref) {
   return ref.watch(accountRepositoryProvider).consents();
 });
 
+/// Telefone e nascimento do próprio usuário (`GET /v1/me`).
+final myProfileProvider = FutureProvider.autoDispose<MyProfile>((ref) {
+  return ref.watch(accountRepositoryProvider).profile();
+});
+
 /// Liga/desliga uma finalidade opcional (hoje, `progress_photos`) e aplica o
 /// token novo, para a mudança valer nos outros serviços sem esperar o access
 /// token antigo expirar.

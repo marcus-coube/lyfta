@@ -102,3 +102,19 @@ func TestZeroTTLDisablesCache(t *testing.T) {
 		t.Fatalf("sem cache, 2 chamadas: %d", calls.Load())
 	}
 }
+
+func TestVisibleStudents(t *testing.T) {
+	var calls atomic.Int32
+	srv := fakeIdentity(t, &calls, `{"student_ids":["s-1","s-2"]}`, http.StatusOK)
+	c := NewClient(srv.URL, "segredo", 30*time.Second)
+	ctx := context.Background()
+
+	got, err := c.VisibleStudents(ctx, "t-1", "owner-1", []string{"owner"}, []string{"s-1", "s-9"})
+	if err != nil || len(got) != 2 || calls.Load() != 0 {
+		t.Fatalf("owner vê todos sem chamar o identity: %v %v calls=%d", got, err, calls.Load())
+	}
+	got, err = c.VisibleStudents(ctx, "t-1", "coach-1", []string{"coach"}, []string{"s-9", "s-2", "s-1"})
+	if err != nil || len(got) != 2 || got[0] != "s-2" || got[1] != "s-1" {
+		t.Fatalf("coach vê só os vinculados, na ordem: %v %v", got, err)
+	}
+}

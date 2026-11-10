@@ -9,28 +9,93 @@ class StudentRepository {
 
   final Dio _dio;
 
-  Future<StudentPage> list({
-    String query = '',
-    String? cursor,
-    int? limit,
-  }) async {
+  Future<T> _call<T>(Future<T> Function() request) async {
     try {
-      final response = await _dio.get<Map<String, dynamic>>(
-        '/v1/users',
-        queryParameters: {
-          'role': 'student',
-          if (query.trim().isNotEmpty) 'q': query.trim(),
-          if (cursor != null) 'cursor': cursor,
-          if (limit != null) 'limit': limit,
-        },
-      );
-      return StudentPage.fromJson(response.data!);
+      return await request();
     } on DioException catch (e) {
       final error = e.error;
       if (error is ApiException) throw error;
       throw const ApiException.network();
     }
   }
+
+  /// Uma página de `GET /v1/students` (cursor do servidor, sem teto de
+  /// alunos). `coachId` só vale para o owner; o coach sempre vê os seus.
+  Future<StudentPage> list({
+    String query = '',
+    StudentStatusFilter status = StudentStatusFilter.active,
+    String? coachId,
+    String? cursor,
+    int? limit,
+  }) =>
+      _call(() async {
+        final response = await _dio.get<Map<String, dynamic>>(
+          '/v1/students',
+          queryParameters: {
+            'status': status.apiValue,
+            if (query.trim().isNotEmpty) 'q': query.trim(),
+            if (coachId != null) 'coach_id': coachId,
+            if (cursor != null) 'cursor': cursor,
+            if (limit != null) 'limit': limit,
+          },
+        );
+        return StudentPage.fromJson(response.data!);
+      });
+
+  /// Ficha: cadastro, professor, status e convite pendente.
+  Future<Student> get(String id) => _call(() async {
+        final response =
+            await _dio.get<Map<String, dynamic>>('/v1/students/$id');
+        return Student.fromJson(response.data!);
+      });
+
+  /// Edita cadastro. `null` mantém o campo; `''` em telefone/nascimento apaga
+  /// (contrato do `PATCH`). Nascimento vai como `yyyy-MM-dd`.
+  Future<Student> update(
+    String id, {
+    String? name,
+    String? phone,
+    String? birthDate,
+  }) =>
+      _call(() async {
+        final response = await _dio.patch<Map<String, dynamic>>(
+          '/v1/students/$id',
+          data: {
+            if (name != null) 'name': name,
+            if (phone != null) 'phone': phone,
+            if (birthDate != null) 'birth_date': birthDate,
+          },
+        );
+        return Student.fromJson(response.data!);
+      });
+
+  Future<void> deactivate(String id, {String? reason}) =>
+      _changeStatus(id, 'deactivate', reason);
+
+  Future<void> reactivate(String id, {String? reason}) =>
+      _changeStatus(id, 'reactivate', reason);
+
+  Future<void> _changeStatus(String id, String action, String? reason) =>
+      _call(() async {
+        await _dio.post<Map<String, dynamic>>(
+          '/v1/students/$id/$action',
+          data: {if ((reason ?? '').isNotEmpty) 'reason': reason},
+        );
+      });
+
+  Future<List<StatusEvent>> statusHistory(String id) => _call(() async {
+        final response = await _dio
+            .get<Map<String, dynamic>>('/v1/students/$id/status-history');
+        return (response.data!['items'] as List<dynamic>? ?? const [])
+            .map((raw) => StatusEvent.fromJson(raw as Map<String, dynamic>))
+            .toList();
+      });
+
+  Future<void> resendInvitation(String invitationId) => _call(() async {
+        await _dio.post<Map<String, dynamic>>(
+          '/v1/invitations/$invitationId/resend',
+        );
+      });
 
   /// Professores que podem receber alunos: coaches e owners ativos, sem
   /// repetir quem tem os dois papéis.

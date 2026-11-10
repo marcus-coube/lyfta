@@ -256,15 +256,6 @@
       }
     }
   },
-  "studentsPlanDraft": "{title} · rascunho",
-  "@studentsPlanDraft": {
-    "description": "Plano do aluno que ainda não foi publicado.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
   "builderPublishTitle": "Publicar treino?",
   "todayNoPlanTitle": "Seu professor ainda não montou seu treino",
   "@todayNoPlanTitle": {
@@ -596,10 +587,6 @@
   "@evolutionSummaryPhotoCount": {
     "description": "Rótulo da contagem de fotos no resumo do aluno."
   },
-  "evolutionStudentTitle": "Evolução",
-  "@evolutionStudentTitle": {
-    "description": "Título da ficha de evolução do aluno aberta pelo professor."
-  },
   "evolutionMeasurementsSection": "Medidas corporais",
   "evolutionAddMeasurement": "Nova medida",
   "evolutionBioimpedanceSection": "Bioimpedância",
@@ -790,6 +777,8 @@
   "organizationLoadError": "Não conseguimos carregar a organização.",
   "errorInvalidTimezone": "Esse fuso horário não existe. Escolha um da lista ou use um nome como America/Sao_Paulo.",
   "errorConsentRequired": "Você não autorizou esse uso dos seus dados. Ajuste em Conta > Privacidade.",
+  "errorInvitationNotFound": "Esse convite não existe mais. Atualize a ficha do aluno.",
+  "errorInvitationAlreadyAccepted": "Esse convite já foi aceito — o aluno já tem acesso.",
   "errorStudentConsentRequired": "O aluno não autorizou o uso dos dados de saúde. Só ele pode mudar isso, em Conta > Privacidade.",
   "errorTermsVersionMismatch": "Os termos foram atualizados. Reabra o app para ler a nova versão.",
   "errorInvalidPassword": "Senha incorreta.",
@@ -855,5 +844,288 @@
   "todayDoneOfflineBody": "Ele fica salvo no aparelho e sincroniza sozinho quando a conexão voltar. O próximo treino aparece em seguida.",
   "@todayDoneOfflineBody": {
     "description": "Explica que o treino concluído offline sincroniza depois."
+  },
+  "studentsFilterActive": "Ativos",
+  "@studentsFilterActive": {
+    "description": "Filtro da lista de alunos: alunos com acesso."
+  },
+  "studentsFilterInactive": "Inativos",
+  "@studentsFilterInactive": {
+    "description": "Filtro da lista de alunos: alunos inativados."
+  },
+  "studentsFilterInvited": "Convites pendentes",
+  "@studentsFilterInvited": {
+    "description": "Filtro da lista de alunos: convite enviado e ainda não aceito."
+  },
+  "studentsFilterCoachLabel": "Professor",
+  "@studentsFilterCoachLabel": {
+    "description": "Rótulo do filtro por professor (só o dono da academia)."
+  },
+  "studentsFilterCoachAll": "Todos os professores",
+  "@studentsFilterCoachAll": {
+    "description": "Opção do filtro por professor que não filtra nada."
+  },
+  "studentsEmptyFiltered": "Nenhum aluno encontrado com esses filtros.",
+  "@studentsEmptyFiltered": {
+    "description": "Lista de alunos vazia com busca ou filtro ativo."
+  },
+  "studentsLoadMoreError": "Não foi possível carregar mais alunos.",
+  "@studentsLoadMoreError": {
+    "description": "Rodapé da lista de alunos quando a página seguinte falha; acompanha o botão de tentar de novo."
+  },
+  "studentsColName": "Aluno",
+  "@studentsColName": {
+    "description": "Cabeçalho da tabela de alunos (telas largas)."
+  },
+  "studentsColCoach": "Professor",
+  "@studentsColCoach": {
+    "description": "Cabeçalho da tabela de alunos (telas largas)."
+  },
+  "studentsColPlan": "Plano",
+  "@studentsColPlan": {
+    "description": "Cabeçalho da tabela de alunos (telas largas)."
+  },
+  "studentsColLastWorkout": "Último treino",
+  "@studentsColLastWorkout": {
+    "description": "Cabeçalho da coluna com o dia do último treino do aluno."
+  },
+  "studentsLastWorkoutNever": "Nunca treinou",
+  "@studentsLastWorkoutNever": {
+    "description": "Aluno que ainda não registrou nenhum treino."
+  },
+  "studentsLastWorkoutToday": "Hoje",
+  "studentsLastWorkoutYesterday": "Ontem",
+  "studentsLastWorkoutDaysAgo": "Há {days} dias",
+  "@studentsLastWorkoutDaysAgo": {
+    "description": "Último treino do aluno há dois dias ou mais.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "studentsColStatus": "Status",
+  "@studentsColStatus": {
+    "description": "Cabeçalho da tabela de alunos (telas largas)."
+  },
+  "studentStatusActive": "Ativo",
+  "@studentStatusActive": {
+    "description": "Status do aluno: com acesso ao app."
+  },
+  "studentStatusInactive": "Inativo",
+  "@studentStatusInactive": {
+    "description": "Status do aluno: acesso suspenso pelo professor, dados preservados."
+  },
+  "studentStatusInvited": "Convite pendente",
+  "@studentStatusInvited": {
+    "description": "Status do aluno: ainda não aceitou o convite."
+  },
+  "studentStatusDisabled": "Bloqueado",
+  "@studentStatusDisabled": {
+    "description": "Status do aluno: bloqueio administrativo."
+  },
+  "studentDetailTitle": "Aluno",
+  "@studentDetailTitle": {
+    "description": "Título da ficha do aluno quando o nome ainda não carregou."
+  },
+  "studentTabData": "Dados",
+  "@studentTabData": {
+    "description": "Aba da ficha do aluno: cadastro, status e histórico."
+  },
+  "studentTabWorkout": "Treino",
+  "@studentTabWorkout": {
+    "description": "Aba da ficha do aluno: planos de treino."
+  },
+  "studentTabEvolution": "Evolução",
+  "@studentTabEvolution": {
+    "description": "Aba da ficha do aluno: evolução."
+  },
+  "studentTabCheckins": "Check-ins",
+  "@studentTabCheckins": {
+    "description": "Aba da ficha do aluno: avaliações de treino."
+  },
+  "studentDataSectionRegistry": "Cadastro",
+  "@studentDataSectionRegistry": {
+    "description": "Seção da aba Dados com os dados pessoais do aluno."
+  },
+  "studentDataNameLabel": "Nome",
+  "@studentDataNameLabel": {
+    "description": "Campo nome na ficha do aluno."
+  },
+  "studentDataEmailLabel": "E-mail",
+  "@studentDataEmailLabel": {
+    "description": "Campo e-mail (somente leitura) na ficha do aluno."
+  },
+  "studentDataSaved": "Dados salvos.",
+  "@studentDataSaved": {
+    "description": "Confirmação após salvar o cadastro do aluno."
+  },
+  "profilePhoneLabel": "Telefone",
+  "@profilePhoneLabel": {
+    "description": "Campo telefone (ficha do aluno e tela Conta)."
+  },
+  "profileBirthLabel": "Nascimento",
+  "@profileBirthLabel": {
+    "description": "Campo data de nascimento (ficha do aluno e tela Conta)."
+  },
+  "profileBirthEmpty": "Não informado",
+  "@profileBirthEmpty": {
+    "description": "Valor do campo de nascimento quando vazio."
+  },
+  "profileBirthClear": "Limpar data",
+  "@profileBirthClear": {
+    "description": "Ação que apaga a data de nascimento."
+  },
+  "accountProfileSection": "Meus dados",
+  "@accountProfileSection": {
+    "description": "Seção da tela Conta do aluno: telefone e nascimento."
+  },
+  "accountProfileSaved": "Dados salvos.",
+  "@accountProfileSaved": {
+    "description": "Confirmação após o aluno salvar telefone e nascimento."
+  },
+  "studentStatusSection": "Situação",
+  "@studentStatusSection": {
+    "description": "Seção da aba Dados com o status e a ação de inativar/reativar."
+  },
+  "studentDeactivate": "Inativar aluno",
+  "@studentDeactivate": {
+    "description": "Botão que inativa o aluno."
+  },
+  "studentDeactivateTitle": "Inativar {name}?",
+  "@studentDeactivateTitle": {
+    "description": "Título da confirmação de inativar.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "studentDeactivateBody": "O aluno perde o acesso ao app e sai da lista padrão. Treinos, medidas e conversas ficam guardados, e você pode reativar quando quiser.",
+  "@studentDeactivateBody": {
+    "description": "Corpo da confirmação de inativar."
+  },
+  "studentDeactivateConfirm": "Inativar",
+  "@studentDeactivateConfirm": {
+    "description": "Botão de confirmar inativação."
+  },
+  "studentDeactivated": "Aluno inativado.",
+  "@studentDeactivated": {
+    "description": "Confirmação após inativar."
+  },
+  "studentReactivate": "Reativar aluno",
+  "@studentReactivate": {
+    "description": "Botão que reativa o aluno inativo."
+  },
+  "studentReactivateTitle": "Reativar {name}?",
+  "@studentReactivateTitle": {
+    "description": "Título da confirmação de reativar.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "studentReactivateBody": "O aluno volta a poder entrar no app.",
+  "@studentReactivateBody": {
+    "description": "Corpo da confirmação de reativar."
+  },
+  "studentReactivateConfirm": "Reativar",
+  "@studentReactivateConfirm": {
+    "description": "Botão de confirmar reativação."
+  },
+  "studentReactivated": "Aluno reativado.",
+  "@studentReactivated": {
+    "description": "Confirmação após reativar."
+  },
+  "studentReasonLabel": "Motivo (opcional)",
+  "@studentReasonLabel": {
+    "description": "Campo de motivo na confirmação de inativar/reativar."
+  },
+  "studentInvitePending": "Convite enviado, ainda não aceito.",
+  "@studentInvitePending": {
+    "description": "Aviso na ficha do aluno com convite pendente."
+  },
+  "studentInviteExpired": "O convite expirou. Reenvie para o aluno poder entrar.",
+  "@studentInviteExpired": {
+    "description": "Aviso na ficha do aluno com convite expirado."
+  },
+  "studentInviteResend": "Reenviar convite",
+  "@studentInviteResend": {
+    "description": "Botão que reenvia o convite pendente."
+  },
+  "studentInviteResent": "Convite reenviado.",
+  "@studentInviteResent": {
+    "description": "Confirmação após reenviar o convite."
+  },
+  "studentCoachSection": "Professor",
+  "@studentCoachSection": {
+    "description": "Seção da aba Dados com o professor responsável."
+  },
+  "studentCoachNone": "Sem professor",
+  "@studentCoachNone": {
+    "description": "Aluno sem professor vinculado."
+  },
+  "studentHistorySection": "Histórico de status",
+  "@studentHistorySection": {
+    "description": "Seção da aba Dados com as mudanças de status."
+  },
+  "studentHistoryEmpty": "Nenhuma mudança de status.",
+  "@studentHistoryEmpty": {
+    "description": "Histórico de status vazio."
+  },
+  "studentHistoryEntry": "{from} → {to}",
+  "@studentHistoryEntry": {
+    "description": "Linha do histórico: status anterior e novo.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "studentHistoryBy": "por {name}",
+  "@studentHistoryBy": {
+    "description": "Autor da mudança de status no histórico.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "studentWorkoutEmpty": "Nenhum plano ainda. Crie o primeiro.",
+  "@studentWorkoutEmpty": {
+    "description": "Aba Treino da ficha sem planos."
+  },
+  "errorAlreadyInactive": "Este aluno já está inativo.",
+  "@errorAlreadyInactive": {
+    "description": "409 already_inactive."
+  },
+  "errorAlreadyActive": "Este aluno já está ativo.",
+  "@errorAlreadyActive": {
+    "description": "409 already_active."
+  },
+  "errorInvalidStatusTransition": "Este aluno ainda não aceitou o convite ou está bloqueado, então o status não pode ser mudado.",
+  "@errorInvalidStatusTransition": {
+    "description": "409 invalid_status_transition."
+  },
+  "studentWorkoutDraft": "Rascunho",
+  "@studentWorkoutDraft": {
+    "description": "Plano na aba Treino sem versão publicada."
+  },
+  "studentWorkoutVersion": "v{version}",
+  "@studentWorkoutVersion": {
+    "description": "Versão publicada do plano na aba Treino.",
+    "placeholders": {
+      "version": {
+        "type": "int"
+      }
+    }
+  },
+  "studentWorkoutInUse": "Em uso",
+  "@studentWorkoutInUse": {
+    "description": "Plano que o aluno está fazendo agora."
   }
 }

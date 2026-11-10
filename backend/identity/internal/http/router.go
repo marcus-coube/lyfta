@@ -91,6 +91,7 @@ func NewRouter(
 			r.Use(RequireAuth(signer))
 			r.Use(RequireRole(string(domain.RoleOwner), string(domain.RoleCoach), string(domain.RoleStudent)))
 			r.Get("/", users.List)
+			r.Get("/directory", users.Directory)
 		})
 
 		// Configurações do tenant (P5.1): todo papel lê, só o owner escreve.

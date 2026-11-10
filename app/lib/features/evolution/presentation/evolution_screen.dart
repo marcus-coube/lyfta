@@ -8,7 +8,6 @@ import '../../../core/http/api_exception.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_skeleton.dart';
-import '../../checkin/presentation/checkins_controller.dart';
 import '../../checkin/presentation/coach_checkins_tab.dart';
 import '../domain/bioimpedance.dart';
 import '../domain/evolution_scope.dart';
@@ -37,9 +36,19 @@ import 'summary_tab.dart';
 /// o Resumo (`GET /v1/students/{id}/summary`, P2.3), que a tela do aluno não
 /// tem — quem já vê as três listas inteiras não precisa do condensado.
 class EvolutionScreen extends StatefulWidget {
-  const EvolutionScreen({super.key, this.scope = const EvolutionScope.me()});
+  const EvolutionScreen({
+    super.key,
+    this.scope = const EvolutionScope.me(),
+    this.showCheckins = true,
+  });
 
   final EvolutionScope scope;
+
+  /// Aba Check-ins (só no escopo do coach). A ficha do aluno (P5.4) a mostra
+  /// como aba própria e passa `false` para não repeti-la aqui dentro.
+  final bool showCheckins;
+
+  bool get _hasCheckins => scope.isCoach && showCheckins;
 
   @override
   State<EvolutionScreen> createState() => _EvolutionScreenState();
@@ -51,7 +60,7 @@ class _EvolutionScreenState extends State<EvolutionScreen>
   // Resumo (P2.5): quem já vê as três listas do aluno não precisa da
   // avaliação de treino junto — só o coach.
   late final _tabController = TabController(
-    length: widget.scope.isCoach ? 5 : 3,
+    length: widget.scope.isCoach ? (widget._hasCheckins ? 5 : 4) : 3,
     vsync: this,
   );
 
@@ -83,10 +92,8 @@ class _EvolutionScreenState extends State<EvolutionScreen>
               Tab(text: l10n.evolutionTabLoad),
               Tab(text: l10n.evolutionTabMeasurements),
               Tab(text: l10n.evolutionTabPhotos),
-              if (widget.scope.isCoach)
-                Tab(
-                  child: _CheckinsTabLabel(studentId: widget.scope.studentId!),
-                ),
+              if (widget._hasCheckins)
+                Tab(child: CheckinsTabLabel(studentId: widget.scope.studentId!)),
             ],
           ),
         ),
@@ -98,7 +105,7 @@ class _EvolutionScreenState extends State<EvolutionScreen>
               _LoadTab(scope: widget.scope),
               _MeasurementsTab(scope: widget.scope),
               _PhotosTab(scope: widget.scope),
-              if (widget.scope.isCoach)
+              if (widget._hasCheckins)
                 CoachCheckinsTab(studentId: widget.scope.studentId!),
             ],
           ),
@@ -492,30 +499,6 @@ class _LoadMoreButton extends StatelessWidget {
         expanded: false,
         onPressed: onTap,
       ),
-    );
-  }
-}
-
-/// Rótulo da aba Check-ins com o badge de não revisados (P3.5 §3, Aceite
-/// literal do P3.3: "não revisados primeiro" na fila — aqui é o mesmo
-/// contador, só que no rótulo em vez da ordenação). `Consumer` isolado em
-/// vez de converter a tela inteira para `ConsumerStatefulWidget`: só este
-/// pedacinho precisa saber da contagem.
-class _CheckinsTabLabel extends ConsumerWidget {
-  const _CheckinsTabLabel({required this.studentId});
-
-  final String studentId;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-    final pending =
-        ref.watch(checkinsProvider(studentId)).valueOrNull?.pendingCount ?? 0;
-
-    if (pending <= 0) return Text(l10n.evolutionTabCheckins);
-    return Badge(
-      label: Text(pending > 99 ? '99+' : pending.toString()),
-      child: Text(l10n.evolutionTabCheckins),
     );
   }
 }

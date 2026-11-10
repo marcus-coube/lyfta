@@ -187,6 +187,37 @@ func (r *UserRepo) ListByTenant(ctx context.Context, tenantID string) ([]domain.
 	return users, nil
 }
 
+// DisplayName é o par id/nome que o diretório do chat devolve.
+type DisplayName struct {
+	ID   string
+	Name string
+}
+
+// NamesByIDs devolve o nome de exibição dos ids pedidos que existem no tenant
+// (RLS); ids desconhecidos ou de outro tenant simplesmente não voltam.
+func (r *UserRepo) NamesByIDs(ctx context.Context, tenantID string, ids []string) ([]DisplayName, error) {
+	out := make([]DisplayName, 0, len(ids))
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		rows, err := tx.Query(ctx, `SELECT id, name FROM users WHERE id = ANY($1::uuid[])`, ids)
+		if err != nil {
+			return fmt.Errorf("repo: nomes por id: %w", err)
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var d DisplayName
+			if err := rows.Scan(&d.ID, &d.Name); err != nil {
+				return fmt.Errorf("repo: ler nome: %w", err)
+			}
+			out = append(out, d)
+		}
+		return rows.Err()
+	})
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserFilter são os filtros da listagem de usuários do tenant (P1.6): a tela
 // de alunos do professor. Campos vazios não filtram — exceto Status, que vazio
 // esconde os inativos (P5.2): quem quer vê-los pede `inactive` de propósito.

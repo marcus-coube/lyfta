@@ -19,7 +19,7 @@ import 'package:lyfta/features/workout/presentation/today_controller.dart';
 /// nunca responde no ambiente de teste.
 class _EmptyStudents extends StudentsController {
   @override
-  Future<List<StudentRow>> build() async => [];
+  Future<StudentsState> build() async => const StudentsState(rows: []);
 }
 
 /// Mesma ideia do lado do aluno (P1.7): a tela Hoje lê banco local e rede,

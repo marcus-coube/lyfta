@@ -11,6 +11,9 @@ class Student {
     required this.status,
     this.coachId,
     this.coachName,
+    this.phone,
+    this.birthDate,
+    this.pendingInvitation,
   });
 
   factory Student.fromJson(Map<String, dynamic> json) {
@@ -21,7 +24,24 @@ class Student {
       status: json['status'] as String? ?? 'active',
       coachId: json['coach_id'] as String?,
       coachName: json['coach_name'] as String?,
+      phone: json['phone'] as String?,
+      birthDate: _parseDay(json['birth_date'] as String?),
+      pendingInvitation: json['pending_invitation'] == null
+          ? null
+          : PendingInvitation.fromJson(
+              json['pending_invitation'] as Map<String, dynamic>,
+            ),
     );
+  }
+
+  /// `yyyy-MM-dd` do servidor como dia civil (sem fuso).
+  static DateTime? _parseDay(String? raw) {
+    if (raw == null || raw.length < 10) return null;
+    final y = int.tryParse(raw.substring(0, 4));
+    final m = int.tryParse(raw.substring(5, 7));
+    final d = int.tryParse(raw.substring(8, 10));
+    if (y == null || m == null || d == null) return null;
+    return DateTime(y, m, d);
   }
 
   final String id;
@@ -37,7 +57,70 @@ class Student {
   final String? coachId;
   final String? coachName;
 
+  /// Só a ficha (`GET /v1/students/{id}`) traz telefone, nascimento e convite;
+  /// a lista não.
+  final String? phone;
+  final DateTime? birthDate;
+  final PendingInvitation? pendingInvitation;
+
   bool get isPending => status == 'invited';
+  bool get isInactive => status == 'inactive';
+}
+
+/// Convite ainda não aceito do aluno (ficha), com o que o app precisa para
+/// oferecer o reenvio.
+class PendingInvitation {
+  const PendingInvitation({required this.id, required this.expired});
+
+  factory PendingInvitation.fromJson(Map<String, dynamic> json) {
+    return PendingInvitation(
+      id: json['id'] as String,
+      expired: json['expired'] as bool? ?? false,
+    );
+  }
+
+  final String id;
+  final bool expired;
+}
+
+/// Filtro de status da lista de alunos. O padrão é [active]: o servidor
+/// esconde os inativos quando nenhum status é pedido, mas o filtro explícito
+/// também tira os convites pendentes da vista "Ativos".
+enum StudentStatusFilter {
+  active('active'),
+  inactive('inactive'),
+  invited('invited');
+
+  const StudentStatusFilter(this.apiValue);
+
+  final String apiValue;
+}
+
+/// Uma mudança de status do aluno (`GET /v1/students/{id}/status-history`).
+class StatusEvent {
+  const StatusEvent({
+    required this.from,
+    required this.to,
+    required this.changedByName,
+    required this.createdAt,
+    this.reason,
+  });
+
+  factory StatusEvent.fromJson(Map<String, dynamic> json) {
+    return StatusEvent(
+      from: json['from'] as String? ?? '',
+      to: json['to'] as String? ?? '',
+      changedByName: json['changed_by_name'] as String? ?? '',
+      reason: json['reason'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
+    );
+  }
+
+  final String from;
+  final String to;
+  final String changedByName;
+  final String? reason;
+  final DateTime createdAt;
 }
 
 /// Uma página da lista de alunos.

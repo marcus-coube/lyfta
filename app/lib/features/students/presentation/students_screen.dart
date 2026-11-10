@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,13 +10,25 @@ import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_error_state.dart';
 import '../../../shared/widgets/ly_skeleton.dart';
-import '../../builder/data/plan_repository.dart';
 import '../../chat/presentation/conversations_controller.dart';
 import '../domain/student.dart';
+import 'student_status.dart';
 import 'students_controller.dart';
 
-/// Lista de alunos do professor (P1.6): quem está na academia, qual plano
-/// cada um está fazendo e o caminho para montar o próximo.
+/// Abaixo desta largura a lista é de cartões; a partir dela vira tabela
+/// (mesmo corte do shell, P5.4 §1).
+const double studentsTableBreakpoint = 840;
+
+/// Professores para o filtro do owner (ativos, sem repetir quem é owner e
+/// coach). Falhar aqui só esconde o filtro — a lista continua funcionando.
+final _coachOptionsProvider =
+    FutureProvider.autoDispose<List<CoachOption>>((ref) {
+  return ref.watch(studentRepositoryProvider).listCoaches();
+});
+
+/// Lista de alunos do professor: busca, filtros de status e professor,
+/// paginação incremental e, em tela larga, tabela. Tocar numa linha abre a
+/// ficha (`/students/:id`).
 class StudentsScreen extends ConsumerStatefulWidget {
   const StudentsScreen({super.key});
 
@@ -24,20 +38,26 @@ class StudentsScreen extends ConsumerStatefulWidget {
 
 class _StudentsScreenState extends ConsumerState<StudentsScreen> {
   final _search = TextEditingController();
+  Timer? _debounce;
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _search.dispose();
     super.dispose();
   }
 
-  /// Abre a ficha de evolução do aluno (P2.5). O nome vai por `extra` só
-  /// para o título — a tela funciona sem ele quando a URL é aberta direto.
-  void _openEvolution(StudentRow row) {
-    context.push<void>(
-      '/students/${row.student.id}/evolution',
-      extra: row.student.name,
-    );
+  /// Espera o professor parar de digitar: cada tecla refazia a consulta (e a
+  /// chamada de resumo em lote).
+  void _onSearchChanged(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      ref.read(studentQueryProvider.notifier).state = value;
+    });
+  }
+
+  void _openStudent(Student student) {
+    context.push<void>('/students/${student.id}', extra: student.name);
   }
 
   /// Abre (ou recupera) a conversa com o aluno e navega para ela — mesmo
@@ -45,90 +65,16 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
   /// no mesmo aluno nunca cria uma segunda conversa. Passa pelo
   /// `ConversationsController` (não o repositório direto) para a lista de
   /// conversas já nascer atualizada da próxima vez que a aba Chat abrir.
-  Future<void> _openChat(StudentRow row) async {
+  Future<void> _openChat(Student student) async {
     try {
       final conversation =
-          await ref.read(conversationsProvider.notifier).start(row.student.id);
+          await ref.read(conversationsProvider.notifier).start(student.id);
       if (!mounted) return;
-      await context.push<void>(
-        '/chat/${conversation.id}',
-        extra: row.student.name,
-      );
+      await context.push<void>('/chat/${conversation.id}', extra: student.name);
     } catch (error) {
       if (!mounted) return;
       _showError(describeApiError(context, error));
     }
-  }
-
-  Future<void> _openPlan(String planId) async {
-    await context.push<void>('/plans/$planId');
-    if (!mounted) return;
-    // Voltar do builder pode ter mudado o plano ativo do aluno.
-    ref.read(studentsProvider.notifier).refresh();
-  }
-
-  /// Cria o plano e já abre o builder: criar um plano vazio e voltar para a
-  /// lista não serve para nada.
-  Future<void> _newPlan(StudentRow row) async {
-    final l10n = AppLocalizations.of(context);
-    final title = await _askPlanTitle(l10n.studentsNewPlanDefaultTitle);
-    if (title == null || !mounted) return;
-
-    try {
-      final plan = await ref.read(planRepositoryProvider).create(
-            studentId: row.student.id,
-            title: title,
-          );
-      if (!mounted) return;
-      await _openPlan(plan.id);
-    } catch (error) {
-      if (!mounted) return;
-      _showError(describeApiError(context, error));
-    }
-  }
-
-  Future<String?> _askPlanTitle(String initial) {
-    // Seleção no texto todo: o campo já vem preenchido com o título padrão e,
-    // sem isso, digitar **soma** ao default em vez de trocá-lo — foi assim que
-    // o E2E do P1.8 criou um plano chamado "Workout A/BPlano E2E ABC".
-    final controller = TextEditingController.fromValue(
-      TextEditingValue(
-        text: initial,
-        selection: TextSelection(baseOffset: 0, extentOffset: initial.length),
-      ),
-    );
-    final l10n = AppLocalizations.of(context);
-    return showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.studentsNewPlanTitle),
-        // Column mínimo como no convite: o LyTextField sozinho esticava o
-        // diálogo até a altura da tela (E2E P4.4).
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            LyTextField(
-              label: l10n.studentsPlanTitleLabel,
-              controller: controller,
-              autofocus: true,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () {
-              final value = controller.text.trim();
-              Navigator.of(context).pop(value.isEmpty ? null : value);
-            },
-            child: Text(l10n.commonCreate),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _inviteStudent() async {
@@ -179,73 +125,6 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
     }
   }
 
-  /// "Trocar professor" (só owner, ADR-016): lista os coaches e owners ativos
-  /// e reatribui o aluno. Valer em até 30 s nos outros serviços é a
-  /// consistência eventual aceita no ADR.
-  Future<void> _changeCoach(StudentRow row) async {
-    final l10n = AppLocalizations.of(context);
-    final repository = ref.read(studentRepositoryProvider);
-
-    final List<CoachOption> coaches;
-    try {
-      coaches = await repository.listCoaches();
-    } catch (error) {
-      if (!mounted) return;
-      _showError(describeApiError(context, error));
-      return;
-    }
-    if (!mounted) return;
-
-    final chosen = await showModalBottomSheet<CoachOption>(
-      context: context,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(LySpace.x4),
-              child: Text(
-                l10n.studentsChangeCoachTitle(row.student.name),
-                style: LyType.label(sheetContext.ly.textPrimary),
-              ),
-            ),
-            if (coaches.isEmpty)
-              Padding(
-                padding: const EdgeInsets.all(LySpace.x4),
-                child: Text(
-                  l10n.studentsCoachesEmpty,
-                  style: LyType.body(sheetContext.ly.textSecondary),
-                ),
-              ),
-            for (final coach in coaches)
-              ListTile(
-                title: Text(coach.name),
-                trailing: coach.id == row.student.coachId
-                    ? const Icon(Icons.check)
-                    : null,
-                onTap: () => Navigator.of(sheetContext).pop(coach),
-              ),
-          ],
-        ),
-      ),
-    );
-    if (chosen == null || chosen.id == row.student.coachId || !mounted) return;
-
-    try {
-      await repository.reassignCoach(
-        studentId: row.student.id,
-        coachId: chosen.id,
-      );
-      if (!mounted) return;
-      ref.read(studentsProvider.notifier).refresh();
-      _showError(l10n.studentsCoachChanged(chosen.name));
-    } catch (error) {
-      if (!mounted) return;
-      _showError(describeApiError(context, error));
-    }
-  }
-
   void _showError(String message) {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
@@ -257,6 +136,9 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
     final l10n = AppLocalizations.of(context);
     final students = ref.watch(studentsProvider);
     final isOwner = ref.watch(authControllerProvider.select((s) => s.isOwner));
+    final filtered = ref.watch(studentQueryProvider).trim().isNotEmpty ||
+        ref.watch(studentStatusFilterProvider) != StudentStatusFilter.active ||
+        ref.watch(studentCoachFilterProvider) != null;
 
     return Scaffold(
       backgroundColor: c.background,
@@ -267,102 +149,238 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
         icon: const Icon(Icons.person_add_alt),
         label: Text(l10n.studentsInviteSubmit),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(LySpace.x4),
-            child: LyTextField(
-              label: l10n.studentsSearchLabel,
-              hint: l10n.studentsSearchHint,
-              controller: _search,
-              prefixIcon: Icons.search,
-              onChanged: (value) =>
-                  ref.read(studentQueryProvider.notifier).state = value,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth >= studentsTableBreakpoint;
+          // O cabeçalho (busca + filtros) é o primeiro item da própria lista:
+          // rola junto e não disputa altura com ela — numa janela baixa a
+          // coluna fixa estourava (dívida do P1.8).
+          final header = _Header(
+            search: _search,
+            onSearchChanged: _onSearchChanged,
+            isOwner: isOwner,
+          );
+
+          return students.when(
+            loading: () => ListView(
+              padding: const EdgeInsets.all(LySpace.x4),
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                header,
+                for (var i = 0; i < 6; i++) ...[
+                  const SizedBox(height: LySpace.x3),
+                  const LySkeletonListTile(),
+                ],
+              ],
             ),
-          ),
-          Expanded(
-            child: students.when(
-              loading: () => ListView.separated(
-                padding: const EdgeInsets.all(LySpace.x4),
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 6,
-                separatorBuilder: (_, __) => const SizedBox(height: LySpace.x3),
-                itemBuilder: (context, index) => const LySkeletonListTile(),
-              ),
-              error: (error, _) => LyErrorState(
-                message: describeApiError(context, error),
-                retryable: isRetryableError(error),
-                onRetry: () => ref.read(studentsProvider.notifier).refresh(),
-              ),
-              data: (rows) {
-                if (rows.isEmpty) {
-                  return Center(
-                    child: Text(
-                      l10n.studentsEmpty,
-                      style: LyType.body(c.textSecondary),
+            error: (error, _) => ListView(
+              padding: const EdgeInsets.all(LySpace.x4),
+              children: [
+                header,
+                SizedBox(
+                  height: 280,
+                  child: LyErrorState(
+                    message: describeApiError(context, error),
+                    retryable: isRetryableError(error),
+                    onRetry: () =>
+                        ref.read(studentsProvider.notifier).refresh(),
+                  ),
+                ),
+              ],
+            ),
+            data: (state) {
+              if (state.rows.isEmpty) {
+                return ListView(
+                  padding: const EdgeInsets.all(LySpace.x4),
+                  children: [
+                    header,
+                    const SizedBox(height: LySpace.x8),
+                    Center(
+                      child: Text(
+                        filtered
+                            ? l10n.studentsEmptyFiltered
+                            : l10n.studentsEmpty,
+                        style: LyType.body(c.textSecondary),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                  );
-                }
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(
-                    LySpace.x4,
-                    0,
-                    LySpace.x4,
-                    LySpace.x16,
-                  ),
-                  itemCount: rows.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(height: LySpace.x2),
-                  itemBuilder: (context, index) => _StudentTile(
-                    row: rows[index],
-                    onOpenPlan: _openPlan,
-                    onNewPlan: () => _newPlan(rows[index]),
-                    onOpenEvolution: () => _openEvolution(rows[index]),
-                    onOpenChat: () => _openChat(rows[index]),
-                    // Só o owner vê o professor e troca (ADR-016 §2).
-                    onChangeCoach:
-                        isOwner ? () => _changeCoach(rows[index]) : null,
-                  ),
+                  ],
                 );
-              },
-            ),
-          ),
-        ],
+              }
+              // Cabeçalho + (títulos da tabela) + linhas + (rodapé).
+              final lead = wide ? 2 : 1;
+              final footer = state.hasMore ? 1 : 0;
+              return ListView.builder(
+                padding: const EdgeInsets.fromLTRB(
+                  LySpace.x4,
+                  LySpace.x4,
+                  LySpace.x4,
+                  LySpace.x16,
+                ),
+                itemCount: lead + state.rows.length + footer,
+                itemBuilder: (context, index) {
+                  if (index == 0) return header;
+                  if (wide && index == 1) {
+                    return _TableHeader(showCoach: isOwner);
+                  }
+                  final rowIndex = index - lead;
+                  if (rowIndex >= state.rows.length) {
+                    return _LoadMoreFooter(state: state);
+                  }
+                  final row = state.rows[rowIndex];
+                  return Padding(
+                    padding: const EdgeInsets.only(top: LySpace.x2),
+                    child: wide
+                        ? _StudentTableRow(
+                            row: row,
+                            showCoach: isOwner,
+                            onOpen: () => _openStudent(row.student),
+                            onOpenChat: () => _openChat(row.student),
+                          )
+                        : _StudentTile(
+                            row: row,
+                            showCoach: isOwner,
+                            onOpen: () => _openStudent(row.student),
+                            onOpenChat: () => _openChat(row.student),
+                          ),
+                  );
+                },
+              );
+            },
+          );
+        },
       ),
     );
   }
 }
 
+/// Busca, filtro de status e (owner) filtro de professor.
+class _Header extends ConsumerWidget {
+  const _Header({
+    required this.search,
+    required this.onSearchChanged,
+    required this.isOwner,
+  });
+
+  final TextEditingController search;
+  final ValueChanged<String> onSearchChanged;
+  final bool isOwner;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = context.ly;
+    final l10n = AppLocalizations.of(context);
+    final status = ref.watch(studentStatusFilterProvider);
+    final coachId = ref.watch(studentCoachFilterProvider);
+    final coaches = isOwner
+        ? ref.watch(_coachOptionsProvider).valueOrNull ?? const <CoachOption>[]
+        : const <CoachOption>[];
+
+    String label(StudentStatusFilter f) => switch (f) {
+          StudentStatusFilter.active => l10n.studentsFilterActive,
+          StudentStatusFilter.inactive => l10n.studentsFilterInactive,
+          StudentStatusFilter.invited => l10n.studentsFilterInvited,
+        };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        LyTextField(
+          label: l10n.studentsSearchLabel,
+          hint: l10n.studentsSearchHint,
+          controller: search,
+          prefixIcon: Icons.search,
+          onChanged: onSearchChanged,
+        ),
+        const SizedBox(height: LySpace.x3),
+        Wrap(
+          spacing: LySpace.x2,
+          runSpacing: LySpace.x2,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            for (final f in StudentStatusFilter.values)
+              ChoiceChip(
+                key: Key('students_filter_${f.apiValue}'),
+                label: Text(label(f)),
+                selected: status == f,
+                onSelected: (_) =>
+                    ref.read(studentStatusFilterProvider.notifier).state = f,
+              ),
+            if (coaches.isNotEmpty)
+              DropdownButton<String?>(
+                key: const Key('students_filter_coach'),
+                value: coachId,
+                hint: Text(l10n.studentsFilterCoachLabel),
+                underline: const SizedBox.shrink(),
+                style: LyType.body(c.textPrimary),
+                onChanged: (value) =>
+                    ref.read(studentCoachFilterProvider.notifier).state = value,
+                items: [
+                  DropdownMenuItem<String?>(
+                    child: Text(l10n.studentsFilterCoachAll),
+                  ),
+                  for (final coach in coaches)
+                    DropdownMenuItem<String?>(
+                      value: coach.id,
+                      child: Text(coach.name),
+                    ),
+                ],
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+String _planText(AppLocalizations l10n, StudentRow row) {
+  final plan = row.activePlan;
+  if (plan == null) return l10n.studentsNoPlan;
+  return l10n.studentsPlanActive(plan.title, plan.versionNo);
+}
+
+/// "Hoje", "Ontem", "Há N dias" ou "Nunca treinou", por dia civil local.
+String _lastWorkoutText(AppLocalizations l10n, DateTime? last) {
+  if (last == null) return l10n.studentsLastWorkoutNever;
+  final now = DateTime.now();
+  final days = DateTime(now.year, now.month, now.day)
+      .difference(DateTime(last.year, last.month, last.day))
+      .inDays;
+  if (days <= 0) return l10n.studentsLastWorkoutToday;
+  if (days == 1) return l10n.studentsLastWorkoutYesterday;
+  return l10n.studentsLastWorkoutDaysAgo(days);
+}
+
+Color _statusColor(LyColors c, String status) => switch (status) {
+      'invited' => c.warning,
+      'active' => c.success,
+      _ => c.textSecondary,
+    };
+
+/// Cartão do celular: nome, status quando não é "ativo", plano e professor.
 class _StudentTile extends StatelessWidget {
   const _StudentTile({
     required this.row,
-    required this.onOpenPlan,
-    required this.onNewPlan,
-    required this.onOpenEvolution,
+    required this.showCoach,
+    required this.onOpen,
     required this.onOpenChat,
-    this.onChangeCoach,
   });
 
   final StudentRow row;
-  final ValueChanged<String> onOpenPlan;
-  final VoidCallback onNewPlan;
-  final VoidCallback onOpenEvolution;
+  final bool showCoach;
+  final VoidCallback onOpen;
   final VoidCallback onOpenChat;
-
-  /// Nulo para o coach comum: a ação "Trocar professor" e o nome do professor
-  /// são só do owner.
-  final VoidCallback? onChangeCoach;
 
   @override
   Widget build(BuildContext context) {
     final c = context.ly;
     final l10n = AppLocalizations.of(context);
-    final plan = row.activePlan;
-    final coachName = row.student.coachName;
+    final student = row.student;
+    final coachName = student.coachName;
 
     return LyCard(
       padding: const EdgeInsets.all(LySpace.x4),
-      onTap: plan == null ? onNewPlan : () => onOpenPlan(plan.id),
+      onTap: onOpen,
       child: Row(
         children: [
           Expanded(
@@ -373,34 +391,36 @@ class _StudentTile extends StatelessWidget {
                   children: [
                     Flexible(
                       child: Text(
-                        row.student.name,
+                        student.name,
                         style: LyType.label(c.textPrimary),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (row.student.isPending) ...[
+                    if (student.status != 'active') ...[
                       const SizedBox(width: LySpace.x2),
                       Text(
-                        l10n.studentsPendingBadge,
-                        style: LyType.caption(c.warning),
+                        studentStatusLabel(l10n, student.status),
+                        style: LyType.caption(_statusColor(c, student.status)),
                       ),
                     ],
                   ],
                 ),
                 const SizedBox(height: LySpace.x1),
                 Text(
-                  plan == null
-                      ? l10n.studentsNoPlan
-                      : plan.publishedVersionNo == 0
-                          ? l10n.studentsPlanDraft(plan.title)
-                          : l10n.studentsPlanActive(
-                              plan.title,
-                              plan.publishedVersionNo,
-                            ),
+                  _planText(l10n, row),
                   style: LyType.caption(c.textSecondary),
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (onChangeCoach != null && (coachName ?? '').isNotEmpty) ...[
+                if (student.status == 'active') ...[
+                  const SizedBox(height: LySpace.x1),
+                  Text(
+                    '${l10n.studentsColLastWorkout}: '
+                    '${_lastWorkoutText(l10n, row.lastSessionAt)}',
+                    style: LyType.caption(c.textSecondary),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                if (showCoach && (coachName ?? '').isNotEmpty) ...[
                   const SizedBox(height: LySpace.x1),
                   Text(
                     l10n.studentsCoachLabel(coachName!),
@@ -411,42 +431,221 @@ class _StudentTile extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: LySpace.x2),
-          // Evolução fica ao lado do plano, não no lugar dele: são as duas
-          // coisas que o professor faz com um aluno (montar treino e
-          // acompanhar progresso), e o toque no card segue abrindo o plano
-          // como no P1.6.
-          IconButton(
-            onPressed: onOpenEvolution,
-            icon: const Icon(Icons.show_chart),
-            color: c.textSecondary,
-            tooltip: l10n.studentsOpenEvolution,
-          ),
-          // Chat fica ao lado da Evolução pelo mesmo motivo (P3.5 §1): abrir
-          // conversa é algo que o professor faz com o aluno sem substituir
-          // as outras ações do card.
           IconButton(
             onPressed: onOpenChat,
             icon: const Icon(Icons.chat_bubble_outline),
             color: c.textSecondary,
             tooltip: l10n.studentsOpenChat,
           ),
-          if (onChangeCoach != null)
-            IconButton(
-              onPressed: onChangeCoach,
-              icon: const Icon(Icons.swap_horiz),
-              color: c.textSecondary,
-              tooltip: l10n.studentsChangeCoach,
+        ],
+      ),
+    );
+  }
+}
+
+// Proporção das colunas da tabela (nome sempre; professor só para o owner).
+const _colName = 3;
+const _colCoach = 2;
+const _colPlan = 3;
+const _colLast = 2;
+const _colStatus = 2;
+
+class _TableHeader extends StatelessWidget {
+  const _TableHeader({required this.showCoach});
+
+  final bool showCoach;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ly;
+    final l10n = AppLocalizations.of(context);
+    final style = LyType.caption(c.textSecondary);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(LySpace.x4, LySpace.x4, LySpace.x4, 0),
+      child: Row(
+        children: [
+          Expanded(
+            flex: _colName,
+            child: Text(l10n.studentsColName, style: style),
+          ),
+          if (showCoach)
+            Expanded(
+              flex: _colCoach,
+              child: Text(l10n.studentsColCoach, style: style),
             ),
-          const SizedBox(width: LySpace.x2),
-          LyButton(
-            label: plan == null ? l10n.studentsNewPlan : l10n.studentsOpenPlan,
-            variant: LyButtonVariant.secondary,
-            expanded: false,
-            onPressed: plan == null ? onNewPlan : () => onOpenPlan(plan.id),
+          Expanded(
+            flex: _colPlan,
+            child: Text(l10n.studentsColPlan, style: style),
+          ),
+          Expanded(
+            flex: _colLast,
+            child: Text(l10n.studentsColLastWorkout, style: style),
+          ),
+          Expanded(
+            flex: _colStatus,
+            child: Text(l10n.studentsColStatus, style: style),
+          ),
+          // Espaço do botão de chat.
+          const SizedBox(width: 48),
+        ],
+      ),
+    );
+  }
+}
+
+/// Linha da tabela (tela larga): nome, professor (owner), plano, status.
+class _StudentTableRow extends StatelessWidget {
+  const _StudentTableRow({
+    required this.row,
+    required this.showCoach,
+    required this.onOpen,
+    required this.onOpenChat,
+  });
+
+  final StudentRow row;
+  final bool showCoach;
+  final VoidCallback onOpen;
+  final VoidCallback onOpenChat;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ly;
+    final l10n = AppLocalizations.of(context);
+    final student = row.student;
+
+    return LyCard(
+      padding: const EdgeInsets.symmetric(
+        horizontal: LySpace.x4,
+        vertical: LySpace.x2,
+      ),
+      onTap: onOpen,
+      child: Row(
+        children: [
+          Expanded(
+            flex: _colName,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  student.name,
+                  style: LyType.label(c.textPrimary),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  student.email,
+                  style: LyType.caption(c.textSecondary),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          if (showCoach)
+            Expanded(
+              flex: _colCoach,
+              child: Text(
+                student.coachName ?? '',
+                style: LyType.body(c.textSecondary),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          Expanded(
+            flex: _colPlan,
+            child: Text(
+              _planText(l10n, row),
+              style: LyType.body(c.textSecondary),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Expanded(
+            flex: _colLast,
+            child: Text(
+              student.status == 'active'
+                  ? _lastWorkoutText(l10n, row.lastSessionAt)
+                  : '',
+              style: LyType.body(c.textSecondary),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Expanded(
+            flex: _colStatus,
+            child: Text(
+              studentStatusLabel(l10n, student.status),
+              style: LyType.body(_statusColor(c, student.status)),
+            ),
+          ),
+          IconButton(
+            onPressed: onOpenChat,
+            icon: const Icon(Icons.chat_bubble_outline),
+            color: c.textSecondary,
+            tooltip: l10n.studentsOpenChat,
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Último item quando há mais páginas: ao ser construído (a lista chegou
+/// perto do fim) pede a próxima. Se a página falhar, para e oferece "tentar
+/// de novo" — sem isso, a API fora viraria um laço de requisições.
+class _LoadMoreFooter extends ConsumerStatefulWidget {
+  const _LoadMoreFooter({required this.state});
+
+  final StudentsState state;
+
+  @override
+  ConsumerState<_LoadMoreFooter> createState() => _LoadMoreFooterState();
+}
+
+class _LoadMoreFooterState extends ConsumerState<_LoadMoreFooter> {
+  void _maybeLoad() {
+    final s = widget.state;
+    if (s.loadingMore || s.loadMoreFailed) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(studentsProvider.notifier).loadMore();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _maybeLoad();
+  }
+
+  @override
+  void didUpdateWidget(_LoadMoreFooter old) {
+    super.didUpdateWidget(old);
+    // Chegou a página e ainda há mais com o rodapé na tela (lista curta
+    // demais para rolar): continua puxando até preencher.
+    _maybeLoad();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ly;
+    final l10n = AppLocalizations.of(context);
+
+    if (widget.state.loadMoreFailed) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: LySpace.x4),
+        child: Column(
+          children: [
+            Text(
+              l10n.studentsLoadMoreError,
+              style: LyType.bodySm(c.textSecondary),
+            ),
+            TextButton(
+              onPressed: () => ref.read(studentsProvider.notifier).loadMore(),
+              child: Text(l10n.commonRetry),
+            ),
+          ],
+        ),
+      );
+    }
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: LySpace.x4),
+      child: Center(child: CircularProgressIndicator()),
     );
   }
 }

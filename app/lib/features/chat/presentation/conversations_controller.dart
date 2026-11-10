@@ -60,6 +60,7 @@ final conversationsProvider =
 /// ícone da aba Chat mostra (P3.5 §1). `0` enquanto a lista ainda carrega:
 /// o badge nasce escondido, não com um número errado.
 final unreadTotalProvider = Provider<int>((ref) {
-  final conversations = ref.watch(conversationsProvider).valueOrNull ?? const [];
+  final conversations =
+      ref.watch(conversationsProvider).valueOrNull ?? const [];
   return conversations.fold<int>(0, (sum, c) => sum + c.unreadCount);
 });

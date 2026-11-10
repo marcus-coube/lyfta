@@ -43,10 +43,8 @@ void _handleDeepLink(GoRouter router, PushDeepLink link) {
     case PushDeepLinkKind.chat:
       router.push('/chat/${link.conversationId}');
     case PushDeepLinkKind.checkins:
-      // A ficha de evolução é a mesma tela onde a aba Check-ins vive
-      // (`EvolutionScreen`, P3.5 §3) — abrir a ficha já é o suficiente; o
-      // coach toca a aba, que mostra o badge de pendente para guiá-lo.
-      router.push('/students/${link.studentId}/evolution');
+      // Abre a ficha do aluno direto na aba Check-ins (P3.5 §3, P5.4).
+      router.push('/students/${link.studentId}?tab=checkins');
     case PushDeepLinkKind.workoutToday:
       router.go('/home');
     case PushDeepLinkKind.none:

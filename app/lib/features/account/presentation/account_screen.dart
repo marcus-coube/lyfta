@@ -10,6 +10,7 @@ import '../../../core/legal/legal_document.dart';
 import '../data/account_repository.dart';
 import 'account_controller.dart';
 import 'organization_section.dart';
+import 'profile_section.dart';
 
 /// Tela Conta (P4.5): privacidade (fotos de evolução, só aluno), documentos
 /// legais, sair e "Excluir minha conta" (ADR-008 §2). É o único lugar do app
@@ -67,6 +68,8 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
             const SizedBox(height: LySpace.x4),
           ],
           if (isStudent) ...[
+            const ProfileSection(),
+            const SizedBox(height: LySpace.x4),
             _Section(l10n.accountPrivacySection),
             SwitchListTile(
               key: const Key('account_photos_switch'),

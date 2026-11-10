@@ -598,11 +598,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String studentsPlanDraft(String title) {
-    return '$title · draft';
-  }
-
-  @override
   String get builderPublishTitle => 'Publish workout?';
 
   @override
@@ -843,9 +838,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get evolutionSummaryPhotoCount => 'Progress photos';
-
-  @override
-  String get evolutionStudentTitle => 'Progress';
 
   @override
   String get evolutionMeasurementsSection => 'Body measurements';
@@ -1304,6 +1296,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'You have not authorized this use of your data. Change it under Account > Privacy.';
 
   @override
+  String get errorInvitationNotFound =>
+      'This invitation no longer exists. Refresh the student profile.';
+
+  @override
+  String get errorInvitationAlreadyAccepted =>
+      'This invitation has already been accepted — the student already has access.';
+
+  @override
   String get errorStudentConsentRequired =>
       'This student has not authorized the use of their health data. Only they can change this, under Account > Privacy.';
 
@@ -1372,4 +1372,212 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get todayDoneOfflineBody =>
       'It\'s saved on this device and syncs on its own when you\'re back online. Your next workout shows up right after.';
+
+  @override
+  String get studentsFilterActive => 'Active';
+
+  @override
+  String get studentsFilterInactive => 'Inactive';
+
+  @override
+  String get studentsFilterInvited => 'Pending invites';
+
+  @override
+  String get studentsFilterCoachLabel => 'Coach';
+
+  @override
+  String get studentsFilterCoachAll => 'All coaches';
+
+  @override
+  String get studentsEmptyFiltered => 'No students match these filters.';
+
+  @override
+  String get studentsLoadMoreError => 'Couldn\'t load more students.';
+
+  @override
+  String get studentsColName => 'Student';
+
+  @override
+  String get studentsColCoach => 'Coach';
+
+  @override
+  String get studentsColPlan => 'Plan';
+
+  @override
+  String get studentsColLastWorkout => 'Last workout';
+
+  @override
+  String get studentsLastWorkoutNever => 'Never trained';
+
+  @override
+  String get studentsLastWorkoutToday => 'Today';
+
+  @override
+  String get studentsLastWorkoutYesterday => 'Yesterday';
+
+  @override
+  String studentsLastWorkoutDaysAgo(int days) {
+    return '$days days ago';
+  }
+
+  @override
+  String get studentsColStatus => 'Status';
+
+  @override
+  String get studentStatusActive => 'Active';
+
+  @override
+  String get studentStatusInactive => 'Inactive';
+
+  @override
+  String get studentStatusInvited => 'Invite pending';
+
+  @override
+  String get studentStatusDisabled => 'Blocked';
+
+  @override
+  String get studentDetailTitle => 'Student';
+
+  @override
+  String get studentTabData => 'Details';
+
+  @override
+  String get studentTabWorkout => 'Workout';
+
+  @override
+  String get studentTabEvolution => 'Progress';
+
+  @override
+  String get studentTabCheckins => 'Check-ins';
+
+  @override
+  String get studentDataSectionRegistry => 'Profile';
+
+  @override
+  String get studentDataNameLabel => 'Name';
+
+  @override
+  String get studentDataEmailLabel => 'Email';
+
+  @override
+  String get studentDataSaved => 'Details saved.';
+
+  @override
+  String get profilePhoneLabel => 'Phone';
+
+  @override
+  String get profileBirthLabel => 'Date of birth';
+
+  @override
+  String get profileBirthEmpty => 'Not provided';
+
+  @override
+  String get profileBirthClear => 'Clear date';
+
+  @override
+  String get accountProfileSection => 'My details';
+
+  @override
+  String get accountProfileSaved => 'Details saved.';
+
+  @override
+  String get studentStatusSection => 'Status';
+
+  @override
+  String get studentDeactivate => 'Deactivate student';
+
+  @override
+  String studentDeactivateTitle(String name) {
+    return 'Deactivate $name?';
+  }
+
+  @override
+  String get studentDeactivateBody =>
+      'The student loses access to the app and leaves the default list. Workouts, measurements and chats are kept, and you can reactivate any time.';
+
+  @override
+  String get studentDeactivateConfirm => 'Deactivate';
+
+  @override
+  String get studentDeactivated => 'Student deactivated.';
+
+  @override
+  String get studentReactivate => 'Reactivate student';
+
+  @override
+  String studentReactivateTitle(String name) {
+    return 'Reactivate $name?';
+  }
+
+  @override
+  String get studentReactivateBody =>
+      'The student can sign in to the app again.';
+
+  @override
+  String get studentReactivateConfirm => 'Reactivate';
+
+  @override
+  String get studentReactivated => 'Student reactivated.';
+
+  @override
+  String get studentReasonLabel => 'Reason (optional)';
+
+  @override
+  String get studentInvitePending => 'Invite sent, not accepted yet.';
+
+  @override
+  String get studentInviteExpired =>
+      'The invite expired. Resend it so the student can sign in.';
+
+  @override
+  String get studentInviteResend => 'Resend invite';
+
+  @override
+  String get studentInviteResent => 'Invite resent.';
+
+  @override
+  String get studentCoachSection => 'Coach';
+
+  @override
+  String get studentCoachNone => 'No coach';
+
+  @override
+  String get studentHistorySection => 'Status history';
+
+  @override
+  String get studentHistoryEmpty => 'No status changes.';
+
+  @override
+  String studentHistoryEntry(String from, String to) {
+    return '$from → $to';
+  }
+
+  @override
+  String studentHistoryBy(String name) {
+    return 'by $name';
+  }
+
+  @override
+  String get studentWorkoutEmpty => 'No plans yet. Create the first one.';
+
+  @override
+  String get errorAlreadyInactive => 'This student is already inactive.';
+
+  @override
+  String get errorAlreadyActive => 'This student is already active.';
+
+  @override
+  String get errorInvalidStatusTransition =>
+      'This student hasn\'t accepted the invite yet or is blocked, so the status can\'t be changed.';
+
+  @override
+  String get studentWorkoutDraft => 'Draft';
+
+  @override
+  String studentWorkoutVersion(int version) {
+    return 'v$version';
+  }
+
+  @override
+  String get studentWorkoutInUse => 'In use';
 }

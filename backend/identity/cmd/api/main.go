@@ -89,7 +89,7 @@ func run(logger *slog.Logger) error {
 	})
 
 	authHandler := ihttp.NewAuthHandler(logger, tenants, users, authRepo, issuer, cfg.TermsVersion)
-	invitationHandler := ihttp.NewInvitationHandler(logger, invitationRepo, tenants, users, consentRepo, issuer, mailer, cfg.AppURL, cfg.TermsVersion)
+	invitationHandler := ihttp.NewInvitationHandler(logger, invitationRepo, tenants, users, consentRepo, repo.NewCoachLinkRepo(pool), issuer, mailer, cfg.AppURL, cfg.TermsVersion)
 	accountHandler := ihttp.NewAccountHandler(logger, users, authRepo, consentRepo, issuer, eraser, cfg.TermsVersion)
 	passwordResetHandler := ihttp.NewPasswordResetHandler(logger, authRepo, users, passwordResetRepo, mailer, cfg.AppURL)
 

@@ -83,7 +83,7 @@ por isso no `assessment` (ADR-008 §1, apagado na exclusão).
 de ativas; exclusão de conta apaga perfil e lesões; teste de isolamento
 cross-tenant nos repositórios novos.
 
-## - [ ] P5.4 App — lista de alunos e cadastro (Flutter)
+## - [x] P5.4 App — lista de alunos e cadastro (Flutter)
 
 **Objetivo:** a lista de alunos vira ferramenta de gestão.
 **Passos:**
@@ -229,3 +229,87 @@ objetivo e o coach vê; teste de widget do formulário de lesão.
   coach, `consent_required` vira `errorStudentConsentRequired` ("o aluno não
   autorizou…") e não oferece "Tentar de novo" (`isRetryableError`).
 - Exclusão física inclui as duas tabelas novas.
+
+### P5.4 (2026-11-09)
+
+- App: `features/students/` passa a `GET /v1/students` (cursor do servidor, sem
+  teto de 200 — o rodapé da lista pede a página seguinte ao aparecer; falha de
+  página para e oferece "tentar de novo" em vez de laçar). Filtros: status
+  (Ativos/Inativos/Convites pendentes, padrão Ativos = `status=active`),
+  professor (só owner, `coach_id`) e busca com debounce de 300 ms. Estado de
+  filtro em providers; mudar qualquer um recomeça a lista (contador de geração
+  descarta página que volta de consulta antiga). Plano ativo e último treino vêm
+  em lote (ver "Ajustes pós-P5.4"); a tela reconhece `inactive`/`invited` (rótulo traduzido).
+- Largura >= 840 px do corpo: tabela (aluno+e-mail, professor só owner, plano,
+  status, chat); abaixo, cartões. O cabeçalho (busca + filtros) virou o 1º item
+  da própria lista e rola junto — quita a dívida do P1.8 (teste com janela de
+  220 px).
+- Ficha `/students/:id` (`?tab=data|workout|evolution|checkins`) substitui
+  `/students/:id/evolution` (rota e `StudentEvolutionScreen` removidas; o push de
+  check-in abre em `?tab=checkins`). Abas: Dados (cadastro editável com PATCH,
+  status com inativar/reativar + confirmação e motivo opcional, reenviar convite
+  quando `invited`, trocar professor para owner, histórico de status), Treino
+  (planos do aluno, abrir no builder, novo plano — o que a lista fazia no P1.6;
+  a P6 amplia), Evolução (`EvolutionScreen` ganhou `showCheckins`, `false` aqui)
+  e Check-ins (`CheckinsTabLabel` com badge ficou público no `checkin`). Dados
+  em duas colunas >= 840 px.
+- Conta do aluno: seção "Meus dados" (telefone e nascimento, `GET/PATCH
+  /v1/me`). Novo `LyDateField` em `shared/widgets` (data opcional com limpar).
+  Mensagens de `already_inactive`/`already_active`/`invalid_status_transition`.
+- Removida a chave `evolutionStudentTitle` (sem uso). Ações da lista (plano,
+  evolução, trocar professor) saíram do cartão: ficam na ficha; a lista tem só
+  o chat como atalho.
+- Desvio do plano: "master-detail no desktop" ficou de fora por decisão do
+  usuário — a ficha é página própria (com layout largo) e a lista volta com o
+  botão voltar. A coluna "último treino" e o diretório do chat foram resolvidos
+  depois (ver "Ajustes pós-P5.4").
+- Verificado: `flutter analyze` limpo, 120 testes verdes, guards de strings e
+  paridade de ARBs OK. Aceite manual: coach com muitos alunos rola a lista até o
+  fim; inativar na ficha tira o aluno de "Ativos" e o aluno não loga/refresca.
+
+#### Ajustes pós-P5.4 (2026-11-09, decisão do usuário)
+
+- **Último treino + plano ativo em lote.** workout: `POST /v1/students/overview`
+  (coach/owner, JWT) com `{student_ids:[...]}` (1-100 = tamanho de página) ->
+  `{items:[{student_id, last_session_at, active_plan:{id,title,version_no}|null}]}`.
+  O vínculo (ADR-016) filtra pelo `coachlink` (`VisibleStudents`: owner todos
+  sem chamada; coach só o conjunto do identity); id fora do vínculo não volta;
+  de outro tenant (RLS) ou sem dados vem com nulos — nunca 404 por item.
+  Fonte do "último treino": `MAX(received_at)` das sessões — carimbo do
+  servidor (ADR-003), o mesmo campo do job de pendente; `started_at` é relógio
+  do device. Conta qualquer sessão recebida (inclui não finalizada). Migration
+  `0018_sessions_received_index` (`(tenant_id, student_id, received_at DESC)`;
+  up/down/up rodado). Plano ativo = o da rotação (`student_plan_state`), com a
+  versão publicada em uso; aluno só com rascunho aparece "Sem plano" (antes
+  mostrava "rascunho"; chave `studentsPlanDraft` removida). O contrato serve a
+  P8.1 (`/coach/today`, "sem treinar há 7+ dias" = `last_session_at` nulo ou
+  antigo), que ainda precisa do dia civil no fuso do tenant — não implementado.
+  `StudentLinker` ganhou `VisibleStudents` (interface e cliente).
+  App: `StudentOverviewRepository` + coluna "Último treino" na tabela (e linha
+  no cartão, só para ativos: Hoje/Ontem/Há N dias/Nunca treinou), 1 chamada por
+  página (50 alunos, era 20 com N+1); falha do workout deixa a linha sem
+  plano/treino em vez de derrubar a lista.
+- **Reenvio de convite com vínculo.** `POST /v1/invitations/{id}/resend`:
+  owner passa; coach só reenvia convite de **aluno vinculado a ele** (convidado
+  localizado por e-mail no tenant + `CoachLinkRepo.CoachOf`) — senão 404
+  `student_not_found`; convite de coach/owner por não-owner é 403. Não há
+  outras rotas de convite autenticadas (só `Create`, que vincula o aluno a
+  quem convida, e o `Accept` público), então não havia mais furo desse tipo.
+  Teste: `TestInvitationResendRequiresLink`.
+- **Diretório do chat sem corte.** Escolha: busca sob demanda pelos ids das
+  conversas, não paginar `/v1/users`. identity: `GET /v1/users/directory?ids=`
+  (até 100 UUIDs, qualquer papel autenticado, devolve só `{id,name}`, sem e-mail
+  nem papel; id desconhecido/outro tenant não volta). Aberto ao aluno porque
+  exige conhecer o id, que ele só tem pelas conversas dele. O app
+  (`participantDirectoryProvider`) deriva os ids de `conversationsProvider`,
+  consulta em lotes de 100 e só refaz quando o conjunto de participantes muda.
+  Cobre qualquer número de alunos e dispensa o aluno de listar a equipe.
+- Convites (decisão do usuário, corrigido): `POST /v1/invitations` só deixa
+  o owner convidar `coach`/`owner`; o coach convida só aluno (403 `forbidden`
+  caso contrário — era escalada de privilégio). `Resend` com convite
+  inexistente/id malformado responde 404 `invitation_not_found` e com convite
+  já aceito 409 `invitation_already_accepted` (antes, 401 `invalid_token`, que
+  o app lê como sessão expirada); mensagens nas 3 ARBs.
+- Dívida restante: `StudentRepository.listCoaches` (opções de "Trocar
+  professor") ainda usa `/v1/users` com `limit: 200` por papel — só pesa com
+  mais de 200 professores.

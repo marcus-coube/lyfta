@@ -12,8 +12,8 @@ import '../../features/builder/presentation/plan_builder_screen.dart';
 import '../../features/chat/presentation/chat_screen.dart';
 import '../../features/coach_shell/presentation/coach_shell_screen.dart';
 import '../../features/consent/presentation/consent_screen.dart';
-import '../../features/evolution/presentation/student_evolution_screen.dart';
 import '../../features/student_shell/presentation/student_shell_screen.dart';
+import '../../features/students/presentation/student_detail_screen.dart';
 import '../../features/workout/presentation/session_player_screen.dart';
 import '../auth/auth_controller.dart';
 import '../auth/auth_state.dart';
@@ -106,14 +106,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           planId: state.pathParameters['id']!,
         ),
       ),
-      // A ficha de evolução do aluno é rota de primeira classe pelo mesmo
-      // motivo do builder: o professor abre, manda o link para si mesmo e
-      // recarrega a página na web sem perder onde estava.
+      // A ficha do aluno (dados, treino, evolução e check-ins) é rota de
+      // primeira classe pelo mesmo motivo do builder: o professor abre, manda
+      // o link para si mesmo e recarrega a página na web sem perder onde
+      // estava. `?tab=` escolhe a aba (o push de check-in abre em `checkins`).
       GoRoute(
-        path: '/students/:id/evolution',
-        builder: (context, state) => StudentEvolutionScreen(
+        path: '/students/:id',
+        builder: (context, state) => StudentDetailScreen(
           studentId: state.pathParameters['id']!,
           studentName: state.extra as String?,
+          initialTab: StudentTab.parse(state.uri.queryParameters['tab']),
         ),
       ),
       // Conversa própria pelo mesmo motivo do builder/evolução: recarregar

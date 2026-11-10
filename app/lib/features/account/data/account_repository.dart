@@ -47,6 +47,24 @@ class ConsentPurpose {
   static const progressPhotos = 'progress_photos';
 }
 
+/// Dados cadastrais que o próprio usuário edita (`GET/PATCH /v1/me`, P5.2).
+class MyProfile {
+  const MyProfile({this.phone, this.birthDate});
+
+  factory MyProfile.fromJson(Map<String, dynamic> json) {
+    final raw = json['birth_date'] as String?;
+    return MyProfile(
+      phone: json['phone'] as String?,
+      birthDate: raw == null || raw.length < 10
+          ? null
+          : DateTime.tryParse(raw.substring(0, 10)),
+    );
+  }
+
+  final String? phone;
+  final DateTime? birthDate;
+}
+
 /// Conta do próprio usuário sobre o `identity`: consentimentos (ADR-008 §1) e
 /// exclusão de conta (ADR-008 §2) — P4.5.
 class AccountRepository {
@@ -70,6 +88,24 @@ class AccountRepository {
           data: {'terms_version': termsVersion, 'consents': consents},
         );
         return ConsentStatus.fromJson(response.data!);
+      });
+
+  Future<MyProfile> profile() => _call(() async {
+        final response = await _dio.get<Map<String, dynamic>>('/v1/me');
+        return MyProfile.fromJson(response.data!);
+      });
+
+  /// Salva telefone e nascimento (`''` apaga; nascimento `yyyy-MM-dd`).
+  Future<MyProfile> updateProfile({
+    required String phone,
+    required String birthDate,
+  }) =>
+      _call(() async {
+        final response = await _dio.patch<Map<String, dynamic>>(
+          '/v1/me',
+          data: {'phone': phone, 'birth_date': birthDate},
+        );
+        return MyProfile.fromJson(response.data!);
       });
 
   /// Exclui a conta, confirmada pela senha. Falha de serviço vira

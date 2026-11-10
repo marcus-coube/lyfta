@@ -163,6 +163,9 @@ func RequireRole(roles ...string) func(http.Handler) http.Handler {
 // (ADR-016): owner sempre; coach só o aluno vinculado a ele.
 type StudentLinker interface {
 	CanAccessStudent(ctx context.Context, tenantID, userID string, roles []string, studentID string) (bool, error)
+	// VisibleStudents filtra ids de aluno para os que o ator pode ver (owner:
+	// todos; coach: só os vinculados), preservando a ordem recebida.
+	VisibleStudents(ctx context.Context, tenantID, userID string, roles []string, studentIDs []string) ([]string, error)
 }
 
 // checkStudentLink aplica o vínculo. Devolve nil quando o acesso é permitido;

@@ -1215,12 +1215,6 @@ abstract class AppLocalizations {
   /// **'{title} · v{version}'**
   String studentsPlanActive(String title, int version);
 
-  /// Plano do aluno que ainda não foi publicado.
-  ///
-  /// In pt, this message translates to:
-  /// **'{title} · rascunho'**
-  String studentsPlanDraft(String title);
-
   /// No description provided for @builderPublishTitle.
   ///
   /// In pt, this message translates to:
@@ -1592,12 +1586,6 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Fotos de evolução'**
   String get evolutionSummaryPhotoCount;
-
-  /// Título da ficha de evolução do aluno aberta pelo professor.
-  ///
-  /// In pt, this message translates to:
-  /// **'Evolução'**
-  String get evolutionStudentTitle;
 
   /// No description provided for @evolutionMeasurementsSection.
   ///
@@ -2439,6 +2427,18 @@ abstract class AppLocalizations {
   /// **'Você não autorizou esse uso dos seus dados. Ajuste em Conta > Privacidade.'**
   String get errorConsentRequired;
 
+  /// No description provided for @errorInvitationNotFound.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esse convite não existe mais. Atualize a ficha do aluno.'**
+  String get errorInvitationNotFound;
+
+  /// No description provided for @errorInvitationAlreadyAccepted.
+  ///
+  /// In pt, this message translates to:
+  /// **'Esse convite já foi aceito — o aluno já tem acesso.'**
+  String get errorInvitationAlreadyAccepted;
+
   /// No description provided for @errorStudentConsentRequired.
   ///
   /// In pt, this message translates to:
@@ -2534,6 +2534,390 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Ele fica salvo no aparelho e sincroniza sozinho quando a conexão voltar. O próximo treino aparece em seguida.'**
   String get todayDoneOfflineBody;
+
+  /// Filtro da lista de alunos: alunos com acesso.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ativos'**
+  String get studentsFilterActive;
+
+  /// Filtro da lista de alunos: alunos inativados.
+  ///
+  /// In pt, this message translates to:
+  /// **'Inativos'**
+  String get studentsFilterInactive;
+
+  /// Filtro da lista de alunos: convite enviado e ainda não aceito.
+  ///
+  /// In pt, this message translates to:
+  /// **'Convites pendentes'**
+  String get studentsFilterInvited;
+
+  /// Rótulo do filtro por professor (só o dono da academia).
+  ///
+  /// In pt, this message translates to:
+  /// **'Professor'**
+  String get studentsFilterCoachLabel;
+
+  /// Opção do filtro por professor que não filtra nada.
+  ///
+  /// In pt, this message translates to:
+  /// **'Todos os professores'**
+  String get studentsFilterCoachAll;
+
+  /// Lista de alunos vazia com busca ou filtro ativo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum aluno encontrado com esses filtros.'**
+  String get studentsEmptyFiltered;
+
+  /// Rodapé da lista de alunos quando a página seguinte falha; acompanha o botão de tentar de novo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível carregar mais alunos.'**
+  String get studentsLoadMoreError;
+
+  /// Cabeçalho da tabela de alunos (telas largas).
+  ///
+  /// In pt, this message translates to:
+  /// **'Aluno'**
+  String get studentsColName;
+
+  /// Cabeçalho da tabela de alunos (telas largas).
+  ///
+  /// In pt, this message translates to:
+  /// **'Professor'**
+  String get studentsColCoach;
+
+  /// Cabeçalho da tabela de alunos (telas largas).
+  ///
+  /// In pt, this message translates to:
+  /// **'Plano'**
+  String get studentsColPlan;
+
+  /// Cabeçalho da coluna com o dia do último treino do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Último treino'**
+  String get studentsColLastWorkout;
+
+  /// Aluno que ainda não registrou nenhum treino.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nunca treinou'**
+  String get studentsLastWorkoutNever;
+
+  /// No description provided for @studentsLastWorkoutToday.
+  ///
+  /// In pt, this message translates to:
+  /// **'Hoje'**
+  String get studentsLastWorkoutToday;
+
+  /// No description provided for @studentsLastWorkoutYesterday.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ontem'**
+  String get studentsLastWorkoutYesterday;
+
+  /// Último treino do aluno há dois dias ou mais.
+  ///
+  /// In pt, this message translates to:
+  /// **'Há {days} dias'**
+  String studentsLastWorkoutDaysAgo(int days);
+
+  /// Cabeçalho da tabela de alunos (telas largas).
+  ///
+  /// In pt, this message translates to:
+  /// **'Status'**
+  String get studentsColStatus;
+
+  /// Status do aluno: com acesso ao app.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ativo'**
+  String get studentStatusActive;
+
+  /// Status do aluno: acesso suspenso pelo professor, dados preservados.
+  ///
+  /// In pt, this message translates to:
+  /// **'Inativo'**
+  String get studentStatusInactive;
+
+  /// Status do aluno: ainda não aceitou o convite.
+  ///
+  /// In pt, this message translates to:
+  /// **'Convite pendente'**
+  String get studentStatusInvited;
+
+  /// Status do aluno: bloqueio administrativo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Bloqueado'**
+  String get studentStatusDisabled;
+
+  /// Título da ficha do aluno quando o nome ainda não carregou.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aluno'**
+  String get studentDetailTitle;
+
+  /// Aba da ficha do aluno: cadastro, status e histórico.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dados'**
+  String get studentTabData;
+
+  /// Aba da ficha do aluno: planos de treino.
+  ///
+  /// In pt, this message translates to:
+  /// **'Treino'**
+  String get studentTabWorkout;
+
+  /// Aba da ficha do aluno: evolução.
+  ///
+  /// In pt, this message translates to:
+  /// **'Evolução'**
+  String get studentTabEvolution;
+
+  /// Aba da ficha do aluno: avaliações de treino.
+  ///
+  /// In pt, this message translates to:
+  /// **'Check-ins'**
+  String get studentTabCheckins;
+
+  /// Seção da aba Dados com os dados pessoais do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cadastro'**
+  String get studentDataSectionRegistry;
+
+  /// Campo nome na ficha do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome'**
+  String get studentDataNameLabel;
+
+  /// Campo e-mail (somente leitura) na ficha do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'E-mail'**
+  String get studentDataEmailLabel;
+
+  /// Confirmação após salvar o cadastro do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dados salvos.'**
+  String get studentDataSaved;
+
+  /// Campo telefone (ficha do aluno e tela Conta).
+  ///
+  /// In pt, this message translates to:
+  /// **'Telefone'**
+  String get profilePhoneLabel;
+
+  /// Campo data de nascimento (ficha do aluno e tela Conta).
+  ///
+  /// In pt, this message translates to:
+  /// **'Nascimento'**
+  String get profileBirthLabel;
+
+  /// Valor do campo de nascimento quando vazio.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não informado'**
+  String get profileBirthEmpty;
+
+  /// Ação que apaga a data de nascimento.
+  ///
+  /// In pt, this message translates to:
+  /// **'Limpar data'**
+  String get profileBirthClear;
+
+  /// Seção da tela Conta do aluno: telefone e nascimento.
+  ///
+  /// In pt, this message translates to:
+  /// **'Meus dados'**
+  String get accountProfileSection;
+
+  /// Confirmação após o aluno salvar telefone e nascimento.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dados salvos.'**
+  String get accountProfileSaved;
+
+  /// Seção da aba Dados com o status e a ação de inativar/reativar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Situação'**
+  String get studentStatusSection;
+
+  /// Botão que inativa o aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Inativar aluno'**
+  String get studentDeactivate;
+
+  /// Título da confirmação de inativar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Inativar {name}?'**
+  String studentDeactivateTitle(String name);
+
+  /// Corpo da confirmação de inativar.
+  ///
+  /// In pt, this message translates to:
+  /// **'O aluno perde o acesso ao app e sai da lista padrão. Treinos, medidas e conversas ficam guardados, e você pode reativar quando quiser.'**
+  String get studentDeactivateBody;
+
+  /// Botão de confirmar inativação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Inativar'**
+  String get studentDeactivateConfirm;
+
+  /// Confirmação após inativar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aluno inativado.'**
+  String get studentDeactivated;
+
+  /// Botão que reativa o aluno inativo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reativar aluno'**
+  String get studentReactivate;
+
+  /// Título da confirmação de reativar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reativar {name}?'**
+  String studentReactivateTitle(String name);
+
+  /// Corpo da confirmação de reativar.
+  ///
+  /// In pt, this message translates to:
+  /// **'O aluno volta a poder entrar no app.'**
+  String get studentReactivateBody;
+
+  /// Botão de confirmar reativação.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reativar'**
+  String get studentReactivateConfirm;
+
+  /// Confirmação após reativar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aluno reativado.'**
+  String get studentReactivated;
+
+  /// Campo de motivo na confirmação de inativar/reativar.
+  ///
+  /// In pt, this message translates to:
+  /// **'Motivo (opcional)'**
+  String get studentReasonLabel;
+
+  /// Aviso na ficha do aluno com convite pendente.
+  ///
+  /// In pt, this message translates to:
+  /// **'Convite enviado, ainda não aceito.'**
+  String get studentInvitePending;
+
+  /// Aviso na ficha do aluno com convite expirado.
+  ///
+  /// In pt, this message translates to:
+  /// **'O convite expirou. Reenvie para o aluno poder entrar.'**
+  String get studentInviteExpired;
+
+  /// Botão que reenvia o convite pendente.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reenviar convite'**
+  String get studentInviteResend;
+
+  /// Confirmação após reenviar o convite.
+  ///
+  /// In pt, this message translates to:
+  /// **'Convite reenviado.'**
+  String get studentInviteResent;
+
+  /// Seção da aba Dados com o professor responsável.
+  ///
+  /// In pt, this message translates to:
+  /// **'Professor'**
+  String get studentCoachSection;
+
+  /// Aluno sem professor vinculado.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem professor'**
+  String get studentCoachNone;
+
+  /// Seção da aba Dados com as mudanças de status.
+  ///
+  /// In pt, this message translates to:
+  /// **'Histórico de status'**
+  String get studentHistorySection;
+
+  /// Histórico de status vazio.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma mudança de status.'**
+  String get studentHistoryEmpty;
+
+  /// Linha do histórico: status anterior e novo.
+  ///
+  /// In pt, this message translates to:
+  /// **'{from} → {to}'**
+  String studentHistoryEntry(String from, String to);
+
+  /// Autor da mudança de status no histórico.
+  ///
+  /// In pt, this message translates to:
+  /// **'por {name}'**
+  String studentHistoryBy(String name);
+
+  /// Aba Treino da ficha sem planos.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum plano ainda. Crie o primeiro.'**
+  String get studentWorkoutEmpty;
+
+  /// 409 already_inactive.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este aluno já está inativo.'**
+  String get errorAlreadyInactive;
+
+  /// 409 already_active.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este aluno já está ativo.'**
+  String get errorAlreadyActive;
+
+  /// 409 invalid_status_transition.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este aluno ainda não aceitou o convite ou está bloqueado, então o status não pode ser mudado.'**
+  String get errorInvalidStatusTransition;
+
+  /// Plano na aba Treino sem versão publicada.
+  ///
+  /// In pt, this message translates to:
+  /// **'Rascunho'**
+  String get studentWorkoutDraft;
+
+  /// Versão publicada do plano na aba Treino.
+  ///
+  /// In pt, this message translates to:
+  /// **'v{version}'**
+  String studentWorkoutVersion(int version);
+
+  /// Plano que o aluno está fazendo agora.
+  ///
+  /// In pt, this message translates to:
+  /// **'Em uso'**
+  String get studentWorkoutInUse;
 }
 
 class _AppLocalizationsDelegate

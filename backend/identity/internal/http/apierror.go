@@ -111,6 +111,12 @@ var (
 	errInvalidStatusTransition = func() APIError {
 		return newAPIError(http.StatusConflict, "invalid_status_transition")
 	}
+	errInvitationNotFound = func() APIError {
+		return newAPIError(http.StatusNotFound, "invitation_not_found")
+	}
+	errInvitationAlreadyAccepted = func() APIError {
+		return newAPIError(http.StatusConflict, "invitation_already_accepted")
+	}
 	errInternal = func() APIError {
 		return newAPIError(http.StatusInternalServerError, "internal_error")
 	}

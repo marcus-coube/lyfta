@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS idx_workout_sessions_student_received;

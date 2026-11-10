@@ -322,3 +322,88 @@ func TestForgotPasswordUnknownEmailIsSilent(t *testing.T) {
 		t.Fatalf("forgot-password e-mail inexistente: não deveria enviar e-mail")
 	}
 }
+
+// --- Reenvio exige o vínculo (ADR-016 §4) -----------------------------------
+
+// TestInvitationResendRequiresLink: coach de outro aluno recebe 404
+// student_not_found; o coach vinculado e o owner reenviam; convite de
+// coach/owner é só do owner.
+func TestInvitationResendRequiresLink(t *testing.T) {
+	f := newUsersFixture(t) // f.coachToken: owner do tenant
+	coachA, _ := inviteCoach(t, f, f.coachToken, "Coach A")
+	coachB, _ := inviteCoach(t, f, f.coachToken, "Coach B")
+
+	invite := func(token, role string) string {
+		t.Helper()
+		resp := doPostAuth(t, f.client, f.url+"/v1/invitations", token, map[string]any{
+			"email": uniqueEmail("pend"), "role": role,
+		})
+		if resp.status != http.StatusCreated {
+			t.Fatalf("convidar %s: %d %v", role, resp.status, resp.body)
+		}
+		return resp.body["id"].(string)
+	}
+	resend := func(token, id string) jsonResponse {
+		return doPostAuth(t, f.client, f.url+"/v1/invitations/"+id+"/resend", token, map[string]any{})
+	}
+
+	studentOfA := invite(coachA, "student")
+	if resp := resend(coachB, studentOfA); resp.status != http.StatusNotFound || resp.body["code"] != "student_not_found" {
+		t.Fatalf("coach de outro aluno: esperava 404 student_not_found, obtive %d %v", resp.status, resp.body)
+	}
+	if resp := resend(coachA, studentOfA); resp.status != http.StatusCreated {
+		t.Fatalf("coach vinculado: esperava 201, obtive %d %v", resp.status, resp.body)
+	}
+	// O reenvio invalida o convite antigo; o owner testa com outro convite.
+	studentOfA2 := invite(coachA, "student")
+	if resp := resend(f.coachToken, studentOfA2); resp.status != http.StatusCreated {
+		t.Fatalf("owner: esperava 201, obtive %d %v", resp.status, resp.body)
+	}
+
+	coachInvite := invite(f.coachToken, "coach")
+	if resp := resend(coachA, coachInvite); resp.status != http.StatusForbidden {
+		t.Fatalf("coach reenviando convite de coach: esperava 403, obtive %d %v", resp.status, resp.body)
+	}
+	if resp := resend(f.coachToken, coachInvite); resp.status != http.StatusCreated {
+		t.Fatalf("owner reenviando convite de coach: esperava 201, obtive %d %v", resp.status, resp.body)
+	}
+
+	// Tenant alheio: convite de outro tenant nem existe para o coach de lá.
+	other := newTenantOn(t, f)
+	if resp := resend(other.coachToken, studentOfA2); resp.status != http.StatusNotFound || resp.body["code"] != "invitation_not_found" {
+		t.Fatalf("cross-tenant: esperava 404 invitation_not_found, obtive %d %v", resp.status, resp.body)
+	}
+
+	// Convite inexistente (ou id malformado) é 404, não invalid_token.
+	for _, id := range []string{"01a1b424-0000-7000-8000-000000000000", "nao-e-uuid"} {
+		if resp := resend(f.coachToken, id); resp.status != http.StatusNotFound || resp.body["code"] != "invitation_not_found" {
+			t.Fatalf("convite %q inexistente: esperava 404 invitation_not_found, obtive %d %v", id, resp.status, resp.body)
+		}
+	}
+}
+
+// TestCoachInvitesOnlyStudents: o coach não convida equipe (escalada de
+// privilégio); o owner convida coach e owner.
+func TestCoachInvitesOnlyStudents(t *testing.T) {
+	f := newUsersFixture(t) // f.coachToken: owner do tenant
+	coach, _ := inviteCoach(t, f, f.coachToken, "Coach C")
+
+	for _, role := range []string{"coach", "owner"} {
+		resp := doPostAuth(t, f.client, f.url+"/v1/invitations", coach, map[string]any{
+			"email": uniqueEmail("esc"), "role": role,
+		})
+		if resp.status != http.StatusForbidden || resp.body["code"] != "forbidden" {
+			t.Fatalf("coach convidando %s: esperava 403 forbidden, obtive %d %v", role, resp.status, resp.body)
+		}
+		if resp := doPostAuth(t, f.client, f.url+"/v1/invitations", f.coachToken, map[string]any{
+			"email": uniqueEmail("ok"), "role": role,
+		}); resp.status != http.StatusCreated {
+			t.Fatalf("owner convidando %s: esperava 201, obtive %d %v", role, resp.status, resp.body)
+		}
+	}
+	if resp := doPostAuth(t, f.client, f.url+"/v1/invitations", coach, map[string]any{
+		"email": uniqueEmail("aluno"), "role": "student",
+	}); resp.status != http.StatusCreated {
+		t.Fatalf("coach convidando aluno: esperava 201, obtive %d %v", resp.status, resp.body)
+	}
+}

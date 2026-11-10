@@ -99,8 +99,7 @@ class ChatBubble extends StatelessWidget {
                   ),
                   if (body.isNotEmpty) const SizedBox(height: LySpace.x2),
                 ],
-                if (body.isNotEmpty)
-                  Text(body, style: LyType.body(textColor)),
+                if (body.isNotEmpty) Text(body, style: LyType.body(textColor)),
                 const SizedBox(height: LySpace.x1),
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -108,7 +107,9 @@ class ChatBubble extends StatelessWidget {
                     Text(
                       _timeLabel(context),
                       style: LyType.caption(
-                        isMine ? c.onAccent.withValues(alpha: 0.75) : c.textSecondary,
+                        isMine
+                            ? c.onAccent.withValues(alpha: 0.75)
+                            : c.textSecondary,
                       ),
                     ),
                     if (isMine && !sending && !failed) ...[
@@ -116,9 +117,8 @@ class ChatBubble extends StatelessWidget {
                       Icon(
                         read ? Icons.done_all : Icons.done,
                         size: 14,
-                        color: read
-                            ? c.info
-                            : c.onAccent.withValues(alpha: 0.75),
+                        color:
+                            read ? c.info : c.onAccent.withValues(alpha: 0.75),
                       ),
                     ],
                   ],

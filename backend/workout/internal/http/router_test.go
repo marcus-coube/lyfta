@@ -90,6 +90,10 @@ func (allowAllLinker) CanAccessStudent(context.Context, string, string, []string
 	return true, nil
 }
 
+func (allowAllLinker) VisibleStudents(_ context.Context, _, _ string, _ []string, ids []string) ([]string, error) {
+	return ids, nil
+}
+
 func newTestRouterWithPool(t *testing.T, publicPEM string, pool *pgxpool.Pool) http.Handler {
 	t.Helper()
 	return newTestRouterWithLinker(t, publicPEM, pool, allowAllLinker{})
@@ -123,6 +127,7 @@ func newTestRouterWithLinker(t *testing.T, publicPEM string, pool *pgxpool.Pool,
 		whttp.NewHistoryHandler(logger, sessions, exercises, presigner),
 		whttp.NewPendingStudentsHandler(logger, pending),
 		whttp.NewErasureHandler(logger, repo.NewErasureRepo(pool)),
+		whttp.NewOverviewHandler(logger, repo.NewOverviewRepo(pool), linker),
 		linker,
 	)
 }

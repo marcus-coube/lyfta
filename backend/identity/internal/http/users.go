@@ -169,6 +169,55 @@ func (h *UserHandler) List(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, resp)
 }
 
+// maxDirectoryIDs é o teto de ids por consulta do diretório.
+const maxDirectoryIDs = 100
+
+type directoryItem struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// Directory responde GET /v1/users/directory?ids=a,b,c: só id e nome de
+// usuários do tenant, para o chat rotular os participantes das conversas que
+// o usuário já tem. Aberto a todo papel autenticado porque não lista nada: é
+// preciso conhecer o id (UUID) — o que o ator só tem por uma conversa dele — e
+// a resposta não traz e-mail nem papel (minimização, ADR-008 §3). Substitui o
+// corte de 200 por papel de `/v1/users` no app.
+func (h *UserHandler) Directory(w http.ResponseWriter, r *http.Request) {
+	claims, ok := ClaimsFromContext(r.Context())
+	if !ok || claims.TenantID == "" {
+		writeError(w, errUnauthenticated())
+		return
+	}
+	raw := strings.TrimSpace(r.URL.Query().Get("ids"))
+	if raw == "" {
+		writeError(w, errValidation("ids"))
+		return
+	}
+	ids := strings.Split(raw, ",")
+	if len(ids) > maxDirectoryIDs {
+		writeError(w, errValidation("ids"))
+		return
+	}
+	for _, id := range ids {
+		if _, err := uuid.Parse(id); err != nil {
+			writeError(w, errValidation("ids"))
+			return
+		}
+	}
+	names, err := h.users.NamesByIDs(r.Context(), claims.TenantID, ids)
+	if err != nil {
+		h.logger.Error("users_directory_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
+	}
+	items := make([]directoryItem, 0, len(names))
+	for _, n := range names {
+		items = append(items, directoryItem{ID: n.ID, Name: n.Name})
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"items": items})
+}
+
 func isKnownRole(role domain.Role) bool {
 	switch role {
 	case domain.RoleOwner, domain.RoleCoach, domain.RoleStudent:

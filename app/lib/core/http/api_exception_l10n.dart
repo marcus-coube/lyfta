@@ -63,11 +63,22 @@ extension ApiExceptionL10n on ApiException {
       // ou inexistente respondem o mesmo 404.
       case 'student_not_found':
         return l10n.errorStudentNotFound;
+      case 'invitation_not_found':
+        return l10n.errorInvitationNotFound;
+      case 'invitation_already_accepted':
+        return l10n.errorInvitationAlreadyAccepted;
       // Limite de tentativas (ADR-002 §2c): o backend manda os segundos até
       // liberar; a mensagem fala em minutos inteiros, arredondando para cima.
       case 'too_many_requests':
         final seconds = (params['retry_after_seconds'] as num?)?.toInt() ?? 300;
         return l10n.errorTooManyRequests(((seconds + 59) ~/ 60).clamp(1, 60));
+      // Status do aluno (P5.2).
+      case 'already_inactive':
+        return l10n.errorAlreadyInactive;
+      case 'already_active':
+        return l10n.errorAlreadyActive;
+      case 'invalid_status_transition':
+        return l10n.errorInvalidStatusTransition;
       case 'invalid_timezone':
         return l10n.errorInvalidTimezone;
       case 'no_coach':

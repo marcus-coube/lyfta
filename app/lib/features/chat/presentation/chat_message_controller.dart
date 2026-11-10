@@ -207,7 +207,8 @@ class ChatMessagesController
   Future<void> retry(String localId) async {
     final current = state.valueOrNull;
     if (current == null) return;
-    final failed = current.pending.where((p) => p.localId == localId).firstOrNull;
+    final failed =
+        current.pending.where((p) => p.localId == localId).firstOrNull;
     if (failed == null) return;
     _updatePending(localId, failed.copyWith(status: PendingStatus.sending));
     try {
@@ -277,7 +278,8 @@ class ChatMessagesController
   void _failPending(String localId) {
     final current = state.valueOrNull;
     if (current == null) return;
-    final target = current.pending.where((p) => p.localId == localId).firstOrNull;
+    final target =
+        current.pending.where((p) => p.localId == localId).firstOrNull;
     if (target == null) return;
     _updatePending(localId, target.copyWith(status: PendingStatus.failed));
   }

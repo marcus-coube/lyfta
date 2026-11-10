@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/url"
 	"testing"
+
+	"github.com/google/uuid"
 )
 
 // doGetAuth faz um GET autenticado e devolve status + corpo.
@@ -243,5 +245,38 @@ func TestStudentSeesStaffDirectoryOnly(t *testing.T) {
 		if resp := doGetAuth(t, f.client, f.url+"/v1/users"+query, token); resp.status != http.StatusForbidden {
 			t.Fatalf("GET /v1/users%s pelo aluno: esperava 403, obtive %d %v", query, resp.status, resp.body)
 		}
+	}
+}
+
+// TestUsersDirectory: nomes por id para o chat, sem e-mail; aluno também
+// consulta; id de outro tenant não volta; validação de ids.
+func TestUsersDirectory(t *testing.T) {
+	f := newUsersFixture(t)
+	_, coachID := inviteCoach(t, f, f.coachToken, "Coach Dir")
+	other := newTenantOn(t, f)
+	_, foreignID := inviteCoach(t, other, other.coachToken, "Coach Alheio")
+
+	resp := doGetAuth(t, f.client, f.url+"/v1/users/directory?ids="+coachID+","+foreignID+","+uuid.NewString(), f.coachToken)
+	items, _ := resp.body["items"].([]any)
+	if resp.status != http.StatusOK || len(items) != 1 {
+		t.Fatalf("diretório: %d %+v", resp.status, resp.body)
+	}
+	first := items[0].(map[string]any)
+	if first["id"] != coachID || first["name"] != "Coach Dir" || first["email"] != nil {
+		t.Fatalf("item: %+v", first)
+	}
+
+	email := inviteStudent(t, f, f.coachToken, "Aluno Dir")
+	student := studentLogin(t, f, email, "SenhaAluno123!").body["access_token"].(string)
+	if r := doGetAuth(t, f.client, f.url+"/v1/users/directory?ids="+coachID, student); r.status != http.StatusOK {
+		t.Fatalf("aluno consulta o diretório: %d", r.status)
+	}
+	for _, bad := range []string{"", "?ids=", "?ids=abc"} {
+		if r := doGetAuth(t, f.client, f.url+"/v1/users/directory"+bad, f.coachToken); r.status != http.StatusUnprocessableEntity && r.status != http.StatusBadRequest {
+			t.Fatalf("ids inválido %q: %d", bad, r.status)
+		}
+	}
+	if r := doGetAuth(t, f.client, f.url+"/v1/users/directory?ids="+coachID, ""); r.status != http.StatusUnauthorized {
+		t.Fatalf("sem token: %d", r.status)
 	}
 }

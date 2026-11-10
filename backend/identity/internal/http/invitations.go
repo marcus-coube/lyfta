@@ -3,12 +3,14 @@ package http
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 
 	"github.com/marcus-coube/lyfta/identity/internal/domain"
 	"github.com/marcus-coube/lyfta/identity/internal/mail"
@@ -25,6 +27,7 @@ type InvitationHandler struct {
 	tenants     *repo.TenantRepo
 	users       *repo.UserRepo
 	consents    *repo.ConsentRepo
+	links       *repo.CoachLinkRepo
 	issuer      *SessionIssuer
 	mailer      mail.Mailer
 	appURL      string
@@ -41,6 +44,7 @@ func NewInvitationHandler(
 	tenants *repo.TenantRepo,
 	users *repo.UserRepo,
 	consents *repo.ConsentRepo,
+	links *repo.CoachLinkRepo,
 	issuer *SessionIssuer,
 	mailer mail.Mailer,
 	appURL string,
@@ -52,6 +56,7 @@ func NewInvitationHandler(
 		tenants:      tenants,
 		users:        users,
 		consents:     consents,
+		links:        links,
 		issuer:       issuer,
 		mailer:       mailer,
 		appURL:       appURL,
@@ -59,7 +64,7 @@ func NewInvitationHandler(
 	}
 }
 
-// --- POST /v1/invitations (auth: owner|coach) ------------------------------
+// --- POST /v1/invitations (auth: owner; coach só convida aluno) -------------
 
 type createInvitationRequest struct {
 	Email string `json:"email"`
@@ -96,6 +101,12 @@ func (h *InvitationHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	case len(strings.TrimSpace(req.Name)) > maxInviteeNameLen:
 		writeError(w, errValidation("name"))
+		return
+	}
+	// Só o owner convida equipe (coach/owner); o coach convida só aluno, que
+	// nasce vinculado a ele (ADR-016 §1). Sem isso o coach se promoveria.
+	if req.Role != string(domain.RoleStudent) && !hasRole(claims, domain.RoleOwner) {
+		writeError(w, errForbidden())
 		return
 	}
 
@@ -323,7 +334,7 @@ func (h *InvitationHandler) Accept(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, resp)
 }
 
-// --- POST /v1/invitations/{id}/resend (auth: owner|coach) ------------------
+// --- POST /v1/invitations/{id}/resend (auth: owner|coach vinculado) ------------------
 
 // Resend invalida o token de convite anterior e cria+envia um novo (plano
 // P0.4 passo 5).
@@ -338,10 +349,16 @@ func (h *InvitationHandler) Resend(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tenantID := claims.TenantID
 
+	// Sessão válida: convite inexistente é 404 e já aceito é 409 — não
+	// `invalid_token`, que o app lê como sessão expirada.
+	if _, err := uuid.Parse(id); err != nil {
+		writeError(w, errInvitationNotFound())
+		return
+	}
 	inv, err := h.invitations.FindByID(ctx, tenantID, id)
 	if err != nil {
 		if err == repo.ErrNotFound {
-			writeError(w, errInvalidToken())
+			writeError(w, errInvitationNotFound())
 			return
 		}
 		h.logger.Error("invitation_resend_find_failed", slog.Any("error", err))
@@ -349,8 +366,36 @@ func (h *InvitationHandler) Resend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if inv.AcceptedAt != nil {
-		writeError(w, errInvalidToken())
+		writeError(w, errInvitationAlreadyAccepted())
 		return
+	}
+	// Vínculo (ADR-016 §4): o owner reenvia qualquer convite; o coach só o de
+	// aluno vinculado a ele. Convite de coach/owner é só do owner.
+	if !hasRole(claims, domain.RoleOwner) {
+		if inv.Role != domain.RoleStudent {
+			writeError(w, errForbidden())
+			return
+		}
+		invitee, err := h.users.FindByEmailInTenant(ctx, tenantID, inv.Email)
+		if err != nil {
+			if err == repo.ErrNotFound {
+				writeError(w, errStudentNotFound())
+				return
+			}
+			h.logger.Error("invitation_resend_invitee_failed", slog.Any("error", err))
+			writeError(w, errInternal())
+			return
+		}
+		coachID, err := h.links.CoachOf(ctx, tenantID, invitee.ID)
+		if errors.Is(err, repo.ErrNotFound) || (err == nil && coachID != claims.Subject) {
+			writeError(w, errStudentNotFound())
+			return
+		}
+		if err != nil {
+			h.logger.Error("invitation_resend_link_failed", slog.Any("error", err))
+			writeError(w, errInternal())
+			return
+		}
 	}
 
 	if err := h.invitations.Invalidate(ctx, tenantID, inv.ID); err != nil {

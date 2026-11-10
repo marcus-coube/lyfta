@@ -1,54 +1,75 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/auth/auth_controller.dart';
 import '../../../core/http/providers.dart';
+import '../domain/conversation.dart';
+import '../presentation/conversations_controller.dart';
 
-/// Nome (ou e-mail, se o convite ainda não tiver nome) de cada usuário do
-/// tenant, por id — o `comms` só guarda ids (ADR-013 §2: nenhum serviço lê o
-/// banco do outro), então "quem é o outro participante" de uma conversa só
-/// o `identity` sabe (`GET /v1/users`, P1.6).
-///
-/// Uma chamada por papel (coach/owner e aluno) em vez de uma por conversa —
-/// mesmo motivo do `StudentsController` (P1.6) evitar N+1, só que aqui nem
-/// paginado: até [_pageLimit] de cada papel cobre qualquer tenant do MVP;
-/// tenant maior que isso é uma dívida a paginar quando doer (mesmo critério
-/// da nota de execução do P1.6).
-final participantDirectoryProvider = FutureProvider<Map<String, String>>((ref) async {
-  const pageLimit = 200;
-  final dio = ref.watch(identityApiClientProvider).dio;
+/// Teto de ids por consulta ao diretório do `identity`.
+const int participantDirectoryChunk = 100;
 
-  // Cada papel falha sozinho: o aluno só pode ler a equipe (coach/owner) e
-  // recebe 403 na lista de alunos — sem isso, um 403 apagava o diretório
-  // inteiro e o chat do aluno ficava sem o nome do professor (E2E P4.4).
-  Future<Map<String, dynamic>?> fetchRole(String role) async {
-    try {
-      final response = await dio.get<Map<String, dynamic>>(
-        '/v1/users',
-        queryParameters: {'role': role, 'limit': pageLimit},
+/// Resolve nomes por id no `identity` (`GET /v1/users/directory?ids=`).
+class ParticipantDirectoryRepository {
+  ParticipantDirectoryRepository(this._dio);
+
+  final Dio _dio;
+
+  /// Nome de cada id conhecido no tenant, em lotes de
+  /// [participantDirectoryChunk]; ids que o servidor não conhece ficam de fora.
+  Future<Map<String, String>> names(Iterable<String> ids) async {
+    final unique = ids.toSet().toList();
+    final directory = <String, String>{};
+    for (var i = 0; i < unique.length; i += participantDirectoryChunk) {
+      final chunk = unique.sublist(
+        i,
+        (i + participantDirectoryChunk).clamp(0, unique.length),
       );
-      return response.data;
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 403) return null;
-      rethrow;
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/v1/users/directory',
+        queryParameters: {'ids': chunk.join(',')},
+      );
+      for (final raw in response.data?['items'] as List<dynamic>? ?? const []) {
+        final user = raw as Map<String, dynamic>;
+        directory[user['id'] as String] = user['name'] as String? ?? '';
+      }
     }
+    return directory;
   }
+}
 
-  final responses = await Future.wait([
-    fetchRole('student'),
-    fetchRole('coach'),
-    fetchRole('owner'),
-  ]);
+final participantDirectoryRepositoryProvider =
+    Provider<ParticipantDirectoryRepository>((ref) {
+  return ParticipantDirectoryRepository(
+    ref.watch(identityApiClientProvider).dio,
+  );
+});
 
-  final directory = <String, String>{};
-  for (final response in responses) {
-    final items = response?['items'] as List<dynamic>? ?? const [];
-    for (final raw in items) {
-      final user = raw as Map<String, dynamic>;
-      final id = user['id'] as String;
-      final name = user['name'] as String? ?? '';
-      final email = user['email'] as String? ?? '';
-      directory[id] = name.isNotEmpty ? name : email;
-    }
-  }
-  return directory;
+/// Nome de cada participante das conversas do usuário, por id — o `comms` só
+/// guarda ids (ADR-013 §2: nenhum serviço lê o banco do outro), então quem é o
+/// outro participante só o `identity` sabe.
+///
+/// Busca sob demanda, pelos ids que as conversas realmente têm, em vez de
+/// listar os usuários do tenant: funciona com qualquer número de alunos e o
+/// aluno não precisa listar a equipe. Só refaz quando o *conjunto* de
+/// participantes muda (uma mensagem nova recarrega as conversas, mas não
+/// dispara nova busca).
+final participantDirectoryProvider =
+    FutureProvider<Map<String, String>>((ref) async {
+  final selfId = ref.watch(authControllerProvider).userId ?? '';
+  final key = ref.watch(
+    conversationsProvider.select((async) {
+      final ids = <String>{
+        for (final c in async.valueOrNull ?? const <Conversation>[]) ...[
+          c.studentId,
+          c.coachId,
+        ],
+      }..remove(selfId);
+      return (ids.toList()..sort()).join(',');
+    }),
+  );
+  if (key.isEmpty) return const {};
+  return ref
+      .watch(participantDirectoryRepositoryProvider)
+      .names(key.split(','));
 });

@@ -173,3 +173,27 @@ class _PainBadge extends StatelessWidget {
     );
   }
 }
+
+/// Rótulo da aba Check-ins com o badge de não revisados (P3.5 §3, Aceite
+/// literal do P3.3: "não revisados primeiro" na fila — aqui é o mesmo
+/// contador, só que no rótulo em vez da ordenação). `Consumer` isolado em
+/// vez de converter a tela inteira para `ConsumerStatefulWidget`: só este
+/// pedacinho precisa saber da contagem.
+class CheckinsTabLabel extends ConsumerWidget {
+  const CheckinsTabLabel({required this.studentId, super.key});
+
+  final String studentId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final pending =
+        ref.watch(checkinsProvider(studentId)).valueOrNull?.pendingCount ?? 0;
+
+    if (pending <= 0) return Text(l10n.evolutionTabCheckins);
+    return Badge(
+      label: Text(pending > 99 ? '99+' : pending.toString()),
+      child: Text(l10n.evolutionTabCheckins),
+    );
+  }
+}
