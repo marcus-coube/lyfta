@@ -78,6 +78,25 @@ func TestStudentNeverSeesCoachNotes(t *testing.T) {
 	if p.Goal == nil || *p.Goal != "strength" || p.CoachNotes == nil || *p.CoachNotes != "tende a faltar às segundas" {
 		t.Fatalf("a edição do aluno não pode apagar coach_notes: %s", rec.Body.String())
 	}
+	// A meta semanal (streak) é do coach: o 3 do aluno é ignorado.
+	if p.WeeklyTarget == nil || *p.WeeklyTarget != 4 {
+		t.Fatalf("o aluno não pode mudar a meta semanal: %s", rec.Body.String())
+	}
+}
+
+// TestStudentFirstProfileHasNoWeeklyTarget: o primeiro PUT do aluno cria o
+// perfil sem meta semanal, mesmo que ele mande uma.
+func TestStudentFirstProfileHasNoWeeklyTarget(t *testing.T) {
+	a := newAssessmentActors(t)
+	rec := do(t, a.handler, http.MethodPut, "/v1/me/profile", a.student, map[string]any{
+		"goal": "health", "weekly_target": 6,
+	})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("PUT do aluno: %d %s", rec.Code, rec.Body.String())
+	}
+	if p := decode[apiProfile](t, rec.Body.Bytes()); p.WeeklyTarget != nil || p.Goal == nil || *p.Goal != "health" {
+		t.Fatalf("perfil criado pelo aluno não pode ter meta semanal: %s", rec.Body.String())
+	}
 }
 
 func TestProfileEmptyAndValidation(t *testing.T) {

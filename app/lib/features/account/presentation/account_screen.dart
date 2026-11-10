@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/auth/auth_controller.dart';
 import '../../../core/auth/auth_state.dart';
@@ -69,6 +70,16 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
           ],
           if (isStudent) ...[
             const ProfileSection(),
+            const SizedBox(height: LySpace.x4),
+            ListTile(
+              key: const Key('account_goal'),
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.flag_outlined),
+              title: Text(l10n.myGoalTitle),
+              subtitle: Text(l10n.accountGoalSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/goal'),
+            ),
             const SizedBox(height: LySpace.x4),
             _Section(l10n.accountPrivacySection),
             SwitchListTile(

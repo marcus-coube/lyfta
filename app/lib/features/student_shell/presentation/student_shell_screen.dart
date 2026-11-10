@@ -12,6 +12,7 @@ import '../../chat/presentation/chat_home_screen.dart';
 import '../../chat/presentation/conversations_controller.dart';
 import '../../checkin/presentation/checkin_controller.dart';
 import '../../evolution/presentation/evolution_screen.dart';
+import '../../profile/presentation/goal_prompt.dart';
 import '../../workout/presentation/today_screen.dart';
 
 /// Shell do aluno — Hoje, Evolução, Chat e Agenda. Lateral em telas largas
@@ -27,6 +28,15 @@ class StudentShellScreen extends ConsumerStatefulWidget {
 
 class _StudentShellScreenState extends ConsumerState<StudentShellScreen> {
   int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Convite único para preencher o objetivo (P5.5), depois do 1º frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) maybeShowGoalPrompt(context, ref);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -102,7 +102,7 @@ cross-tenant nos repositórios novos.
 reflete na lista e no login do aluno; teste de widget da lista (filtro +
 estado vazio) e da aba Dados. Strings nos 3 idiomas.
 
-## - [ ] P5.5 App — anamnese na ficha e no perfil do aluno (Flutter)
+## - [x] P5.5 App — anamnese na ficha e no perfil do aluno (Flutter)
 
 **Objetivo:** objetivo e lesões visíveis onde o coach decide.
 **Passos:**
@@ -313,3 +313,46 @@ objetivo e o coach vê; teste de widget do formulário de lesão.
 - Dívida restante: `StudentRepository.listCoaches` (opções de "Trocar
   professor") ainda usa `/v1/users` com `limit: 200` por papel — só pesa com
   mais de 200 professores.
+
+### P5.5 (2026-11-09)
+
+- App, sem backend novo. `features/profile/` (domain/data/presentation): modelos
+  `StudentProfile`/`Injury`, `ProfileRepository` sobre o `assessment` (o
+  `EvolutionScope` resolve `/v1/me` × `/v1/students/{id}`, como nas demais telas
+  de saúde) e `HealthSection`, usada nas duas portas. Códigos de objetivo,
+  experiência e região do corpo traduzidos em `shared/l10n/profile_l10n.dart`
+  (ADR-011 §5; 57 chaves novas nas 3 ARBs).
+- **O `PUT /profile` substitui tudo o que a porta escreve** (P5.3), inclusive
+  `weekly_target` e `goal_notes`. O formulário sempre parte do perfil lido e
+  devolve o conjunto completo; `coach_notes` só vai na porta do coach.
+- Coach (aba Dados, abaixo do cadastro; coluna esquerda >= 840 px): objetivo,
+  detalhes, experiência, meta semanal (1–7), observações médicas, notas privadas
+  e a lista de lesões (ativas primeiro; menu: resolver/reabrir/remover com
+  confirmação; formulário em diálogo: região, descrição, desde quando). Sem
+  `health_data` do aluno, a seção mostra `errorStudentConsentRequired` sem
+  "tentar de novo" (novo `describeScopedError` em `api_exception_l10n.dart`, que
+  a Evolução passou a usar também).
+- Aluno: tela "Meu objetivo" (`/goal`) com os mesmos campos, sem notas do coach.
+  Decisões do usuário: o aluno **vê e edita as próprias lesões** (informa antes
+  de treinar; o coach vê na ficha) e a **meta semanal é só do coach** — o aluno
+  a vê em modo leitura ("Definida pelo seu professor.") e o `assessment` ignora
+  `weekly_target` na porta `/me`, como já fazia com `coach_notes` (inclusive no
+  primeiro PUT, que cria o perfil sem meta). Evita baixar a meta para manter o
+  streak.
+  Atalho na Conta. Convite único após o primeiro acesso: diálogo no shell do
+  aluno quando o objetivo está vazio; "já mostrado" fica em
+  `flutter_secure_storage` por usuário (reinstalar o app pode mostrá-lo de novo,
+  e só aparece com a anamnese vazia — mantido no aparelho por decisão do
+  usuário). Falha de rede não marca como mostrado.
+- Resumo da Evolução (coach): cartão "Objetivo e saúde" com o objetivo e as
+  lesões ativas (`goal`/`active_injuries` do P5.3).
+- Agenda: `resolveWeeklyTarget` — `weekly_target` da anamnese, senão o tamanho do
+  rodízio, senão 1. Falha ao ler a anamnese (consentimento, rede) cai no rodízio
+  sem derrubar a Agenda. Custo: +1 chamada ao `assessment` por carga da Agenda.
+- `LyTextField` ganhou `minLines`/`maxLines`/`maxLength` (campos de observação).
+- Verificado: `flutter analyze` limpo, 135 testes verdes (formulário e lista de
+  lesões nas duas portas, formulário de lesão, cartão do resumo, meta semanal),
+  guards de strings e paridade de ARBs OK. Aceite manual: coach abre a ficha >
+  Dados > adiciona lesão > aba Evolução > Resumo mostra a lesão; aluno em Conta >
+  Meu objetivo muda o objetivo e o coach vê ao reabrir a ficha.
+- Não verificado em dispositivo/navegador (só testes de widget).

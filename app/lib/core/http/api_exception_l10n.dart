@@ -107,3 +107,17 @@ bool isRetryableError(Object error) {
   return !(error is ApiException &&
       (error.code == 'student_not_found' || error.code == 'consent_required'));
 }
+
+/// Como [describeApiError], mas na porta do coach (`/students/{id}/...`) o
+/// `consent_required` de saúde quer dizer "o aluno não autorizou" — coisa que
+/// só o aluno resolve —, não "você precisa consentir".
+String describeScopedError(
+  BuildContext context,
+  Object error, {
+  required bool coachScope,
+}) {
+  if (coachScope && error is ApiException && error.code == 'consent_required') {
+    return AppLocalizations.of(context).errorStudentConsentRequired;
+  }
+  return describeApiError(context, error);
+}

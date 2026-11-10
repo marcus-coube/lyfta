@@ -1582,6 +1582,197 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get studentWorkoutInUse => 'Em uso';
+
+  @override
+  String get profileHealthSection => 'Objetivo e saúde';
+
+  @override
+  String get profileGoalLabel => 'Objetivo';
+
+  @override
+  String get profileUnset => 'Não informado';
+
+  @override
+  String get goalHypertrophy => 'Hipertrofia';
+
+  @override
+  String get goalWeightLoss => 'Emagrecimento';
+
+  @override
+  String get goalStrength => 'Força';
+
+  @override
+  String get goalConditioning => 'Condicionamento';
+
+  @override
+  String get goalHealth => 'Saúde e bem-estar';
+
+  @override
+  String get goalRehab => 'Reabilitação';
+
+  @override
+  String get goalOther => 'Outro';
+
+  @override
+  String get profileGoalNotesLabel => 'Detalhes do objetivo';
+
+  @override
+  String get profileExperienceLabel => 'Experiência com treino';
+
+  @override
+  String get experienceBeginner => 'Iniciante';
+
+  @override
+  String get experienceIntermediate => 'Intermediário';
+
+  @override
+  String get experienceAdvanced => 'Avançado';
+
+  @override
+  String get profileWeeklyTargetLabel => 'Meta semanal de treinos';
+
+  @override
+  String get profileWeeklyTargetCoachOnly => 'Definida pelo seu professor.';
+
+  @override
+  String profileWeeklyTargetOption(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count treinos por semana',
+      one: '1 treino por semana',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileMedicalNotesLabel => 'Observações médicas';
+
+  @override
+  String get profileMedicalNotesHint => 'Condições, medicamentos, restrições';
+
+  @override
+  String get profileCoachNotesLabel => 'Notas privadas do professor';
+
+  @override
+  String get profileCoachNotesHint => 'O aluno não vê estas notas.';
+
+  @override
+  String get profileHealthSaved => 'Objetivo e saúde salvos.';
+
+  @override
+  String get injuriesSection => 'Lesões e restrições';
+
+  @override
+  String get injuriesEmpty => 'Nenhuma lesão registrada.';
+
+  @override
+  String get injuriesAdd => 'Adicionar lesão';
+
+  @override
+  String get injuriesResolvedHeader => 'Resolvidas';
+
+  @override
+  String get injuryFormTitle => 'Nova lesão';
+
+  @override
+  String get injuryRegionLabel => 'Região do corpo';
+
+  @override
+  String get injuryDescriptionLabel => 'Descrição';
+
+  @override
+  String get injurySinceLabel => 'Desde quando';
+
+  @override
+  String get injurySinceEmpty => 'Não informado';
+
+  @override
+  String get injurySinceClear => 'Limpar data';
+
+  @override
+  String injurySinceOn(String date) {
+    return 'Desde $date';
+  }
+
+  @override
+  String injuryResolvedOn(String date) {
+    return 'Resolvida em $date';
+  }
+
+  @override
+  String get injuryResolve => 'Marcar como resolvida';
+
+  @override
+  String get injuryReopen => 'Reabrir';
+
+  @override
+  String get injuryDeleteTitle => 'Remover lesão?';
+
+  @override
+  String get injuryDeleteBody => 'O registro será apagado.';
+
+  @override
+  String get bodyRegionNeck => 'Pescoço';
+
+  @override
+  String get bodyRegionShoulder => 'Ombro';
+
+  @override
+  String get bodyRegionElbow => 'Cotovelo';
+
+  @override
+  String get bodyRegionWristHand => 'Punho e mão';
+
+  @override
+  String get bodyRegionUpperBack => 'Costas (parte alta)';
+
+  @override
+  String get bodyRegionLowerBack => 'Lombar';
+
+  @override
+  String get bodyRegionChest => 'Peito';
+
+  @override
+  String get bodyRegionHip => 'Quadril';
+
+  @override
+  String get bodyRegionKnee => 'Joelho';
+
+  @override
+  String get bodyRegionAnkleFoot => 'Tornozelo e pé';
+
+  @override
+  String get bodyRegionOther => 'Outra';
+
+  @override
+  String get myGoalTitle => 'Meu objetivo';
+
+  @override
+  String get myGoalIntro =>
+      'Seu professor usa isto para montar o seu treino. As observações médicas só você e ele veem.';
+
+  @override
+  String get accountGoalSubtitle => 'Objetivo, experiência e saúde';
+
+  @override
+  String get goalPromptTitle => 'Qual é o seu objetivo?';
+
+  @override
+  String get goalPromptBody =>
+      'Conte ao seu professor o que você quer alcançar e se tem alguma lesão. Leva um minuto e dá para mudar depois, em Conta.';
+
+  @override
+  String get goalPromptNow => 'Preencher agora';
+
+  @override
+  String get goalPromptLater => 'Agora não';
+
+  @override
+  String get evolutionSummaryGoalUnset => 'Objetivo não informado';
+
+  @override
+  String get evolutionSummaryNoInjuries => 'Sem lesões ativas';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -3169,4 +3360,195 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get studentWorkoutInUse => 'Em uso';
+
+  @override
+  String get profileHealthSection => 'Objetivo e saúde';
+
+  @override
+  String get profileGoalLabel => 'Objetivo';
+
+  @override
+  String get profileUnset => 'Não indicado';
+
+  @override
+  String get goalHypertrophy => 'Hipertrofia';
+
+  @override
+  String get goalWeightLoss => 'Emagrecimento';
+
+  @override
+  String get goalStrength => 'Força';
+
+  @override
+  String get goalConditioning => 'Condicionamento';
+
+  @override
+  String get goalHealth => 'Saúde e bem-estar';
+
+  @override
+  String get goalRehab => 'Reabilitação';
+
+  @override
+  String get goalOther => 'Outro';
+
+  @override
+  String get profileGoalNotesLabel => 'Detalhes do objetivo';
+
+  @override
+  String get profileExperienceLabel => 'Experiência com treino';
+
+  @override
+  String get experienceBeginner => 'Iniciante';
+
+  @override
+  String get experienceIntermediate => 'Intermédio';
+
+  @override
+  String get experienceAdvanced => 'Avançado';
+
+  @override
+  String get profileWeeklyTargetLabel => 'Meta semanal de treinos';
+
+  @override
+  String get profileWeeklyTargetCoachOnly => 'Definida pelo seu professor.';
+
+  @override
+  String profileWeeklyTargetOption(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count treinos por semana',
+      one: '1 treino por semana',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileMedicalNotesLabel => 'Observações médicas';
+
+  @override
+  String get profileMedicalNotesHint => 'Condições, medicamentos, restrições';
+
+  @override
+  String get profileCoachNotesLabel => 'Notas privadas do professor';
+
+  @override
+  String get profileCoachNotesHint => 'O aluno não vê estas notas.';
+
+  @override
+  String get profileHealthSaved => 'Objetivo e saúde guardados.';
+
+  @override
+  String get injuriesSection => 'Lesões e restrições';
+
+  @override
+  String get injuriesEmpty => 'Nenhuma lesão registada.';
+
+  @override
+  String get injuriesAdd => 'Adicionar lesão';
+
+  @override
+  String get injuriesResolvedHeader => 'Resolvidas';
+
+  @override
+  String get injuryFormTitle => 'Nova lesão';
+
+  @override
+  String get injuryRegionLabel => 'Região do corpo';
+
+  @override
+  String get injuryDescriptionLabel => 'Descrição';
+
+  @override
+  String get injurySinceLabel => 'Desde quando';
+
+  @override
+  String get injurySinceEmpty => 'Não indicado';
+
+  @override
+  String get injurySinceClear => 'Limpar data';
+
+  @override
+  String injurySinceOn(String date) {
+    return 'Desde $date';
+  }
+
+  @override
+  String injuryResolvedOn(String date) {
+    return 'Resolvida em $date';
+  }
+
+  @override
+  String get injuryResolve => 'Marcar como resolvida';
+
+  @override
+  String get injuryReopen => 'Reabrir';
+
+  @override
+  String get injuryDeleteTitle => 'Remover lesão?';
+
+  @override
+  String get injuryDeleteBody => 'O registo será apagado.';
+
+  @override
+  String get bodyRegionNeck => 'Pescoço';
+
+  @override
+  String get bodyRegionShoulder => 'Ombro';
+
+  @override
+  String get bodyRegionElbow => 'Cotovelo';
+
+  @override
+  String get bodyRegionWristHand => 'Pulso e mão';
+
+  @override
+  String get bodyRegionUpperBack => 'Costas (parte alta)';
+
+  @override
+  String get bodyRegionLowerBack => 'Lombar';
+
+  @override
+  String get bodyRegionChest => 'Peito';
+
+  @override
+  String get bodyRegionHip => 'Anca';
+
+  @override
+  String get bodyRegionKnee => 'Joelho';
+
+  @override
+  String get bodyRegionAnkleFoot => 'Tornozelo e pé';
+
+  @override
+  String get bodyRegionOther => 'Outra';
+
+  @override
+  String get myGoalTitle => 'O meu objetivo';
+
+  @override
+  String get myGoalIntro =>
+      'O teu professor usa isto para montar o teu treino. As observações médicas só tu e ele veem.';
+
+  @override
+  String get accountGoalSubtitle => 'Objetivo, experiência e saúde';
+
+  @override
+  String get goalPromptTitle => 'Qual é o teu objetivo?';
+
+  @override
+  String get goalPromptBody =>
+      'Conta ao teu professor o que queres alcançar e se tens alguma lesão. Leva um minuto e podes mudar depois, em Conta.';
+
+  @override
+  String get goalPromptNow => 'Preencher agora';
+
+  @override
+  String get goalPromptLater => 'Agora não';
+
+  @override
+  String get evolutionSummaryGoalUnset => 'Objetivo não indicado';
+
+  @override
+  String get evolutionSummaryNoInjuries => 'Sem lesões ativas';
 }

@@ -8,6 +8,9 @@ import 'package:lyfta/core/design_system/design_system.dart';
 import 'package:lyfta/core/http/api_exception.dart';
 import 'package:lyfta/core/l10n/gen/app_localizations.dart';
 import 'package:lyfta/features/builder/data/plan_repository.dart';
+import 'package:lyfta/features/evolution/domain/evolution_scope.dart';
+import 'package:lyfta/features/profile/data/profile_repository.dart';
+import 'package:lyfta/features/profile/domain/student_profile.dart';
 import 'package:lyfta/features/students/data/student_repository.dart';
 import 'package:lyfta/features/students/domain/student.dart';
 import 'package:lyfta/features/students/presentation/student_data_tab.dart';
@@ -111,6 +114,18 @@ class _FakeStudents extends StudentRepository {
   }
 }
 
+/// A aba Dados carrega a anamnese (P5.5); aqui ela vem vazia e sem lesões.
+class _FakeProfiles extends ProfileRepository {
+  _FakeProfiles() : super(Dio());
+
+  @override
+  Future<StudentProfile> profile(EvolutionScope scope) async =>
+      const StudentProfile();
+
+  @override
+  Future<List<Injury>> injuries(EvolutionScope scope) async => const [];
+}
+
 const _active = Student(
   id: 'aluno-1',
   name: 'Ana Alves',
@@ -137,6 +152,7 @@ Future<_FakeStudents> _pump(
         authControllerProvider.overrideWith(() => _TestAuth(isOwner: isOwner)),
         studentRepositoryProvider.overrideWithValue(fake),
         planRepositoryProvider.overrideWithValue(_FakePlans()),
+        profileRepositoryProvider.overrideWithValue(_FakeProfiles()),
       ],
       child: MaterialApp(
         theme: LyTheme.dark(),

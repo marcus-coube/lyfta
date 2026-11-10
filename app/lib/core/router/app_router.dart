@@ -12,6 +12,7 @@ import '../../features/builder/presentation/plan_builder_screen.dart';
 import '../../features/chat/presentation/chat_screen.dart';
 import '../../features/coach_shell/presentation/coach_shell_screen.dart';
 import '../../features/consent/presentation/consent_screen.dart';
+import '../../features/profile/presentation/my_goal_screen.dart';
 import '../../features/student_shell/presentation/student_shell_screen.dart';
 import '../../features/students/presentation/student_detail_screen.dart';
 import '../../features/workout/presentation/session_player_screen.dart';
@@ -68,6 +69,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/account',
         builder: (context, state) => const AccountScreen(),
+      ),
+      GoRoute(
+        path: '/goal',
+        builder: (context, state) => const MyGoalScreen(),
       ),
       GoRoute(
         path: '/signup',

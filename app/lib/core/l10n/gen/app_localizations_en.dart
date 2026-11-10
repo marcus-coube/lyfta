@@ -1580,4 +1580,195 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get studentWorkoutInUse => 'In use';
+
+  @override
+  String get profileHealthSection => 'Goal and health';
+
+  @override
+  String get profileGoalLabel => 'Goal';
+
+  @override
+  String get profileUnset => 'Not set';
+
+  @override
+  String get goalHypertrophy => 'Muscle gain';
+
+  @override
+  String get goalWeightLoss => 'Weight loss';
+
+  @override
+  String get goalStrength => 'Strength';
+
+  @override
+  String get goalConditioning => 'Conditioning';
+
+  @override
+  String get goalHealth => 'Health and wellbeing';
+
+  @override
+  String get goalRehab => 'Rehab';
+
+  @override
+  String get goalOther => 'Other';
+
+  @override
+  String get profileGoalNotesLabel => 'Goal details';
+
+  @override
+  String get profileExperienceLabel => 'Training experience';
+
+  @override
+  String get experienceBeginner => 'Beginner';
+
+  @override
+  String get experienceIntermediate => 'Intermediate';
+
+  @override
+  String get experienceAdvanced => 'Advanced';
+
+  @override
+  String get profileWeeklyTargetLabel => 'Weekly workout goal';
+
+  @override
+  String get profileWeeklyTargetCoachOnly => 'Set by your coach.';
+
+  @override
+  String profileWeeklyTargetOption(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count workouts per week',
+      one: '1 workout per week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileMedicalNotesLabel => 'Medical notes';
+
+  @override
+  String get profileMedicalNotesHint => 'Conditions, medication, restrictions';
+
+  @override
+  String get profileCoachNotesLabel => 'Coach private notes';
+
+  @override
+  String get profileCoachNotesHint => 'The student can\'t see these notes.';
+
+  @override
+  String get profileHealthSaved => 'Goal and health saved.';
+
+  @override
+  String get injuriesSection => 'Injuries and restrictions';
+
+  @override
+  String get injuriesEmpty => 'No injuries recorded.';
+
+  @override
+  String get injuriesAdd => 'Add injury';
+
+  @override
+  String get injuriesResolvedHeader => 'Resolved';
+
+  @override
+  String get injuryFormTitle => 'New injury';
+
+  @override
+  String get injuryRegionLabel => 'Body region';
+
+  @override
+  String get injuryDescriptionLabel => 'Description';
+
+  @override
+  String get injurySinceLabel => 'Since';
+
+  @override
+  String get injurySinceEmpty => 'Not set';
+
+  @override
+  String get injurySinceClear => 'Clear date';
+
+  @override
+  String injurySinceOn(String date) {
+    return 'Since $date';
+  }
+
+  @override
+  String injuryResolvedOn(String date) {
+    return 'Resolved on $date';
+  }
+
+  @override
+  String get injuryResolve => 'Mark as resolved';
+
+  @override
+  String get injuryReopen => 'Reopen';
+
+  @override
+  String get injuryDeleteTitle => 'Remove injury?';
+
+  @override
+  String get injuryDeleteBody => 'The record will be deleted.';
+
+  @override
+  String get bodyRegionNeck => 'Neck';
+
+  @override
+  String get bodyRegionShoulder => 'Shoulder';
+
+  @override
+  String get bodyRegionElbow => 'Elbow';
+
+  @override
+  String get bodyRegionWristHand => 'Wrist and hand';
+
+  @override
+  String get bodyRegionUpperBack => 'Upper back';
+
+  @override
+  String get bodyRegionLowerBack => 'Lower back';
+
+  @override
+  String get bodyRegionChest => 'Chest';
+
+  @override
+  String get bodyRegionHip => 'Hip';
+
+  @override
+  String get bodyRegionKnee => 'Knee';
+
+  @override
+  String get bodyRegionAnkleFoot => 'Ankle and foot';
+
+  @override
+  String get bodyRegionOther => 'Other';
+
+  @override
+  String get myGoalTitle => 'My goal';
+
+  @override
+  String get myGoalIntro =>
+      'Your coach uses this to build your training. Only you and your coach can see the medical notes.';
+
+  @override
+  String get accountGoalSubtitle => 'Goal, experience and health';
+
+  @override
+  String get goalPromptTitle => 'What\'s your goal?';
+
+  @override
+  String get goalPromptBody =>
+      'Tell your coach what you want to achieve and whether you have any injuries. It takes a minute and you can change it later in Account.';
+
+  @override
+  String get goalPromptNow => 'Fill in now';
+
+  @override
+  String get goalPromptLater => 'Not now';
+
+  @override
+  String get evolutionSummaryGoalUnset => 'Goal not set';
+
+  @override
+  String get evolutionSummaryNoInjuries => 'No active injuries';
 }

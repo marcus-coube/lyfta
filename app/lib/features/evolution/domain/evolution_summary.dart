@@ -1,4 +1,5 @@
 import 'bioimpedance.dart';
+import '../../profile/domain/student_profile.dart';
 import 'measurement.dart';
 
 /// Deltas do resumo (`GET /v1/students/{id}/summary`, P2.3): a diferença
@@ -23,12 +24,15 @@ class EvolutionSummaryDeltas {
 }
 
 /// Resumo do aluno que o coach vê na aba Resumo da ficha (P2.5): última
-/// medida, última bioimpedância, contagem de fotos e os deltas acima. Só o
+/// medida, última bioimpedância, contagem de fotos, os deltas acima e, desde a
+/// P5.5, objetivo e lesões ativas. Só o
 /// coach lê essa rota — a tela do aluno já tem as três listas completas.
 class EvolutionSummary {
   const EvolutionSummary({
     required this.photoCount,
     required this.deltas,
+    this.goal,
+    this.activeInjuries = const [],
     this.latestMeasurement,
     this.latestBioimpedance,
   });
@@ -46,6 +50,10 @@ class EvolutionSummary {
       deltas: EvolutionSummaryDeltas.fromJson(
         json['deltas'] as Map<String, dynamic>? ?? const {},
       ),
+      goal: json['goal'] as String?,
+      activeInjuries: (json['active_injuries'] as List<dynamic>? ?? const [])
+          .map((raw) => Injury.fromJson(raw as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -53,4 +61,8 @@ class EvolutionSummary {
   final BioimpedanceRecord? latestBioimpedance;
   final int photoCount;
   final EvolutionSummaryDeltas deltas;
+
+  /// Objetivo e lesões ativas da anamnese (P5.3); nulo/vazio sem anamnese.
+  final String? goal;
+  final List<Injury> activeInjuries;
 }

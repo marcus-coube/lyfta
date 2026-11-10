@@ -19,6 +19,9 @@ class LyTextField extends StatefulWidget {
     this.onSubmitted,
     this.onChanged,
     this.autofocus = false,
+    this.minLines,
+    this.maxLines,
+    this.maxLength,
     this.showPasswordLabel,
     this.hidePasswordLabel,
   }) : assert(
@@ -42,6 +45,12 @@ class LyTextField extends StatefulWidget {
   /// Abre o campo já focado. Num diálogo com texto pré-preenchido é o que faz
   /// a seleção inicial valer: sem foco, digitar acrescenta ao valor de fábrica.
   final bool autofocus;
+
+  /// Campo de várias linhas (observações): `minLines`/`maxLines` crescem o
+  /// campo; `maxLength` limita o texto (o contador fica escondido).
+  final int? minLines;
+  final int? maxLines;
+  final int? maxLength;
 
   /// Rótulo do botão de alternar visibilidade quando a senha está oculta —
   /// obrigatório se `obscure: true` (o DS não conhece l10n, quem chama traz
@@ -71,12 +80,16 @@ class _LyTextFieldState extends State<LyTextField> {
           controller: widget.controller,
           autofocus: widget.autofocus,
           obscureText: _obscured,
+          minLines: widget.obscure ? 1 : widget.minLines,
+          maxLines: widget.obscure ? 1 : widget.maxLines,
+          maxLength: widget.maxLength,
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,
           onSubmitted: widget.onSubmitted,
           onChanged: widget.onChanged,
           style: LyType.body(c.textPrimary),
           decoration: InputDecoration(
+            counterText: '',
             hintText: widget.hint,
             errorText: widget.errorText,
             prefixIcon: widget.prefixIcon == null

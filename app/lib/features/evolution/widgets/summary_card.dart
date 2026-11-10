@@ -5,6 +5,7 @@ import '../../../core/design_system/design_system.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/format/metric_format.dart';
 import '../../../shared/l10n/measurement_l10n.dart';
+import '../../../shared/l10n/profile_l10n.dart';
 import '../domain/evolution_summary.dart';
 import 'delta_badge.dart';
 
@@ -30,6 +31,54 @@ class SummaryCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        LyCard(
+          key: const Key('summary_health'),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.profileHealthSection,
+                style: LyType.title(c.textPrimary),
+              ),
+              const SizedBox(height: LySpace.x2),
+              Text(
+                summary.goal == null
+                    ? l10n.evolutionSummaryGoalUnset
+                    : goalLabel(l10n, summary.goal!),
+                style: LyType.body(
+                  summary.goal == null ? c.textSecondary : c.textPrimary,
+                ),
+              ),
+              const SizedBox(height: LySpace.x2),
+              if (summary.activeInjuries.isEmpty)
+                Text(
+                  l10n.evolutionSummaryNoInjuries,
+                  style: LyType.body(c.textSecondary),
+                )
+              else
+                for (final injury in summary.activeInjuries)
+                  Padding(
+                    padding: const EdgeInsets.only(top: LySpace.x1),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.warning_amber_outlined,
+                            size: 16, color: c.warning,),
+                        const SizedBox(width: LySpace.x2),
+                        Expanded(
+                          child: Text(
+                            '${bodyRegionLabel(l10n, injury.bodyRegion)}: '
+                            '${injury.description}',
+                            style: LyType.body(c.textPrimary),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+            ],
+          ),
+        ),
+        const SizedBox(height: LySpace.x3),
         LyCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

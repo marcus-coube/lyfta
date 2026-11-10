@@ -2109,7 +2109,7 @@ abstract class AppLocalizations {
   /// **'Não foi possível carregar sua agenda.'**
   String get agendaLoadError;
 
-  /// Streak simples da agenda: semanas consecutivas em que o aluno treinou pelo menos tantas vezes quanto os dias do rodízio (A/B/C).
+  /// Streak simples da agenda: semanas consecutivas em que o aluno treinou pelo menos a meta semanal (anamnese; sem ela, os dias do rodízio A/B/C).
   ///
   /// In pt, this message translates to:
   /// **'{count, plural, =1{1 semana seguida batendo a meta de treinos} other{{count} semanas seguidas batendo a meta de treinos}}'**
@@ -2918,6 +2918,360 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Em uso'**
   String get studentWorkoutInUse;
+
+  /// Título da seção de anamnese na ficha do aluno e na tela do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Objetivo e saúde'**
+  String get profileHealthSection;
+
+  /// Rótulo do objetivo principal do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Objetivo'**
+  String get profileGoalLabel;
+
+  /// Opção vazia dos seletores da anamnese.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não informado'**
+  String get profileUnset;
+
+  /// Objetivo: hipertrofia (código hypertrophy).
+  ///
+  /// In pt, this message translates to:
+  /// **'Hipertrofia'**
+  String get goalHypertrophy;
+
+  /// Objetivo: emagrecimento (código weight_loss).
+  ///
+  /// In pt, this message translates to:
+  /// **'Emagrecimento'**
+  String get goalWeightLoss;
+
+  /// Objetivo: força (código strength).
+  ///
+  /// In pt, this message translates to:
+  /// **'Força'**
+  String get goalStrength;
+
+  /// Objetivo: condicionamento (código conditioning).
+  ///
+  /// In pt, this message translates to:
+  /// **'Condicionamento'**
+  String get goalConditioning;
+
+  /// Objetivo: saúde (código health).
+  ///
+  /// In pt, this message translates to:
+  /// **'Saúde e bem-estar'**
+  String get goalHealth;
+
+  /// Objetivo: reabilitação (código rehab).
+  ///
+  /// In pt, this message translates to:
+  /// **'Reabilitação'**
+  String get goalRehab;
+
+  /// Objetivo: outro (código other).
+  ///
+  /// In pt, this message translates to:
+  /// **'Outro'**
+  String get goalOther;
+
+  /// Texto livre sobre o objetivo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Detalhes do objetivo'**
+  String get profileGoalNotesLabel;
+
+  /// Rótulo da experiência do aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Experiência com treino'**
+  String get profileExperienceLabel;
+
+  /// Experiência: iniciante (código beginner).
+  ///
+  /// In pt, this message translates to:
+  /// **'Iniciante'**
+  String get experienceBeginner;
+
+  /// Experiência: intermediário (código intermediate).
+  ///
+  /// In pt, this message translates to:
+  /// **'Intermediário'**
+  String get experienceIntermediate;
+
+  /// Experiência: avançado (código advanced).
+  ///
+  /// In pt, this message translates to:
+  /// **'Avançado'**
+  String get experienceAdvanced;
+
+  /// Quantos treinos por semana o aluno quer fazer; alimenta o streak da Agenda.
+  ///
+  /// In pt, this message translates to:
+  /// **'Meta semanal de treinos'**
+  String get profileWeeklyTargetLabel;
+
+  /// Legenda da meta semanal na tela do aluno: só o coach muda.
+  ///
+  /// In pt, this message translates to:
+  /// **'Definida pelo seu professor.'**
+  String get profileWeeklyTargetCoachOnly;
+
+  /// Opção do seletor de meta semanal.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 treino por semana} other{{count} treinos por semana}}'**
+  String profileWeeklyTargetOption(int count);
+
+  /// Condições, medicamentos e restrições médicas.
+  ///
+  /// In pt, this message translates to:
+  /// **'Observações médicas'**
+  String get profileMedicalNotesLabel;
+
+  /// Dica do campo de observações médicas.
+  ///
+  /// In pt, this message translates to:
+  /// **'Condições, medicamentos, restrições'**
+  String get profileMedicalNotesHint;
+
+  /// Notas que só o professor lê.
+  ///
+  /// In pt, this message translates to:
+  /// **'Notas privadas do professor'**
+  String get profileCoachNotesLabel;
+
+  /// Dica do campo de notas privadas.
+  ///
+  /// In pt, this message translates to:
+  /// **'O aluno não vê estas notas.'**
+  String get profileCoachNotesHint;
+
+  /// Confirmação após salvar a anamnese.
+  ///
+  /// In pt, this message translates to:
+  /// **'Objetivo e saúde salvos.'**
+  String get profileHealthSaved;
+
+  /// Título da lista de lesões.
+  ///
+  /// In pt, this message translates to:
+  /// **'Lesões e restrições'**
+  String get injuriesSection;
+
+  /// Estado vazio da lista de lesões.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma lesão registrada.'**
+  String get injuriesEmpty;
+
+  /// Botão que abre o formulário de lesão.
+  ///
+  /// In pt, this message translates to:
+  /// **'Adicionar lesão'**
+  String get injuriesAdd;
+
+  /// Subtítulo das lesões já resolvidas.
+  ///
+  /// In pt, this message translates to:
+  /// **'Resolvidas'**
+  String get injuriesResolvedHeader;
+
+  /// Título do formulário de lesão.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova lesão'**
+  String get injuryFormTitle;
+
+  /// Rótulo da região da lesão.
+  ///
+  /// In pt, this message translates to:
+  /// **'Região do corpo'**
+  String get injuryRegionLabel;
+
+  /// Rótulo da descrição da lesão.
+  ///
+  /// In pt, this message translates to:
+  /// **'Descrição'**
+  String get injuryDescriptionLabel;
+
+  /// Rótulo da data de início da lesão.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desde quando'**
+  String get injurySinceLabel;
+
+  /// Valor do campo de início quando vazio.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não informado'**
+  String get injurySinceEmpty;
+
+  /// Apaga a data de início da lesão.
+  ///
+  /// In pt, this message translates to:
+  /// **'Limpar data'**
+  String get injurySinceClear;
+
+  /// Data de início da lesão, já formatada.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desde {date}'**
+  String injurySinceOn(String date);
+
+  /// Data de resolução da lesão, já formatada.
+  ///
+  /// In pt, this message translates to:
+  /// **'Resolvida em {date}'**
+  String injuryResolvedOn(String date);
+
+  /// Ação que resolve a lesão.
+  ///
+  /// In pt, this message translates to:
+  /// **'Marcar como resolvida'**
+  String get injuryResolve;
+
+  /// Ação que reabre a lesão resolvida.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reabrir'**
+  String get injuryReopen;
+
+  /// Título da confirmação de remoção.
+  ///
+  /// In pt, this message translates to:
+  /// **'Remover lesão?'**
+  String get injuryDeleteTitle;
+
+  /// Corpo da confirmação de remoção.
+  ///
+  /// In pt, this message translates to:
+  /// **'O registro será apagado.'**
+  String get injuryDeleteBody;
+
+  /// Região: pescoço (código neck).
+  ///
+  /// In pt, this message translates to:
+  /// **'Pescoço'**
+  String get bodyRegionNeck;
+
+  /// Região: ombro (código shoulder).
+  ///
+  /// In pt, this message translates to:
+  /// **'Ombro'**
+  String get bodyRegionShoulder;
+
+  /// Região: cotovelo (código elbow).
+  ///
+  /// In pt, this message translates to:
+  /// **'Cotovelo'**
+  String get bodyRegionElbow;
+
+  /// Região: punho e mão (código wrist_hand).
+  ///
+  /// In pt, this message translates to:
+  /// **'Punho e mão'**
+  String get bodyRegionWristHand;
+
+  /// Região: costas altas (código upper_back).
+  ///
+  /// In pt, this message translates to:
+  /// **'Costas (parte alta)'**
+  String get bodyRegionUpperBack;
+
+  /// Região: lombar (código lower_back).
+  ///
+  /// In pt, this message translates to:
+  /// **'Lombar'**
+  String get bodyRegionLowerBack;
+
+  /// Região: peito (código chest).
+  ///
+  /// In pt, this message translates to:
+  /// **'Peito'**
+  String get bodyRegionChest;
+
+  /// Região: quadril (código hip).
+  ///
+  /// In pt, this message translates to:
+  /// **'Quadril'**
+  String get bodyRegionHip;
+
+  /// Região: joelho (código knee).
+  ///
+  /// In pt, this message translates to:
+  /// **'Joelho'**
+  String get bodyRegionKnee;
+
+  /// Região: tornozelo e pé (código ankle_foot).
+  ///
+  /// In pt, this message translates to:
+  /// **'Tornozelo e pé'**
+  String get bodyRegionAnkleFoot;
+
+  /// Região: outra (código other).
+  ///
+  /// In pt, this message translates to:
+  /// **'Outra'**
+  String get bodyRegionOther;
+
+  /// Título da tela do aluno e do atalho na Conta.
+  ///
+  /// In pt, this message translates to:
+  /// **'Meu objetivo'**
+  String get myGoalTitle;
+
+  /// Introdução da tela Meu objetivo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Seu professor usa isto para montar o seu treino. As observações médicas só você e ele veem.'**
+  String get myGoalIntro;
+
+  /// Subtítulo do atalho Meu objetivo na Conta.
+  ///
+  /// In pt, this message translates to:
+  /// **'Objetivo, experiência e saúde'**
+  String get accountGoalSubtitle;
+
+  /// Título do convite que aparece uma vez ao aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Qual é o seu objetivo?'**
+  String get goalPromptTitle;
+
+  /// Corpo do convite que aparece uma vez ao aluno.
+  ///
+  /// In pt, this message translates to:
+  /// **'Conte ao seu professor o que você quer alcançar e se tem alguma lesão. Leva um minuto e dá para mudar depois, em Conta.'**
+  String get goalPromptBody;
+
+  /// Aceita o convite do objetivo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Preencher agora'**
+  String get goalPromptNow;
+
+  /// Dispensa o convite do objetivo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Agora não'**
+  String get goalPromptLater;
+
+  /// Resumo do coach: aluno sem objetivo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Objetivo não informado'**
+  String get evolutionSummaryGoalUnset;
+
+  /// Resumo do coach: aluno sem lesões ativas.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem lesões ativas'**
+  String get evolutionSummaryNoInjuries;
 }
 
 class _AppLocalizationsDelegate

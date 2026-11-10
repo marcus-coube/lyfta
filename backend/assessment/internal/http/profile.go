@@ -98,7 +98,7 @@ type profileRequest struct {
 	Goal               *string `json:"goal"`
 	GoalNotes          string  `json:"goal_notes"`
 	TrainingExperience *string `json:"training_experience"`
-	WeeklyTarget       *int    `json:"weekly_target"`
+	WeeklyTarget       *int    `json:"weekly_target"` // ignorada na porta do aluno
 	MedicalNotes       string  `json:"medical_notes"`
 	CoachNotes         string  `json:"coach_notes"` // ignorada na porta do aluno
 }
@@ -133,7 +133,8 @@ func (h *ProfileHandler) get(w http.ResponseWriter, r *http.Request, coach bool)
 }
 
 // put substitui os campos que a porta pode escrever (o aluno não escreve
-// coach_notes) e cria o perfil se for o primeiro.
+// coach_notes nem weekly_target — a meta do streak é do coach) e cria o perfil
+// se for o primeiro.
 func (h *ProfileHandler) put(w http.ResponseWriter, r *http.Request, coach bool) {
 	t, ok := h.target(w, r, coach)
 	if !ok {

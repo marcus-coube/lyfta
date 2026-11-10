@@ -701,7 +701,7 @@
   "agendaLoadError": "Não foi possível carregar sua agenda.",
   "agendaStreakWeeks": "{count, plural, =1{1 semana seguida batendo a meta de treinos} other{{count} semanas seguidas batendo a meta de treinos}}",
   "@agendaStreakWeeks": {
-    "description": "Streak simples da agenda: semanas consecutivas em que o aluno treinou pelo menos tantas vezes quanto os dias do rodízio (A/B/C).",
+    "description": "Streak simples da agenda: semanas consecutivas em que o aluno treinou pelo menos a meta semanal (anamnese; sem ela, os dias do rodízio A/B/C).",
     "placeholders": {
       "count": {"type": "int"}
     }
@@ -1127,5 +1127,250 @@
   "studentWorkoutInUse": "Em uso",
   "@studentWorkoutInUse": {
     "description": "Plano que o aluno está fazendo agora."
+  },
+  "profileHealthSection": "Objetivo e saúde",
+  "@profileHealthSection": {
+    "description": "Título da seção de anamnese na ficha do aluno e na tela do aluno."
+  },
+  "profileGoalLabel": "Objetivo",
+  "@profileGoalLabel": {
+    "description": "Rótulo do objetivo principal do aluno."
+  },
+  "profileUnset": "Não informado",
+  "@profileUnset": {
+    "description": "Opção vazia dos seletores da anamnese."
+  },
+  "goalHypertrophy": "Hipertrofia",
+  "@goalHypertrophy": {
+    "description": "Objetivo: hipertrofia (código hypertrophy)."
+  },
+  "goalWeightLoss": "Emagrecimento",
+  "@goalWeightLoss": {
+    "description": "Objetivo: emagrecimento (código weight_loss)."
+  },
+  "goalStrength": "Força",
+  "@goalStrength": {
+    "description": "Objetivo: força (código strength)."
+  },
+  "goalConditioning": "Condicionamento",
+  "@goalConditioning": {
+    "description": "Objetivo: condicionamento (código conditioning)."
+  },
+  "goalHealth": "Saúde e bem-estar",
+  "@goalHealth": {
+    "description": "Objetivo: saúde (código health)."
+  },
+  "goalRehab": "Reabilitação",
+  "@goalRehab": {
+    "description": "Objetivo: reabilitação (código rehab)."
+  },
+  "goalOther": "Outro",
+  "@goalOther": {
+    "description": "Objetivo: outro (código other)."
+  },
+  "profileGoalNotesLabel": "Detalhes do objetivo",
+  "@profileGoalNotesLabel": {
+    "description": "Texto livre sobre o objetivo."
+  },
+  "profileExperienceLabel": "Experiência com treino",
+  "@profileExperienceLabel": {
+    "description": "Rótulo da experiência do aluno."
+  },
+  "experienceBeginner": "Iniciante",
+  "@experienceBeginner": {
+    "description": "Experiência: iniciante (código beginner)."
+  },
+  "experienceIntermediate": "Intermediário",
+  "@experienceIntermediate": {
+    "description": "Experiência: intermediário (código intermediate)."
+  },
+  "experienceAdvanced": "Avançado",
+  "@experienceAdvanced": {
+    "description": "Experiência: avançado (código advanced)."
+  },
+  "profileWeeklyTargetLabel": "Meta semanal de treinos",
+  "profileWeeklyTargetCoachOnly": "Definida pelo seu professor.",
+  "@profileWeeklyTargetCoachOnly": {
+    "description": "Legenda da meta semanal na tela do aluno: só o coach muda."
+  },
+  "@profileWeeklyTargetLabel": {
+    "description": "Quantos treinos por semana o aluno quer fazer; alimenta o streak da Agenda."
+  },
+  "profileWeeklyTargetOption": "{count, plural, =1{1 treino por semana} other{{count} treinos por semana}}",
+  "@profileWeeklyTargetOption": {
+    "description": "Opção do seletor de meta semanal.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "profileMedicalNotesLabel": "Observações médicas",
+  "@profileMedicalNotesLabel": {
+    "description": "Condições, medicamentos e restrições médicas."
+  },
+  "profileMedicalNotesHint": "Condições, medicamentos, restrições",
+  "@profileMedicalNotesHint": {
+    "description": "Dica do campo de observações médicas."
+  },
+  "profileCoachNotesLabel": "Notas privadas do professor",
+  "@profileCoachNotesLabel": {
+    "description": "Notas que só o professor lê."
+  },
+  "profileCoachNotesHint": "O aluno não vê estas notas.",
+  "@profileCoachNotesHint": {
+    "description": "Dica do campo de notas privadas."
+  },
+  "profileHealthSaved": "Objetivo e saúde salvos.",
+  "@profileHealthSaved": {
+    "description": "Confirmação após salvar a anamnese."
+  },
+  "injuriesSection": "Lesões e restrições",
+  "@injuriesSection": {
+    "description": "Título da lista de lesões."
+  },
+  "injuriesEmpty": "Nenhuma lesão registrada.",
+  "@injuriesEmpty": {
+    "description": "Estado vazio da lista de lesões."
+  },
+  "injuriesAdd": "Adicionar lesão",
+  "@injuriesAdd": {
+    "description": "Botão que abre o formulário de lesão."
+  },
+  "injuriesResolvedHeader": "Resolvidas",
+  "@injuriesResolvedHeader": {
+    "description": "Subtítulo das lesões já resolvidas."
+  },
+  "injuryFormTitle": "Nova lesão",
+  "@injuryFormTitle": {
+    "description": "Título do formulário de lesão."
+  },
+  "injuryRegionLabel": "Região do corpo",
+  "@injuryRegionLabel": {
+    "description": "Rótulo da região da lesão."
+  },
+  "injuryDescriptionLabel": "Descrição",
+  "@injuryDescriptionLabel": {
+    "description": "Rótulo da descrição da lesão."
+  },
+  "injurySinceLabel": "Desde quando",
+  "@injurySinceLabel": {
+    "description": "Rótulo da data de início da lesão."
+  },
+  "injurySinceEmpty": "Não informado",
+  "@injurySinceEmpty": {
+    "description": "Valor do campo de início quando vazio."
+  },
+  "injurySinceClear": "Limpar data",
+  "@injurySinceClear": {
+    "description": "Apaga a data de início da lesão."
+  },
+  "injurySinceOn": "Desde {date}",
+  "@injurySinceOn": {
+    "description": "Data de início da lesão, já formatada.",
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "injuryResolvedOn": "Resolvida em {date}",
+  "@injuryResolvedOn": {
+    "description": "Data de resolução da lesão, já formatada.",
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "injuryResolve": "Marcar como resolvida",
+  "@injuryResolve": {
+    "description": "Ação que resolve a lesão."
+  },
+  "injuryReopen": "Reabrir",
+  "@injuryReopen": {
+    "description": "Ação que reabre a lesão resolvida."
+  },
+  "injuryDeleteTitle": "Remover lesão?",
+  "@injuryDeleteTitle": {
+    "description": "Título da confirmação de remoção."
+  },
+  "injuryDeleteBody": "O registro será apagado.",
+  "@injuryDeleteBody": {
+    "description": "Corpo da confirmação de remoção."
+  },
+  "bodyRegionNeck": "Pescoço",
+  "@bodyRegionNeck": {
+    "description": "Região: pescoço (código neck)."
+  },
+  "bodyRegionShoulder": "Ombro",
+  "@bodyRegionShoulder": {
+    "description": "Região: ombro (código shoulder)."
+  },
+  "bodyRegionElbow": "Cotovelo",
+  "@bodyRegionElbow": {
+    "description": "Região: cotovelo (código elbow)."
+  },
+  "bodyRegionWristHand": "Punho e mão",
+  "@bodyRegionWristHand": {
+    "description": "Região: punho e mão (código wrist_hand)."
+  },
+  "bodyRegionUpperBack": "Costas (parte alta)",
+  "@bodyRegionUpperBack": {
+    "description": "Região: costas altas (código upper_back)."
+  },
+  "bodyRegionLowerBack": "Lombar",
+  "@bodyRegionLowerBack": {
+    "description": "Região: lombar (código lower_back)."
+  },
+  "bodyRegionChest": "Peito",
+  "@bodyRegionChest": {
+    "description": "Região: peito (código chest)."
+  },
+  "bodyRegionHip": "Quadril",
+  "@bodyRegionHip": {
+    "description": "Região: quadril (código hip)."
+  },
+  "bodyRegionKnee": "Joelho",
+  "@bodyRegionKnee": {
+    "description": "Região: joelho (código knee)."
+  },
+  "bodyRegionAnkleFoot": "Tornozelo e pé",
+  "@bodyRegionAnkleFoot": {
+    "description": "Região: tornozelo e pé (código ankle_foot)."
+  },
+  "bodyRegionOther": "Outra",
+  "@bodyRegionOther": {
+    "description": "Região: outra (código other)."
+  },
+  "myGoalTitle": "Meu objetivo",
+  "@myGoalTitle": {
+    "description": "Título da tela do aluno e do atalho na Conta."
+  },
+  "myGoalIntro": "Seu professor usa isto para montar o seu treino. As observações médicas só você e ele veem.",
+  "@myGoalIntro": {
+    "description": "Introdução da tela Meu objetivo."
+  },
+  "accountGoalSubtitle": "Objetivo, experiência e saúde",
+  "@accountGoalSubtitle": {
+    "description": "Subtítulo do atalho Meu objetivo na Conta."
+  },
+  "goalPromptTitle": "Qual é o seu objetivo?",
+  "@goalPromptTitle": {
+    "description": "Título do convite que aparece uma vez ao aluno."
+  },
+  "goalPromptBody": "Conte ao seu professor o que você quer alcançar e se tem alguma lesão. Leva um minuto e dá para mudar depois, em Conta.",
+  "@goalPromptBody": {
+    "description": "Corpo do convite que aparece uma vez ao aluno."
+  },
+  "goalPromptNow": "Preencher agora",
+  "@goalPromptNow": {
+    "description": "Aceita o convite do objetivo."
+  },
+  "goalPromptLater": "Agora não",
+  "@goalPromptLater": {
+    "description": "Dispensa o convite do objetivo."
+  },
+  "evolutionSummaryGoalUnset": "Objetivo não informado",
+  "@evolutionSummaryGoalUnset": {
+    "description": "Resumo do coach: aluno sem objetivo."
+  },
+  "evolutionSummaryNoInjuries": "Sem lesões ativas",
+  "@evolutionSummaryNoInjuries": {
+    "description": "Resumo do coach: aluno sem lesões ativas."
   }
 }

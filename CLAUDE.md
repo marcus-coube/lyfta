@@ -38,7 +38,7 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 - **[docs/benchmarking/](docs/benchmarking/)** — auditoria HubFit × Trainerize × Lyfta.
 - `docs/guidelines/` — convenções de código (ex.: `flutter.md`).
 
-## Estado atual (2026-11-08)
+## Estado atual (2026-11-09)
 **Executando o plano do MVP 2.0** ([docs/plan/mvp2/](docs/plan/mvp2/)) na ordem
 P5→P8, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P5.X").
 **Progresso vivo em [STATUS.md](docs/plan/mvp2/STATUS.md)** — ler ele primeiro para
@@ -97,9 +97,17 @@ o projeto com DSN (humano). A **P4.7** fechou o vínculo professor↔aluno
 nasce no convite, owner reatribui), checagem por M2M com cache de 30 s no
 `internal/coachlink` de workout, assessment e comms, e 404 `student_not_found`
 para aluno que não é do coach — owner vê tudo, e só ele troca o professor no app.
-Próximo: **MVP 2.0** — plano em [docs/plan/mvp2/](docs/plan/mvp2/README.md)
-(P5 alunos → P6 builder → P7 financeiro → P8 dashboard/release; comando
-"implemente P5.1"). Financeiro do 2.0 é o sexto serviço, `billing` (8085), **só
+**MVP 2.0** — plano em [docs/plan/mvp2/](docs/plan/mvp2/README.md)
+(P5 alunos → P6 builder → P7 financeiro → P8 dashboard/release). **P5 fechada
+(5/5, 2026-11-09):** fuso do tenant (claim `tz`, job de pendente por fuso),
+cadastro e ciclo de vida do aluno no identity (`/v1/students`, status
+`inactive` com histórico, M2M de status em lote; coach só convida aluno),
+anamnese e lesões no assessment com `health_data` exigido em medidas,
+bioimpedância e anamnese (meta semanal só do coach), e no app a lista de
+alunos paginada com "último treino" (`POST /v1/students/overview` no
+workout), ficha `/students/:id` (Dados/Treino/Evolução/Check-ins), "Meus
+dados" e "Meu objetivo" do aluno. Ninguém usa o app ainda: contratos podem
+mudar em vez de acumular dívida. Próximo: P6.1. Financeiro do 2.0 é o sexto serviço, `billing` (8085), **só
 com baixa manual** — PIX adiado; acesso do coach configurável por organização ([ADR-017](docs/adr/ADR-017-financeiro-servico-billing-baixa-manual.md));
 modelos de treino aplicados por cópia ([ADR-018](docs/adr/ADR-018-modelos-de-treino-por-copia.md)).
 Tudo só em emulador: o que depende de

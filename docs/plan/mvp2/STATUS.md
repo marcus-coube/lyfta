@@ -3,15 +3,15 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** P5.5 — app: anamnese na ficha e no perfil do aluno (Flutter).
+**Próxima tarefa:** P6.1 — modelos de treino (workout). **Fase P5 fechada (5/5).**
 
 | Fase | Progresso | Situação |
 |---|---|---|
-| P5 — Alunos | 4/5 | em andamento |
+| P5 — Alunos | 5/5 | fechada |
 | P6 — Builder | 0/5 | não iniciada |
 | P7 — Financeiro | 0/5 | não iniciada |
 | P8 — Dashboard e release | 0/4 | não iniciada |
-| **Total** | **4/19** | |
+| **Total** | **5/19** | |
 
 ## Bancos locais
 
@@ -41,3 +41,4 @@ Os quatro bancos do 1.0 seguem na tabela do [STATUS do 1.0](../mvp1/STATUS.md).
 | 2026-11-09 | **P5.3 concluída:** assessment `0005_student_profiles` (anamnese + lesões, RLS), `/me/profile` e `/students/{id}/profile` (aluno nunca vê `coach_notes`), `/injuries` CRUD nas duas portas, resumo do coach com objetivo e lesões ativas, exclusão física estendida; gate `health_data` em medidas, bioimpedância e anamnese (middleware), com mensagem própria do coach no app |
 | 2026-11-09 | **P5.4 concluída:** app — lista de alunos paginada pelo cursor (busca, filtros de status e professor, tabela >= 840 px, header que rola), ficha `/students/:id` com abas Dados/Treino/Evolução/Check-ins (cadastro, inativar/reativar, histórico, reenviar convite), "Meus dados" na Conta do aluno; rota `/students/:id/evolution` removida |
 | 2026-11-09 | **Ajustes pós-P5.4 (decisão do usuário):** `POST /v1/students/overview` no workout (último treino por `received_at` + plano ativo em lote, filtrado pelo vínculo; migration 0018) e coluna "Último treino" na lista; `POST /v1/invitations/{id}/resend` exige vínculo (404 para coach de outro aluno); diretório do chat por ids (`GET /v1/users/directory`), sem corte de 200. Master-detail no desktop fora por decisão do usuário; convite: coach só convida aluno (escalada corrigida), resend 404 `invitation_not_found`/409 `invitation_already_accepted` |
+| 2026-11-09 | **P5.5 concluída — fase P5 fechada (5/5):** app — "Objetivo e saúde" na aba Dados da ficha (objetivo, experiência, meta semanal, observações médicas, notas privadas do coach, lesões com adicionar/resolver/reabrir/remover) e tela "Meu objetivo" do aluno (`/goal`, pela Conta e sugerida uma vez no primeiro acesso); lesões ativas e objetivo no Resumo da Evolução do coach; `weekly_target` passa a ser a meta do streak da Agenda (fallback: tamanho do rodízio). Sem mudança de backend; decisões: aluno vê/edita as próprias lesões e a meta semanal é só do coach (`/me` ignora `weekly_target`) |

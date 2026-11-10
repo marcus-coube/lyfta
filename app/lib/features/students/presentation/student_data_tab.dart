@@ -7,13 +7,15 @@ import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_date_field.dart';
+import '../../evolution/domain/evolution_scope.dart';
+import '../../profile/presentation/health_section.dart';
 import '../domain/student.dart';
 import 'student_status.dart';
 import 'students_controller.dart';
 
 /// Aba Dados da ficha (P5.4): cadastro editável, status (inativar/reativar,
-/// convite pendente), professor (owner) e histórico de status. A P5.5 acrescenta
-/// "Objetivo e saúde" abaixo do cadastro.
+/// convite pendente), professor (owner) e histórico de status, mais "Objetivo e
+/// saúde" (anamnese e lesões, P5.5) abaixo do cadastro.
 class StudentDataTab extends ConsumerWidget {
   const StudentDataTab({required this.student, super.key});
 
@@ -24,6 +26,7 @@ class StudentDataTab extends ConsumerWidget {
     final isOwner = ref.watch(authControllerProvider.select((s) => s.isOwner));
 
     final registry = _RegistrySection(student: student);
+    final health = HealthSection(scope: EvolutionScope.student(student.id));
     final status = _StatusSection(student: student);
     final coach = isOwner ? _CoachSection(student: student) : null;
     final history = _HistorySection(studentId: student.id);
@@ -37,7 +40,16 @@ class StudentDataTab extends ConsumerWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: registry),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      registry,
+                      const SizedBox(height: LySpace.x6),
+                      health,
+                    ],
+                  ),
+                ),
                 const SizedBox(width: LySpace.x8),
                 Expanded(
                   child: Column(
@@ -61,6 +73,8 @@ class StudentDataTab extends ConsumerWidget {
           padding: const EdgeInsets.all(LySpace.x4),
           children: [
             registry,
+            const SizedBox(height: LySpace.x6),
+            health,
             const SizedBox(height: LySpace.x6),
             status,
             if (coach != null) ...[const SizedBox(height: LySpace.x6), coach],

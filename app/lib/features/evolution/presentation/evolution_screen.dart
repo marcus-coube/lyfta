@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/design_system/design_system.dart';
-import '../../../core/http/api_exception.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_skeleton.dart';
@@ -575,12 +574,7 @@ String _describeError(
   Object error,
   EvolutionScope scope,
 ) {
-  if (scope.isCoach &&
-      error is ApiException &&
-      error.code == 'consent_required') {
-    return AppLocalizations.of(context).errorStudentConsentRequired;
-  }
-  return describeApiError(context, error);
+  return describeScopedError(context, error, coachScope: scope.isCoach);
 }
 
 class _TabError extends StatelessWidget {

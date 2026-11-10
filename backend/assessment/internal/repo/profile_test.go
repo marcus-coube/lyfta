@@ -26,14 +26,14 @@ func TestProfileAndInjuryTenantIsolation(t *testing.T) {
 	}, true); err != nil {
 		t.Fatalf("upsert coach: %v", err)
 	}
-	// Upsert do aluno (sem coach_notes) preserva a nota do coach.
+	// Upsert do aluno preserva a nota e a meta semanal do coach.
 	saved, err := profiles.Upsert(ctx, domain.StudentProfile{
 		TenantID: tenantA, StudentID: student, Goal: ptr("strength"), UpdatedBy: student,
 	}, false)
 	if err != nil {
 		t.Fatalf("upsert aluno: %v", err)
 	}
-	if saved.CoachNotes != "nota" || *saved.Goal != "strength" || saved.WeeklyTarget != nil {
+	if saved.CoachNotes != "nota" || *saved.Goal != "strength" || saved.WeeklyTarget == nil || *saved.WeeklyTarget != 3 {
 		t.Fatalf("upsert do aluno errado: %+v", saved)
 	}
 

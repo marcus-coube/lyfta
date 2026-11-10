@@ -1,11 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../evolution/domain/evolution_scope.dart';
+import '../../profile/data/profile_repository.dart';
 import '../data/agenda_repository.dart';
 import '../domain/agenda_day.dart';
 
 /// Semanas olhadas para trás no cálculo do streak (P4.1: "contador local e
 /// simples" — 8 semanas é histórico suficiente sem virar relatório).
 const int agendaStreakLookbackWeeks = 8;
+
+/// Meta semanal do streak (P5.5): a `weekly_target` da anamnese, e só quando
+/// ela está vazia o tamanho do rodízio (A/B/C → 3); sem rodízio, 1.
+int resolveWeeklyTarget({int? profileTarget, required int rotationLength}) {
+  if (profileTarget != null && profileTarget >= 1) return profileTarget;
+  return rotationLength == 0 ? 1 : rotationLength;
+}
 
 /// Início da semana da agenda: sempre **domingo**, não o primeiro dia da
 /// semana do `Localizations` da tela — o plano pede explicitamente
@@ -98,6 +107,20 @@ class AgendaController extends AsyncNotifier<AgendaView> {
     await future;
   }
 
+  /// `weekly_target` do `assessment`. Qualquer falha (sem consentimento de
+  /// saúde, rede) cai no rodízio: a meta é um enfeite da Agenda, nunca motivo
+  /// para ela não abrir.
+  Future<int?> _profileTarget() async {
+    try {
+      final profile = await ref
+          .read(profileRepositoryProvider)
+          .profile(const EvolutionScope.me());
+      return profile.weeklyTarget;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<AgendaView> _load() async {
     final repo = ref.read(agendaRepositoryProvider);
     final today = DateTime.now();
@@ -131,6 +154,7 @@ class AgendaController extends AsyncNotifier<AgendaView> {
 
     final pointer = await repo.rotationPointer();
     final sessionsByDay = await repo.sessionsByDay(rangeFrom, rangeTo);
+    final profileTarget = await _profileTarget();
 
     final weekDays = buildAgendaDays(
       from: _weekStart,
@@ -150,9 +174,12 @@ class AgendaController extends AsyncNotifier<AgendaView> {
           )
         : const <AgendaDay>[];
 
-    // Meta semanal simples: o tamanho do rodízio (A/B/C → 3), sem histórico
-    // de metas nem configuração — gamificação de verdade é 3.0 (ADR-012).
-    final weeklyTarget = pointer.days.isEmpty ? 1 : pointer.days.length;
+    // Meta semanal: a da anamnese (P5.5) ou, sem ela, o tamanho do rodízio —
+    // sem histórico de metas; gamificação de verdade é 3.0 (ADR-012).
+    final weeklyTarget = resolveWeeklyTarget(
+      profileTarget: profileTarget,
+      rotationLength: pointer.days.length,
+    );
     var streakWeeks = 0;
     for (var i = 0; i < agendaStreakLookbackWeeks; i++) {
       final weekStart = currentWeekStart.subtract(Duration(days: 7 * (i + 1)));

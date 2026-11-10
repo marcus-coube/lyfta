@@ -43,20 +43,20 @@ func (r *ProfileRepo) Get(ctx context.Context, tenantID, studentID string) (doma
 	return p, nil
 }
 
-// Upsert grava os campos do aluno (objetivo, experiência, meta semanal e
-// observações de saúde). coach_notes só é escrita quando withCoachNotes — a
-// porta do aluno nunca a toca, nem para sobrescrever com vazio.
-func (r *ProfileRepo) Upsert(ctx context.Context, p domain.StudentProfile, withCoachNotes bool) (domain.StudentProfile, error) {
+// Upsert grava objetivo, experiência e observações de saúde. Meta semanal e
+// coach_notes são do coach: só são escritas quando coachPort — a porta do
+// aluno nunca as toca, nem para sobrescrever com vazio.
+func (r *ProfileRepo) Upsert(ctx context.Context, p domain.StudentProfile, coachPort bool) (domain.StudentProfile, error) {
 	err := WithTenant(ctx, r.pool, p.TenantID, func(tx pgx.Tx) error {
 		const q = `
 			INSERT INTO student_profiles (tenant_id, student_id, goal, goal_notes,
 				training_experience, weekly_target, medical_notes, coach_notes, updated_by)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, CASE WHEN $9 THEN $8 END, $10)
+			VALUES ($1, $2, $3, $4, $5, CASE WHEN $9 THEN $6::int END, $7, CASE WHEN $9 THEN $8 END, $10)
 			ON CONFLICT (tenant_id, student_id) DO UPDATE SET
 				goal = EXCLUDED.goal,
 				goal_notes = EXCLUDED.goal_notes,
 				training_experience = EXCLUDED.training_experience,
-				weekly_target = EXCLUDED.weekly_target,
+				weekly_target = CASE WHEN $9 THEN EXCLUDED.weekly_target ELSE student_profiles.weekly_target END,
 				medical_notes = EXCLUDED.medical_notes,
 				coach_notes = CASE WHEN $9 THEN EXCLUDED.coach_notes ELSE student_profiles.coach_notes END,
 				updated_at = now(),
@@ -65,7 +65,7 @@ func (r *ProfileRepo) Upsert(ctx context.Context, p domain.StudentProfile, withC
 				COALESCE(medical_notes, ''), COALESCE(coach_notes, ''), updated_at, updated_by`
 		return tx.QueryRow(ctx, q, p.TenantID, p.StudentID, p.Goal, nullString(p.GoalNotes),
 			p.TrainingExperience, p.WeeklyTarget, nullString(p.MedicalNotes), nullString(p.CoachNotes),
-			withCoachNotes, p.UpdatedBy,
+			coachPort, p.UpdatedBy,
 		).Scan(&p.Goal, &p.GoalNotes, &p.TrainingExperience, &p.WeeklyTarget,
 			&p.MedicalNotes, &p.CoachNotes, &p.UpdatedAt, &p.UpdatedBy)
 	})
