@@ -159,6 +159,8 @@ func RequireInternalToken(token string) func(http.Handler) http.Handler {
 // (ADR-016): owner sempre; coach só o aluno vinculado a ele.
 type StudentLinker interface {
 	CanAccessStudent(ctx context.Context, tenantID, userID string, roles []string, studentID string) (bool, error)
+	// StudentsOf: o conjunto de alunos do coach (para filtrar listas).
+	StudentsOf(ctx context.Context, tenantID, coachID string) (map[string]struct{}, error)
 }
 
 // checkStudentLink aplica o vínculo. Devolve nil quando o acesso é permitido;

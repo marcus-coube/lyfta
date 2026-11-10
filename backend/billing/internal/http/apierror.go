@@ -80,6 +80,34 @@ var (
 	errConsentRequired = func(purpose string) APIError {
 		return newAPIError(http.StatusForbidden, "consent_required", "purpose", purpose)
 	}
+	// Rota negada pelo modo de acesso do coach (ADR-017 §3) ou só do owner.
+	errBillingAccessDenied = func() APIError {
+		return newAPIError(http.StatusForbidden, "billing_access_denied")
+	}
+	errPlanArchived = func() APIError {
+		return newAPIError(http.StatusConflict, "plan_archived")
+	}
+	errSubscriptionExists = func() APIError {
+		return newAPIError(http.StatusConflict, "subscription_exists")
+	}
+	errInvalidSubscriptionState = func(status string) APIError {
+		return newAPIError(http.StatusConflict, "invalid_subscription_state", "status", status)
+	}
+	errInvoiceAlreadyPaid = func() APIError {
+		return newAPIError(http.StatusConflict, "invoice_already_paid")
+	}
+	errInvoiceCanceled = func() APIError {
+		return newAPIError(http.StatusConflict, "invoice_canceled")
+	}
+	errPaymentAlreadyReversed = func() APIError {
+		return newAPIError(http.StatusConflict, "payment_already_reversed")
+	}
+	errPaymentIsReversal = func() APIError {
+		return newAPIError(http.StatusConflict, "payment_is_reversal")
+	}
+	errIdempotencyConflict = func() APIError {
+		return newAPIError(http.StatusConflict, "idempotency_key_conflict")
+	}
 	errInternal = func() APIError {
 		return newAPIError(http.StatusInternalServerError, "internal_error")
 	}

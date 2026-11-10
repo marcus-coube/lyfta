@@ -411,3 +411,28 @@ func (h *StudentHandler) InternalStudentStatuses(w http.ResponseWriter, r *http.
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"items": items})
 }
+
+// InternalStudentGet — GET /internal/v1/students/{id}?tenant_id= (M2M): nome,
+// e-mail e status do aluno. O billing tira daqui a cópia do titular
+// (`billing_customers`, ADR-017 §5) ao criar a assinatura. 404
+// `student_not_found` para inexistente ou de outro tenant.
+func (h *StudentHandler) InternalStudentGet(w http.ResponseWriter, r *http.Request) {
+	studentID, tenantID, ok := internalIDs(w, r)
+	if !ok {
+		return
+	}
+	detail, err := h.students.Get(r.Context(), tenantID, studentID)
+	if errors.Is(err, repo.ErrNotFound) {
+		writeError(w, errStudentNotFound())
+		return
+	}
+	if err != nil {
+		h.logger.Error("internal_student_get_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{
+		"id": detail.User.ID, "name": detail.User.Name, "email": detail.User.Email,
+		"status": string(detail.User.Status),
+	})
+}

@@ -1,6 +1,7 @@
 package http_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"testing"
@@ -81,6 +82,31 @@ func TestStudentLifecycle(t *testing.T) {
 	}
 	if resp := internalPost(t, f, "/internal/v1/students/statuses", map[string]any{"students": []any{}}, true); resp.status != http.StatusBadRequest {
 		t.Fatalf("M2M com lista vazia: esperava 400, obtive %d", resp.status)
+	}
+
+	// M2M individual (P7.2): nome, e-mail e status; desconhecido = 404.
+	getM2M := func(id string, withToken bool) jsonResponse {
+		req, _ := http.NewRequest(http.MethodGet, f.url+"/internal/v1/students/"+id+"?tenant_id="+tenantID, nil)
+		if withToken {
+			req.Header.Set("X-Internal-Token", testInternalToken)
+		}
+		resp, err := f.client.Do(req)
+		if err != nil {
+			t.Fatalf("GET M2M aluno: %v", err)
+		}
+		defer resp.Body.Close()
+		body := map[string]any{}
+		_ = json.NewDecoder(resp.Body).Decode(&body)
+		return jsonResponse{status: resp.StatusCode, body: body}
+	}
+	if one := getM2M(studentID, true); one.status != http.StatusOK || one.body["name"] != "Ana Alves" || one.body["email"] != email || one.body["status"] != "inactive" {
+		t.Fatalf("M2M individual: %d %+v", one.status, one.body)
+	}
+	if one := getM2M(unknown, true); one.status != http.StatusNotFound || one.body["code"] != "student_not_found" {
+		t.Fatalf("M2M individual desconhecido: %d %+v", one.status, one.body)
+	}
+	if one := getM2M(studentID, false); one.status != http.StatusUnauthorized {
+		t.Fatalf("M2M individual sem token: %d", one.status)
 	}
 
 	// Reativar devolve o acesso.

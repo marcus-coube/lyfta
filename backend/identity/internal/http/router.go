@@ -58,6 +58,8 @@ func NewRouter(
 		r.Get("/tenants/{id}", tenant.InternalGet)
 		// Status dos alunos em lote (P5.2): jobs ignoram inativos.
 		r.Post("/students/statuses", students.InternalStudentStatuses)
+		// Nome e e-mail do aluno para o titular retido do billing (P7.2).
+		r.Get("/students/{id}", students.InternalStudentGet)
 	})
 
 	r.Route("/v1", func(r chi.Router) {

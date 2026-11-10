@@ -12,11 +12,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/marcus-coube/lyfta/billing/internal/coachlink"
 	"github.com/marcus-coube/lyfta/billing/internal/config"
 	ahttp "github.com/marcus-coube/lyfta/billing/internal/http"
 	"github.com/marcus-coube/lyfta/billing/internal/obs"
 	"github.com/marcus-coube/lyfta/billing/internal/repo"
 	"github.com/marcus-coube/lyfta/billing/internal/security"
+	"github.com/marcus-coube/lyfta/billing/internal/studentdir"
+	"github.com/marcus-coube/lyfta/billing/internal/tenantsettings"
 )
 
 func main() {
@@ -61,7 +64,13 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 
-	router := ahttp.NewRouter(logger, cfg.CORSOrigins, verifier)
+	billing := ahttp.NewBillingHandler(logger,
+		repo.NewPlanRepo(pool), repo.NewSubscriptionRepo(pool), repo.NewInvoiceRepo(pool),
+		tenantsettings.NewClient(cfg.IdentityURL, cfg.InternalToken, cfg.TenantSettingsCacheTTL),
+		studentdir.NewClient(cfg.IdentityURL, cfg.InternalToken),
+		coachlink.NewClient(cfg.IdentityURL, cfg.InternalToken, cfg.CoachLinkCacheTTL),
+		nil)
+	router := ahttp.NewRouter(logger, cfg.CORSOrigins, verifier, billing)
 
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,

@@ -27,6 +27,9 @@ type Config struct {
 	IdentityURL string
 	// CoachLinkCacheTTL é o prazo do cache do vínculo (ADR-016); 0 desliga.
 	CoachLinkCacheTTL time.Duration
+	// TenantSettingsCacheTTL é o prazo do cache do fuso e do modo de acesso do
+	// coach (ADR-017 §3); 0 desliga.
+	TenantSettingsCacheTTL time.Duration
 }
 
 // Load lê as variáveis de ambiente do processo e valida as obrigatórias.
@@ -50,6 +53,15 @@ func Load() (Config, error) {
 			return Config{}, fmt.Errorf("config: COACH_LINK_CACHE_TTL inválida: %w", err)
 		}
 		cfg.CoachLinkCacheTTL = ttl
+	}
+
+	cfg.TenantSettingsCacheTTL = 30 * time.Second
+	if raw := os.Getenv("TENANT_SETTINGS_CACHE_TTL"); raw != "" {
+		ttl, err := time.ParseDuration(raw)
+		if err != nil {
+			return Config{}, fmt.Errorf("config: TENANT_SETTINGS_CACHE_TTL inválida: %w", err)
+		}
+		cfg.TenantSettingsCacheTTL = ttl
 	}
 
 	if cfg.DatabaseURL == "" {

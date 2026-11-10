@@ -91,6 +91,8 @@ ser o último do `X-Forwarded-For`). LGPD (P4.5): `TERMS_VERSION`
 `IDENTITY_URL` (assessment, para o consentimento de outra pessoa) — M2M com
 `INTERNAL_TOKEN`. Vínculo professor↔aluno (P4.7, ADR-016): `IDENTITY_URL` e
 `COACH_LINK_CACHE_TTL` (padrão `30s`) em workout, assessment, comms e billing.
+Financeiro (P7.2): `TENANT_SETTINGS_CACHE_TTL` (padrão `30s`, billing) — cache do fuso e do
+modo de acesso do coach (`coach_billing_access`) lidos do identity.
 
 ## Bancos locais
 

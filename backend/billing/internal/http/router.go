@@ -11,12 +11,13 @@ import (
 )
 
 // NewRouter monta o roteador chi do serviço billing com os middlewares base
-// (request-id, Sentry, logging estruturado, recover, CORS). A P7.1 só expõe
-// `/healthz` e `/v1/whoami`; a API do financeiro entra na P7.2.
+// (request-id, Sentry, logging estruturado, recover, CORS). Expõe `/healthz`, `/v1/whoami` e, quando
+// `billing` não é nil, a API do financeiro (P7.2).
 func NewRouter(
 	logger *slog.Logger,
 	corsOrigins []string,
 	verifier *security.JWTVerifier,
+	billing *BillingHandler,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -40,6 +41,9 @@ func NewRouter(
 		// Sonda autenticada: confirma que o token do identity é aceito aqui e
 		// devolve o tenant que o RLS vai aplicar nas rotas de negócio.
 		r.Get("/whoami", whoamiHandler)
+		if billing != nil {
+			billing.Mount(r)
+		}
 	})
 
 	return r

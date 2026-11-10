@@ -43,7 +43,7 @@ Depende de: P5.1 (fuso do tenant), P5.2 (status do aluno).
 **Aceite:** CI descobre o serviço sozinho e roda as migrations; teste de
 isolamento cross-tenant; teste do trigger de imutabilidade da fatura paga.
 
-## - [ ] P7.2 API do financeiro (billing)
+## - [x] P7.2 API do financeiro (billing)
 
 **Objetivo:** operações do owner, do coach conforme a configuração da
 organização, e leitura do aluno.
@@ -197,3 +197,49 @@ identity (pendente + billing fora do ar) e no billing (idempotência do DELETE).
   `JWT_PUBLIC_KEY` do identity): copiar `.env.example` e colar a pública antes
   de subir o serviço pela launch config `billing`. O CI não precisa: descobre o
   serviço por `backend/billing/go.mod`, cria `lyfta_billing` e roda as migrations.
+
+**P7.2 (Mac, 2026-11-10)**
+- Rotas sob `/v1/billing` (matriz por middleware: `requireOwner`,
+  `requireOperator` = owner ou coach `own_students`, `requireStaff` só para
+  `students/status`) + `GET /v1/me/invoices`. Vínculo do coach por recurso
+  (`checkStudentLink`, 404 `student_not_found`); nas listas o coach recebe só
+  os alunos do vínculo. Rota negada = 403 `billing_access_denied` (inclui
+  aluno e coach nas rotas só do owner). Modo do coach e fuso vêm do novo
+  pacote `tenantsettings` (cache 30 s, `TENANT_SETTINGS_CACHE_TTL`; identity
+  fora = 500, owner não depende dele nas listas). Teste de TTL com relógio
+  fake; teste de matriz troca o modo com TTL 0.
+- **identity (M2M novo):** `GET /internal/v1/students/{id}?tenant_id=` →
+  `{id, name, email, status}` (a assinatura precisa copiar nome e e-mail para
+  `billing_customers`, ADR-017 §5). Cliente `studentdir` no billing; sem
+  cache. Teste no `TestStudentLifecycle` do identity.
+- **Migration 0005 (desvio pequeno):** `payments.idempotency_key` + índice
+  único parcial `(tenant_id, idempotency_key)`. O schema da P7.1 não tinha
+  onde guardar a chave e `provider_ref` não serve (CHECK `manual` => provider
+  NULL e índice com provider NULL não deduplica). Replay na mesma fatura =
+  200 com o mesmo pagamento; mesma chave em outra fatura = 409
+  `idempotency_key_conflict`; sem chave, fatura paga = 409
+  `invoice_already_paid`. Fatura travada com `FOR UPDATE` (teste de baixa
+  concorrente: 1x201 + 1x409).
+- Decisões: (a) fatura do mês de início: `due_date` = `due_day` do mês, mas
+  **nunca antes de `starts_on`** (`repo.DueDateFor`), e nasce `overdue` só se
+  esse vencimento já passou no fuso do tenant. **P7.3 deve usar a mesma
+  regra e não gerar período anterior ao mês de `starts_on`.** (b) cancelar
+  assinatura cancela faturas `open` com vencimento **depois de hoje** (fuso
+  do tenant), igual ao que a P7.5 vai usar na exclusão. (c) `paid_at` da
+  baixa é opcional (vazio = agora), aceita RFC 3339 ou `AAAA-MM-DD`
+  (meio-dia local, limitado a agora); futuro = 400. Valor da baixa sempre o
+  integral da fatura. (d) estorno exige `note` (motivo); estorno de
+  estorno = 409 `payment_is_reversal`. (e) `students/status` devolve o mapa
+  puro `{id: ok|delinquent|none}`; `ok` = tem assinatura (qualquer estado),
+  `none` = nunca teve; ids fora do vínculo do coach são omitidos. (f) Extras
+  além dos passos, que o app da P7.4 vai precisar: `GET /subscriptions`
+  (`student_id`, `status`), `GET /subscriptions/{id}`, `GET /invoices/{id}`
+  (com histórico de pagamentos e estornos). (g) `/me/invoices` devolve só
+  id, período, vencimento, valor, status e `paid_at` (sem `note`, titular ou
+  pagamentos). (h) Erros de estado de assinatura: 409
+  `invalid_subscription_state` com `status` em `params`.
+- Fora desta tarefa: `GET /v1/billing/summary` (P8.x, owner-only como na
+  matriz); `account_deleted` já sai do `customer` mas só a P7.5 o liga.
+- Pendência do usuário (da P7.1, ainda vale): `billing/.env` precisa de
+  `IDENTITY_URL` (default `http://localhost:8081`) e `INTERNAL_TOKEN` igual ao
+  do identity para as rotas que consultam o identity funcionarem no dev.

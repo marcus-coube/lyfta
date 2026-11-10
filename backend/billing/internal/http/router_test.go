@@ -33,7 +33,7 @@ func newTestRouter(t *testing.T) (http.Handler, ed25519.PrivateKey) {
 		t.Fatal(err)
 	}
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	return bhttp.NewRouter(logger, []string{"http://localhost:*"}, verifier), priv
+	return bhttp.NewRouter(logger, []string{"http://localhost:*"}, verifier, nil), priv
 }
 
 func get(h http.Handler, path, token string) *httptest.ResponseRecorder {
