@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -175,6 +176,56 @@ void main() {
         .map((b) => b.exercises.single.exercise!.name)
         .toList();
     expect(names, ['Crucifixo', 'Supino']);
+  });
+
+  testWidgets('arrastar a alça do exercício reordena dentro do bloco',
+      (tester) async {
+    final fake = await _pump(
+      tester,
+      Plan(
+        id: 'p1',
+        studentId: 's1',
+        title: 'Treino',
+        status: 'published',
+        days: [
+          WorkoutDay(
+            label: 'A',
+            blocks: [
+              Block(exercises: [_item('Supino'), _item('Crucifixo')]),
+            ],
+          ),
+        ],
+        versions: const [PlanVersionRef(id: 'v1', versionNo: 1, isDraft: false)],
+        version: const PlanVersionRef(id: 'v1', versionNo: 1, isDraft: false),
+      ),
+    );
+    // Alça na mesma altura do nome do 2º exercício.
+    final target = tester.getCenter(find.text('Crucifixo')).dy;
+    final handles = find.byIcon(Icons.drag_indicator).evaluate().toList();
+    final handle = handles
+        .map((e) => tester.getCenter(find.byWidget(e.widget)))
+        .reduce((a, b) => (a.dy - target).abs() < (b.dy - target).abs() ? a : b);
+    // Mouse (web/desktop): a alça arrasta sem long-press, em saltos grandes.
+    final gesture =
+        await tester.startGesture(handle, kind: PointerDeviceKind.mouse);
+    await tester.pump(const Duration(milliseconds: 100));
+    await gesture.moveBy(const Offset(0, -150));
+    await tester.pump(const Duration(milliseconds: 16));
+    await gesture.moveBy(const Offset(0, -5));
+    await tester.pump(const Duration(milliseconds: 16));
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.getTopLeft(find.text('Crucifixo')).dy,
+      lessThan(tester.getTopLeft(find.text('Supino')).dy),
+    );
+    await tester.tap(find.text('Salvar rascunho'));
+    await tester.pumpAndSettle();
+    expect(
+      fake.saved!.first.blocks.single.exercises.map((e) => e.exercise!.name),
+      ['Crucifixo', 'Supino'],
+    );
   });
 
   testWidgets('arrastar dias na lista lateral reordena e mantém o aberto',

@@ -329,9 +329,20 @@ de widget do cartão de superset; treino straight continua idêntico ao 1.0.
   uso; o diálogo lista os dias da versão publicada (`GET /plans/{id}?version=N`
   já traz `next_day_id` do plano ativo), marca o atual e chama
   `PUT /students/{id}/plan/next-day`; atualiza lista e `studentsProvider`.
-- **Não verificado à mão:** reordenar → publicar → ver a ordem no Hoje do aluno
-  (a ordem enviada é a do array, coberta pelo teste do builder e pelo backend
-  da P1.4); arrastar no toque real (só testado com gesto simulado).
+- **Verificação manual no Chrome (2026-11-10):** aceite cumprido — reordenar
+  exercício dentro do bloco, duplicar dia (B nasce da cópia de A), arrastar B
+  para antes de A e publicar: servidor guarda B,A e o `/me/today` do aluno traz
+  os exercícios na ordem nova (rotação segue no A, reancorada pelo rótulo).
+  Histórico (v3/v2/v1 com autor e contagens), v1 em leitura sem controles,
+  "Voltar à versão atual", banner de lesões recolhível e próximo dia pela
+  ficha (B → `/me/today` passa a B) também passaram. Corrigido no caminho:
+  (a) **arrastar exercício com mouse quebrava** com "_RenderLayoutBuilder was
+  mutated in performLayout": o `LayoutBuilder` que escolhia layout largo ou
+  estreito reconstruía a tela durante o layout, e soltar o item reativa
+  (GlobalKey) widgets com `OverlayPortal` (tooltips) — trocado por
+  `MediaQuery.sizeOf`; teste novo arrasta exercício com mouse em salto
+  grande; (b) "Mover para cima/baixo" do dia ficava habilitado nas pontas.
+- **Não verificado:** arrastar no toque real (celular/emulador).
 - **Testes:** `plan_builder_ergonomics_test.dart` (arrastar bloco, arrastar dia,
   duplicar bloco/dia, banner de rascunho, histórico→leitura→voltar, lesões
   recolhíveis, menu do dia no estreito), `set_editor_test.dart` (copiar para as

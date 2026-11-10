@@ -481,14 +481,16 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
                     _buildUnpublishedBanner(),
                   if (!_isTemplate && (_plan?.studentId ?? '').isNotEmpty)
                     _InjuriesBanner(studentId: _plan!.studentId),
+                  // Largura da tela, não LayoutBuilder: o builder do
+                  // LayoutBuilder roda durante o layout, e soltar um item
+                  // arrastado reativa (GlobalKey) widgets com OverlayPortal
+                  // (tooltips) — mexer no Overlay da rota nessa hora quebra
+                  // com "_RenderLayoutBuilder was mutated in performLayout".
                   Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final wide =
-                            constraints.maxWidth >= lyShellRailBreakpoint;
-                        return wide ? _buildWide() : _buildNarrow();
-                      },
-                    ),
+                    child: MediaQuery.sizeOf(context).width >=
+                            lyShellRailBreakpoint
+                        ? _buildWide()
+                        : _buildNarrow(),
                   ),
                   if (!_readOnly)
                     _BuilderActions(
@@ -704,8 +706,12 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
           if (withDayMenu && !_readOnly)
             _DayMenu(
               key: const Key('day_menu'),
-              onMoveUp: () => _moveDay(_selectedDay, -1),
-              onMoveDown: () => _moveDay(_selectedDay, 1),
+              onMoveUp: _selectedDay > 0
+                  ? () => _moveDay(_selectedDay, -1)
+                  : null,
+              onMoveDown: _selectedDay < _days.length - 1
+                  ? () => _moveDay(_selectedDay, 1)
+                  : null,
               onDuplicate: () => _duplicateDay(_selectedDay),
               onRemove: () => _removeDay(_selectedDay),
             ),
@@ -877,8 +883,9 @@ class _DayList extends StatelessWidget {
           trailing: readOnly
               ? null
               : _DayMenu(
-                  onMoveUp: () => onMove(i, -1),
-                  onMoveDown: () => onMove(i, 1),
+                  onMoveUp: i > 0 ? () => onMove(i, -1) : null,
+                  onMoveDown:
+                      i < days.length - 1 ? () => onMove(i, 1) : null,
                   onDuplicate: () => onDuplicate(i),
                   onRemove: () => onRemove(i),
                 ),
@@ -911,7 +918,8 @@ class _DayList extends StatelessWidget {
   }
 }
 
-/// Menu de um dia: mover, duplicar e remover.
+/// Menu de um dia: mover, duplicar e remover. Mover recebe `null` na ponta
+/// da lista (o item aparece desabilitado).
 class _DayMenu extends StatelessWidget {
   const _DayMenu({
     required this.onMoveUp,
@@ -921,8 +929,8 @@ class _DayMenu extends StatelessWidget {
     super.key,
   });
 
-  final VoidCallback onMoveUp;
-  final VoidCallback onMoveDown;
+  final VoidCallback? onMoveUp;
+  final VoidCallback? onMoveDown;
   final VoidCallback onDuplicate;
   final VoidCallback onRemove;
 
@@ -934,14 +942,22 @@ class _DayMenu extends StatelessWidget {
     return PopupMenuButton<String>(
       icon: Icon(Icons.more_vert, size: 18, color: c.textSecondary),
       onSelected: (action) => switch (action) {
-        'up' => onMoveUp(),
-        'down' => onMoveDown(),
+        'up' => onMoveUp?.call(),
+        'down' => onMoveDown?.call(),
         'duplicate' => onDuplicate(),
         _ => onRemove(),
       },
       itemBuilder: (context) => [
-        PopupMenuItem(value: 'up', child: Text(l10n.builderMoveUp)),
-        PopupMenuItem(value: 'down', child: Text(l10n.builderMoveDown)),
+        PopupMenuItem(
+          value: 'up',
+          enabled: onMoveUp != null,
+          child: Text(l10n.builderMoveUp),
+        ),
+        PopupMenuItem(
+          value: 'down',
+          enabled: onMoveDown != null,
+          child: Text(l10n.builderMoveDown),
+        ),
         PopupMenuItem(
           value: 'duplicate',
           child: Text(l10n.builderDuplicateDay),
