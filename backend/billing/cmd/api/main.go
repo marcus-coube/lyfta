@@ -15,10 +15,12 @@ import (
 	"github.com/marcus-coube/lyfta/billing/internal/coachlink"
 	"github.com/marcus-coube/lyfta/billing/internal/config"
 	ahttp "github.com/marcus-coube/lyfta/billing/internal/http"
+	"github.com/marcus-coube/lyfta/billing/internal/job"
 	"github.com/marcus-coube/lyfta/billing/internal/obs"
 	"github.com/marcus-coube/lyfta/billing/internal/repo"
 	"github.com/marcus-coube/lyfta/billing/internal/security"
 	"github.com/marcus-coube/lyfta/billing/internal/studentdir"
+	"github.com/marcus-coube/lyfta/billing/internal/tenantclient"
 	"github.com/marcus-coube/lyfta/billing/internal/tenantsettings"
 )
 
@@ -71,6 +73,12 @@ func run(logger *slog.Logger) error {
 		coachlink.NewClient(cfg.IdentityURL, cfg.InternalToken, cfg.CoachLinkCacheTTL),
 		nil)
 	router := ahttp.NewRouter(logger, cfg.CORSOrigins, verifier, billing)
+
+	// Geração mensal e vencimento (P7.3), no fuso de cada tenant.
+	monthly := job.NewMonthlyJob(logger, pool,
+		tenantclient.NewClient(cfg.IdentityURL, cfg.InternalToken, tenantclient.DefaultTTL),
+		repo.NewJobRepo(pool))
+	go monthly.Run(ctx)
 
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,

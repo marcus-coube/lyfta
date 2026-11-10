@@ -87,7 +87,7 @@ organização, e leitura do aluno.
 da matriz de acesso nos dois modos (trocar o modo vale em até 30 s); testes de handler (feliz + fatura já paga
 = 409 `invoice_already_paid` + estorno duplo = 409 `payment_already_reversed`).
 
-## - [ ] P7.3 Jobs: geração mensal e vencimento (billing)
+## - [x] P7.3 Jobs: geração mensal e vencimento (billing)
 
 **Objetivo:** faturas nascem e vencem sozinhas, no fuso de cada tenant.
 **Passos:**
@@ -243,3 +243,29 @@ identity (pendente + billing fora do ar) e no billing (idempotência do DELETE).
 - Pendência do usuário (da P7.1, ainda vale): `billing/.env` precisa de
   `IDENTITY_URL` (default `http://localhost:8081`) e `INTERNAL_TOKEN` igual ao
   do identity para as rotas que consultam o identity funcionarem no dev.
+
+**P7.3 (Mac, 2026-11-10)**
+- Job em `billing/internal/job` (`MonthlyJob`), tick de 15 min + varredura na
+  subida, iniciado no `main`. Cada tick segura `pg_try_advisory_lock` numa
+  conexão dedicada do pool (lock de sessão; se o unlock falhar a conexão é
+  descartada) e, não conseguindo, volta sem fazer nada. Lista de tenants pelo
+  novo `internal/tenantclient` (cópia do `comms`, M2M `GET /internal/v1/tenants`,
+  cache de 10 min). `Clock` = `WithClock` (mesmo padrão do job do comms).
+- Operações em `repo.JobRepo`, uma transação por tenant (RLS):
+  `GenerateInvoices` (assinaturas `active` com mês de `starts_on` <= mês
+  corrente; vencimento por `repo.DueDateFor`; `ON CONFLICT (subscription_id,
+  period) DO NOTHING`, então também convive com a fatura criada junto da
+  assinatura) e `MarkOverdue` (`open` com `due_date` < hoje local; só `open`).
+  Hoje = data civil no fuso do tenant. Falha em um tenant é logada e não
+  impede os demais.
+- Decisões: gera só o período **corrente** — assinatura retomada de pausa ou
+  serviço parado vários meses não gera retroativo (baixa/ajuste manual é fora
+  do 2.0). A fatura nasce `open` e a mesma varredura a vence se já passou
+  (equivale à regra da P7.2). Faturas de assinatura pausada/cancelada que já
+  existiam como `open` continuam vencendo normalmente (a cancelada com
+  vencimento futuro já foi cancelada pela P7.2). Sem migration.
+- Testes (banco real, nenhum skip): virada de mês SP × Lisboa no mesmo
+  instante (uma fatura por assinatura, pausada/cancelada/futura não geram,
+  rodar 2x não duplica, vence no dia local certo), fronteira de vencimento
+  entre fusos, nada antes do mês de `starts_on`, só `open` vira `overdue`, e
+  lock (tick com o lock tomado não roda; 4 ticks concorrentes = 1 fatura).
