@@ -9,6 +9,7 @@
 package coachlink
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -123,6 +124,86 @@ func (c *Client) VisibleStudents(ctx context.Context, tenantID, userID string, r
 	for _, id := range studentIDs {
 		if _, ok := students[id]; ok {
 			out = append(out, id)
+		}
+	}
+	return out, nil
+}
+
+// CoachOf devolve o professor atual do aluno (ADR-016 §3). found=false quando
+// o aluno não tem vínculo (404 do identity). Sem cache: só a atribuição de
+// plano pelo owner precisa disso. Falha do identity vira erro.
+func (c *Client) CoachOf(ctx context.Context, tenantID, studentID string) (coachID string, found bool, err error) {
+	target := fmt.Sprintf("%s/internal/v1/students/%s/coach?tenant_id=%s",
+		c.baseURL, url.PathEscape(studentID), url.QueryEscape(tenantID))
+	var body struct {
+		CoachID string `json:"coach_id"`
+	}
+	status, err := c.get(ctx, target, &body)
+	if err != nil {
+		return "", false, err
+	}
+	switch status {
+	case http.StatusOK:
+		return body.CoachID, true, nil
+	case http.StatusNotFound:
+		return "", false, nil
+	default:
+		return "", false, fmt.Errorf("coachlink: identity respondeu %d", status)
+	}
+}
+
+// maxStatusesPerRequest é o teto do identity por chamada do M2M em lote.
+const maxStatusesPerRequest = 500
+
+// ExistingStudents consulta no identity (POST /internal/v1/students/statuses)
+// quais ids são alunos vivos do tenant e devolve o status de cada um. Quem o
+// identity não conhece (inexistente, de outro tenant, excluído, não-aluno)
+// fica fora do mapa. Sem cache: existência é verificada na criação de plano.
+func (c *Client) ExistingStudents(ctx context.Context, tenantID string, studentIDs []string) (map[string]string, error) {
+	out := make(map[string]string, len(studentIDs))
+	for start := 0; start < len(studentIDs); start += maxStatusesPerRequest {
+		end := min(start+maxStatusesPerRequest, len(studentIDs))
+		type ref struct {
+			TenantID  string `json:"tenant_id"`
+			StudentID string `json:"student_id"`
+		}
+		refs := make([]ref, 0, end-start)
+		for _, id := range studentIDs[start:end] {
+			refs = append(refs, ref{TenantID: tenantID, StudentID: id})
+		}
+		raw, err := json.Marshal(map[string]any{"students": refs})
+		if err != nil {
+			return nil, err
+		}
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/internal/v1/students/statuses", bytes.NewReader(raw))
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("X-Internal-Token", c.token)
+		resp, err := c.http.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		var body struct {
+			Items []struct {
+				StudentID string `json:"student_id"`
+				Status    string `json:"status"`
+			} `json:"items"`
+		}
+		status := resp.StatusCode
+		if status == http.StatusOK {
+			err = json.NewDecoder(resp.Body).Decode(&body)
+		}
+		resp.Body.Close()
+		if status != http.StatusOK {
+			return nil, fmt.Errorf("coachlink: identity respondeu %d", status)
+		}
+		if err != nil {
+			return nil, err
+		}
+		for _, it := range body.Items {
+			out[it.StudentID] = it.Status
 		}
 	}
 	return out, nil

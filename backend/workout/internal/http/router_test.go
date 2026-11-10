@@ -90,6 +90,18 @@ func (allowAllLinker) CanAccessStudent(context.Context, string, string, []string
 	return true, nil
 }
 
+func (allowAllLinker) ExistingStudents(_ context.Context, _ string, ids []string) (map[string]string, error) {
+	out := make(map[string]string, len(ids))
+	for _, id := range ids {
+		out[id] = "active"
+	}
+	return out, nil
+}
+
+func (allowAllLinker) CoachOf(context.Context, string, string) (string, bool, error) {
+	return "", false, nil
+}
+
 func (allowAllLinker) VisibleStudents(_ context.Context, _, _ string, _ []string, ids []string) ([]string, error) {
 	return ids, nil
 }

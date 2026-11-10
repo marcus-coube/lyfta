@@ -26,7 +26,8 @@ func NewPlanRepo(pool *pgxpool.Pool) *PlanRepo {
 	return &PlanRepo{pool: pool}
 }
 
-// CreatePlan cria o template do aluno em rascunho.
+// CreatePlan cria o plano em rascunho: do aluno (padrão) ou um modelo
+// (Kind=template, sem StudentID — o CHECK do banco garante a combinação).
 func (r *PlanRepo) CreatePlan(ctx context.Context, p domain.Plan) (domain.Plan, error) {
 	id, err := newID("plano")
 	if err != nil {
@@ -36,20 +37,36 @@ func (r *PlanRepo) CreatePlan(ctx context.Context, p domain.Plan) (domain.Plan, 
 	if p.Status == "" {
 		p.Status = domain.PlanStatusDraft
 	}
+	if p.Kind == "" {
+		p.Kind = domain.PlanKindAssigned
+	}
 
 	err = WithTenant(ctx, r.pool, p.TenantID, func(tx pgx.Tx) error {
-		const q = `
-			INSERT INTO workout_plans (id, tenant_id, student_id, coach_id, title, status)
-			VALUES ($1, $2, $3, $4, $5, $6)
-			RETURNING created_at, updated_at`
-		return tx.QueryRow(ctx, q,
-			p.ID, p.TenantID, p.StudentID, p.CoachID, p.Title, string(p.Status),
-		).Scan(&p.CreatedAt, &p.UpdatedAt)
+		return insertPlanTx(ctx, tx, &p)
 	})
 	if err != nil {
 		return domain.Plan{}, fmt.Errorf("repo: criar plano: %w", err)
 	}
 	return p, nil
+}
+
+// insertPlanTx grava a linha do plano; o chamador já definiu id, kind e status.
+func insertPlanTx(ctx context.Context, tx pgx.Tx, p *domain.Plan) error {
+	return tx.QueryRow(ctx, `
+		INSERT INTO workout_plans (id, tenant_id, student_id, coach_id, title, status, kind,
+		                           description, source_template_id, source_version_no)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		RETURNING created_at, updated_at`,
+		p.ID, p.TenantID, nullString(p.StudentID), p.CoachID, p.Title, string(p.Status), string(p.Kind),
+		p.Description, nullString(p.SourceTemplateID), nullInt(p.SourceVersionNo),
+	).Scan(&p.CreatedAt, &p.UpdatedAt)
+}
+
+func nullInt(v int) any {
+	if v == 0 {
+		return nil
+	}
+	return v
 }
 
 // CreateVersion abre uma versão nova do plano em rascunho (published_at NULL).
@@ -233,8 +250,22 @@ func (r *PlanRepo) ListDays(ctx context.Context, tenantID, versionID string) ([]
 // sem o produto cartesiano de um join único.
 func (r *PlanRepo) GetVersionTree(ctx context.Context, tenantID, versionID string) ([]domain.Day, error) {
 	var days []domain.Day
-
 	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		var err error
+		days, err = versionTreeTx(ctx, tx, versionID)
+		return err
+	})
+	if err != nil {
+		return nil, fmt.Errorf("repo: ler árvore da versão: %w", err)
+	}
+	return days, nil
+}
+
+// versionTreeTx é o GetVersionTree dentro de uma transação já aberta (a cópia
+// de modelos lê e grava na mesma transação).
+func versionTreeTx(ctx context.Context, tx pgx.Tx, versionID string) ([]domain.Day, error) {
+	var days []domain.Day
+	err := func() error {
 		// Os níveis são remontados por **índice**, não por ponteiro para
 		// elemento de slice: `append` realoca o array subjacente, e um
 		// *domain.Block guardado antes da realocação passaria a apontar para
@@ -349,9 +380,9 @@ func (r *PlanRepo) GetVersionTree(ctx context.Context, tenantID, versionID strin
 		}
 		rows.Close()
 		return rows.Err()
-	})
+	}()
 	if err != nil {
-		return nil, fmt.Errorf("repo: ler árvore da versão: %w", err)
+		return nil, err
 	}
 	return days, nil
 }
@@ -395,8 +426,8 @@ func (r *PlanRepo) GetPlan(ctx context.Context, tenantID, planID string) (domain
 	var p domain.Plan
 	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
 		return scanPlan(tx.QueryRow(ctx, `
-			SELECT id, tenant_id, student_id, coach_id, title, status, created_at, updated_at
-			FROM workout_plans WHERE id = $1`, planID), &p)
+			SELECT `+planColumns+`
+			FROM workout_plans p WHERE p.id = $1`, planID), &p)
 	})
 	if errors.Is(err, pgx.ErrNoRows) {
 		return domain.Plan{}, ErrNotFound
@@ -413,8 +444,7 @@ func (r *PlanRepo) ListPlansByStudent(ctx context.Context, tenantID, studentID s
 	var out []domain.PlanSummary
 	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
 		const q = `
-			SELECT p.id, p.tenant_id, p.student_id, p.coach_id, p.title, p.status,
-			       p.created_at, p.updated_at,
+			SELECT ` + planColumns + `,
 			       COALESCE(v.latest_no, 0), COALESCE(v.published_no, 0), COALESCE(v.has_draft, FALSE),
 			       (s.plan_id IS NOT NULL)
 			FROM workout_plans p
@@ -435,7 +465,8 @@ func (r *PlanRepo) ListPlansByStudent(ctx context.Context, tenantID, studentID s
 		for rows.Next() {
 			var s domain.PlanSummary
 			if err := rows.Scan(&s.ID, &s.TenantID, &s.StudentID, &s.CoachID, &s.Title, &s.Status,
-				&s.CreatedAt, &s.UpdatedAt,
+				&s.Kind, &s.Description, &s.SourceTemplateID, &s.SourceVersionNo,
+				&s.EditedAfterSource, &s.CreatedAt, &s.UpdatedAt,
 				&s.LatestVersionNo, &s.PublishedVersionNo, &s.HasDraft, &s.IsActive); err != nil {
 				return err
 			}
@@ -506,8 +537,24 @@ func (r *PlanRepo) GetState(ctx context.Context, tenantID, studentID string) (do
 // envia o estado completo, e um diff correto de cinco níveis com reordenação
 // custaria muito mais do que reescrever dezenas de linhas numa transação.
 func (r *PlanRepo) ReplaceDraft(ctx context.Context, tenantID, planID, title string, days []domain.Day) (domain.PlanVersion, []domain.Day, error) {
-	var version domain.PlanVersion
-	saved := make([]domain.Day, 0, len(days))
+	return r.SaveDraft(ctx, tenantID, planID, DraftInput{Title: title, Days: days})
+}
+
+// DraftInput é o que o builder salva: título (vazio = não muda), descrição
+// (nil = não muda; só o modelo usa) e a árvore.
+type DraftInput struct {
+	Title       string
+	Description *string
+	Days        []domain.Day
+}
+
+// SaveDraft é o ReplaceDraft completo. Em plano nascido de um modelo, salvar
+// marca `edited_after_source` (o app avisa antes de reaplicar).
+func (r *PlanRepo) SaveDraft(ctx context.Context, tenantID, planID string, in DraftInput) (domain.PlanVersion, []domain.Day, error) {
+	var (
+		version domain.PlanVersion
+		saved   []domain.Day
+	)
 
 	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
 		// FOR UPDATE serializa dois coaches salvando o mesmo plano: sem ele,
@@ -516,101 +563,22 @@ func (r *PlanRepo) ReplaceDraft(ctx context.Context, tenantID, planID, title str
 		if err := tx.QueryRow(ctx, `SELECT id FROM workout_plans WHERE id = $1 FOR UPDATE`, planID).Scan(&exists); err != nil {
 			return err
 		}
-		if title != "" {
-			if _, err := tx.Exec(ctx,
-				`UPDATE workout_plans SET title = $2, updated_at = now() WHERE id = $1`, planID, title); err != nil {
-				return err
-			}
+		if _, err := tx.Exec(ctx, `
+			UPDATE workout_plans
+			SET title = COALESCE(NULLIF($2, ''), title),
+			    description = COALESCE($3, description),
+			    edited_after_source = edited_after_source OR source_template_id IS NOT NULL,
+			    updated_at = now()
+			WHERE id = $1`, planID, in.Title, in.Description); err != nil {
+			return err
 		}
 
-		v, err := draftVersionTx(ctx, tx, tenantID, planID)
+		v, err := replaceDraftTreeTx(ctx, tx, tenantID, planID, in.Days)
 		if err != nil {
 			return err
 		}
-		version = v
-
-		if _, err := tx.Exec(ctx, `DELETE FROM workout_days WHERE plan_version_id = $1`, version.ID); err != nil {
-			return err
-		}
-		if err := assertExercisesVisible(ctx, tx, days); err != nil {
-			return err
-		}
-
-		for di := range days {
-			day := days[di]
-			day.TenantID, day.PlanVersionID, day.Position = tenantID, version.ID, di
-			if day.ID, err = newID("dia"); err != nil {
-				return err
-			}
-			if _, err := tx.Exec(ctx, `
-				INSERT INTO workout_days (id, tenant_id, plan_version_id, label, position, title)
-				VALUES ($1, $2, $3, $4, $5, $6)`,
-				day.ID, day.TenantID, day.PlanVersionID, day.Label, day.Position, day.Title); err != nil {
-				return err
-			}
-
-			blocks := day.Blocks
-			day.Blocks = make([]domain.Block, 0, len(blocks))
-			for bi := range blocks {
-				block := blocks[bi]
-				block.TenantID, block.DayID, block.Position = tenantID, day.ID, bi
-				if block.BlockType == "" {
-					block.BlockType = domain.BlockTypeStraight
-				}
-				if block.ID, err = newID("bloco"); err != nil {
-					return err
-				}
-				if _, err := tx.Exec(ctx, `
-					INSERT INTO workout_blocks (id, tenant_id, day_id, position, block_type, rest_seconds)
-					VALUES ($1, $2, $3, $4, $5, $6)`,
-					block.ID, block.TenantID, block.DayID, block.Position,
-					string(block.BlockType), block.RestSeconds); err != nil {
-					return err
-				}
-
-				exercises := block.Exercises
-				block.Exercises = make([]domain.BlockExercise, 0, len(exercises))
-				for ei := range exercises {
-					be := exercises[ei]
-					be.TenantID, be.BlockID, be.Position = tenantID, block.ID, ei
-					if be.ID, err = newID("exercício do bloco"); err != nil {
-						return err
-					}
-					if _, err := tx.Exec(ctx, `
-						INSERT INTO block_exercises (id, tenant_id, block_id, exercise_id, position, notes)
-						VALUES ($1, $2, $3, $4, $5, $6)`,
-						be.ID, be.TenantID, be.BlockID, be.ExerciseID, be.Position, be.Notes); err != nil {
-						return err
-					}
-
-					sets := be.Sets
-					be.Sets = make([]domain.PrescribedSet, 0, len(sets))
-					for si := range sets {
-						set := sets[si]
-						set.TenantID, set.BlockExerciseID, set.SetNo = tenantID, be.ID, si+1
-						if set.ID, err = newID("set prescrito"); err != nil {
-							return err
-						}
-						var unit any
-						if set.TargetUnit != nil {
-							unit = string(*set.TargetUnit)
-						}
-						if _, err := tx.Exec(ctx, `
-							INSERT INTO prescribed_sets (id, tenant_id, block_exercise_id, set_no, reps_min, reps_max,
-							                             target_load_kg, target_unit, target_value, rest_seconds, tempo)
-							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-							set.ID, set.TenantID, set.BlockExerciseID, set.SetNo, set.RepsMin, set.RepsMax,
-							set.TargetLoadKg, unit, set.TargetValue, set.RestSeconds, nullString(set.Tempo)); err != nil {
-							return err
-						}
-						be.Sets = append(be.Sets, set)
-					}
-					block.Exercises = append(block.Exercises, be)
-				}
-				day.Blocks = append(day.Blocks, block)
-			}
-			saved = append(saved, day)
-		}
+		version = v.version
+		saved = v.days
 		return nil
 	})
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -626,9 +594,120 @@ func (r *PlanRepo) ReplaceDraft(ctx context.Context, tenantID, planID, title str
 	return version, saved, nil
 }
 
-// PublishDraft congela o rascunho do plano e aponta a rotação do aluno para
-// ele (ADR-004 §1 e §3). Tudo numa transação: publicar sem atualizar o estado
-// deixaria o aluno lendo a versão anterior.
+type savedDraft struct {
+	version domain.PlanVersion
+	days    []domain.Day
+}
+
+// replaceDraftTreeTx abre (ou reaproveita) o rascunho do plano e troca a árvore
+// dele por `days`. O plano já está travado pelo chamador.
+func replaceDraftTreeTx(ctx context.Context, tx pgx.Tx, tenantID, planID string, days []domain.Day) (savedDraft, error) {
+	version, err := draftVersionTx(ctx, tx, tenantID, planID)
+	if err != nil {
+		return savedDraft{}, err
+	}
+	if _, err := tx.Exec(ctx, `DELETE FROM workout_days WHERE plan_version_id = $1`, version.ID); err != nil {
+		return savedDraft{}, err
+	}
+	saved, err := insertTreeTx(ctx, tx, tenantID, version.ID, days)
+	if err != nil {
+		return savedDraft{}, err
+	}
+	return savedDraft{version: version, days: saved}, nil
+}
+
+// insertTreeTx grava a árvore na versão (rascunho) com ids novos em todos os
+// níveis; posição e número do set saem da ordem dos slices. Serve ao builder
+// e à cópia de modelos (ADR-018): em ambos o resultado é uma árvore própria.
+func insertTreeTx(ctx context.Context, tx pgx.Tx, tenantID, versionID string, days []domain.Day) ([]domain.Day, error) {
+	if err := assertExercisesVisible(ctx, tx, days); err != nil {
+		return nil, err
+	}
+	saved := make([]domain.Day, 0, len(days))
+	var err error
+
+	for di := range days {
+		day := days[di]
+		day.TenantID, day.PlanVersionID, day.Position = tenantID, versionID, di
+		if day.ID, err = newID("dia"); err != nil {
+			return nil, err
+		}
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO workout_days (id, tenant_id, plan_version_id, label, position, title)
+			VALUES ($1, $2, $3, $4, $5, $6)`,
+			day.ID, day.TenantID, day.PlanVersionID, day.Label, day.Position, day.Title); err != nil {
+			return nil, err
+		}
+
+		blocks := day.Blocks
+		day.Blocks = make([]domain.Block, 0, len(blocks))
+		for bi := range blocks {
+			block := blocks[bi]
+			block.TenantID, block.DayID, block.Position = tenantID, day.ID, bi
+			if block.BlockType == "" {
+				block.BlockType = domain.BlockTypeStraight
+			}
+			if block.ID, err = newID("bloco"); err != nil {
+				return nil, err
+			}
+			if _, err := tx.Exec(ctx, `
+				INSERT INTO workout_blocks (id, tenant_id, day_id, position, block_type, rest_seconds)
+				VALUES ($1, $2, $3, $4, $5, $6)`,
+				block.ID, block.TenantID, block.DayID, block.Position,
+				string(block.BlockType), block.RestSeconds); err != nil {
+				return nil, err
+			}
+
+			exercises := block.Exercises
+			block.Exercises = make([]domain.BlockExercise, 0, len(exercises))
+			for ei := range exercises {
+				be := exercises[ei]
+				be.TenantID, be.BlockID, be.Position = tenantID, block.ID, ei
+				if be.ID, err = newID("exercício do bloco"); err != nil {
+					return nil, err
+				}
+				if _, err := tx.Exec(ctx, `
+					INSERT INTO block_exercises (id, tenant_id, block_id, exercise_id, position, notes)
+					VALUES ($1, $2, $3, $4, $5, $6)`,
+					be.ID, be.TenantID, be.BlockID, be.ExerciseID, be.Position, be.Notes); err != nil {
+					return nil, err
+				}
+
+				sets := be.Sets
+				be.Sets = make([]domain.PrescribedSet, 0, len(sets))
+				for si := range sets {
+					set := sets[si]
+					set.TenantID, set.BlockExerciseID, set.SetNo = tenantID, be.ID, si+1
+					if set.ID, err = newID("set prescrito"); err != nil {
+						return nil, err
+					}
+					var unit any
+					if set.TargetUnit != nil {
+						unit = string(*set.TargetUnit)
+					}
+					if _, err := tx.Exec(ctx, `
+						INSERT INTO prescribed_sets (id, tenant_id, block_exercise_id, set_no, reps_min, reps_max,
+						                             target_load_kg, target_unit, target_value, rest_seconds, tempo)
+						VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+						set.ID, set.TenantID, set.BlockExerciseID, set.SetNo, set.RepsMin, set.RepsMax,
+						set.TargetLoadKg, unit, set.TargetValue, set.RestSeconds, nullString(set.Tempo)); err != nil {
+						return nil, err
+					}
+					be.Sets = append(be.Sets, set)
+				}
+				block.Exercises = append(block.Exercises, be)
+			}
+			day.Blocks = append(day.Blocks, block)
+		}
+		saved = append(saved, day)
+	}
+	return saved, nil
+}
+
+// PublishDraft congela o rascunho do plano e, em plano de aluno, aponta a
+// rotação dele para a versão (ADR-004 §1 e §3). Tudo numa transação: publicar
+// sem atualizar o estado deixaria o aluno lendo a versão anterior. Modelo só
+// congela a versão: não há rotação (ADR-018 §4) — o estado volta zerado.
 func (r *PlanRepo) PublishDraft(ctx context.Context, tenantID, planID string) (domain.PlanVersion, domain.StudentPlanState, error) {
 	var (
 		version domain.PlanVersion
@@ -636,67 +715,9 @@ func (r *PlanRepo) PublishDraft(ctx context.Context, tenantID, planID string) (d
 	)
 
 	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
-		var plan domain.Plan
-		if err := scanPlan(tx.QueryRow(ctx, `
-			SELECT id, tenant_id, student_id, coach_id, title, status, created_at, updated_at
-			FROM workout_plans WHERE id = $1 FOR UPDATE`, planID), &plan); err != nil {
-			return err
-		}
-
-		if err := tx.QueryRow(ctx, `
-			SELECT id, tenant_id, plan_id, version_no, published_at, created_at
-			FROM workout_plan_versions
-			WHERE plan_id = $1 AND published_at IS NULL
-			ORDER BY version_no DESC LIMIT 1`, planID).Scan(
-			&version.ID, &version.TenantID, &version.PlanID, &version.VersionNo,
-			&version.PublishedAt, &version.CreatedAt); err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				return ErrNoDraft
-			}
-			return err
-		}
-
-		if err := assertVersionComplete(ctx, tx, version.ID); err != nil {
-			return err
-		}
-
-		if err := tx.QueryRow(ctx, `
-			UPDATE workout_plan_versions SET published_at = now() WHERE id = $1
-			RETURNING published_at`, version.ID).Scan(&version.PublishedAt); err != nil {
-			return err
-		}
-
-		nextDayID, err := nextDayForPublish(ctx, tx, plan.StudentID, planID, version.ID)
-		if err != nil {
-			return err
-		}
-
-		// Um plano ativo por aluno: student_plan_state tem uma linha por aluno
-		// (PK tenant_id+student_id, P1.1), então publicar um plano novo aposenta
-		// o anterior em vez de deixar dois "publicados" na lista do coach.
-		if _, err := tx.Exec(ctx, `
-			UPDATE workout_plans SET status = 'archived', updated_at = now()
-			WHERE student_id = $1 AND id <> $2 AND status = 'published'`, plan.StudentID, planID); err != nil {
-			return err
-		}
-		if _, err := tx.Exec(ctx, `
-			UPDATE workout_plans SET status = 'published', updated_at = now() WHERE id = $1`, planID); err != nil {
-			return err
-		}
-
-		return tx.QueryRow(ctx, `
-			INSERT INTO student_plan_state (tenant_id, student_id, plan_id, active_version_id, next_day_id)
-			VALUES ($1, $2, $3, $4, $5)
-			ON CONFLICT (tenant_id, student_id) DO UPDATE
-			SET plan_id = EXCLUDED.plan_id,
-			    active_version_id = EXCLUDED.active_version_id,
-			    next_day_id = EXCLUDED.next_day_id,
-			    updated_at = now()
-			RETURNING tenant_id, student_id, plan_id, active_version_id,
-			          next_day_id, last_session_at, updated_at`,
-			tenantID, plan.StudentID, planID, version.ID, nullString(nextDayID)).Scan(
-			&state.TenantID, &state.StudentID, &state.PlanID, &state.ActiveVersionID,
-			&state.NextDayID, &state.LastSessionAt, &state.UpdatedAt)
+		var err error
+		version, state, err = publishDraftTx(ctx, tx, tenantID, planID)
+		return err
 	})
 	if errors.Is(err, pgx.ErrNoRows) {
 		return domain.PlanVersion{}, domain.StudentPlanState{}, ErrNotFound
@@ -709,6 +730,77 @@ func (r *PlanRepo) PublishDraft(ctx context.Context, tenantID, planID string) (d
 		return domain.PlanVersion{}, domain.StudentPlanState{}, fmt.Errorf("repo: publicar rascunho: %w", err)
 	}
 	return version, state, nil
+}
+
+func publishDraftTx(ctx context.Context, tx pgx.Tx, tenantID, planID string) (version domain.PlanVersion, state domain.StudentPlanState, err error) {
+	var plan domain.Plan
+	if err = scanPlan(tx.QueryRow(ctx, `
+		SELECT `+planColumns+`
+		FROM workout_plans p WHERE p.id = $1 FOR UPDATE`, planID), &plan); err != nil {
+		return
+	}
+
+	if err = tx.QueryRow(ctx, `
+		SELECT id, tenant_id, plan_id, version_no, published_at, created_at
+		FROM workout_plan_versions
+		WHERE plan_id = $1 AND published_at IS NULL
+		ORDER BY version_no DESC LIMIT 1`, planID).Scan(
+		&version.ID, &version.TenantID, &version.PlanID, &version.VersionNo,
+		&version.PublishedAt, &version.CreatedAt); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			err = ErrNoDraft
+		}
+		return
+	}
+
+	if err = assertVersionComplete(ctx, tx, version.ID); err != nil {
+		return
+	}
+
+	if err = tx.QueryRow(ctx, `
+		UPDATE workout_plan_versions SET published_at = now() WHERE id = $1
+		RETURNING published_at`, version.ID).Scan(&version.PublishedAt); err != nil {
+		return
+	}
+
+	if plan.Kind == domain.PlanKindTemplate {
+		_, err = tx.Exec(ctx, `
+			UPDATE workout_plans SET status = 'published', updated_at = now() WHERE id = $1`, planID)
+		return
+	}
+
+	var nextDayID string
+	if nextDayID, err = nextDayForPublish(ctx, tx, plan.StudentID, planID, version.ID); err != nil {
+		return
+	}
+
+	// Um plano ativo por aluno: student_plan_state tem uma linha por aluno
+	// (PK tenant_id+student_id, P1.1), então publicar um plano novo aposenta
+	// o anterior em vez de deixar dois "publicados" na lista do coach.
+	if _, err = tx.Exec(ctx, `
+		UPDATE workout_plans SET status = 'archived', updated_at = now()
+		WHERE student_id = $1 AND id <> $2 AND status = 'published'`, plan.StudentID, planID); err != nil {
+		return
+	}
+	if _, err = tx.Exec(ctx, `
+		UPDATE workout_plans SET status = 'published', updated_at = now() WHERE id = $1`, planID); err != nil {
+		return
+	}
+
+	err = tx.QueryRow(ctx, `
+		INSERT INTO student_plan_state (tenant_id, student_id, plan_id, active_version_id, next_day_id)
+		VALUES ($1, $2, $3, $4, $5)
+		ON CONFLICT (tenant_id, student_id) DO UPDATE
+		SET plan_id = EXCLUDED.plan_id,
+		    active_version_id = EXCLUDED.active_version_id,
+		    next_day_id = EXCLUDED.next_day_id,
+		    updated_at = now()
+		RETURNING tenant_id, student_id, plan_id, active_version_id,
+		          next_day_id, last_session_at, updated_at`,
+		tenantID, plan.StudentID, planID, version.ID, nullString(nextDayID)).Scan(
+		&state.TenantID, &state.StudentID, &state.PlanID, &state.ActiveVersionID,
+		&state.NextDayID, &state.LastSessionAt, &state.UpdatedAt)
+	return
 }
 
 // DraftVersion devolve o rascunho aberto do plano, se houver.
@@ -924,8 +1016,17 @@ func nextDayForPublish(ctx context.Context, tx pgx.Tx, studentID, planID, versio
 	return firstDay, nil
 }
 
+// planColumns é a lista de colunas que scanPlan lê (com o alias `p.`), de modo
+// que toda leitura de plano devolve a mesma forma. student_id e
+// source_template_id viram "" quando NULL.
+const planColumns = `p.id, p.tenant_id, COALESCE(p.student_id::text, ''), p.coach_id, p.title, p.status,
+	p.kind, p.description, COALESCE(p.source_template_id::text, ''), COALESCE(p.source_version_no, 0),
+	p.edited_after_source, p.created_at, p.updated_at`
+
 func scanPlan(row pgx.Row, p *domain.Plan) error {
-	return row.Scan(&p.ID, &p.TenantID, &p.StudentID, &p.CoachID, &p.Title, &p.Status, &p.CreatedAt, &p.UpdatedAt)
+	return row.Scan(&p.ID, &p.TenantID, &p.StudentID, &p.CoachID, &p.Title, &p.Status,
+		&p.Kind, &p.Description, &p.SourceTemplateID, &p.SourceVersionNo,
+		&p.EditedAfterSource, &p.CreatedAt, &p.UpdatedAt)
 }
 
 // --- Rotação e sync (P1.5) ---------------------------------------------

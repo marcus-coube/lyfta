@@ -31,6 +31,61 @@ func newPlanView(logger *slog.Logger, plans *repo.PlanRepo, exercises *repo.Exer
 	return planView{logger: logger, plans: plans, exercises: exercises, presigner: presigner, linker: linker}
 }
 
+// existingStudents devolve quais ids são alunos vivos do tenant no identity
+// (excluído/inexistente/de outro tenant ficam de fora). Aluno inativo conta:
+// o coach pode preparar o plano para a volta dele.
+func (v planView) existingStudents(ctx context.Context, tenantID string, ids []string) (map[string]struct{}, error) {
+	statuses, err := v.linker.ExistingStudents(ctx, tenantID, ids)
+	if err != nil {
+		return nil, err
+	}
+	out := make(map[string]struct{}, len(statuses))
+	for id := range statuses {
+		out[id] = struct{}{}
+	}
+	return out, nil
+}
+
+// planCoachFor decide o coach_id de um plano novo do aluno: o professor
+// vinculado a ele (ADR-016), não quem atribuiu. Coach que passou no vínculo
+// já é esse professor (sem chamada); para o owner pergunta-se ao identity, e
+// aluno sem professor vinculado fica com quem atribuiu.
+func (v planView) planCoachFor(ctx context.Context, claims *security.Claims, studentID string) (string, error) {
+	if !hasRole(claims, "owner") {
+		return claims.Subject, nil
+	}
+	coachID, found, err := v.linker.CoachOf(ctx, claims.TenantID, studentID)
+	if err != nil {
+		return "", err
+	}
+	if !found || coachID == "" {
+		return claims.Subject, nil
+	}
+	return coachID, nil
+}
+
+// authorizePlan decide se o ator pode ler (write=false) ou alterar o plano.
+// Plano de aluno segue o vínculo coach↔aluno (ADR-016). Modelo (ADR-018 §3) é
+// do tenant: qualquer coach lê; só o autor ou o owner altera, e modelo
+// arquivado não se altera.
+func (v planView) authorizePlan(ctx context.Context, claims *security.Claims, plan domain.Plan, write bool) *APIError {
+	if plan.Kind != domain.PlanKindTemplate {
+		return v.checkStudent(ctx, claims, plan.StudentID)
+	}
+	if !write {
+		return nil
+	}
+	if plan.CoachID != claims.Subject && !hasRole(claims, "owner") {
+		apiErr := errTemplateNotOwned()
+		return &apiErr
+	}
+	if plan.Status == domain.PlanStatusArchived {
+		apiErr := errTemplateArchived()
+		return &apiErr
+	}
+	return nil
+}
+
 // checkStudent aplica o vínculo coach↔aluno (ADR-016): nil = pode.
 func (v planView) checkStudent(ctx context.Context, claims *security.Claims, studentID string) *APIError {
 	return checkStudentLink(ctx, v.logger, v.linker, claims, studentID)
@@ -118,7 +173,10 @@ func (h planView) daysToDTO(ctx context.Context, tenantID string, days []domain.
 func (h planView) buildResponse(ctx context.Context, tenantID string, plan domain.Plan, version *domain.PlanVersion, locale domain.Locale) (planResponse, *APIError) {
 	resp := planResponse{
 		ID: plan.ID, StudentID: plan.StudentID, CoachID: plan.CoachID, Title: plan.Title,
-		Status: string(plan.Status), CreatedAt: plan.CreatedAt, UpdatedAt: plan.UpdatedAt,
+		Status: string(plan.Status), Kind: string(plan.Kind), Description: plan.Description,
+		SourceTemplateID: plan.SourceTemplateID, SourceVersionNo: plan.SourceVersionNo,
+		EditedAfterSource: plan.EditedAfterSource,
+		CreatedAt:         plan.CreatedAt, UpdatedAt: plan.UpdatedAt,
 		Versions: []versionRefDTO{},
 	}
 
@@ -133,18 +191,20 @@ func (h planView) buildResponse(ctx context.Context, tenantID string, plan domai
 	}
 
 	// A rotação do aluno pode estar em outro plano; só reporta o estado quando
-	// é este que está ativo.
-	state, err := h.plans.GetState(ctx, tenantID, plan.StudentID)
-	switch {
-	case err == nil && state.PlanID == plan.ID:
-		resp.ActiveVersionID = state.ActiveVersionID
-		if state.NextDayID != nil {
-			resp.NextDayID = *state.NextDayID
+	// é este que está ativo. Modelo não tem aluno nem rotação (ADR-018 §4).
+	if plan.StudentID != "" {
+		state, err := h.plans.GetState(ctx, tenantID, plan.StudentID)
+		switch {
+		case err == nil && state.PlanID == plan.ID:
+			resp.ActiveVersionID = state.ActiveVersionID
+			if state.NextDayID != nil {
+				resp.NextDayID = *state.NextDayID
+			}
+		case err != nil && !errors.Is(err, repo.ErrNotFound):
+			h.logger.Error("plan_state_failed", slog.Any("error", err))
+			apiErr := errInternal()
+			return planResponse{}, &apiErr
 		}
-	case err != nil && !errors.Is(err, repo.ErrNotFound):
-		h.logger.Error("plan_state_failed", slog.Any("error", err))
-		apiErr := errInternal()
-		return planResponse{}, &apiErr
 	}
 
 	if version == nil {

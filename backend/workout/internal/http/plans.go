@@ -39,6 +39,7 @@ func NewPlanHandler(logger *slog.Logger, plans *repo.PlanRepo, exercises *repo.E
 // transação só.
 const (
 	maxPlanTitleLen      = 120
+	maxDescriptionLen    = 1000
 	maxDayLabelLen       = 8
 	maxDayTitleLen       = 120
 	maxNotesLen          = 500
@@ -54,7 +55,6 @@ const (
 
 type createPlanRequest struct {
 	StudentID string `json:"student_id"`
-	CoachID   string `json:"coach_id"`
 	Title     string `json:"title"`
 }
 
@@ -96,8 +96,10 @@ type dayDTO struct {
 }
 
 type draftRequest struct {
-	Title string   `json:"title"`
-	Days  []dayDTO `json:"days"`
+	Title string `json:"title"`
+	// Description só vale em modelo; nil = não muda.
+	Description *string  `json:"description"`
+	Days        []dayDTO `json:"days"`
 }
 
 type versionRefDTO struct {
@@ -113,13 +115,20 @@ type versionDTO struct {
 }
 
 type planResponse struct {
-	ID        string    `json:"id"`
-	StudentID string    `json:"student_id"`
-	CoachID   string    `json:"coach_id"`
-	Title     string    `json:"title"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID string `json:"id"`
+	// StudentID é omitido no modelo (kind=template).
+	StudentID   string `json:"student_id,omitempty"`
+	CoachID     string `json:"coach_id"`
+	Title       string `json:"title"`
+	Status      string `json:"status"`
+	Kind        string `json:"kind"`
+	Description string `json:"description,omitempty"`
+	// Procedência da cópia de um modelo (ADR-018 §2).
+	SourceTemplateID  string    `json:"source_template_id,omitempty"`
+	SourceVersionNo   int       `json:"source_version_no,omitempty"`
+	EditedAfterSource bool      `json:"edited_after_source,omitempty"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
 	// Version é a versão carregada (rascunho ou publicada); Versions é o
 	// histórico só com os cabeçalhos.
 	Version  *versionDTO     `json:"version"`
@@ -136,6 +145,8 @@ type planSummaryDTO struct {
 	CoachID            string    `json:"coach_id"`
 	Title              string    `json:"title"`
 	Status             string    `json:"status"`
+	Kind               string    `json:"kind"`
+	SourceTemplateID   string    `json:"source_template_id,omitempty"`
 	LatestVersionNo    int       `json:"latest_version_no"`
 	PublishedVersionNo int       `json:"published_version_no"`
 	HasDraft           bool      `json:"has_draft"`
@@ -173,31 +184,25 @@ func (h *PlanHandler) Create(w http.ResponseWriter, r *http.Request) {
 		writeError(w, *apiErr)
 		return
 	}
-	// Por padrão o autor é o coach do plano. Atribuir o plano a outro
-	// professor é ato de administração da academia, então exige owner — e o
-	// coach informado precisa ser o vinculado ao aluno.
-	coachID := claims.Subject
-	if raw := strings.TrimSpace(req.CoachID); raw != "" && raw != claims.Subject {
-		if _, err := uuid.Parse(raw); err != nil {
-			writeError(w, errValidation("coach_id"))
-			return
-		}
-		if !hasRole(claims, "owner") {
-			writeError(w, errForbidden())
-			return
-		}
-		// Papéis vazios: o coach informado não ganha o passe livre de owner.
-		linked, err := h.linker.CanAccessStudent(r.Context(), claims.TenantID, raw, nil, strings.TrimSpace(req.StudentID))
-		if err != nil {
-			h.logger.Error("coach_link_check_failed", slog.Any("error", err))
-			writeError(w, errInternal())
-			return
-		}
-		if !linked {
-			writeError(w, errValidation("coach_id"))
-			return
-		}
-		coachID = raw
+	// O aluno precisa existir de verdade no identity (não basta um UUID).
+	studentID := strings.TrimSpace(req.StudentID)
+	existing, err := h.existingStudents(r.Context(), claims.TenantID, []string{studentID})
+	if err != nil {
+		h.logger.Error("student_lookup_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
+	}
+	if _, ok := existing[studentID]; !ok {
+		writeError(w, errStudentNotFound())
+		return
+	}
+	// O autor do plano é o professor vinculado ao aluno (ADR-016), mesmo
+	// quando quem cria é o owner.
+	coachID, err := h.planCoachFor(r.Context(), claims, studentID)
+	if err != nil {
+		h.logger.Error("coach_link_check_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
 	}
 
 	plan, err := h.plans.CreatePlan(r.Context(), domain.Plan{
@@ -235,7 +240,7 @@ func (h *PlanHandler) Get(w http.ResponseWriter, r *http.Request) {
 		writeError(w, *apiErr)
 		return
 	}
-	if apiErr := h.checkStudent(r.Context(), claims, plan.StudentID); apiErr != nil {
+	if apiErr := h.authorizePlan(r.Context(), claims, plan, false); apiErr != nil {
 		writeError(w, *apiErr)
 		return
 	}
@@ -270,7 +275,7 @@ func (h *PlanHandler) UpdateDraft(w http.ResponseWriter, r *http.Request) {
 		writeError(w, *apiErr)
 		return
 	}
-	if apiErr := h.checkStudent(r.Context(), claims, plan.StudentID); apiErr != nil {
+	if apiErr := h.authorizePlan(r.Context(), claims, plan, true); apiErr != nil {
 		writeError(w, *apiErr)
 		return
 	}
@@ -291,7 +296,16 @@ func (h *PlanHandler) UpdateDraft(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	version, _, err := h.plans.ReplaceDraft(r.Context(), claims.TenantID, plan.ID, title, days)
+	in := repo.DraftInput{Title: title, Days: days}
+	if plan.Kind == domain.PlanKindTemplate && req.Description != nil {
+		description := strings.TrimSpace(*req.Description)
+		if len(description) > maxDescriptionLen {
+			writeError(w, errValidation("description"))
+			return
+		}
+		in.Description = &description
+	}
+	version, _, err := h.plans.SaveDraft(r.Context(), claims.TenantID, plan.ID, in)
 	var unknown repo.UnknownExerciseError
 	switch {
 	case errors.Is(err, repo.ErrNotFound):
@@ -333,7 +347,7 @@ func (h *PlanHandler) Publish(w http.ResponseWriter, r *http.Request) {
 		writeError(w, *apiErr)
 		return
 	}
-	if apiErr := h.checkStudent(r.Context(), claims, plan.StudentID); apiErr != nil {
+	if apiErr := h.authorizePlan(r.Context(), claims, plan, true); apiErr != nil {
 		writeError(w, *apiErr)
 		return
 	}
@@ -396,7 +410,8 @@ func (h *PlanHandler) ListByStudent(w http.ResponseWriter, r *http.Request) {
 	for _, p := range plans {
 		items = append(items, planSummaryDTO{
 			ID: p.ID, StudentID: p.StudentID, CoachID: p.CoachID, Title: p.Title,
-			Status: string(p.Status), LatestVersionNo: p.LatestVersionNo,
+			Status: string(p.Status), Kind: string(p.Kind), SourceTemplateID: p.SourceTemplateID,
+			LatestVersionNo:    p.LatestVersionNo,
 			PublishedVersionNo: p.PublishedVersionNo, HasDraft: p.HasDraft,
 			IsActive: p.IsActive, CreatedAt: p.CreatedAt, UpdatedAt: p.UpdatedAt,
 		})

@@ -16,7 +16,11 @@ type apiPlan struct {
 	CoachID   string `json:"coach_id"`
 	Title     string `json:"title"`
 	Status    string `json:"status"`
-	Version   *struct {
+	Kind      string `json:"kind"`
+	// Procedência quando o plano nasceu de um modelo (ADR-018).
+	SourceTemplateID string `json:"source_template_id"`
+	SourceVersionNo  int    `json:"source_version_no"`
+	Version          *struct {
 		ID          string  `json:"id"`
 		VersionNo   int     `json:"version_no"`
 		PublishedAt *string `json:"published_at"`

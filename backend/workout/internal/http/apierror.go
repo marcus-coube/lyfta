@@ -91,6 +91,25 @@ var (
 	errDayNotInPlan = func(dayID string) APIError {
 		return newAPIError(http.StatusUnprocessableEntity, "day_not_in_plan", "day_id", dayID)
 	}
+	// Modelo de treino (ADR-018): só o autor ou o owner edita e arquiva.
+	errTemplateNotOwned = func() APIError {
+		return newAPIError(http.StatusForbidden, "template_not_owned")
+	}
+	// Modelo arquivado não é editado, publicado nem atribuído.
+	errTemplateArchived = func() APIError {
+		return newAPIError(http.StatusConflict, "template_archived")
+	}
+	// Atribuir exige versão publicada do modelo.
+	errTemplateNotPublished = func() APIError {
+		return newAPIError(http.StatusUnprocessableEntity, "template_not_published")
+	}
+	// Reaplicar: o plano não nasceu deste modelo / está arquivado.
+	errPlanNotFromTemplate = func() APIError {
+		return newAPIError(http.StatusUnprocessableEntity, "plan_not_from_template")
+	}
+	errPlanArchived = func() APIError {
+		return newAPIError(http.StatusConflict, "plan_archived")
+	}
 	errInvalidCursor = func() APIError {
 		return newAPIError(http.StatusBadRequest, "invalid_cursor")
 	}

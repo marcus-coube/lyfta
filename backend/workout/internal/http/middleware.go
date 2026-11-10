@@ -166,6 +166,11 @@ type StudentLinker interface {
 	// VisibleStudents filtra ids de aluno para os que o ator pode ver (owner:
 	// todos; coach: só os vinculados), preservando a ordem recebida.
 	VisibleStudents(ctx context.Context, tenantID, userID string, roles []string, studentIDs []string) ([]string, error)
+	// ExistingStudents devolve, por id, o status dos que são alunos vivos do
+	// tenant no identity; quem não existe (ou foi excluído) fica fora.
+	ExistingStudents(ctx context.Context, tenantID string, studentIDs []string) (map[string]string, error)
+	// CoachOf é o professor vinculado ao aluno; found=false sem vínculo.
+	CoachOf(ctx context.Context, tenantID, studentID string) (coachID string, found bool, err error)
 }
 
 // checkStudentLink aplica o vínculo. Devolve nil quando o acesso é permitido;

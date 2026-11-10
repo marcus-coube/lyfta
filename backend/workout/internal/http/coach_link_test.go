@@ -14,18 +14,21 @@ import (
 	"github.com/marcus-coube/lyfta/workout/internal/coachlink"
 )
 
-// fakeIdentity serve o M2M de vínculo (ADR-016 §3) a partir de um mapa
-// coach → alunos que o teste muda para simular reatribuição.
+// fakeIdentity serve o M2M do identity a partir de um mapa coach → alunos que
+// o teste muda para simular reatribuição: vínculo (ADR-016 §3), professor do
+// aluno e status dos alunos (P5.2). Todo aluno de `assign` existe como ativo;
+// `addStudent`/`setStatus`/`removeStudent` ajustam a existência.
 type fakeIdentity struct {
 	mu       sync.Mutex
 	students map[string][]string
+	status   map[string]string // aluno vivo → status
 	down     bool
 	server   *httptest.Server
 }
 
 func newFakeIdentity(t *testing.T) *fakeIdentity {
 	t.Helper()
-	f := &fakeIdentity{students: map[string][]string{}}
+	f := &fakeIdentity{students: map[string][]string{}, status: map[string]string{}}
 	f.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		f.mu.Lock()
 		defer f.mu.Unlock()
@@ -33,18 +36,48 @@ func newFakeIdentity(t *testing.T) *fakeIdentity {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		const prefix, suffix = "/internal/v1/coaches/", "/students"
-		if r.Header.Get("X-Internal-Token") != testInternalToken ||
-			!strings.HasPrefix(r.URL.Path, prefix) || !strings.HasSuffix(r.URL.Path, suffix) {
+		if r.Header.Get("X-Internal-Token") != testInternalToken {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		coach := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, prefix), suffix)
-		ids := f.students[coach]
-		if ids == nil {
-			ids = []string{}
+		const coachesPrefix, studentsPrefix = "/internal/v1/coaches/", "/internal/v1/students/"
+		switch {
+		case strings.HasPrefix(r.URL.Path, coachesPrefix) && strings.HasSuffix(r.URL.Path, "/students"):
+			coach := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, coachesPrefix), "/students")
+			ids := f.students[coach]
+			if ids == nil {
+				ids = []string{}
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"student_ids": ids})
+		case r.URL.Path == studentsPrefix+"statuses" && r.Method == http.MethodPost:
+			var req struct {
+				Students []struct {
+					TenantID  string `json:"tenant_id"`
+					StudentID string `json:"student_id"`
+				} `json:"students"`
+			}
+			_ = json.NewDecoder(r.Body).Decode(&req)
+			items := []map[string]string{}
+			for _, ref := range req.Students {
+				if st, ok := f.status[ref.StudentID]; ok {
+					items = append(items, map[string]string{"tenant_id": ref.TenantID, "student_id": ref.StudentID, "status": st})
+				}
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"items": items})
+		case strings.HasPrefix(r.URL.Path, studentsPrefix) && strings.HasSuffix(r.URL.Path, "/coach"):
+			student := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, studentsPrefix), "/coach")
+			for coach, ids := range f.students {
+				for _, id := range ids {
+					if id == student {
+						_ = json.NewEncoder(w).Encode(map[string]string{"coach_id": coach})
+						return
+					}
+				}
+			}
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusUnauthorized)
 		}
-		_ = json.NewEncoder(w).Encode(map[string]any{"student_ids": ids})
 	}))
 	t.Cleanup(f.server.Close)
 	return f
@@ -54,6 +87,32 @@ func (f *fakeIdentity) assign(coach string, students ...string) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.students[coach] = students
+	for _, id := range students {
+		if _, ok := f.status[id]; !ok {
+			f.status[id] = "active"
+		}
+	}
+}
+
+// addStudent cria um aluno vivo sem professor vinculado.
+func (f *fakeIdentity) addStudent(id string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.status[id] = "active"
+}
+
+func (f *fakeIdentity) setStatus(id, status string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.status[id] = status
+}
+
+// removeStudent simula conta excluída: some do status em lote (o vínculo, se
+// ainda houver, não importa — a existência é checada à parte).
+func (f *fakeIdentity) removeStudent(id string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	delete(f.status, id)
 }
 
 func (f *fakeIdentity) setDown(down bool) {
@@ -128,14 +187,13 @@ func TestCoachLinkCrossCoach(t *testing.T) {
 		}
 	}
 
-	// Plano atribuído a outro coach: o coach_id do owner precisa ser o vinculado.
-	body := map[string]any{"student_id": student, "title": "Do owner", "coach_id": coachB}
-	if rec := do(t, handler, http.MethodPost, "/v1/plans", tokOwner, body); rec.Code != http.StatusBadRequest {
-		t.Errorf("owner com coach_id não vinculado: esperava 400, veio %d %s", rec.Code, rec.Body.String())
+	// Plano criado pelo owner fica com o professor vinculado ao aluno (A).
+	rec = do(t, handler, http.MethodPost, "/v1/plans", tokOwner, map[string]any{"student_id": student, "title": "Do owner"})
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("owner cria plano: %d %s", rec.Code, rec.Body.String())
 	}
-	body["coach_id"] = coachA
-	if rec := do(t, handler, http.MethodPost, "/v1/plans", tokOwner, body); rec.Code != http.StatusCreated {
-		t.Errorf("owner com coach_id vinculado: esperava 201, veio %d %s", rec.Code, rec.Body.String())
+	if got := decodePlanBody(t, rec.Body.Bytes()).CoachID; got != coachA {
+		t.Errorf("coach_id do plano do owner deveria ser o vinculado %s, veio %s", coachA, got)
 	}
 
 	// Reatribuição: B passa a acessar (e edita, mesmo não sendo o autor do

@@ -13,7 +13,7 @@ Refs normativas: ADR-003, ADR-004, ADR-016, ADR-018.
 
 ---
 
-## - [ ] P6.1 Modelos de treino (workout)
+## - [x] P6.1 Modelos de treino (workout)
 
 **Objetivo:** biblioteca de modelos do tenant, aplicada por cópia (ADR-018).
 **Passos:**
@@ -119,3 +119,78 @@ de widget do cartão de superset; treino straight continua idêntico ao 1.0.
 ## Notas de execução
 
 (o agente anota aqui descobertas, dívidas e desvios aprovados)
+
+### P6.1 — modelos de treino (workout)
+
+- **Migration `0019_plan_templates`** (aplicada up/down 1/up no banco local). Além
+  das colunas do plano (`kind`, `description`, `source_template_id`,
+  `student_id` nullable + CHECK `(kind='assigned') = (student_id IS NOT NULL)`,
+  índice `(tenant_id, kind, updated_at DESC, id DESC)`), ganhou duas colunas de
+  procedência que o plano não previa mas o "Reaplicar a quem recebeu" (P6.3)
+  precisa: `source_version_no` (versão do modelo que gerou o conteúdo) e
+  `edited_after_source` (o coach mexeu depois; `SaveDraft` marca, aplicar e
+  reaplicar zeram). O `down` **recusa** rodar se existirem modelos (versão
+  publicada é imutável por trigger; apagar modelo é decisão humana).
+- **Rotas** (todas sob `RequireRole(owner, coach)`): `GET/POST /v1/templates`,
+  `POST /v1/templates/{id}/archive|unarchive|assign|reapply`, `GET .../recipients`,
+  `POST /v1/plans/{id}/save-as-template`. Ler/editar/publicar a árvore do
+  modelo reusa `GET /v1/plans/{id}`, `PUT .../draft`, `POST .../publish`
+  (`authorizePlan`: modelo = qualquer coach lê; só autor/owner escreve, 403
+  `template_not_owned`; arquivado = 409 `template_archived`). `PUT .../draft`
+  aceita `description` (só vale em modelo). Id de plano de aluno nas rotas
+  `/templates/{id}/...` = 404 `not_found` (e vice-versa em save-as-template).
+- **Refator no repo** (sem mudar contrato do 1.0): `ReplaceDraft` virou
+  `SaveDraft(DraftInput)` (ReplaceDraft segue como atalho); `insertTreeTx`,
+  `replaceDraftTreeTx`, `publishDraftTx` e `versionTreeTx` são as peças
+  transacionais que assign/reapply/save-as-template compõem — uma transação por
+  plano de aluno. Publicar modelo só congela a versão (sem rotação,
+  `student_plan_state` nem arquivar planos). `SaveDraft` agora sempre bumpa
+  `updated_at` (antes só com título).
+- **Assign** lê a árvore publicada uma vez e copia para cada aluno; item fora do
+  vínculo = `student_not_found` naquele item; lote máx. 50, ids deduplicados;
+  resposta 200 com `items[{student_id, plan_id, ok, error{code,params}}]`.
+  `publish=false` → plano em rascunho v1 fora da rotação. O `coach_id` da cópia é
+  o professor vinculado ao aluno (decisão 3 abaixo).
+- **Reapply** substitui o rascunho do plano (inclusive um rascunho aberto com
+  ajustes) pela árvore do modelo e publica versão nova; erros por item:
+  `plan_not_from_template` (422), `plan_archived` (409, plano arquivado/
+  substituído não é reaplicado para não reativar sem o coach pedir),
+  `student_not_found` (vínculo), `not_found`. Como publicar sempre ativa o
+  plano, reaplicar num plano só-rascunho o põe na rotação.
+- **Listagem** `GET /v1/templates?q=&status=&cursor=&limit=`: busca sem acento
+  (`lyfta_search_norm`), keyset `(updated_at, id)`, default só ativos
+  (`status=archived|all` amplia), com `days_count`/`exercises_count` da última
+  versão publicada e `assigned_count`. `recipients` devolve também
+  `template_version_no` (o app compara com `source_version_no`) e filtra pelo
+  vínculo do coach; planos de alunos já excluídos (titular anônimo) ficam fora.
+- **Contrato mexido já agora (P6.2 item 5 adiantado):** `GET /students/{id}/plans`
+  ganhou `kind` e `source_template_id` (`status`/`is_active` já existiam);
+  `planResponse` ganhou `kind`, `description`, `source_*`, `edited_after_source`
+  e `student_id` vira omitido no modelo.
+- **Decisões do usuário (2026-11-10, aplicadas):**
+  1. `save-as-template` copia a versão **mais recente** do plano (rascunho aberto,
+     senão a última publicada — o que o builder mostra); o modelo nasce em
+     **rascunho**, sem procedência, e o coach publica antes de atribuir.
+  2. **Desarquivar:** `POST /v1/templates/{id}/unarchive`, mesma permissão do
+     archive (autor ou owner; 403 `template_not_owned`). Idempotente como o
+     archive (já ativo = 200, sem erro — padrão único nas duas rotas). Volta como
+     `published` se o modelo já teve versão publicada, senão `draft`.
+  3. **`coach_id` do plano criado = professor vinculado ao aluno** (ADR-016), não
+     quem atribuiu. Coach que passou no vínculo já é esse professor (sem
+     chamada); para o owner consulta-se `GET /internal/v1/students/{id}/coach`;
+     aluno sem professor vinculado fica com quem atribuiu (fallback: o plano
+     precisa de um autor e o owner é o responsável pela academia). O
+     `POST /v1/plans` segue a mesma regra e o campo `coach_id` do corpo foi
+     **removido** (o único valor aceito era justamente o professor vinculado,
+     então virou redundante; o app não o enviava).
+  4. **Existência do aluno validada no identity** (M2M em lote
+     `POST /internal/v1/students/statuses`, via `ExistingStudents` no
+     `internal/coachlink` do workout) em `assign` (por item) e no `POST /v1/plans`:
+     inexistente, de outro tenant ou excluído = 404 `student_not_found`. Aluno
+     **`inactive` recebe plano** — o coach pode preparar a volta dele (o job de
+     treino pendente do comms já ignora inativos, então não dispara lembrete).
+     Efeito colateral: criar plano passa a depender do identity também para o
+     owner (identity fora do ar = 500, falha fechada).
+- **Reapply (decisões mantidas):** `plan_archived` por item para plano
+  arquivado/substituído (reativaria sem o coach pedir) e publicar ativa o plano
+  (reaplicar num plano só-rascunho o põe na rotação).

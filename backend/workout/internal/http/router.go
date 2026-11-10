@@ -107,6 +107,18 @@ func NewRouter(
 			r.Get("/plans/{id}", planHandler.Get)
 			r.Put("/plans/{id}/draft", planHandler.UpdateDraft)
 			r.Post("/plans/{id}/publish", planHandler.Publish)
+			r.Post("/plans/{id}/save-as-template", planHandler.SaveAsTemplate)
+
+			// Modelos de treino (ADR-018, P6.1): do tenant — qualquer coach
+			// lista e aplica; editar e arquivar é do autor ou do owner. Ler e
+			// editar a árvore reusa /plans/{id}.
+			r.Get("/templates", planHandler.ListTemplates)
+			r.Post("/templates", planHandler.CreateTemplate)
+			r.Post("/templates/{id}/archive", planHandler.ArchiveTemplate)
+			r.Post("/templates/{id}/unarchive", planHandler.UnarchiveTemplate)
+			r.Post("/templates/{id}/assign", planHandler.AssignTemplate)
+			r.Get("/templates/{id}/recipients", planHandler.ListRecipients)
+			r.Post("/templates/{id}/reapply", planHandler.ReapplyTemplate)
 
 			// Resumo em lote (último treino + plano ativo) da página de
 			// alunos; o vínculo é filtrado id a id no handler.

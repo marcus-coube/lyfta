@@ -11,6 +11,14 @@ const (
 	PlanStatusArchived  PlanStatus = "archived"
 )
 
+// PlanKind separa o plano de um aluno do modelo reutilizável (ADR-018).
+type PlanKind string
+
+const (
+	PlanKindAssigned PlanKind = "assigned"
+	PlanKindTemplate PlanKind = "template"
+)
+
 // BlockType representa o agrupamento de execução (ADR-004 §1): um exercício
 // "normal" é um bloco straight com um exercício só.
 type BlockType string
@@ -37,14 +45,23 @@ const (
 // StudentID e CoachID são users.id do identity: referência por UUID, sem FK,
 // porque cada serviço tem seu banco (ADR-013 §2).
 type Plan struct {
-	ID        string
-	TenantID  string
+	ID       string
+	TenantID string
+	// StudentID é vazio num modelo (kind=template, ADR-018).
 	StudentID string
 	CoachID   string
 	Title     string
 	Status    PlanStatus
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Kind      PlanKind
+	// Description só faz sentido no modelo (a biblioteca mostra).
+	Description string
+	// Procedência (ADR-018 §2), só em plano atribuído a partir de um modelo:
+	// qual modelo, em que versão dele, e se o plano foi editado depois.
+	SourceTemplateID  string
+	SourceVersionNo   int
+	EditedAfterSource bool
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
 // PlanVersion é uma versão do plano. Depois de publicada (PublishedAt não
@@ -143,4 +160,23 @@ func IsValidTargetUnit(v TargetUnit) bool {
 	default:
 		return false
 	}
+}
+
+// TemplateSummary é a linha da biblioteca de modelos do tenant.
+type TemplateSummary struct {
+	Plan
+	LatestVersionNo    int
+	PublishedVersionNo int
+	HasDraft           bool
+	// Dias e exercícios da última versão publicada (0 sem publicada).
+	DaysCount      int
+	ExercisesCount int
+	// AssignedCount é quantos planos de aluno nasceram deste modelo.
+	AssignedCount int
+}
+
+// TemplateRecipient é um plano de aluno que nasceu de um modelo (reaplicar).
+type TemplateRecipient struct {
+	Plan
+	IsActive bool
 }
