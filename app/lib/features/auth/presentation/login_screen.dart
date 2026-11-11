@@ -254,22 +254,28 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
         ),
         const SizedBox(height: LySpace.x8),
         Center(
-          child: GestureDetector(
+          child: InkWell(
             onTap: () => context.go('/signup'),
-            child: Text.rich(
-              TextSpan(
-                text: l10n.loginNewHerePrefix,
-                style: LyType.bodySm(c.textSecondary),
-                children: [
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48),
+              child: Center(
+                widthFactor: 1,
+                child: Text.rich(
                   TextSpan(
-                    text: l10n.loginNewHereSuffix,
-                    style: LyType.bodySm(c.textPrimary).copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    text: l10n.loginNewHerePrefix,
+                    style: LyType.bodySm(c.textSecondary),
+                    children: [
+                      TextSpan(
+                        text: l10n.loginNewHereSuffix,
+                        style: LyType.bodySm(c.textPrimary).copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                  textAlign: TextAlign.center,
+                ),
               ),
-              textAlign: TextAlign.center,
             ),
           ),
         ),

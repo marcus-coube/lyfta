@@ -223,7 +223,7 @@ class _ScoreButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: LyRadius.md,
         child: Container(
-          height: 44,
+          height: 48,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: selected ? accent : surface,

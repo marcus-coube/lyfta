@@ -137,20 +137,16 @@ class ChatBubble extends StatelessWidget {
                         l10n.chatMessageFailed,
                         style: LyType.caption(c.danger),
                       ),
-                      GestureDetector(
+                      _BubbleAction(
+                        label: l10n.chatMessageRetry,
+                        color: c.info,
                         onTap: onRetry,
-                        child: Text(
-                          l10n.chatMessageRetry,
-                          style: LyType.caption(c.info),
-                        ),
                       ),
                       if (onDiscard != null)
-                        GestureDetector(
+                        _BubbleAction(
+                          label: l10n.commonRemove,
+                          color: c.textSecondary,
                           onTap: onDiscard,
-                          child: Text(
-                            l10n.commonRemove,
-                            style: LyType.caption(c.textSecondary),
-                          ),
                         ),
                     ],
                   ),
@@ -168,5 +164,33 @@ class ChatBubble extends StatelessWidget {
   String _timeLabel(BuildContext context) {
     final locale = Localizations.localeOf(context).toString();
     return DateFormat.jm(locale).format(timestamp);
+  }
+}
+
+/// Ação em texto da bolha que falhou (tentar de novo / remover). O texto segue
+/// compacto, mas o alvo de toque tem o mínimo de 48 dp (P8.3, dívida da P4.3).
+class _BubbleAction extends StatelessWidget {
+  const _BubbleAction({
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  final String label;
+  final Color color;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+        child: Center(
+          widthFactor: 1,
+          child: Text(label, style: LyType.caption(color)),
+        ),
+      ),
+    );
   }
 }

@@ -1278,8 +1278,8 @@ class _InjuriesBannerState extends ConsumerState<_InjuriesBanner> {
           InkWell(
             key: const Key('builder_injuries_toggle'),
             onTap: () => setState(() => _open = !_open),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: LySpace.x2),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48),
               child: Row(
                 children: [
                   Icon(Icons.healing_outlined, size: 18, color: c.danger),

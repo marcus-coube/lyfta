@@ -104,6 +104,15 @@ void main() {
     final l10n = AppLocalizations.of(tester.element(find.byType(ChatBubble)));
     expect(find.text(l10n.chatMessageFailed), findsOneWidget);
 
+    // P8.3: alvo de toque >= 48 dp mesmo com o texto em caption.
+    for (final label in [l10n.chatMessageRetry, l10n.commonRemove]) {
+      final size = tester.getSize(
+        find.ancestor(of: find.text(label), matching: find.byType(InkWell)),
+      );
+      expect(size.height, greaterThanOrEqualTo(48));
+      expect(size.width, greaterThanOrEqualTo(48));
+    }
+
     await tester.tap(find.text(l10n.chatMessageRetry));
     expect(retried, isTrue);
 
