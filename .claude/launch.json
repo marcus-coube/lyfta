@@ -72,6 +72,101 @@
       "port": 8083,
       "url": "http://localhost:8083",
       "cwd": "backend/assessment"
+    },
+    {
+      "name": "comms",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "set -a; . ./.env; set +a; go run ./cmd/api"
+      ],
+      "port": 8084,
+      "url": "http://localhost:8084",
+      "cwd": "backend/comms"
+    },
+    {
+      "name": "billing",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "set -a; . ./.env; set +a; go run ./cmd/api"
+      ],
+      "port": 8085,
+      "url": "http://localhost:8085",
+      "cwd": "backend/billing"
+    },
+    {
+      "name": "identity-alt",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "set -a; . ./.env; PORT=9181 IDENTITY_URL=http://localhost:9181 WORKOUT_URL=http://localhost:9182 WORKOUT_BASE_URL=http://localhost:9182 ASSESSMENT_URL=http://localhost:9183 COMMS_URL=http://localhost:9184 BILLING_URL=http://localhost:9185; set +a; go run ./cmd/api"
+      ],
+      "port": 9181,
+      "url": "http://localhost:9181",
+      "cwd": "backend/identity"
+    },
+    {
+      "name": "workout-alt",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "set -a; . ./.env; PORT=9182 IDENTITY_URL=http://localhost:9181 WORKOUT_URL=http://localhost:9182 WORKOUT_BASE_URL=http://localhost:9182 ASSESSMENT_URL=http://localhost:9183 COMMS_URL=http://localhost:9184 BILLING_URL=http://localhost:9185; set +a; go run ./cmd/api"
+      ],
+      "port": 9182,
+      "url": "http://localhost:9182",
+      "cwd": "backend/workout"
+    },
+    {
+      "name": "assessment-alt",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "set -a; . ./.env; PORT=9183 IDENTITY_URL=http://localhost:9181 WORKOUT_URL=http://localhost:9182 WORKOUT_BASE_URL=http://localhost:9182 ASSESSMENT_URL=http://localhost:9183 COMMS_URL=http://localhost:9184 BILLING_URL=http://localhost:9185; set +a; go run ./cmd/api"
+      ],
+      "port": 9183,
+      "url": "http://localhost:9183",
+      "cwd": "backend/assessment"
+    },
+    {
+      "name": "comms-alt",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "set -a; . ./.env; PORT=9184 IDENTITY_URL=http://localhost:9181 WORKOUT_URL=http://localhost:9182 WORKOUT_BASE_URL=http://localhost:9182 ASSESSMENT_URL=http://localhost:9183 COMMS_URL=http://localhost:9184 BILLING_URL=http://localhost:9185; set +a; go run ./cmd/api"
+      ],
+      "port": 9184,
+      "url": "http://localhost:9184",
+      "cwd": "backend/comms"
+    },
+    {
+      "name": "billing-alt",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "set -a; . ./.env; PORT=9185 IDENTITY_URL=http://localhost:9181 WORKOUT_URL=http://localhost:9182 WORKOUT_BASE_URL=http://localhost:9182 ASSESSMENT_URL=http://localhost:9183 COMMS_URL=http://localhost:9184 BILLING_URL=http://localhost:9185; set +a; go run ./cmd/api"
+      ],
+      "port": 9185,
+      "url": "http://localhost:9185",
+      "cwd": "backend/billing"
+    },
+    {
+      "name": "app-web-alt",
+      "runtimeExecutable": "flutter",
+      "runtimeArgs": [
+        "run",
+        "-d",
+        "web-server",
+        "--web-port",
+        "5679",
+        "--dart-define=IDENTITY_BASE_URL=http://localhost:9181",
+        "--dart-define=WORKOUT_BASE_URL=http://localhost:9182",
+        "--dart-define=ASSESSMENT_BASE_URL=http://localhost:9183",
+        "--dart-define=COMMS_BASE_URL=http://localhost:9184",
+        "--dart-define=BILLING_BASE_URL=http://localhost:9185"
+      ],
+      "port": 5679,
+      "cwd": "app"
     }
   ]
 }
