@@ -229,8 +229,21 @@ release × vai pro 3.0).
 - A6 — banner do builder em modo modelo fala em "aluno" ("The student still sees…").
 - A7 — o aceite de convite exige "dados de saúde (obrigatório)" também do coach.
 
+*A1 e A2 corrigidos (2026-11-11, decisão do usuário):*
+- A1: o diálogo "Convidar" da aba Alunos ganha, só para o owner, a escolha
+  Aluno/Professor (`role: coach` no mesmo `POST /v1/invitations`); professor
+  convidado não entra na lista de alunos, então a tela confirma por mensagem.
+  Coach segue só convidando aluno. Verificado na tela (201, `role = coach`).
+- A2: em bloco por rodada (`BlockType.isRounds`: bi-set e circuito) a série nasce
+  sem descanso próprio, e virar um bloco para bi-set/circuito limpa o descanso
+  das séries que só copiava o do bloco; o descanso do bloco vale ao fim da
+  rodada (regra da P6.5 inalterada no `BlockRunner`). Planos já salvos com 60 s
+  por série não são migrados (sem usuários). Verificado na tela: "Rest (s)" vazio
+  nas séries do bi-set.
+- Testes de widget novos nos dois; `flutter analyze` zero, 234 testes.
+
 *Pendências — bloqueiam o release 2.0.0 (fechar a P8.4):*
-1. A1 e A2 (decisão do usuário: corrigir agora ou aceitar).
+1. (A1 e A2 resolvidos acima.)
 2. Android: Minhas mensalidades, bloqueio da exclusão com a mensagem e o atalho,
    login de aluno inativo e troca de idioma do aparelho (passos 9, 24, 25, 34, 36, 39)
    — os mesmos fluxos passaram na tela web.

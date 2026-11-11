@@ -3,7 +3,7 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** P8.4 (em andamento, checkbox aberto: varredura, roteiro e execução parcial feitos; telas do Chrome feitas; faltam decidir os achados A1/A2, partes do Android e a regressão do 1.0 — ver Notas da [P8](P8-dashboard.md) e [e2e-2.md](e2e-2.md)). **Fases P5, P6 e P7 fechadas.**
+**Próxima tarefa:** P8.4 (em andamento, checkbox aberto: varredura, roteiro e execução parcial feitos; telas do Chrome feitas; achados A1/A2 corrigidos; faltam partes do Android e a regressão do 1.0 — ver Notas da [P8](P8-dashboard.md) e [e2e-2.md](e2e-2.md)). **Fases P5, P6 e P7 fechadas.**
 
 | Fase | Progresso | Situação |
 |---|---|---|
@@ -58,3 +58,4 @@ Os quatro bancos do 1.0 seguem na tabela do [STATUS do 1.0](../mvp1/STATUS.md).
 | 2026-11-11 | **P8.3 concluída:** conteúdo dinâmico no idioma da tela (`Accept-Language` > locale do tenant), teste de contraste AA do dark e alvos de 48 dp nos itens anotados, "Carregar mais" na fila de check-ins, `created_by` em medidas/bioimpedância/fotos do assessment (migration 0006) |
 | 2026-11-11 | **P8.4 em andamento (checkbox aberto):** roteiro [e2e-2.md](e2e-2.md) escrito e executado em parte (36/40 passos pela API, Android com bi-set offline e sync, Chrome com dashboard e Financeiro); varredura verde, versão `2.0.0+1`, builds web e APK release; bug de varredura de tenants > 500 achado e corrigido; pendências classificadas nas Notas da P8 |
 | 2026-11-11 | **P8.4, rodada de tela no Chrome:** owner, coach e aluno pela tela web (30 passos ✅ na coluna Chrome); achados A1 (owner sem tela de convite de coach) e A2 (bi-set do builder descansa entre exercícios) bloqueiam o release até decisão; sessão web persiste e é compartilhada entre abas da mesma origem |
+| 2026-11-11 | **A1 e A2 corrigidos:** owner convida professor pelo diálogo da aba Alunos; bi-set/circuito no builder nascem sem descanso por série (descanso do bloco só ao fim da rodada); verificados na tela |
