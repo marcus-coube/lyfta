@@ -139,6 +139,8 @@
   "studentsInviteNameLabel": "Nome",
   "studentsInviteEmailLabel": "E-mail",
   "studentsInviteSubmit": "Convidar",
+  "studentsInviteCoachTitle": "Convidar professor",
+  "studentsInviteCoachSent": "Convite enviado para {email}.",
   "errorNotFound": "Não encontrámos o que procuravas.",
   "errorInvalidCursor": "A lista mudou. Recarrega a página.",
   "errorExerciseIsGlobal": "Os exercícios da Lyfta não podem ser editados. Duplica para criares o teu.",

@@ -441,6 +441,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get studentsInviteSubmit => 'Invite';
 
   @override
+  String get studentsInviteCoachTitle => 'Invite coach';
+
+  @override
+  String studentsInviteCoachSent(String email) {
+    return 'Invite sent to $email.';
+  }
+
+  @override
   String get errorNotFound => 'We couldn\'t find what you were looking for.';
 
   @override

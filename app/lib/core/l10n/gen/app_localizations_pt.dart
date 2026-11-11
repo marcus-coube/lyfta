@@ -441,6 +441,14 @@ class AppLocalizationsPt extends AppLocalizations {
   String get studentsInviteSubmit => 'Convidar';
 
   @override
+  String get studentsInviteCoachTitle => 'Convidar professor';
+
+  @override
+  String studentsInviteCoachSent(String email) {
+    return 'Convite enviado para $email.';
+  }
+
+  @override
   String get errorNotFound => 'Não encontramos o que você procurava.';
 
   @override
@@ -3114,6 +3122,14 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get studentsInviteSubmit => 'Convidar';
+
+  @override
+  String get studentsInviteCoachTitle => 'Convidar professor';
+
+  @override
+  String studentsInviteCoachSent(String email) {
+    return 'Convite enviado para $email.';
+  }
 
   @override
   String get errorNotFound => 'Não encontrámos o que procuravas.';

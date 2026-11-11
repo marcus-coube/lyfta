@@ -138,13 +138,18 @@ class StudentRepository {
     }
   }
 
-  /// Convida um aluno novo. O nome é opcional na API, mas a tela sempre
-  /// manda: sem ele a lista mostraria e-mails.
-  Future<void> invite({required String email, required String name}) async {
+  /// Convida um aluno novo (ou um professor, só pelo owner). O nome é
+  /// opcional na API, mas a tela sempre manda: sem ele a lista mostraria
+  /// e-mails.
+  Future<void> invite({
+    required String email,
+    required String name,
+    String role = 'student',
+  }) async {
     try {
       await _dio.post<Map<String, dynamic>>(
         '/v1/invitations',
-        data: {'email': email, 'role': 'student', 'name': name},
+        data: {'email': email, 'role': role, 'name': name},
       );
     } on DioException catch (e) {
       final error = e.error;

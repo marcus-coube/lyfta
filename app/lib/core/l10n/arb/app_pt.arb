@@ -166,6 +166,15 @@
   "studentsInviteNameLabel": "Nome",
   "studentsInviteEmailLabel": "E-mail",
   "studentsInviteSubmit": "Convidar",
+  "studentsInviteCoachTitle": "Convidar professor",
+  "studentsInviteCoachSent": "Convite enviado para {email}.",
+  "@studentsInviteCoachSent": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
   "errorNotFound": "Não encontramos o que você procurava.",
   "errorInvalidCursor": "A lista mudou. Recarregue a página.",
   "errorExerciseIsGlobal": "Exercícios da Lyfta não podem ser editados. Duplique para criar o seu.",

@@ -933,6 +933,18 @@ abstract class AppLocalizations {
   /// **'Convidar'**
   String get studentsInviteSubmit;
 
+  /// No description provided for @studentsInviteCoachTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Convidar professor'**
+  String get studentsInviteCoachTitle;
+
+  /// No description provided for @studentsInviteCoachSent.
+  ///
+  /// In pt, this message translates to:
+  /// **'Convite enviado para {email}.'**
+  String studentsInviteCoachSent(String email);
+
   /// No description provided for @errorNotFound.
   ///
   /// In pt, this message translates to:

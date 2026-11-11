@@ -83,6 +83,17 @@ class _FakeStudents extends StudentRepository {
     );
   }
 
+  final invites = <({String email, String name, String role})>[];
+
+  @override
+  Future<void> invite({
+    required String email,
+    required String name,
+    String role = 'student',
+  }) async {
+    invites.add((email: email, name: name, role: role));
+  }
+
   @override
   Future<List<CoachOption>> listCoaches() async => const [
         CoachOption(id: 'coach-a', name: 'Coach Alfa'),
@@ -104,6 +115,10 @@ Student _student(
     coachName: coachId == 'coach-a' ? 'Coach Alfa' : 'Coach Beta',
   );
 }
+
+Finder _dialogField(int i) => find
+    .descendant(of: find.byType(AlertDialog), matching: find.byType(TextField))
+    .at(i);
 
 Future<_FakeStudents> _pump(
   WidgetTester tester,
@@ -321,5 +336,39 @@ void main() {
 
     expect(find.text('Ana Alves'), findsOneWidget);
     expect(find.byKey(const Key('delinquent_badge')), findsNothing);
+  });
+
+  testWidgets('owner convida professor pelo mesmo diálogo (A1 da P8.4)',
+      (tester) async {
+    final fake = await _pump(tester, [_student('Ana Alves')], isOwner: true);
+
+    await tester.tap(find.text('Convidar').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Professor').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Convidar professor'), findsOneWidget);
+    await tester.enterText(_dialogField(0), 'Caio');
+    await tester.enterText(_dialogField(1), 'caio@example.com');
+    await tester.tap(find.byKey(const Key('invite_submit')));
+    await tester.pumpAndSettle();
+
+    expect(fake.invites.single.role, 'coach');
+    expect(fake.invites.single.email, 'caio@example.com');
+    expect(find.text('Convite enviado para caio@example.com.'), findsOneWidget);
+  });
+
+  testWidgets('coach só convida aluno: sem escolha de papel', (tester) async {
+    final fake = await _pump(tester, [_student('Ana Alves')]);
+
+    await tester.tap(find.text('Convidar').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('invite_role')), findsNothing);
+    await tester.enterText(_dialogField(0), 'Bia');
+    await tester.enterText(_dialogField(1), 'bia@example.com');
+    await tester.tap(find.byKey(const Key('invite_submit')));
+    await tester.pumpAndSettle();
+
+    expect(fake.invites.single.role, 'student');
+    expect(fake.invites.single.email, 'bia@example.com');
   });
 }

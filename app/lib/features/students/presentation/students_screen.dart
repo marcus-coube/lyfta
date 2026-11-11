@@ -82,33 +82,64 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
     final l10n = AppLocalizations.of(context);
     final name = TextEditingController();
     final email = TextEditingController();
+    // Só o owner convida professor (ADR-016); o coach só convida aluno.
+    final isOwner = ref.read(authControllerProvider).isOwner;
+    var asCoach = false;
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.studentsInviteTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            LyTextField(label: l10n.studentsInviteNameLabel, controller: name),
-            const SizedBox(height: LySpace.x3),
-            LyTextField(
-              label: l10n.studentsInviteEmailLabel,
-              controller: email,
-              keyboardType: TextInputType.emailAddress,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(
+            asCoach ? l10n.studentsInviteCoachTitle : l10n.studentsInviteTitle,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (isOwner) ...[
+                SegmentedButton<bool>(
+                  key: const Key('invite_role'),
+                  segments: [
+                    ButtonSegment(
+                      value: false,
+                      label: Text(l10n.roleSwitcherStudent),
+                    ),
+                    ButtonSegment(
+                      value: true,
+                      label: Text(l10n.roleSwitcherCoach),
+                    ),
+                  ],
+                  selected: {asCoach},
+                  onSelectionChanged: (value) =>
+                      setDialogState(() => asCoach = value.first),
+                ),
+                const SizedBox(height: LySpace.x3),
+              ],
+              LyTextField(
+                label: l10n.studentsInviteNameLabel,
+                controller: name,
+              ),
+              const SizedBox(height: LySpace.x3),
+              LyTextField(
+                label: l10n.studentsInviteEmailLabel,
+                controller: email,
+                keyboardType: TextInputType.emailAddress,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.commonCancel),
+            ),
+            TextButton(
+              key: const Key('invite_submit'),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l10n.studentsInviteSubmit),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.studentsInviteSubmit),
-          ),
-        ],
       ),
     );
     if (!(confirmed ?? false) || !mounted) return;
@@ -117,9 +148,15 @@ class _StudentsScreenState extends ConsumerState<StudentsScreen> {
       await ref.read(studentRepositoryProvider).invite(
             email: email.text.trim(),
             name: name.text.trim(),
+            role: asCoach ? 'coach' : 'student',
           );
       if (!mounted) return;
-      ref.read(studentsProvider.notifier).refresh();
+      if (asCoach) {
+        // Professor não entra na lista de alunos: confirma por mensagem.
+        _showError(l10n.studentsInviteCoachSent(email.text.trim()));
+      } else {
+        ref.read(studentsProvider.notifier).refresh();
+      }
     } catch (error) {
       if (!mounted) return;
       _showError(describeApiError(context, error));
