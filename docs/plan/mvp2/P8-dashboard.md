@@ -42,7 +42,7 @@ recebe 403 no summary); números batem com um seed conhecido.
 **Aceite:** dashboard reflete o seed do P8.1; card com serviço fora mostra
 retry sem afetar os outros (teste de widget); coach não vê cards de valor.
 
-## - [ ] P8.3 Dívidas do 1.0 que o 2.0 encosta
+## - [x] P8.3 Dívidas do 1.0 que o 2.0 encosta
 
 **Objetivo:** fechar o que as telas novas tornariam pior se ficasse.
 **Passos:**
@@ -151,3 +151,35 @@ release × vai pro 3.0).
 - Pendência: o gráfico só foi exercitado em teste de widget; checagem visual no
   Chrome/emulador fica para o E2E do P8.4.
 
+**P8.3 (Mac, 2026-11-11)**
+- **Locale:** o `workout` resolve o idioma por `?locale=` > `Accept-Language` >
+  claim `locale` (a do tenant); `Accept-Language` desconhecido é ignorado (não
+  dá 400), `q` respeitado. Vale para biblioteca, modelos, planos, `/me/today` e
+  pull (todos passam por `requestLocale`). No app, `AcceptLanguageInterceptor`
+  entra em todo `ApiClient` e manda o idioma resolvido do aparelho
+  (`pt-BR`/`pt-PT`/`en`), lido a cada requisição. O app não tem seletor de
+  idioma próprio: "idioma da tela" = o do aparelho. Testes: unitário do parser,
+  `TestLibraryFollowsAcceptLanguage` (nome do seed muda com `en`; `?locale=`
+  vence o cabeçalho) e teste do interceptor. Pendência: o treino do dia já
+  baixado fica no idioma de quando foi sincronizado até o próximo pull.
+- **Contraste:** `test/core/design_system/ly_colors_contrast_test.dart` cobre
+  todo token de texto do dark (primário, secundário, accent, 4 semânticos) sobre
+  background/surface/elevated, e `onAccent` sobre `accent`: todos >= 4,5:1, sem
+  mexer em cor. O tema light segue fora (inatingível, `ThemeMode.dark` fixo).
+- **Toque 48 dp:** retry/remover da bolha que falhou no chat (dívida nomeada da
+  P4.3, teste de widget mede o `InkWell`), link "Novo por aqui?" do login, nota
+  do check-in (44 -> 48) e toggle do banner de lesões do builder. Telas novas do
+  2.0 (dashboard, financeiro, alunos): auditadas por leitura, usam
+  `ListTile`/`LyButton`/`InkWell` com `minHeight: 48`; sem outro achado. Não
+  medido em aparelho.
+- **Paginação:** o servidor já paginava check-ins por cursor (teto 50) e o
+  diretório de nomes do chat já busca por ids em lotes de 100 — o que faltava
+  era a UI da aba Check-ins do coach, que parava nos 30 primeiros. Botão
+  "Carregar mais" + `loadMore` sem duplicar toque e sem perder a lista se a rede
+  falhar (teste de widget com duas páginas).
+- **`created_by`:** migration `0006_created_by` no assessment (medidas,
+  bioimpedância, fotos), `NOT NULL`; linhas existentes foram preenchidas com o
+  `student_id` (o autor real não foi guardado; só afeta dado de dev). Handlers
+  gravam o `sub` do token; a API devolve `created_by` (aditivo). Testes: repo
+  (aluno e coach voltam) e HTTP (aluno na `/me`, coach na ficha). Sem exclusão
+  de coach hoje: `created_by` de coach removido ficaria órfão (só um id).
