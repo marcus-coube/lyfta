@@ -91,8 +91,7 @@ class BlockRunner {
   BlockType get type => block.blockType;
 
   /// Conduzido por rodadas (superset e circuito).
-  bool get isRounds =>
-      type == BlockType.superset || type == BlockType.circuit;
+  bool get isRounds => type.isRounds;
 
   /// Os blocos que viram um cartão único; o straight segue um cartão por
   /// exercício, como no 1.0.
@@ -126,7 +125,11 @@ class BlockRunner {
 
   /// Passo seguinte ao que acabou de ser feito (o que o timer de descanso
   /// anuncia), ou null no fim do bloco.
-  BlockStep? stepAfter(String exerciseId, int setNo, {bool Function(BlockStep)? isDone}) {
+  BlockStep? stepAfter(
+    String exerciseId,
+    int setNo, {
+    bool Function(BlockStep)? isDone,
+  }) {
     final idx = _indexOf(exerciseId, setNo);
     if (idx < 0) return null;
     for (var i = idx + 1; i < steps.length; i++) {

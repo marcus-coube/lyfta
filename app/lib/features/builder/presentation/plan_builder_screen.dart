@@ -404,12 +404,13 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
         BlockExercise(
           exerciseId: exercise.id,
           exercise: exercise,
-          // Descanso padrão do bloco na série nova.
+          // Descanso padrão do bloco na série nova — exceto em rodadas, onde
+          // o descanso do bloco já vale ao fim da rodada (P6.5).
           sets: [
             PrescribedSet(
               repsMin: 8,
               repsMax: 12,
-              restSeconds: block.restSeconds,
+              restSeconds: block.blockType.isRounds ? null : block.restSeconds,
             ),
           ],
         ),
@@ -706,9 +707,8 @@ class _PlanBuilderScreenState extends ConsumerState<PlanBuilderScreen> {
           if (withDayMenu && !_readOnly)
             _DayMenu(
               key: const Key('day_menu'),
-              onMoveUp: _selectedDay > 0
-                  ? () => _moveDay(_selectedDay, -1)
-                  : null,
+              onMoveUp:
+                  _selectedDay > 0 ? () => _moveDay(_selectedDay, -1) : null,
               onMoveDown: _selectedDay < _days.length - 1
                   ? () => _moveDay(_selectedDay, 1)
                   : null,
@@ -884,8 +884,7 @@ class _DayList extends StatelessWidget {
               ? null
               : _DayMenu(
                   onMoveUp: i > 0 ? () => onMove(i, -1) : null,
-                  onMoveDown:
-                      i < days.length - 1 ? () => onMove(i, 1) : null,
+                  onMoveDown: i < days.length - 1 ? () => onMove(i, 1) : null,
                   onDuplicate: () => onDuplicate(i),
                   onRemove: () => onRemove(i),
                 ),
@@ -1097,6 +1096,17 @@ class _BlockCard extends StatelessWidget {
                         ],
                         onChanged: (type) {
                           if (type == null) return;
+                          if (type.isRounds && !block.blockType.isRounds) {
+                            // Em rodadas o descanso por série vira pausa entre
+                            // exercícios: tira o que só copiava o do bloco.
+                            for (final e in block.exercises) {
+                              for (final set in e.sets) {
+                                if (set.restSeconds == block.restSeconds) {
+                                  set.restSeconds = null;
+                                }
+                              }
+                            }
+                          }
                           block.blockType = type;
                           onChanged();
                         },
@@ -1158,7 +1168,8 @@ class _BlockCard extends StatelessWidget {
                     index: i,
                     item: block.exercises[i],
                     readOnly: readOnly,
-                    defaultRestSeconds: block.restSeconds,
+                    defaultRestSeconds:
+                        block.blockType.isRounds ? null : block.restSeconds,
                     onChanged: onChanged,
                     onRemove: () {
                       block.exercises.removeAt(i);
@@ -1186,7 +1197,7 @@ class _BlockExerciseEditor extends StatelessWidget {
     required this.index,
     required this.item,
     required this.readOnly,
-    required this.defaultRestSeconds,
+    this.defaultRestSeconds,
     required this.onChanged,
     required this.onRemove,
   });
@@ -1194,7 +1205,7 @@ class _BlockExerciseEditor extends StatelessWidget {
   final int index;
   final BlockExercise item;
   final bool readOnly;
-  final int defaultRestSeconds;
+  final int? defaultRestSeconds;
   final VoidCallback onChanged;
   final VoidCallback onRemove;
 

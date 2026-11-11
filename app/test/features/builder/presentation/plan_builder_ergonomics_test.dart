@@ -178,6 +178,33 @@ void main() {
     expect(names, ['Crucifixo', 'Supino']);
   });
 
+  testWidgets(
+    'virar bi-set tira o descanso copiado do bloco; série nova sem descanso',
+    (tester) async {
+      final fake = await _pump(tester, _plan());
+
+      // 1º bloco: Reto -> Bi-set (A2 da P8.4).
+      await tester.tap(find.byType(DropdownButton<BlockType>).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bi-set').last);
+      await tester.pumpAndSettle();
+      // Série nova no bi-set copia a última (agora sem descanso próprio).
+      await tester.tap(find.byKey(const Key('set-editor-add')).first);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Salvar rascunho'));
+      await tester.pumpAndSettle();
+      final blocks = fake.saved!.first.blocks;
+      expect(blocks[0].blockType, BlockType.superset);
+      expect(
+        blocks[0].exercises.single.sets.map((s) => s.restSeconds),
+        [null, null],
+      );
+      // Bloco reto intocado: o descanso por série continua.
+      expect(blocks[1].exercises.single.sets.single.restSeconds, 60);
+    },
+  );
+
   testWidgets('arrastar a alça do exercício reordena dentro do bloco',
       (tester) async {
     final fake = await _pump(

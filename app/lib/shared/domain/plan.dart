@@ -24,6 +24,10 @@ enum BlockType {
         BlockType.restPause => 'rest_pause',
         BlockType.circuit => 'circuit',
       };
+
+  /// Conduzido por rodadas (superset e circuito, P6.5): o descanso do bloco
+  /// vale ao fim da rodada; entre exercícios da rodada só se a série pedir.
+  bool get isRounds => this == BlockType.superset || this == BlockType.circuit;
 }
 
 /// Unidade do alvo de carga da série (ADR-012 §4). `kg` usa
