@@ -160,10 +160,13 @@ const MaxTenantPageSize = 500
 
 // ListAfter devolve até limit tenants com id > after, em ordem de id (cursor
 // keyset), para os jobs que varrem todos os tenants (M2M, P5.1). after vazio
-// começa do início.
+// começa do início. O handler pede limit+1 para saber se há próxima página, então
+// o teto aqui é MaxTenantPageSize+1 (com o teto igual ao do handler, a linha
+// extra era cortada e a página cheia nunca devolvia cursor: tenants além dos
+// primeiros 500 ficavam fora dos jobs do billing e do comms).
 func (r *TenantRepo) ListAfter(ctx context.Context, after string, limit int) ([]domain.Tenant, error) {
-	if limit <= 0 || limit > MaxTenantPageSize {
-		limit = MaxTenantPageSize
+	if limit <= 0 || limit > MaxTenantPageSize+1 {
+		limit = MaxTenantPageSize + 1
 	}
 	const q = `
 		SELECT id, name, slug, locale, created_at, timezone, coach_billing_access
