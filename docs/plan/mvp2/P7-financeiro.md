@@ -371,7 +371,11 @@ identity (pendente + billing fora do ar) e no billing (idempotência do DELETE).
 - **Pendência do usuário:** `identity/.env` com `TERMS_VERSION` explícito precisa
   virar `2026-11-v2` (igual ao app), senão o gate de consentimento diverge;
   `BILLING_URL` só é necessária se o billing não estiver em localhost:8085.
-- Verificação manual (pilha real) **não feita** nesta sessão: roteiro em
-  "Aceite" — aluno com fatura vencida recebe 409 e a conta segue; aluno
-  quitado exclui e a fatura paga mostra nome, e-mail e "conta excluída" ao
-  owner.
+- Verificado no Chrome (2026-11-10, pilha real em portas de teste): aluno com
+  fatura vencida recebe 409, vê "1 mensalidade em aberto" com o atalho para
+  Minhas mensalidades, e a conta segue `active`; após a baixa, exclui (204 nos
+  4 serviços), volta ao login e o login dá 401; identity anonimizado, billing
+  com nome/e-mail e `account_deleted_at`, assinatura `canceled`, fatura `paid`
+  e pagamento intactos; a dona não vê mais o aluno na lista e vê a fatura paga
+  com nome, e-mail e o selo "conta excluída". Sessão antiga (termos v1) caiu
+  no gate `/consent` pedindo novo aceite, como esperado com a v2.
