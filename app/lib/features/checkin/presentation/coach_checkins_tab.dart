@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -61,14 +63,30 @@ class CoachCheckinsTab extends ConsumerWidget {
               LySpace.x4,
               LySpace.x16,
             ),
-            itemCount: state.items.length,
+            itemCount: state.items.length + (state.hasMore ? 1 : 0),
             separatorBuilder: (_, __) => const SizedBox(height: LySpace.x3),
-            itemBuilder: (context, index) => _CheckinCard(
-              checkin: state.items[index],
-              onReview: () => ref
-                  .read(checkinsProvider(studentId).notifier)
-                  .review(state.items[index].id),
-            ),
+            itemBuilder: (context, index) {
+              // Página seguinte (P8.3): a fila passa de 30 itens.
+              if (index == state.items.length) {
+                return Align(
+                  child: LyButton(
+                    key: const Key('checkins_load_more'),
+                    label: l10n.commonLoadMore,
+                    variant: LyButtonVariant.secondary,
+                    expanded: false,
+                    onPressed: () => unawaited(
+                      ref.read(checkinsProvider(studentId).notifier).loadMore(),
+                    ),
+                  ),
+                );
+              }
+              return _CheckinCard(
+                checkin: state.items[index],
+                onReview: () => ref
+                    .read(checkinsProvider(studentId).notifier)
+                    .review(state.items[index].id),
+              );
+            },
           ),
         );
       },

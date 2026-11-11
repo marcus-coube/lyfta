@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/http/api_exception.dart';
 import '../../../core/realtime/comms_socket_provider.dart';
 import '../data/checkin_event.dart';
 import '../data/checkin_repository.dart';
@@ -42,19 +43,30 @@ class CheckinsController
     return CheckinListState(items: page.items, hasMore: page.hasMore);
   }
 
+  bool _loadingMore = false;
+
+  /// Próxima página da fila. Falha de rede mantém o que já está na tela (o
+  /// botão segue lá para tentar de novo); toques repetidos não duplicam.
   Future<void> loadMore() async {
     final current = state.valueOrNull;
-    if (current == null || !current.hasMore) return;
-    final page = await ref
-        .read(checkinRepositoryProvider)
-        .list(studentId: arg, cursor: _cursor, limit: 30);
-    _cursor = page.nextCursor;
-    state = AsyncData(
-      CheckinListState(
-        items: [...current.items, ...page.items],
-        hasMore: page.hasMore,
-      ),
-    );
+    if (current == null || !current.hasMore || _loadingMore) return;
+    _loadingMore = true;
+    try {
+      final page = await ref
+          .read(checkinRepositoryProvider)
+          .list(studentId: arg, cursor: _cursor, limit: 30);
+      _cursor = page.nextCursor;
+      state = AsyncData(
+        CheckinListState(
+          items: [...current.items, ...page.items],
+          hasMore: page.hasMore,
+        ),
+      );
+    } on ApiException {
+      // Mantém o estado atual.
+    } finally {
+      _loadingMore = false;
+    }
   }
 
   Future<void> refresh() async {
