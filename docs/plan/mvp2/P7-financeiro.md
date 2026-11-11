@@ -328,9 +328,14 @@ identity (pendente + billing fora do ar) e no billing (idempotência do DELETE).
   matriz de acesso, shell por papel, selo na lista e na ficha, aviso ao
   inativar, "Minhas mensalidades", toggle da Organização. `FakeBillingRepository`
   em `test/features/billing/billing_fakes.dart`.
-- Pendente de verificação manual (nada foi rodado contra o billing real): fluxo
-  completo no Chrome com owner (criar plano, assinar, baixa, estorno), coach
-  nos dois modos, aluno em "Minhas mensalidades". Exige `billing/.env` com
-  `IDENTITY_URL` e `INTERNAL_TOKEN` (pendência da P7.1/P7.2) e CORS do billing
-  incluindo a origem do Chrome.
+- **Verificado no Chrome (2026-11-10)** contra a pilha real: owner cria plano
+  (gravado 14990), assina aluno (fatura do mês nasce), baixa e estorno com
+  motivo (fatura volta a `open`); selo "inadimplente" com fatura vencida;
+  coach `status_only` sem aba nem aba da ficha, só o selo; coach
+  `own_students` vê só o próprio aluno, sem Planos, dá baixa e não estorna;
+  aluno em "Minhas mensalidades" pela Conta. Toggle da Organização trocado
+  pela API, não clicado na UI.
+- **Bug achado e corrigido:** o CORS do billing não liberava `Idempotency-Key`,
+  então toda baixa pelo app web caía no preflight ("sem conexão"). Header
+  adicionado em `router.go` + teste de preflight em `router_test.go`.
 

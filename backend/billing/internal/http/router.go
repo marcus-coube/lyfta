@@ -27,9 +27,11 @@ func NewRouter(
 	r.Use(Recover(logger))
 	r.Use(ReportServerErrors)
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   corsOrigins,
-		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Content-Type", "Authorization", "X-Internal-Token", "X-Request-Id"},
+		AllowedOrigins: corsOrigins,
+		AllowedMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		// Idempotency-Key: a baixa manual vem do browser com a chave (P7.2);
+		// sem ela aqui o preflight barra toda baixa feita pelo app web.
+		AllowedHeaders:   []string{"Accept", "Content-Type", "Authorization", "X-Internal-Token", "X-Request-Id", "Idempotency-Key"},
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))

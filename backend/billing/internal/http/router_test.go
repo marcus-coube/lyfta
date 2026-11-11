@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -61,6 +62,23 @@ func sign(t *testing.T, priv ed25519.PrivateKey, tenantID string) string {
 		t.Fatal(err)
 	}
 	return signed
+}
+
+// O app web manda Idempotency-Key na baixa manual; o preflight tem de liberá-lo.
+func TestCORSPreflightLiberaIdempotencyKey(t *testing.T) {
+	h, _ := newTestRouter(t)
+	req := httptest.NewRequest(http.MethodOptions, "/v1/billing/invoices/x/payments", nil)
+	req.Header.Set("Origin", "http://localhost:5678")
+	req.Header.Set("Access-Control-Request-Method", http.MethodPost)
+	req.Header.Set("Access-Control-Request-Headers", "authorization,content-type,idempotency-key")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if got := rec.Header().Get("Access-Control-Allow-Origin"); got != "http://localhost:5678" {
+		t.Fatalf("preflight recusado: Allow-Origin=%q", got)
+	}
+	if got := rec.Header().Get("Access-Control-Allow-Headers"); !strings.Contains(strings.ToLower(got), "idempotency-key") {
+		t.Fatalf("Idempotency-Key fora do Allow-Headers: %q", got)
+	}
 }
 
 func TestHealthz(t *testing.T) {
