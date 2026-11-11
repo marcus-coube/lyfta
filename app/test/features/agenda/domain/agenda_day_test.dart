@@ -97,5 +97,24 @@ void main() {
       expect(days[1].dayLabel, 'C'); // amanhã
       expect(days[2].dayLabel, 'A'); // depois de amanhã (circular)
     });
+
+    test('treinou hoje: o ponteiro já avançou e amanhã é o dia dele', () {
+      // Treinou A hoje; o servidor já aponta B (next_day_id). Amanhã é B,
+      // não C — achado do E2E 2.0 no Android (P8.4).
+      final days = buildAgendaDays(
+        from: today,
+        to: today.add(const Duration(days: 4)),
+        today: today,
+        sessionsByDay: {
+          today: [_session(today.add(const Duration(hours: 7)))],
+        },
+        pointer: _pointer(currentDayId: 'b'),
+      );
+
+      expect(days[0].state, AgendaDayState.done);
+      expect(days[1].dayLabel, 'B'); // amanhã
+      expect(days[2].dayLabel, 'C');
+      expect(days[3].dayLabel, 'A'); // circular
+    });
   });
 }

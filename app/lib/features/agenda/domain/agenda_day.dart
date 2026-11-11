@@ -60,6 +60,9 @@ List<AgendaDay> buildAgendaDays({
 }) {
   final days = <AgendaDay>[];
   final todayKey = DateTime(today.year, today.month, today.day);
+  // Sessão de hoje já sincronizada avançou o `next_day_id` do servidor: o dia
+  // do ponteiro é o de amanhã, não o de hoje — desconta um passo na projeção.
+  final trainedToday = (sessionsByDay[todayKey] ?? const []).isNotEmpty;
 
   for (var d = from; d.isBefore(to); d = d.add(const Duration(days: 1))) {
     final key = DateTime(d.year, d.month, d.day);
@@ -82,7 +85,8 @@ List<AgendaDay> buildAgendaDays({
       continue;
     }
 
-    final predicted = pointer.predict(key.difference(todayKey).inDays);
+    final stepsAhead = key.difference(todayKey).inDays - (trainedToday ? 1 : 0);
+    final predicted = pointer.predict(stepsAhead);
     days.add(
       predicted == null
           ? AgendaDay(date: key, state: AgendaDayState.rest)

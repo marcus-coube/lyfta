@@ -242,13 +242,20 @@ release × vai pro 3.0).
   nas séries do bi-set.
 - Testes de widget novos nos dois; `flutter analyze` zero, 234 testes.
 
+*Rodada 3 — Android (2026-11-11):* passos 9, 24, 25, 34, 36 e 39 ✅ pela tela
+e smoke do 1.0 no Android verde (foto, bioimpedância, chat com imagem e queda
+do WS, mês e streak da Agenda incluídos) — detalhe em [e2e-2.md](e2e-2.md)
+§ Rodada 3. Achado **A8** corrigido: a projeção da Agenda ficava um dia
+atrasada depois de treinar (o `next_day_id` já avançado era tratado como o dia
+de hoje); `buildAgendaDays` desconta um passo quando hoje tem sessão, teste
+novo em `agenda_day_test.dart`, verificado na tela. `flutter analyze` zero,
+235 testes.
+
 *Pendências — bloqueiam o release 2.0.0 (fechar a P8.4):*
 1. (A1 e A2 resolvidos acima.)
-2. Android: Minhas mensalidades, bloqueio da exclusão com a mensagem e o atalho,
-   login de aluno inativo e troca de idioma do aparelho (passos 9, 24, 25, 34, 36, 39)
-   — os mesmos fluxos passaram na tela web.
-3. Regressão do 1.0: smoke do e2e-final (13 linhas) no Android e no Chrome, e a
-   foto, a bioimpedância, o chat com imagem/WS e o mês/streak da Agenda.
+2. (Android resolvido na rodada 3.)
+3. Regressão do 1.0 no **Chrome**: smoke do e2e-final na web (linhas 4, 10, 12
+   e 13 seguem ⬜ no e2e-final; aluno web).
 4. iOS no simulador "quando disponível" — não bloqueia o APK/web, mas repetir
    antes da primeira subida para loja (segue a lista pré-loja L1-L10).
 
