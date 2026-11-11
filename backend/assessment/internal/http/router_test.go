@@ -205,6 +205,7 @@ type assessmentActors struct {
 	studentID string
 	otherID   string // outro aluno do mesmo tenant, sem token (isolamento entre alunos)
 	coach     string // token do coach do tenant
+	coachID   string // sub do coach
 	foreign   string // token de coach de outro tenant
 }
 
@@ -216,7 +217,7 @@ func newAssessmentActors(t *testing.T) assessmentActors {
 	handler := newTestRouterFull(t, publicPEM, pool, consents, objects)
 
 	tenantID, tenantB := uuid.NewString(), uuid.NewString()
-	studentID, otherID := uuid.NewString(), uuid.NewString()
+	studentID, otherID, coachID := uuid.NewString(), uuid.NewString(), uuid.NewString()
 	expires := time.Now().Add(time.Minute)
 
 	return assessmentActors{
@@ -228,7 +229,8 @@ func newAssessmentActors(t *testing.T) assessmentActors {
 		student:   signTokenAs(t, priv, tenantID, studentID, []string{"student"}, expires),
 		studentID: studentID,
 		otherID:   otherID,
-		coach:     signTokenAs(t, priv, tenantID, uuid.NewString(), []string{"coach"}, expires),
+		coach:     signTokenAs(t, priv, tenantID, coachID, []string{"coach"}, expires),
+		coachID:   coachID,
 		foreign:   signTokenAs(t, priv, tenantB, uuid.NewString(), []string{"coach"}, expires),
 	}
 }

@@ -57,8 +57,8 @@ func newID() string { return uuid.NewString() }
 func insertBodyMeasurement(ctx context.Context, pool *pgxpool.Pool, tenantID, studentID string) error {
 	return repo.WithTenant(ctx, pool, tenantID, func(tx pgx.Tx) error {
 		_, err := tx.Exec(ctx, `
-			INSERT INTO body_measurements (id, tenant_id, student_id, measured_at, weight_kg, waist_cm)
-			VALUES ($1, $2, $3, CURRENT_DATE, 80.5, 90.2)`,
+			INSERT INTO body_measurements (id, tenant_id, student_id, measured_at, weight_kg, waist_cm, created_by)
+			VALUES ($1, $2, $3, CURRENT_DATE, 80.5, 90.2, $3)`,
 			uuid.NewString(), tenantID, studentID)
 		return err
 	})
@@ -67,8 +67,8 @@ func insertBodyMeasurement(ctx context.Context, pool *pgxpool.Pool, tenantID, st
 func insertBioimpedanceRecord(ctx context.Context, pool *pgxpool.Pool, tenantID, studentID string) error {
 	return repo.WithTenant(ctx, pool, tenantID, func(tx pgx.Tx) error {
 		_, err := tx.Exec(ctx, `
-			INSERT INTO bioimpedance_records (id, tenant_id, student_id, measured_at, body_fat_pct, bmr_kcal)
-			VALUES ($1, $2, $3, CURRENT_DATE, 18.4, 1800)`,
+			INSERT INTO bioimpedance_records (id, tenant_id, student_id, measured_at, body_fat_pct, bmr_kcal, created_by)
+			VALUES ($1, $2, $3, CURRENT_DATE, 18.4, 1800, $3)`,
 			uuid.NewString(), tenantID, studentID)
 		return err
 	})
@@ -77,8 +77,8 @@ func insertBioimpedanceRecord(ctx context.Context, pool *pgxpool.Pool, tenantID,
 func insertProgressPhoto(ctx context.Context, pool *pgxpool.Pool, tenantID, studentID string) error {
 	return repo.WithTenant(ctx, pool, tenantID, func(tx pgx.Tx) error {
 		_, err := tx.Exec(ctx, `
-			INSERT INTO progress_photos (id, tenant_id, student_id, taken_at, pose, media_key)
-			VALUES ($1, $2, $3, CURRENT_DATE, 'front', $4)`,
+			INSERT INTO progress_photos (id, tenant_id, student_id, taken_at, pose, media_key, created_by)
+			VALUES ($1, $2, $3, CURRENT_DATE, 'front', $4, $3)`,
 			uuid.NewString(), tenantID, studentID,
 			"tenants/"+tenantID+"/students/"+studentID+"/photos/"+uuid.NewString()+".jpg")
 		return err
@@ -142,8 +142,8 @@ func TestRLSBlocksWriteWithoutTenantContext(t *testing.T) {
 	tenantID := newID()
 
 	_, err := pool.Exec(ctx, `
-		INSERT INTO body_measurements (id, tenant_id, student_id, measured_at, weight_kg)
-		VALUES ($1, $2, $3, CURRENT_DATE, 70)`,
+		INSERT INTO body_measurements (id, tenant_id, student_id, measured_at, weight_kg, created_by)
+		VALUES ($1, $2, $3, CURRENT_DATE, 70, $3)`,
 		uuid.NewString(), tenantID, newID())
 	if err == nil {
 		t.Fatal("insert sem app.tenant_id setado deveria ser recusado pelo RLS")

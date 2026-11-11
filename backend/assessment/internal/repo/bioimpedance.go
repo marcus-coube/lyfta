@@ -15,7 +15,7 @@ import (
 // bioimpedanceColumns é a projeção comum das leituras de bioimpedância.
 const bioimpedanceColumns = `
 	id, student_id, measured_at, body_fat_pct, muscle_mass_kg, visceral_fat,
-	body_water_pct, bone_mass_kg, bmr_kcal, COALESCE(notes, ''), created_at`
+	body_water_pct, bone_mass_kg, bmr_kcal, COALESCE(notes, ''), created_by, created_at`
 
 // BioimpedanceRepo dá acesso às leituras de bioimpedância digitadas
 // (ADR-012 §2). Mesmo padrão de MeasurementRepo: um arquivo por agregado.
@@ -40,13 +40,13 @@ func (r *BioimpedanceRepo) Create(ctx context.Context, b domain.BioimpedanceReco
 		const q = `
 			INSERT INTO bioimpedance_records (id, tenant_id, student_id, measured_at,
 				body_fat_pct, muscle_mass_kg, visceral_fat, body_water_pct, bone_mass_kg,
-				bmr_kcal, notes)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+				bmr_kcal, notes, created_by)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 			RETURNING created_at`
 		return tx.QueryRow(ctx, q,
 			b.ID, b.TenantID, b.StudentID, b.MeasuredAt,
 			b.BodyFatPct, b.MuscleMassKg, b.VisceralFat, b.BodyWaterPct, b.BoneMassKg,
-			b.BMRKcal, nullString(b.Notes),
+			b.BMRKcal, nullString(b.Notes), b.CreatedBy,
 		).Scan(&b.CreatedAt)
 	})
 	if err != nil {
@@ -77,7 +77,7 @@ func (r *BioimpedanceRepo) List(ctx context.Context, tenantID, studentID string,
 			var b domain.BioimpedanceRecord
 			if err := rows.Scan(&b.ID, &b.StudentID, &b.MeasuredAt, &b.BodyFatPct,
 				&b.MuscleMassKg, &b.VisceralFat, &b.BodyWaterPct, &b.BoneMassKg,
-				&b.BMRKcal, &b.Notes, &b.CreatedAt); err != nil {
+				&b.BMRKcal, &b.Notes, &b.CreatedBy, &b.CreatedAt); err != nil {
 				return err
 			}
 			b.TenantID = tenantID

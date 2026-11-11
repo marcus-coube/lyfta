@@ -21,14 +21,14 @@ func TestMeasurementRepoRoundTrip(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	repoM := repo.NewMeasurementRepo(pool)
-	tenantID, studentA, studentB := newID(), newID(), newID()
+	tenantID, studentA, studentB, coach := newID(), newID(), newID(), newID()
 
 	older := domain.BodyMeasurement{
-		TenantID: tenantID, StudentID: studentA,
+		TenantID: tenantID, StudentID: studentA, CreatedBy: coach,
 		MeasuredAt: time.Now().AddDate(0, 0, -10), WeightKg: f(82), WaistCm: f(92),
 	}
 	newer := domain.BodyMeasurement{
-		TenantID: tenantID, StudentID: studentA,
+		TenantID: tenantID, StudentID: studentA, CreatedBy: studentA,
 		MeasuredAt: time.Now(), WeightKg: f(80), WaistCm: f(90),
 	}
 	if _, err := repoM.Create(ctx, older); err != nil {
@@ -41,7 +41,7 @@ func TestMeasurementRepoRoundTrip(t *testing.T) {
 
 	// Uma medida do aluno B, mesmo tenant: não pode vazar para a lista de A.
 	if _, err := repoM.Create(ctx, domain.BodyMeasurement{
-		TenantID: tenantID, StudentID: studentB, MeasuredAt: time.Now(), WeightKg: f(60),
+		TenantID: tenantID, StudentID: studentB, CreatedBy: studentB, MeasuredAt: time.Now(), WeightKg: f(60),
 	}); err != nil {
 		t.Fatalf("criar medida do aluno B: %v", err)
 	}
@@ -58,6 +58,9 @@ func TestMeasurementRepoRoundTrip(t *testing.T) {
 	}
 	if items[0].ID != createdNewer.ID {
 		t.Fatalf("esperava a mais recente primeiro, veio %+v", items[0])
+	}
+	if items[0].CreatedBy != studentA || items[1].CreatedBy != coach {
+		t.Fatalf("created_by deveria voltar (aluno e coach): %q / %q", items[0].CreatedBy, items[1].CreatedBy)
 	}
 	if items[0].WeightKg == nil || *items[0].WeightKg != 80 {
 		t.Fatalf("weight_kg da mais recente veio errado: %+v", items[0].WeightKg)
@@ -89,7 +92,7 @@ func TestMeasurementRepoPagination(t *testing.T) {
 
 	for i := 0; i < 3; i++ {
 		if _, err := repoM.Create(ctx, domain.BodyMeasurement{
-			TenantID: tenantID, StudentID: studentID,
+			TenantID: tenantID, StudentID: studentID, CreatedBy: studentID,
 			MeasuredAt: time.Now().AddDate(0, 0, -i), WeightKg: f(float64(80 + i)),
 		}); err != nil {
 			t.Fatalf("criar medida %d: %v", i, err)
@@ -127,16 +130,16 @@ func TestBioimpedanceRepoRoundTrip(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	repoB := repo.NewBioimpedanceRepo(pool)
-	tenantID, studentID := newID(), newID()
+	tenantID, studentID, coach := newID(), newID(), newID()
 
 	if _, err := repoB.Create(ctx, domain.BioimpedanceRecord{
-		TenantID: tenantID, StudentID: studentID,
+		TenantID: tenantID, StudentID: studentID, CreatedBy: studentID,
 		MeasuredAt: time.Now().AddDate(0, 0, -5), BodyFatPct: f(20),
 	}); err != nil {
 		t.Fatalf("criar leitura antiga: %v", err)
 	}
 	recent, err := repoB.Create(ctx, domain.BioimpedanceRecord{
-		TenantID: tenantID, StudentID: studentID,
+		TenantID: tenantID, StudentID: studentID, CreatedBy: coach,
 		MeasuredAt: time.Now(), BodyFatPct: f(18.4),
 	})
 	if err != nil {
@@ -169,11 +172,11 @@ func TestPhotoRepoRoundTrip(t *testing.T) {
 	pool := testPool(t)
 	ctx := context.Background()
 	repoP := repo.NewPhotoRepo(pool)
-	tenantID, studentID := newID(), newID()
+	tenantID, studentID, coach := newID(), newID(), newID()
 
 	key := "tenants/" + tenantID + "/students/" + studentID + "/photos/" + uuid.NewString() + ".jpg"
 	photo, err := repoP.Create(ctx, domain.ProgressPhoto{
-		TenantID: tenantID, StudentID: studentID, TakenAt: time.Now(),
+		TenantID: tenantID, StudentID: studentID, CreatedBy: coach, TakenAt: time.Now(),
 		Pose: domain.PoseFront, MediaKey: key,
 	})
 	if err != nil {

@@ -29,14 +29,14 @@ func TestEraseUserIsPhysicalAndScoped(t *testing.T) {
 		if _, err := injuries.Create(ctx, domain.StudentInjury{TenantID: tenant, StudentID: who, BodyRegion: "knee", Description: "x", CreatedBy: who}); err != nil {
 			t.Fatalf("lesão: %v", err)
 		}
-		if _, err := measurements.Create(ctx, domain.BodyMeasurement{TenantID: tenant, StudentID: who, MeasuredAt: time.Now(), WeightKg: f(80)}); err != nil {
+		if _, err := measurements.Create(ctx, domain.BodyMeasurement{TenantID: tenant, StudentID: who, CreatedBy: who, MeasuredAt: time.Now(), WeightKg: f(80)}); err != nil {
 			t.Fatalf("medida: %v", err)
 		}
-		if _, err := bio.Create(ctx, domain.BioimpedanceRecord{TenantID: tenant, StudentID: who, MeasuredAt: time.Now(), BodyFatPct: f(20)}); err != nil {
+		if _, err := bio.Create(ctx, domain.BioimpedanceRecord{TenantID: tenant, StudentID: who, CreatedBy: who, MeasuredAt: time.Now(), BodyFatPct: f(20)}); err != nil {
 			t.Fatalf("bioimpedância: %v", err)
 		}
 		if _, err := photos.Create(ctx, domain.ProgressPhoto{
-			TenantID: tenant, StudentID: who, TakenAt: time.Now(), Pose: domain.PoseFront,
+			TenantID: tenant, StudentID: who, CreatedBy: who, TakenAt: time.Now(), Pose: domain.PoseFront,
 			MediaKey: "tenants/" + tenant + "/students/" + who + "/photos/" + newID() + ".jpg",
 		}); err != nil {
 			t.Fatalf("foto: %v", err)

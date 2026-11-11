@@ -28,6 +28,7 @@ type BodyMeasurement struct {
 	CalfLCm    *float64
 	CalfRCm    *float64
 	Notes      string
+	CreatedBy  string // users.id de quem lançou (aluno ou coach)
 	CreatedAt  time.Time
 }
 
@@ -46,6 +47,7 @@ type BioimpedanceRecord struct {
 	BoneMassKg   *float64
 	BMRKcal      *int
 	Notes        string
+	CreatedBy    string
 	CreatedAt    time.Time
 }
 
@@ -79,6 +81,7 @@ type ProgressPhoto struct {
 	Pose      Pose
 	MediaKey  string
 	Notes     string
+	CreatedBy string
 	CreatedAt time.Time
 }
 

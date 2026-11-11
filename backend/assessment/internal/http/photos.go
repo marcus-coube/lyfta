@@ -42,6 +42,7 @@ type photoRequest struct {
 type photoDTO struct {
 	ID        string    `json:"id"`
 	StudentID string    `json:"student_id"`
+	CreatedBy string    `json:"created_by"`
 	TakenAt   string    `json:"taken_at"`
 	Pose      string    `json:"pose"`
 	MediaURL  string    `json:"media_url"`
@@ -182,7 +183,7 @@ func (h *PhotoHandler) create(w http.ResponseWriter, r *http.Request, tenantID, 
 
 	photo := domain.ProgressPhoto{
 		TenantID: tenantID, StudentID: studentID, TakenAt: takenAt,
-		Pose: pose, MediaKey: key, Notes: notes,
+		Pose: pose, MediaKey: key, Notes: notes, CreatedBy: actorID(r),
 	}
 	created, err := h.photos.Create(r.Context(), photo)
 	if err != nil {
@@ -241,7 +242,7 @@ func (h *PhotoHandler) toDTO(r *http.Request, p domain.ProgressPhoto) photoDTO {
 		h.logger.Error("photo_read_url_failed", slog.Any("error", err))
 	}
 	return photoDTO{
-		ID: p.ID, StudentID: p.StudentID, TakenAt: p.TakenAt.Format(time.DateOnly),
+		ID: p.ID, StudentID: p.StudentID, CreatedBy: p.CreatedBy, TakenAt: p.TakenAt.Format(time.DateOnly),
 		Pose: string(p.Pose), MediaURL: mediaURL, Notes: p.Notes, CreatedAt: p.CreatedAt,
 	}
 }

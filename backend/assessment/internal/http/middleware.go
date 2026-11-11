@@ -106,6 +106,15 @@ func ClaimsFromContext(ctx context.Context) (*security.Claims, bool) {
 	return claims, ok
 }
 
+// actorID é o users.id de quem faz a requisição (claim sub): vira o created_by
+// dos registros lançados — pelo aluno na própria ficha ou pelo coach na dele.
+func actorID(r *http.Request) string {
+	if claims, ok := ClaimsFromContext(r.Context()); ok {
+		return claims.Subject
+	}
+	return ""
+}
+
 // TenantFromContext devolve o tenant_id da claim — o valor a passar para
 // repo.WithTenant em todo acesso a dados.
 func TenantFromContext(ctx context.Context) (string, bool) {

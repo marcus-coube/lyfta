@@ -43,6 +43,7 @@ type bioimpedanceRequest struct {
 type bioimpedanceDTO struct {
 	ID           string    `json:"id"`
 	StudentID    string    `json:"student_id"`
+	CreatedBy    string    `json:"created_by"`
 	MeasuredAt   string    `json:"measured_at"`
 	BodyFatPct   *float64  `json:"body_fat_pct"`
 	MuscleMassKg *float64  `json:"muscle_mass_kg"`
@@ -141,6 +142,7 @@ func (h *BioimpedanceHandler) create(w http.ResponseWriter, r *http.Request, ten
 	}
 	b.TenantID = tenantID
 	b.StudentID = studentID
+	b.CreatedBy = actorID(r)
 
 	created, err := h.repo.Create(r.Context(), b)
 	if err != nil {
@@ -232,7 +234,7 @@ func parseBioimpedance(req bioimpedanceRequest) (domain.BioimpedanceRecord, *API
 
 func toBioimpedanceDTO(b domain.BioimpedanceRecord) bioimpedanceDTO {
 	return bioimpedanceDTO{
-		ID: b.ID, StudentID: b.StudentID, MeasuredAt: b.MeasuredAt.Format(time.DateOnly),
+		ID: b.ID, StudentID: b.StudentID, CreatedBy: b.CreatedBy, MeasuredAt: b.MeasuredAt.Format(time.DateOnly),
 		BodyFatPct: b.BodyFatPct, MuscleMassKg: b.MuscleMassKg, VisceralFat: b.VisceralFat,
 		BodyWaterPct: b.BodyWaterPct, BoneMassKg: b.BoneMassKg, BMRKcal: b.BMRKcal,
 		Notes: b.Notes, CreatedAt: b.CreatedAt,

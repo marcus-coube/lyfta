@@ -21,7 +21,7 @@ const maxAssessmentPageSize = 50
 const measurementColumns = `
 	id, student_id, measured_at, weight_kg, height_cm, neck_cm, shoulder_cm,
 	chest_cm, waist_cm, abdomen_cm, hip_cm, arm_l_cm, arm_r_cm, thigh_l_cm,
-	thigh_r_cm, calf_l_cm, calf_r_cm, COALESCE(notes, ''), created_at`
+	thigh_r_cm, calf_l_cm, calf_r_cm, COALESCE(notes, ''), created_by, created_at`
 
 // MeasurementRepo dá acesso às medidas corporais (P2.3). Toda operação passa
 // por WithTenant: `app.tenant_id` é setado na transação antes de qualquer
@@ -50,14 +50,14 @@ func (r *MeasurementRepo) Create(ctx context.Context, m domain.BodyMeasurement) 
 			INSERT INTO body_measurements (id, tenant_id, student_id, measured_at,
 				weight_kg, height_cm, neck_cm, shoulder_cm, chest_cm, waist_cm,
 				abdomen_cm, hip_cm, arm_l_cm, arm_r_cm, thigh_l_cm, thigh_r_cm,
-				calf_l_cm, calf_r_cm, notes)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+				calf_l_cm, calf_r_cm, notes, created_by)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
 			RETURNING created_at`
 		return tx.QueryRow(ctx, q,
 			m.ID, m.TenantID, m.StudentID, m.MeasuredAt,
 			m.WeightKg, m.HeightCm, m.NeckCm, m.ShoulderCm, m.ChestCm, m.WaistCm,
 			m.AbdomenCm, m.HipCm, m.ArmLCm, m.ArmRCm, m.ThighLCm, m.ThighRCm,
-			m.CalfLCm, m.CalfRCm, nullString(m.Notes),
+			m.CalfLCm, m.CalfRCm, nullString(m.Notes), m.CreatedBy,
 		).Scan(&m.CreatedAt)
 	})
 	if err != nil {
@@ -90,7 +90,7 @@ func (r *MeasurementRepo) List(ctx context.Context, tenantID, studentID string, 
 			if err := rows.Scan(&m.ID, &m.StudentID, &m.MeasuredAt, &m.WeightKg, &m.HeightCm,
 				&m.NeckCm, &m.ShoulderCm, &m.ChestCm, &m.WaistCm, &m.AbdomenCm, &m.HipCm,
 				&m.ArmLCm, &m.ArmRCm, &m.ThighLCm, &m.ThighRCm, &m.CalfLCm, &m.CalfRCm,
-				&m.Notes, &m.CreatedAt); err != nil {
+				&m.Notes, &m.CreatedBy, &m.CreatedAt); err != nil {
 				return err
 			}
 			m.TenantID = tenantID

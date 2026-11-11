@@ -53,6 +53,7 @@ type measurementRequest struct {
 type measurementDTO struct {
 	ID         string    `json:"id"`
 	StudentID  string    `json:"student_id"`
+	CreatedBy  string    `json:"created_by"`
 	MeasuredAt string    `json:"measured_at"`
 	WeightKg   *float64  `json:"weight_kg"`
 	HeightCm   *float64  `json:"height_cm"`
@@ -167,6 +168,7 @@ func (h *MeasurementHandler) create(w http.ResponseWriter, r *http.Request, tena
 	}
 	m.TenantID = tenantID
 	m.StudentID = studentID
+	m.CreatedBy = actorID(r)
 
 	created, err := h.measurements.Create(r.Context(), m)
 	if err != nil {
@@ -277,7 +279,7 @@ func parseMeasurement(req measurementRequest) (domain.BodyMeasurement, *APIError
 
 func toMeasurementDTO(m domain.BodyMeasurement) measurementDTO {
 	return measurementDTO{
-		ID: m.ID, StudentID: m.StudentID, MeasuredAt: m.MeasuredAt.Format(time.DateOnly),
+		ID: m.ID, StudentID: m.StudentID, CreatedBy: m.CreatedBy, MeasuredAt: m.MeasuredAt.Format(time.DateOnly),
 		WeightKg: m.WeightKg, HeightCm: m.HeightCm, NeckCm: m.NeckCm, ShoulderCm: m.ShoulderCm,
 		ChestCm: m.ChestCm, WaistCm: m.WaistCm, AbdomenCm: m.AbdomenCm, HipCm: m.HipCm,
 		ArmLCm: m.ArmLCm, ArmRCm: m.ArmRCm, ThighLCm: m.ThighLCm, ThighRCm: m.ThighRCm,

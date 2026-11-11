@@ -9,6 +9,7 @@ import (
 type apiMeasurement struct {
 	ID         string   `json:"id"`
 	StudentID  string   `json:"student_id"`
+	CreatedBy  string   `json:"created_by"`
 	MeasuredAt string   `json:"measured_at"`
 	WeightKg   *float64 `json:"weight_kg"`
 	WaistCm    *float64 `json:"waist_cm"`
@@ -36,6 +37,9 @@ func TestMeasurementCreatedByStudentEndToEnd(t *testing.T) {
 	}
 	if created.WeightKg == nil || *created.WeightKg != 82.5 {
 		t.Fatalf("weight_kg veio errado: %+v", created)
+	}
+	if created.CreatedBy != a.studentID {
+		t.Fatalf("created_by deveria ser o aluno, veio %q", created.CreatedBy)
 	}
 
 	// O aluno lê a própria lista.
@@ -93,6 +97,9 @@ func TestCoachLaunchesForStudent(t *testing.T) {
 	}
 	if len(mine.Items) != 1 {
 		t.Fatalf("o aluno deveria ver a medida lançada pelo coach: %+v", mine)
+	}
+	if mine.Items[0].CreatedBy != a.coachID {
+		t.Fatalf("created_by deveria ser o coach %s, veio %q", a.coachID, mine.Items[0].CreatedBy)
 	}
 }
 

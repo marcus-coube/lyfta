@@ -13,7 +13,7 @@ import (
 )
 
 // photoColumns é a projeção comum das leituras de foto de evolução.
-const photoColumns = `id, student_id, taken_at, pose, media_key, COALESCE(notes, ''), created_at`
+const photoColumns = `id, student_id, taken_at, pose, media_key, COALESCE(notes, ''), created_by, created_at`
 
 // PhotoRepo dá acesso às fotos de evolução (ADR-012 §2).
 type PhotoRepo struct {
@@ -36,11 +36,11 @@ func (r *PhotoRepo) Create(ctx context.Context, p domain.ProgressPhoto) (domain.
 
 	err = WithTenant(ctx, r.pool, p.TenantID, func(tx pgx.Tx) error {
 		const q = `
-			INSERT INTO progress_photos (id, tenant_id, student_id, taken_at, pose, media_key, notes)
-			VALUES ($1, $2, $3, $4, $5, $6, $7)
+			INSERT INTO progress_photos (id, tenant_id, student_id, taken_at, pose, media_key, notes, created_by)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 			RETURNING created_at`
 		return tx.QueryRow(ctx, q,
-			p.ID, p.TenantID, p.StudentID, p.TakenAt, string(p.Pose), p.MediaKey, nullString(p.Notes),
+			p.ID, p.TenantID, p.StudentID, p.TakenAt, string(p.Pose), p.MediaKey, nullString(p.Notes), p.CreatedBy,
 		).Scan(&p.CreatedAt)
 	})
 	if err != nil {
@@ -70,7 +70,7 @@ func (r *PhotoRepo) List(ctx context.Context, tenantID, studentID string, cursor
 		for rows.Next() {
 			var p domain.ProgressPhoto
 			var pose string
-			if err := rows.Scan(&p.ID, &p.StudentID, &p.TakenAt, &pose, &p.MediaKey, &p.Notes, &p.CreatedAt); err != nil {
+			if err := rows.Scan(&p.ID, &p.StudentID, &p.TakenAt, &pose, &p.MediaKey, &p.Notes, &p.CreatedBy, &p.CreatedAt); err != nil {
 				return err
 			}
 			p.Pose = domain.Pose(pose)
