@@ -347,3 +347,42 @@ func TestListPaginatesWithCursor(t *testing.T) {
 }
 
 func urlQuery(v string) string { return strings.ReplaceAll(url.QueryEscape(v), "+", "%20") }
+
+// TestLibraryFollowsAcceptLanguage é o Aceite do P8.3: o idioma da tela (cabeçalho)
+// vence o locale do tenant (claim) e o `?locale=` vence o cabeçalho.
+func TestLibraryFollowsAcceptLanguage(t *testing.T) {
+	handler, coachA, _, _, _ := libraryFixture(t)
+	global := requireSeededLibrary(t, handler, coachA)
+
+	get := func(target, lang string) apiExercise {
+		t.Helper()
+		req := httptest.NewRequest(http.MethodGet, target, nil)
+		req.Header.Set("Authorization", "Bearer "+coachA)
+		if lang != "" {
+			req.Header.Set("Accept-Language", lang)
+		}
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+		if rec.Code != http.StatusOK {
+			t.Fatalf("GET %s: %d %s", target, rec.Code, rec.Body.String())
+		}
+		for _, item := range decodeList(t, rec).Items {
+			if item.ID == global.ID {
+				return item
+			}
+		}
+		t.Fatalf("exercício do seed ausente em %s", target)
+		return apiExercise{}
+	}
+
+	en := get("/v1/exercises?q=supino+reto", "en")
+	if en.Locale != "en" || en.Name == global.Name {
+		t.Fatalf("Accept-Language: en deveria traduzir o nome, veio %+v", en)
+	}
+	if got := get("/v1/exercises?q=supino+reto", ""); got.Name != global.Name {
+		t.Fatalf("sem cabeçalho cai no locale da claim: %+v", got)
+	}
+	if got := get("/v1/exercises?q=supino+reto&locale=pt-BR", "en"); got.Name != global.Name {
+		t.Fatalf("?locale= deveria vencer o cabeçalho: %+v", got)
+	}
+}

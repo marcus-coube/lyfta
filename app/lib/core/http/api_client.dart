@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import 'accept_language_interceptor.dart';
 import 'auth_interceptor.dart';
 import 'error_mapping_interceptor.dart';
 import 'token_storage.dart';
@@ -24,6 +25,7 @@ class ApiClient {
           ),
         ) {
     dio.interceptors.addAll([
+      AcceptLanguageInterceptor(),
       AuthInterceptor(
         dio: dio,
         tokenStorage: tokenStorage,

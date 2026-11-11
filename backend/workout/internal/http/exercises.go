@@ -470,8 +470,9 @@ func resolveTranslation(translations []domain.ExerciseTranslation, locale domain
 	return canonicalName, "", domain.LocaleSource
 }
 
-// requestLocale decide em que idioma o conteúdo volta: `?locale=` explícito
-// (útil para o seletor de idioma da UI) ou, na falta dele, o locale da claim.
+// requestLocale decide em que idioma o conteúdo volta, nesta ordem: `?locale=`
+// explícito, `Accept-Language` (o app manda o idioma da tela, P8.3) e, na falta
+// dos dois, o locale da claim (o do tenant).
 func requestLocale(r *http.Request) (domain.Locale, *APIError) {
 	if raw := r.URL.Query().Get("locale"); raw != "" {
 		locale, ok := domain.ParseLocale(raw)
@@ -481,12 +482,40 @@ func requestLocale(r *http.Request) (domain.Locale, *APIError) {
 		}
 		return locale, nil
 	}
+	if locale, ok := acceptLanguageLocale(r.Header.Get("Accept-Language")); ok {
+		return locale, nil
+	}
 	if claims, ok := ClaimsFromContext(r.Context()); ok {
 		if locale, ok := domain.ParseLocale(claims.Locale); ok {
 			return locale, nil
 		}
 	}
 	return domain.LocaleSource, nil
+}
+
+// acceptLanguageLocale escolhe o primeiro idioma suportado do cabeçalho, do de
+// maior q para o menor (empate: ordem de aparição). Idioma desconhecido é
+// ignorado, não erro: cabeçalho vem de cliente que não controlamos.
+func acceptLanguageLocale(header string) (domain.Locale, bool) {
+	var best domain.Locale
+	bestQ := -1.0
+	for _, part := range strings.Split(header, ",") {
+		tag, params, _ := strings.Cut(strings.TrimSpace(part), ";")
+		q := 1.0
+		if v, ok := strings.CutPrefix(strings.TrimSpace(params), "q="); ok {
+			parsed, err := strconv.ParseFloat(v, 64)
+			if err != nil {
+				continue
+			}
+			q = parsed
+		}
+		locale, ok := domain.ParseLocale(tag)
+		if !ok || q <= 0 || q <= bestQ {
+			continue
+		}
+		best, bestQ = locale, q
+	}
+	return best, bestQ > 0
 }
 
 func decodeExerciseRequest(r *http.Request) (exerciseRequest, *APIError) {
