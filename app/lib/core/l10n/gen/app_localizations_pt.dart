@@ -2564,6 +2564,117 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get errorInvalidSubscriptionState =>
       'A situação atual da assinatura não permite essa ação.';
+
+  @override
+  String get homeCoachTabDashboard => 'Início';
+
+  @override
+  String get dashboardCardStudents => 'Alunos ativos';
+
+  @override
+  String dashboardStudentsPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count convites pendentes',
+      one: '1 convite pendente',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dashboardStudentsNew(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count novos no mês',
+      one: '1 novo no mês',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashboardCardCheckins => 'Check-ins não revisados';
+
+  @override
+  String get dashboardCheckinsZero => 'Tudo revisado.';
+
+  @override
+  String get dashboardCardToday => 'Treinos de hoje';
+
+  @override
+  String get dashboardTodayTrained => 'Feitos';
+
+  @override
+  String get dashboardTodayInProgress => 'Em andamento';
+
+  @override
+  String get dashboardTodayPending => 'Pendentes';
+
+  @override
+  String dashboardTodayNoPlan(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alunos sem plano ativo',
+      one: '1 aluno sem plano ativo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashboardTodayEmpty => 'Nenhum aluno com treino previsto hoje.';
+
+  @override
+  String get dashboardCardStalled => 'Sem treinar há 7+ dias';
+
+  @override
+  String get dashboardStalledEmpty => 'Todo mundo treinou na última semana.';
+
+  @override
+  String dashboardMore(int count) {
+    return '+$count no total';
+  }
+
+  @override
+  String get dashboardStudentUnknown => 'Aluno';
+
+  @override
+  String get dashboardCardReceived => 'Recebido no mês';
+
+  @override
+  String get dashboardCardToReceive => 'A receber';
+
+  @override
+  String get dashboardCardOverdue => 'Vencido';
+
+  @override
+  String get dashboardCardDelinquent => 'Inadimplentes';
+
+  @override
+  String dashboardInvoicesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count faturas',
+      one: '1 fatura',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dashboardStudentsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alunos',
+      one: '1 aluno',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashboardCardSeries => 'Recebido nos últimos 6 meses';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -5133,4 +5244,115 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   @override
   String get errorInvalidSubscriptionState =>
       'A situação atual da subscrição não permite esta ação.';
+
+  @override
+  String get homeCoachTabDashboard => 'Início';
+
+  @override
+  String get dashboardCardStudents => 'Alunos ativos';
+
+  @override
+  String dashboardStudentsPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count convites pendentes',
+      one: '1 convite pendente',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dashboardStudentsNew(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count novos no mês',
+      one: '1 novo no mês',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashboardCardCheckins => 'Check-ins não revistos';
+
+  @override
+  String get dashboardCheckinsZero => 'Tudo revisto.';
+
+  @override
+  String get dashboardCardToday => 'Treinos de hoje';
+
+  @override
+  String get dashboardTodayTrained => 'Feitos';
+
+  @override
+  String get dashboardTodayInProgress => 'Em curso';
+
+  @override
+  String get dashboardTodayPending => 'Pendentes';
+
+  @override
+  String dashboardTodayNoPlan(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alunos sem plano ativo',
+      one: '1 aluno sem plano ativo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashboardTodayEmpty => 'Nenhum aluno com treino previsto hoje.';
+
+  @override
+  String get dashboardCardStalled => 'Sem treinar há 7+ dias';
+
+  @override
+  String get dashboardStalledEmpty => 'Todos treinaram na última semana.';
+
+  @override
+  String dashboardMore(int count) {
+    return '+$count no total';
+  }
+
+  @override
+  String get dashboardStudentUnknown => 'Aluno';
+
+  @override
+  String get dashboardCardReceived => 'Recebido no mês';
+
+  @override
+  String get dashboardCardToReceive => 'A receber';
+
+  @override
+  String get dashboardCardOverdue => 'Vencido';
+
+  @override
+  String get dashboardCardDelinquent => 'Inadimplentes';
+
+  @override
+  String dashboardInvoicesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count faturas',
+      one: '1 fatura',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dashboardStudentsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alunos',
+      one: '1 aluno',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashboardCardSeries => 'Recebido nos últimos 6 meses';
 }

@@ -3,15 +3,15 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** P8.2 — ver [P8-dashboard.md](P8-dashboard.md). **Fases P5, P6 e P7 fechadas.**
+**Próxima tarefa:** P8.3 — ver [P8-dashboard.md](P8-dashboard.md). **Fases P5, P6 e P7 fechadas.**
 
 | Fase | Progresso | Situação |
 |---|---|---|
 | P5 — Alunos | 5/5 | fechada |
 | P6 — Builder | 5/5 | fechada |
 | P7 — Financeiro | 5/5 | fechada |
-| P8 — Dashboard e release | 1/4 | em andamento |
-| **Total** | **16/19** | |
+| P8 — Dashboard e release | 2/4 | em andamento |
+| **Total** | **17/19** | |
 
 ## Bancos locais
 
@@ -54,3 +54,4 @@ Os quatro bancos do 1.0 seguem na tabela do [STATUS do 1.0](../mvp1/STATUS.md).
 | 2026-11-10 | **P7.4 concluída:** app — aba Financeiro no shell do owner e do coach `own_students` (faturas com filtros/tabela, baixa idempotente, estorno com motivo, planos só owner), aba Financeiro na ficha (assinatura criar/editar/pausar/cancelar + histórico), selo "inadimplente" na lista e na ficha, toggle `coach_billing_access` na Organização, aviso ao inativar com assinatura ativa e "Minhas mensalidades" do aluno; dinheiro em centavos com máscara pt/en sem `double` |
 | 2026-11-10 | **P7.5 concluída — fase P7 fechada (5/5):** exclusão de conta com financeiro (ADR-017 §5) — billing `GET/DELETE /internal/v1/users/{id}` (pendência e retenção do titular com `account_deleted_at`, assinatura e faturas futuras canceladas, idempotente); identity consulta antes de marcar `deleting` (409 `pending_invoices`, 502 se o billing cair) e envia nome/e-mail só ao billing; app com mensagem e atalho para Minhas mensalidades; `TERMS_VERSION` 2026-11-v2 com a política financeira (revisão jurídica L6) |
 | 2026-11-11 | **P8.1 concluída:** agregações do dashboard, uma por serviço — identity `GET /v1/students/stats`, workout `GET /v1/coach/today` (estado de hoje por aluno no fuso `tz` + sem treinar 7+ dias; M2M novo `GET /internal/v1/students` no identity), billing `GET /v1/billing/summary` (owner: recebido, a receber, vencido, inadimplentes, série de 6 meses) e comms `GET /v1/checkins/stats` |
+| 2026-11-11 | **P8.2 concluída:** app — aba Início (dashboard) como primeira do shell do professor: alunos ativos, check-ins não revisados, treinos de hoje e sem treinar 7+ dias (só quem já treinou), owner com receita/a receber/vencido/inadimplentes e gráfico de 6 meses e filtro por professor; cada card carrega e falha sozinho com retry |

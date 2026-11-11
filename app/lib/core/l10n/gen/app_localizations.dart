@@ -4532,6 +4532,144 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'A situação atual da assinatura não permite essa ação.'**
   String get errorInvalidSubscriptionState;
+
+  /// Aba inicial do professor: o painel do dia.
+  ///
+  /// In pt, this message translates to:
+  /// **'Início'**
+  String get homeCoachTabDashboard;
+
+  /// No description provided for @dashboardCardStudents.
+  ///
+  /// In pt, this message translates to:
+  /// **'Alunos ativos'**
+  String get dashboardCardStudents;
+
+  /// Convites ainda não aceitos.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 convite pendente} other{{count} convites pendentes}}'**
+  String dashboardStudentsPending(int count);
+
+  /// Alunos cadastrados no mês corrente.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 novo no mês} other{{count} novos no mês}}'**
+  String dashboardStudentsNew(int count);
+
+  /// No description provided for @dashboardCardCheckins.
+  ///
+  /// In pt, this message translates to:
+  /// **'Check-ins não revisados'**
+  String get dashboardCardCheckins;
+
+  /// No description provided for @dashboardCheckinsZero.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tudo revisado.'**
+  String get dashboardCheckinsZero;
+
+  /// No description provided for @dashboardCardToday.
+  ///
+  /// In pt, this message translates to:
+  /// **'Treinos de hoje'**
+  String get dashboardCardToday;
+
+  /// No description provided for @dashboardTodayTrained.
+  ///
+  /// In pt, this message translates to:
+  /// **'Feitos'**
+  String get dashboardTodayTrained;
+
+  /// No description provided for @dashboardTodayInProgress.
+  ///
+  /// In pt, this message translates to:
+  /// **'Em andamento'**
+  String get dashboardTodayInProgress;
+
+  /// No description provided for @dashboardTodayPending.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pendentes'**
+  String get dashboardTodayPending;
+
+  /// dashboardTodayNoPlan
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 aluno sem plano ativo} other{{count} alunos sem plano ativo}}'**
+  String dashboardTodayNoPlan(int count);
+
+  /// No description provided for @dashboardTodayEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhum aluno com treino previsto hoje.'**
+  String get dashboardTodayEmpty;
+
+  /// Alunos que já treinaram e pararam; quem nunca treinou fica de fora.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sem treinar há 7+ dias'**
+  String get dashboardCardStalled;
+
+  /// No description provided for @dashboardStalledEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Todo mundo treinou na última semana.'**
+  String get dashboardStalledEmpty;
+
+  /// Itens além dos exibidos num card.
+  ///
+  /// In pt, this message translates to:
+  /// **'+{count} no total'**
+  String dashboardMore(int count);
+
+  /// Nome do aluno quando o diretório não respondeu.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aluno'**
+  String get dashboardStudentUnknown;
+
+  /// No description provided for @dashboardCardReceived.
+  ///
+  /// In pt, this message translates to:
+  /// **'Recebido no mês'**
+  String get dashboardCardReceived;
+
+  /// No description provided for @dashboardCardToReceive.
+  ///
+  /// In pt, this message translates to:
+  /// **'A receber'**
+  String get dashboardCardToReceive;
+
+  /// No description provided for @dashboardCardOverdue.
+  ///
+  /// In pt, this message translates to:
+  /// **'Vencido'**
+  String get dashboardCardOverdue;
+
+  /// No description provided for @dashboardCardDelinquent.
+  ///
+  /// In pt, this message translates to:
+  /// **'Inadimplentes'**
+  String get dashboardCardDelinquent;
+
+  /// dashboardInvoicesCount
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 fatura} other{{count} faturas}}'**
+  String dashboardInvoicesCount(int count);
+
+  /// dashboardStudentsCount
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 aluno} other{{count} alunos}}'**
+  String dashboardStudentsCount(int count);
+
+  /// No description provided for @dashboardCardSeries.
+  ///
+  /// In pt, this message translates to:
+  /// **'Recebido nos últimos 6 meses'**
+  String get dashboardCardSeries;
 }
 
 class _AppLocalizationsDelegate

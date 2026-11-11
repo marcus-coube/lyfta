@@ -9,6 +9,7 @@ import 'package:lyfta/core/l10n/gen/app_localizations.dart';
 import 'package:lyfta/features/account/data/tenant_repository.dart';
 import 'package:lyfta/features/billing/data/billing_repository.dart';
 import 'package:lyfta/features/chat/presentation/conversations_controller.dart';
+import 'package:lyfta/features/dashboard/data/dashboard_repository.dart';
 import 'package:lyfta/features/coach_shell/presentation/coach_shell_screen.dart';
 import 'package:lyfta/features/students/data/student_overview_repository.dart';
 import 'package:lyfta/features/students/data/student_repository.dart';
@@ -16,6 +17,7 @@ import 'package:lyfta/features/students/domain/student.dart';
 import 'package:lyfta/features/students/presentation/students_controller.dart';
 
 import '../billing/billing_fakes.dart';
+import '../dashboard/dashboard_fakes.dart';
 
 class _Auth extends AuthController {
   _Auth({required this.isOwner});
@@ -82,6 +84,8 @@ Future<void> _pump(
         authControllerProvider.overrideWith(() => _Auth(isOwner: isOwner)),
         tenantRepositoryProvider.overrideWithValue(_Tenants(access)),
         billingRepositoryProvider.overrideWithValue(FakeBillingRepository()),
+        dashboardRepositoryProvider
+            .overrideWithValue(FakeDashboardRepository()),
         studentRepositoryProvider.overrideWithValue(_Students()),
         studentOverviewRepositoryProvider.overrideWithValue(_Overview()),
         unreadTotalProvider.overrideWithValue(0),

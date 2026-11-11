@@ -2563,4 +2563,115 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorInvalidSubscriptionState =>
       'The subscription\'s current state doesn\'t allow this action.';
+
+  @override
+  String get homeCoachTabDashboard => 'Home';
+
+  @override
+  String get dashboardCardStudents => 'Active students';
+
+  @override
+  String dashboardStudentsPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pending invites',
+      one: '1 pending invite',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dashboardStudentsNew(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new this month',
+      one: '1 new this month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashboardCardCheckins => 'Unreviewed check-ins';
+
+  @override
+  String get dashboardCheckinsZero => 'All reviewed.';
+
+  @override
+  String get dashboardCardToday => 'Today\'s workouts';
+
+  @override
+  String get dashboardTodayTrained => 'Done';
+
+  @override
+  String get dashboardTodayInProgress => 'In progress';
+
+  @override
+  String get dashboardTodayPending => 'Pending';
+
+  @override
+  String dashboardTodayNoPlan(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count students without an active plan',
+      one: '1 student without an active plan',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashboardTodayEmpty => 'No student has a workout due today.';
+
+  @override
+  String get dashboardCardStalled => 'No workout in 7+ days';
+
+  @override
+  String get dashboardStalledEmpty => 'Everyone trained in the last week.';
+
+  @override
+  String dashboardMore(int count) {
+    return '+$count more';
+  }
+
+  @override
+  String get dashboardStudentUnknown => 'Student';
+
+  @override
+  String get dashboardCardReceived => 'Received this month';
+
+  @override
+  String get dashboardCardToReceive => 'To receive';
+
+  @override
+  String get dashboardCardOverdue => 'Overdue';
+
+  @override
+  String get dashboardCardDelinquent => 'Delinquent';
+
+  @override
+  String dashboardInvoicesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count invoices',
+      one: '1 invoice',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dashboardStudentsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count students',
+      one: '1 student',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dashboardCardSeries => 'Received in the last 6 months';
 }

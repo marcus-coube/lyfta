@@ -10,6 +10,9 @@ import 'package:lyfta/core/design_system/design_system.dart';
 import 'package:lyfta/core/http/token_storage.dart';
 import 'package:lyfta/core/l10n/gen/app_localizations.dart';
 import 'package:lyfta/core/router/app_router.dart';
+import 'package:lyfta/features/dashboard/data/dashboard_repository.dart';
+
+import '../../dashboard/dashboard_fakes.dart';
 
 /// Fake in-memory do plugin de secure storage — mesmo padrão usado em
 /// `test/core/http/auth_interceptor_test.dart`.
@@ -120,6 +123,7 @@ void main() {
             httpAdapter: _FakeIdentityAdapter(),
           ),
         ),
+        dashboardRepositoryProvider.overrideWithValue(FakeDashboardRepository()),
       ],
     );
     addTearDown(container.dispose);
@@ -137,7 +141,7 @@ void main() {
     await tester.tap(find.text(l10n.loginSubmit));
     await tester.pumpAndSettle();
 
-    expect(find.widgetWithText(AppBar, l10n.homeCoachTabStudents), findsOneWidget);
+    expect(find.widgetWithText(AppBar, l10n.homeCoachTabDashboard), findsOneWidget);
   });
 
   testWidgets('login com credencial errada mostra erro i18n e permanece no login', (tester) async {

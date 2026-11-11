@@ -11,11 +11,12 @@ import '../../billing/presentation/billing_providers.dart';
 import '../../billing/presentation/finance_screen.dart';
 import '../../chat/presentation/chat_home_screen.dart';
 import '../../chat/presentation/conversations_controller.dart';
+import '../../dashboard/presentation/dashboard_screen.dart';
 import '../../library/presentation/library_screen.dart';
 import '../../students/presentation/students_screen.dart';
 import '../../templates/presentation/templates_screen.dart';
 
-/// Shell do professor — Alunos, Biblioteca, Modelos (P6.3), Financeiro (P7.4, só
+/// Shell do professor — Início (dashboard, P8.2), Alunos, Biblioteca, Modelos (P6.3), Financeiro (P7.4, só
 /// owner e coach `own_students`) e Chat. Lateral em telas largas
 /// (web/desktop), barra inferior em mobile (`LyShellScaffold`, breakpoint
 /// ~840px). Alunos e Biblioteca são as telas reais do P1.6; o Chat é a do
@@ -27,12 +28,12 @@ class CoachShellScreen extends ConsumerStatefulWidget {
   ConsumerState<CoachShellScreen> createState() => _CoachShellScreenState();
 }
 
-enum _CoachTab { students, library, templates, billing, chat }
+enum _CoachTab { dashboard, students, library, templates, billing, chat }
 
 class _CoachShellScreenState extends ConsumerState<CoachShellScreen> {
   // A aba é guardada pela identidade, não pelo índice: o Financeiro aparece
   // quando a configuração da organização chega e empurraria as de baixo.
-  _CoachTab _tab = _CoachTab.students;
+  _CoachTab _tab = _CoachTab.dashboard;
 
   @override
   Widget build(BuildContext context) {
@@ -45,9 +46,13 @@ class _CoachShellScreenState extends ConsumerState<CoachShellScreen> {
       for (final t in _CoachTab.values)
         if (t != _CoachTab.billing || showBilling) t,
     ];
-    final tab = tabs.contains(_tab) ? _tab : _CoachTab.students;
+    final tab = tabs.contains(_tab) ? _tab : _CoachTab.dashboard;
 
     LyShellDestination destination(_CoachTab t) => switch (t) {
+          _CoachTab.dashboard => LyShellDestination(
+              icon: Icons.space_dashboard_outlined,
+              label: l10n.homeCoachTabDashboard,
+            ),
           _CoachTab.students => LyShellDestination(
               icon: Icons.groups_outlined,
               label: l10n.homeCoachTabStudents,
@@ -85,6 +90,7 @@ class _CoachShellScreenState extends ConsumerState<CoachShellScreen> {
           const RoleContextSwitcher(current: ActiveContext.coach),
       ],
       body: switch (tab) {
+        _CoachTab.dashboard => const DashboardScreen(),
         _CoachTab.students => const StudentsScreen(),
         _CoachTab.library => const LibraryScreen(),
         _CoachTab.templates => const TemplatesScreen(),

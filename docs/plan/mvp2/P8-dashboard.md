@@ -27,7 +27,7 @@ Depende de: P5, P6 e P7.
 **Aceite:** testes de handler de cada agregação (coach vê só o vínculo; coach
 recebe 403 no summary); números batem com um seed conhecido.
 
-## - [ ] P8.2 App — dashboard do coach e do owner (Flutter)
+## - [x] P8.2 App — dashboard do coach e do owner (Flutter)
 
 **Objetivo:** primeira aba do shell do coach/owner.
 **Passos:**
@@ -119,3 +119,35 @@ release × vai pro 3.0).
   UTC+14, vínculo, owner/filtro, 403 de aluno, identity fora), `TestBillingSummary`
   (seed conhecido, virada de mês SP × UTC, 403 do coach) e `TestCheckinStats`
   (comms).
+
+**P8.2 (Mac, 2026-11-11)**
+- `features/dashboard/` (domain, data, presentation) e aba **Início** como
+  primeira e padrão do shell do professor (owner e coach). `DashboardRepository`
+  usa os 4 clientes (identity, workout, billing, comms) e cada card tem o
+  próprio `FutureProvider.autoDispose`: carrega com skeleton, falha com
+  `LyErrorState` + retry e não afeta os outros (teste de widget com o `workout`
+  e com o `billing` fora). Hoje e Sem treinar dividem o provider do
+  `coach/today` (uma chamada, dois cards).
+- **Decisão do `stale` (aviso do P8.1):** o card "Sem treinar há 7+ dias" lista
+  só quem **já treinou** e parou (`stale && last_session_at != null`), do mais
+  antigo ao mais recente, com "Há N dias". Quem nunca treinou fica de fora: aluno
+  novo não é abandono, e se tem plano já aparece como pendente em "Treinos de
+  hoje"; sem plano, entra na contagem "sem plano ativo". A contagem vem dos
+  `items`, não de `counts.stale`.
+- Nomes: o `coach/today` só devolve ids; o app resolve por
+  `GET /v1/users/directory` (já usado pelo chat) só para as até 6 linhas
+  exibidas por card ("+N no total" além disso). Diretório fora do ar = rótulo
+  genérico "Aluno", sem quebrar. Linha tocável (>= 48 dp) abre `/students/:id`.
+- Owner: filtro por professor (`?coach_id=` nos 3 cards que aceitam; o
+  `billing/summary` é do tenant inteiro) e dois cards a mais (recebido / a
+  receber / vencido / inadimplentes e gráfico `fl_chart` de 6 meses, tooltip em
+  moeda). Coach não monta os cards de valor nem chama o `billing` (teste).
+  Período do summary omitido: o servidor usa o mês corrente no fuso do tenant.
+- Grade: 2 colunas a partir de 840 px (mesmo corte do shell), 1 no celular.
+- Testes: `test/features/dashboard/` (seed com valores, coach sem valor, retry
+  isolado de `workout` e `billing`, layout estreito). Testes de shell, roteador
+  e login que caem na aba inicial passaram a injetar `FakeDashboardRepository`
+  (o skeleton anima para sempre e travaria o `pumpAndSettle`).
+- Pendência: o gráfico só foi exercitado em teste de widget; checagem visual no
+  Chrome/emulador fica para o E2E do P8.4.
+

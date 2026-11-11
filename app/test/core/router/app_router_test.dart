@@ -6,6 +6,7 @@ import 'package:lyfta/core/auth/auth_state.dart';
 import 'package:lyfta/core/design_system/design_system.dart';
 import 'package:lyfta/core/l10n/gen/app_localizations.dart';
 import 'package:lyfta/core/router/app_router.dart';
+import 'package:lyfta/features/dashboard/data/dashboard_repository.dart';
 import 'package:lyfta/features/students/presentation/students_controller.dart';
 import 'package:lyfta/features/workout/data/sync_worker.dart';
 import 'package:lyfta/features/workout/data/workout_repository.dart';
@@ -13,8 +14,10 @@ import 'package:lyfta/features/workout/domain/today.dart';
 import 'package:lyfta/features/workout/presentation/session_controller.dart';
 import 'package:lyfta/features/workout/presentation/today_controller.dart';
 
-/// A aba inicial do professor é a lista de alunos (P1.6), que bate em dois
-/// serviços. Este teste é de **roteamento**: a lista entra vazia e sem rede,
+import '../../features/dashboard/dashboard_fakes.dart';
+
+/// A aba inicial do professor é o dashboard (P8.2) e a lista de alunos (P1.6)
+/// bate em dois serviços. Este teste é de **roteamento**: a lista entra vazia e sem rede,
 /// senão o `pumpAndSettle` esperaria para sempre por uma requisição que
 /// nunca responde no ambiente de teste.
 class _EmptyStudents extends StudentsController {
@@ -50,6 +53,7 @@ ProviderContainer _container() {
   return ProviderContainer(
     overrides: [
       studentsProvider.overrideWith(_EmptyStudents.new),
+      dashboardRepositoryProvider.overrideWithValue(FakeDashboardRepository()),
       todayControllerProvider.overrideWith(_NoPlanToday.new),
       sessionControllerProvider.overrideWith(_NoSession.new),
       syncWorkerProvider.overrideWith(_IdleSync.new),
@@ -95,7 +99,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final l10n = lookupAppLocalizations(const Locale('pt'));
-    expect(find.widgetWithText(AppBar, l10n.homeCoachTabStudents), findsOneWidget);
+    expect(find.widgetWithText(AppBar, l10n.homeCoachTabDashboard), findsOneWidget);
   });
 
   testWidgets('autenticado como student, /home cai no shell do aluno', (tester) async {
