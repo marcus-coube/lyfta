@@ -183,3 +183,42 @@ release × vai pro 3.0).
   gravam o `sub` do token; a API devolve `created_by` (aditivo). Testes: repo
   (aluno e coach voltam) e HTTP (aluno na `/me`, coach na ficha). Sem exclusão
   de coach hoje: `created_by` de coach removido ficaria órfão (só um id).
+
+**P8.4 (Mac, 2026-11-11) — em andamento, checkbox em aberto**
+- Feito: roteiro [e2e-2.md](e2e-2.md) (40 passos, colunas API/Android/Chrome/iOS);
+  varredura verde (`flutter analyze` zero, 231 testes Flutter, `go vet` + `go test
+  -count=1` nos 5 serviços — `backend/` só tem identity, workout, assessment,
+  comms e billing); versão `2.0.0+1` (pubspec, default de `APP_RELEASE` e README);
+  `flutter build web --release` e `flutter build apk --release` (75,5 MB) ok, sem
+  loja (ADR-015).
+- Execução (detalhe e motivos no e2e-2.md): 36/40 passos pela API real; Android
+  (emulador): login, bi-set offline por rodada, fila, sync, Evolução e Agenda;
+  Chrome: dashboard do owner com valores e gráfico, Financeiro, selo
+  "inadimplente", card com serviço fora com retry. iOS não executado; regressão
+  do 1.0 só parcial.
+- **Falha achada e corrigida:** `ListAfter` do identity cortava a linha extra da
+  paginação e a varredura M2M de tenants parava em 500 (billing e comms ignoravam
+  o resto). Commit `fix(p8.4)` com teste.
+- **Por que o checkbox fica aberto:** o Aceite pede roteiro 2.0 e regressão do 1.0
+  *verdes* no Android e no Chrome. Não estão: a maior parte do lado do coach/owner
+  foi validada por API, não por tela, e a regressão do 1.0 não foi repetida inteira.
+
+*Pendências — bloqueiam o release 2.0.0 (fechar a P8.4):*
+1. Chrome: percorrer pela tela os passos de owner/coach do e2e-2 que só têm API
+   (signup, fuso, plano, convites, ficha com objetivo/lesão, modelo com superset e
+   aplicar, assinar, baixa/estorno, toggle, inativar/reativar, filtro por
+   professor, banner de lesão no builder, "Carregar mais" dos check-ins).
+2. Android: Minhas mensalidades, bloqueio da exclusão com a mensagem e o atalho,
+   login de aluno inativo e troca de idioma do aparelho (passos 9, 24, 25, 34, 36, 39).
+3. Regressão do 1.0: smoke do e2e-final (13 linhas) no Android e no Chrome, e a
+   foto, a bioimpedância, o chat com imagem/WS e o mês/streak da Agenda.
+4. iOS no simulador "quando disponível" — não bloqueia o APK/web, mas repetir
+   antes da primeira subida para loja (segue a lista pré-loja L1-L10).
+
+*Pendências — vão para o 3.0 (ou decisão do usuário):*
+- Sem tela de aceite de convite no mobile (o link abre a versão web).
+- Token de acesso emitido antes da inativação vale até expirar (sem revogação).
+- Sessão não persiste ao recarregar na web.
+- Treino do dia já baixado fica no idioma do último pull (nota da P8.3).
+- Criar assinatura já gera a fatura do mês: o job só gera de fato a do mês seguinte
+  (comportamento do ADR-017, só registrado para o roteiro).

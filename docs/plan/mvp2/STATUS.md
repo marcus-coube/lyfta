@@ -3,7 +3,7 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** P8.4 — ver [P8-dashboard.md](P8-dashboard.md). **Fases P5, P6 e P7 fechadas.**
+**Próxima tarefa:** P8.4 (em andamento, checkbox aberto: varredura, roteiro e execução parcial feitos; faltam as telas no Chrome, partes do Android e a regressão do 1.0 — ver Notas da [P8](P8-dashboard.md) e [e2e-2.md](e2e-2.md)). **Fases P5, P6 e P7 fechadas.**
 
 | Fase | Progresso | Situação |
 |---|---|---|
@@ -56,3 +56,4 @@ Os quatro bancos do 1.0 seguem na tabela do [STATUS do 1.0](../mvp1/STATUS.md).
 | 2026-11-11 | **P8.1 concluída:** agregações do dashboard, uma por serviço — identity `GET /v1/students/stats`, workout `GET /v1/coach/today` (estado de hoje por aluno no fuso `tz` + sem treinar 7+ dias; M2M novo `GET /internal/v1/students` no identity), billing `GET /v1/billing/summary` (owner: recebido, a receber, vencido, inadimplentes, série de 6 meses) e comms `GET /v1/checkins/stats` |
 | 2026-11-11 | **P8.2 concluída:** app — aba Início (dashboard) como primeira do shell do professor: alunos ativos, check-ins não revisados, treinos de hoje e sem treinar 7+ dias (só quem já treinou), owner com receita/a receber/vencido/inadimplentes e gráfico de 6 meses e filtro por professor; cada card carrega e falha sozinho com retry |
 | 2026-11-11 | **P8.3 concluída:** conteúdo dinâmico no idioma da tela (`Accept-Language` > locale do tenant), teste de contraste AA do dark e alvos de 48 dp nos itens anotados, "Carregar mais" na fila de check-ins, `created_by` em medidas/bioimpedância/fotos do assessment (migration 0006) |
+| 2026-11-11 | **P8.4 em andamento (checkbox aberto):** roteiro [e2e-2.md](e2e-2.md) escrito e executado em parte (36/40 passos pela API, Android com bi-set offline e sync, Chrome com dashboard e Financeiro); varredura verde, versão `2.0.0+1`, builds web e APK release; bug de varredura de tenants > 500 achado e corrigido; pendências classificadas nas Notas da P8 |
