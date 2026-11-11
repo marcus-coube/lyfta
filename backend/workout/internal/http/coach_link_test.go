@@ -64,6 +64,14 @@ func newFakeIdentity(t *testing.T) *fakeIdentity {
 				}
 			}
 			_ = json.NewEncoder(w).Encode(map[string]any{"items": items})
+		case r.URL.Path == "/internal/v1/students" && r.Method == http.MethodGet:
+			ids := []string{}
+			for id, st := range f.status {
+				if st == "active" {
+					ids = append(ids, id)
+				}
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"student_ids": ids})
 		case strings.HasPrefix(r.URL.Path, studentsPrefix) && strings.HasSuffix(r.URL.Path, "/coach"):
 			student := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, studentsPrefix), "/coach")
 			for coach, ids := range f.students {

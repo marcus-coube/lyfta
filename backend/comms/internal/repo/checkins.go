@@ -219,3 +219,21 @@ func (r *CheckinRepo) list(ctx context.Context, tenantID, studentID string, stud
 	}
 	return items, false, nil
 }
+
+// CountUnreviewed conta os check-ins ainda sem revisão (P8.1) — de todo o
+// tenant (studentIDs == nil) ou só dos alunos do conjunto (vazio = zero).
+func (r *CheckinRepo) CountUnreviewed(ctx context.Context, tenantID string, studentIDs []string) (int, error) {
+	var n int
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		if studentIDs == nil {
+			return tx.QueryRow(ctx, `SELECT count(*) FROM workout_checkins WHERE reviewed_at IS NULL`).Scan(&n)
+		}
+		return tx.QueryRow(ctx, `
+			SELECT count(*) FROM workout_checkins
+			WHERE reviewed_at IS NULL AND student_id = ANY($1::uuid[])`, studentIDs).Scan(&n)
+	})
+	if err != nil {
+		return 0, fmt.Errorf("repo: contar check-ins não revisados: %w", err)
+	}
+	return n, nil
+}

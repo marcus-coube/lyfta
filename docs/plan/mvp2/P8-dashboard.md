@@ -8,7 +8,7 @@ Depende de: P5, P6 e P7.
 
 ---
 
-## - [ ] P8.1 Agregações do dashboard (identity, workout, billing, comms)
+## - [x] P8.1 Agregações do dashboard (identity, workout, billing, comms)
 
 **Objetivo:** cada serviço responde o seu pedaço; o app compõe (sem BFF).
 **Passos:**
@@ -84,3 +84,38 @@ release × vai pro 3.0).
 ## Notas de execução
 
 (o agente anota aqui descobertas, dívidas e desvios aprovados)
+
+**P8.1 (Mac, 2026-11-11)**
+- Endpoints (owner|coach, JWT): identity `GET /v1/students/stats`
+  (`active`, `inactive`, `pending_invites`, `new_this_month`); workout
+  `GET /v1/coach/today`; billing `GET /v1/billing/summary?period=AAAA-MM`
+  (só owner); comms `GET /v1/checkins/stats` (`unreviewed`). Em todos, coach
+  conta só o vínculo; owner conta tudo e aceita `?coach_id=` (ignorado para
+  coach puro; o summary do billing é do tenant inteiro, sem filtro).
+- **M2M novo (não previsto no passo 2):** identity `GET /internal/v1/students?tenant_id=`
+  devolve os ids dos alunos `active` do tenant. O `coach/today` do owner sem
+  `coach_id` precisa de "todos os alunos" e só o identity sabe quem não tem
+  plano (`no_plan`); `coachlink.ActiveStudentsOfTenant` no workout. Para coach
+  (ou owner com `coach_id`) usa `StudentsOf` + `ExistingStudents` e descarta
+  quem não é `active`. Identity fora do ar = 500 (nunca lista vazia).
+- Definições: `new_this_month` = alunos criados desde o dia 1 no fuso da claim
+  `tz` (convidados incluídos, excluídos fora); `pending_invites` = alunos
+  `invited`. `coach/today`: dia = [00:00, 24:00) no fuso `tz`, critério
+  `received_at` (mesmo do `find_pending_students`); `trained` = sessão
+  finalizada hoje, `in_progress` = sessão hoje sem `finished_at`, `pending` =
+  plano ativo (`student_plan_state`) e nada hoje, `no_plan`; precedência nessa
+  ordem. Resposta: `date`, `counts` (os 4 estados + `stale`) e `items`
+  (`student_id`, `state`, `last_session_at`, `stale`). `stale` = nunca treinou
+  ou último `received_at` há 7+ dias — **aluno novo sem treino aparece como
+  stale**; a P8.2 pode esconder quem acabou de entrar se incomodar. Nomes não
+  vêm aqui: o app cruza com a lista de alunos (sem BFF).
+- Billing `summary`: recebido = faturas `paid` com `paid_at` no mês (fuso do
+  tenant); a receber = `open` com vencimento no mês; vencido = `overdue` de
+  qualquer mês (estoque atual) em valor, nº de faturas e nº de alunos distintos;
+  `received_series` = 6 meses terminando em `period` (ordem crescente). Valores
+  em centavos. Coach recebe 403 `billing_access_denied` mesmo em `own_students`.
+- Sem migration nova. Testes: `TestStudentStats` (identity),
+  `TestCoachToday` (workout: seed com os 4 estados, virada de dia no fuso
+  UTC+14, vínculo, owner/filtro, 403 de aluno, identity fora), `TestBillingSummary`
+  (seed conhecido, virada de mês SP × UTC, 403 do coach) e `TestCheckinStats`
+  (comms).

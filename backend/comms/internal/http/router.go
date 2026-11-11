@@ -90,6 +90,7 @@ func NewRouter(
 		r.Group(func(r chi.Router) {
 			r.Use(RequireRole("owner", "coach"))
 			r.Get("/checkins", checkinHandler.List)
+			r.Get("/checkins/stats", checkinHandler.Stats)
 			r.Post("/checkins/{id}/review", checkinHandler.Review)
 		})
 

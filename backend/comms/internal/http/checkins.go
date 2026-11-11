@@ -239,6 +239,48 @@ func (h *CheckinHandler) List(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, resp)
 }
 
+// Stats — GET /v1/checkins/stats (P8.1): quantos check-ins esperam revisão.
+// Coach conta só os alunos dele; owner conta o tenant inteiro, com
+// `?coach_id=` opcional para filtrar por professor.
+func (h *CheckinHandler) Stats(w http.ResponseWriter, r *http.Request) {
+	claims, ok := ClaimsFromContext(r.Context())
+	if !ok || claims.TenantID == "" {
+		writeError(w, errUnauthenticated())
+		return
+	}
+	coachID := claims.Subject
+	if isOwner(claims) {
+		coachID = ""
+		if raw := r.URL.Query().Get("coach_id"); raw != "" {
+			if _, err := uuid.Parse(raw); err != nil {
+				writeError(w, errValidation("coach_id"))
+				return
+			}
+			coachID = raw
+		}
+	}
+	var ids []string // nil = tenant inteiro
+	if coachID != "" {
+		students, err := h.linker.StudentsOf(r.Context(), claims.TenantID, coachID)
+		if err != nil {
+			h.logger.Error("coach_link_check_failed", slog.Any("error", err))
+			writeError(w, errInternal())
+			return
+		}
+		ids = make([]string, 0, len(students))
+		for id := range students {
+			ids = append(ids, id)
+		}
+	}
+	n, err := h.checkins.CountUnreviewed(r.Context(), claims.TenantID, ids)
+	if err != nil {
+		h.logger.Error("checkin_stats_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]int{"unreviewed": n})
+}
+
 // Review marca um check-in como visto pelo coach autenticado — idempotente
 // (segunda chamada não troca quem revisou primeiro).
 func (h *CheckinHandler) Review(w http.ResponseWriter, r *http.Request) {

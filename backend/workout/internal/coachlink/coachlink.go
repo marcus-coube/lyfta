@@ -209,6 +209,21 @@ func (c *Client) ExistingStudents(ctx context.Context, tenantID string, studentI
 	return out, nil
 }
 
+// ActiveStudentsOfTenant devolve os ids dos alunos ativos do tenant (M2M do
+// dashboard do owner, P8.1). Sem cache.
+func (c *Client) ActiveStudentsOfTenant(ctx context.Context, tenantID string) ([]string, error) {
+	target := fmt.Sprintf("%s/internal/v1/students?tenant_id=%s", c.baseURL, url.QueryEscape(tenantID))
+	var body struct {
+		StudentIDs []string `json:"student_ids"`
+	}
+	if status, err := c.get(ctx, target, &body); err != nil {
+		return nil, err
+	} else if status != http.StatusOK {
+		return nil, fmt.Errorf("coachlink: identity respondeu %d", status)
+	}
+	return body.StudentIDs, nil
+}
+
 func (c *Client) get(ctx context.Context, target string, out any) (int, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
 	if err != nil {

@@ -301,3 +301,66 @@ func readCheckinPainEvent(t *testing.T, conn *websocket.Conn) checkinPainEventEn
 	}
 	return ev
 }
+
+// TestCheckinStats cobre o Aceite da P8.1 no comms: a contagem de não
+// revisados bate com o seed, coach conta só o vínculo, owner conta o tenant e
+// filtra por professor, revisar baixa a contagem e aluno recebe 403.
+func TestCheckinStats(t *testing.T) {
+	linker := newFakeLinker()
+	server, priv, _ := newServerWithLinker(t, linker)
+	tenant := uuid.NewString()
+	coachA, coachB, owner := uuid.NewString(), uuid.NewString(), uuid.NewString()
+	studentA, studentB := uuid.NewString(), uuid.NewString()
+	linker.link(coachA, studentA)
+	linker.link(coachB, studentB)
+	tokA := signToken(t, priv, tenant, coachA, []string{"coach"})
+	tokOwner := signToken(t, priv, tenant, owner, []string{"owner", "coach"})
+	tokStudentA := signToken(t, priv, tenant, studentA, []string{"student"})
+	tokStudentB := signToken(t, priv, tenant, studentB, []string{"student"})
+
+	post := func(token string) checkinEnvelope {
+		var c checkinEnvelope
+		doJSON(t, server, http.MethodPost, "/v1/checkins", token, map[string]any{
+			"session_client_id": uuid.NewString(), "rating": 4, "difficulty": 3, "pain": "none",
+		}, &c)
+		return c
+	}
+	first := post(tokStudentA)
+	post(tokStudentA)
+	post(tokStudentB)
+
+	count := func(token, query string) int {
+		t.Helper()
+		var got struct {
+			Unreviewed int `json:"unreviewed"`
+		}
+		doJSON(t, server, http.MethodGet, "/v1/checkins/stats"+query, token, nil, &got)
+		return got.Unreviewed
+	}
+	if n := count(tokA, ""); n != 2 {
+		t.Errorf("coach A: %d, esperava 2 (só o vínculo dele)", n)
+	}
+	if n := count(tokA, "?coach_id="+coachB); n != 2 {
+		t.Errorf("coach não pode espiar outro professor: %d", n)
+	}
+	if n := count(tokOwner, ""); n != 3 {
+		t.Errorf("owner: %d, esperava 3 (tenant inteiro)", n)
+	}
+	if n := count(tokOwner, "?coach_id="+coachB); n != 1 {
+		t.Errorf("owner filtrando o professor B: %d, esperava 1", n)
+	}
+	doJSON(t, server, http.MethodPost, "/v1/checkins/"+first.ID+"/review", tokA, nil, &struct{}{})
+	if n := count(tokA, ""); n != 1 {
+		t.Errorf("depois de revisar: %d, esperava 1", n)
+	}
+	if status, _, _ := doRaw(t, server, http.MethodGet, "/v1/checkins/stats", tokStudentA, nil); status != http.StatusForbidden {
+		t.Errorf("aluno: esperava 403, veio %d", status)
+	}
+	if status, _, _ := doRaw(t, server, http.MethodGet, "/v1/checkins/stats?coach_id=x", tokOwner, nil); status != http.StatusBadRequest {
+		t.Errorf("coach_id inválido: %d", status)
+	}
+	linker.setDown(true)
+	if status, _, _ := doRaw(t, server, http.MethodGet, "/v1/checkins/stats", tokA, nil); status != http.StatusInternalServerError {
+		t.Errorf("identity fora: esperava 500, veio %d", status)
+	}
+}

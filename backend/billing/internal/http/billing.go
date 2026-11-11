@@ -86,6 +86,8 @@ func (h *BillingHandler) Mount(r chi.Router) {
 		r.With(operator).Post("/invoices/{id}/payments", h.RecordPayment)
 		r.With(owner).Post("/invoices/{id}/cancel", h.CancelInvoice)
 		r.With(owner).Post("/payments/{id}/reverse", h.ReversePayment)
+		// Resumo do dashboard (P8.1): valores agregados, só owner.
+		r.With(owner).Get("/summary", h.Summary)
 
 		// Status derivado, sem valores: todo coach e o owner (em qualquer modo).
 		r.With(h.requireStaff).Get("/students/status", h.StudentStatuses)

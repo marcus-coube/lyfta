@@ -60,6 +60,8 @@ func NewRouter(
 		r.Post("/students/statuses", students.InternalStudentStatuses)
 		// Nome e e-mail do aluno para o titular retido do billing (P7.2).
 		r.Get("/students/{id}", students.InternalStudentGet)
+		// Ids dos alunos ativos do tenant (P8.1): dashboard do owner.
+		r.Get("/students", students.InternalActiveStudents)
 	})
 
 	r.Route("/v1", func(r chi.Router) {
@@ -110,6 +112,7 @@ func NewRouter(
 			r.Use(RequireAuth(signer))
 			r.Use(RequireRole(string(domain.RoleOwner), string(domain.RoleCoach)))
 			r.Get("/", students.List)
+			r.Get("/stats", students.Stats)
 			r.Get("/{id}", students.Get)
 			r.Patch("/{id}", students.Patch)
 			r.Post("/{id}/deactivate", students.Deactivate)

@@ -611,3 +611,101 @@ func TestConcurrentPaymentsOnlyOneWins(t *testing.T) {
 		t.Fatalf("deveria haver um único pagamento: %+v", d.body)
 	}
 }
+
+// TestBillingSummary cobre o Aceite da P8.1 no billing: números batem com um
+// seed conhecido (recebido pelo `paid_at` no fuso do tenant, a receber por
+// vencimento, vencido como estoque, série de 6 meses), coach recebe 403 mesmo
+// com `own_students` e o tenant vizinho não aparece.
+func TestBillingSummary(t *testing.T) {
+	e := newEnv(t)
+	owner := e.token(t, e.tenant, uuid.NewString(), "owner")
+	plan := e.createPlan(t, owner)
+	ana, bia, caio, dani := e.addStudent("Ana"), e.addStudent("Bia"), e.addStudent("Caio"), e.addStudent("Dani")
+
+	// Novembro (mês corrente, relógio em 10/11): Ana e Dani abertas (vencem
+	// 15/11), Bia vencida (venceu 5/11), Caio paga hoje.
+	invOf := func(student string, day int) string {
+		return e.subscribe(t, owner, student, plan, day, "2026-11-01").obj("invoice")["id"].(string)
+	}
+	invOf(ana, 15)
+	invBia := invOf(bia, 5)
+	invCaio := invOf(caio, 15)
+	invOf(dani, 15)
+	if st := e.call(t, http.MethodGet, "/v1/billing/invoices/"+invBia, owner, nil).body["status"]; st != "overdue" {
+		t.Fatalf("seed: fatura de Bia deveria nascer vencida: %v", st)
+	}
+	e.call(t, http.MethodPost, "/v1/billing/invoices/"+invCaio+"/payments", owner, map[string]any{}, "Idempotency-Key", uuid.NewString()).
+		wantStatus(t, http.StatusCreated, "")
+
+	// Meses anteriores, direto no banco: pagas na virada do mês em UTC que, em
+	// São Paulo, ainda é o mês anterior; e uma vencida antiga de Bia.
+	subOf := func(student string) string {
+		var id string
+		err := repo.WithTenant(context.Background(), e.pool, e.tenant, func(tx pgx.Tx) error {
+			return tx.QueryRow(context.Background(), `SELECT id::text FROM subscriptions WHERE student_id = $1`, student).Scan(&id)
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return id
+	}
+	old := func(student, period, due, status string, paidAt any) {
+		e.execSQL(t, `INSERT INTO invoices (id, tenant_id, subscription_id, student_id, period, due_date, amount_cents, status, paid_at)
+			VALUES ($1, $2, $3, $4, $5, $6::date, 15000, $7, $8)`,
+			uuid.NewString(), e.tenant, subOf(student), student, period, due, status, paidAt)
+	}
+	old(dani, "2026-10", "2026-10-15", "paid", "2026-11-01T01:00:00Z") // 31/10 22:00 em SP -> outubro
+	old(caio, "2026-09", "2026-09-15", "paid", "2026-10-01T01:00:00Z") // 30/09 22:00 em SP -> setembro
+	old(bia, "2026-08", "2026-08-05", "overdue", nil)
+
+	sum := e.call(t, http.MethodGet, "/v1/billing/summary", owner, nil)
+	if sum.status != http.StatusOK {
+		t.Fatalf("summary: %d %+v", sum.status, sum.body)
+	}
+	for k, want := range map[string]float64{
+		"received_cents": 15000, "to_receive_cents": 30000, "to_receive_count": 2,
+		"overdue_cents": 30000, "overdue_count": 2, "delinquent_students": 1,
+	} {
+		if sum.body[k] != want {
+			t.Errorf("%s = %v, esperava %v (%+v)", k, sum.body[k], want, sum.body)
+		}
+	}
+	if sum.body["period"] != "2026-11" || sum.body["currency"] != "BRL" {
+		t.Errorf("period/currency: %+v", sum.body)
+	}
+	series, _ := sum.body["received_series"].([]any)
+	wantSeries := []float64{0, 0, 0, 15000, 15000, 15000}
+	if len(series) != 6 {
+		t.Fatalf("série: %+v", series)
+	}
+	for i, raw := range series {
+		p := raw.(map[string]any)
+		if p["received_cents"] != wantSeries[i] {
+			t.Errorf("série[%d] = %+v, esperava %v", i, p, wantSeries[i])
+		}
+	}
+	if first := series[0].(map[string]any)["period"]; first != "2026-06" {
+		t.Errorf("a série começa em 2026-06, veio %v", first)
+	}
+
+	// Outro mês: a série termina nele; a receber é daquele mês.
+	oct := e.call(t, http.MethodGet, "/v1/billing/summary?period=2026-10", owner, nil)
+	if oct.status != http.StatusOK || oct.body["received_cents"] != float64(15000) || oct.body["to_receive_cents"] != float64(0) {
+		t.Errorf("período 2026-10: %d %+v", oct.status, oct.body)
+	}
+	if s, _ := oct.body["received_series"].([]any); len(s) != 6 || s[5].(map[string]any)["period"] != "2026-10" {
+		t.Errorf("série de 2026-10: %+v", oct.body["received_series"])
+	}
+	e.call(t, http.MethodGet, "/v1/billing/summary?period=2026-13", owner, nil).wantStatus(t, http.StatusBadRequest, "validation_error")
+
+	// Coach: 403 em qualquer modo; aluno também; outro tenant não vê nada.
+	coach := e.token(t, e.tenant, uuid.NewString(), "coach")
+	e.call(t, http.MethodGet, "/v1/billing/summary", coach, nil).wantStatus(t, http.StatusForbidden, "billing_access_denied")
+	e.identity.set(func() { e.identity.access = "own_students" })
+	e.call(t, http.MethodGet, "/v1/billing/summary", coach, nil).wantStatus(t, http.StatusForbidden, "billing_access_denied")
+	e.call(t, http.MethodGet, "/v1/billing/summary", e.token(t, e.tenant, ana, "student"), nil).wantStatus(t, http.StatusForbidden, "billing_access_denied")
+	other := e.call(t, http.MethodGet, "/v1/billing/summary", e.token(t, uuid.NewString(), uuid.NewString(), "owner"), nil)
+	if other.status != http.StatusOK || other.body["received_cents"] != float64(0) || other.body["overdue_count"] != float64(0) {
+		t.Errorf("tenant vizinho: %d %+v", other.status, other.body)
+	}
+}

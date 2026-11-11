@@ -436,3 +436,68 @@ func (h *StudentHandler) InternalStudentGet(w http.ResponseWriter, r *http.Reque
 		"status": string(detail.User.Status),
 	})
 }
+
+type studentStatsResponse struct {
+	Active         int `json:"active"`
+	Inactive       int `json:"inactive"`
+	PendingInvites int `json:"pending_invites"`
+	NewThisMonth   int `json:"new_this_month"`
+}
+
+// Stats — GET /v1/students/stats (P8.1): ativos, inativos, convites pendentes
+// (alunos `invited`) e novos no mês corrente no fuso do tenant (claim `tz`).
+// Coach conta só os alunos dele; owner conta todos, com `?coach_id=` opcional.
+func (h *StudentHandler) Stats(w http.ResponseWriter, r *http.Request) {
+	claims, ok := ClaimsFromContext(r.Context())
+	if !ok || claims.TenantID == "" {
+		writeError(w, errUnauthenticated())
+		return
+	}
+	coachID := claims.Subject
+	if hasRole(claims, domain.RoleOwner) {
+		coachID = ""
+		if raw := strings.TrimSpace(r.URL.Query().Get("coach_id")); raw != "" {
+			if _, err := uuid.Parse(raw); err != nil {
+				writeError(w, errValidation("coach_id"))
+				return
+			}
+			coachID = raw
+		}
+	}
+	loc := time.UTC
+	if claims.Timezone != "" {
+		if l, err := time.LoadLocation(claims.Timezone); err == nil {
+			loc = l
+		}
+	}
+	now := time.Now().In(loc)
+	monthStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, loc)
+
+	stats, err := h.students.Stats(r.Context(), claims.TenantID, coachID, monthStart)
+	if err != nil {
+		h.logger.Error("students_stats_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
+	}
+	writeJSON(w, http.StatusOK, studentStatsResponse{
+		Active: stats.Active, Inactive: stats.Inactive,
+		PendingInvites: stats.PendingInvites, NewThisMonth: stats.NewThisMonth,
+	})
+}
+
+// InternalActiveStudents — GET /internal/v1/students?tenant_id= (M2M, P8.1):
+// ids dos alunos ativos do tenant, para o dashboard do owner no workout.
+func (h *StudentHandler) InternalActiveStudents(w http.ResponseWriter, r *http.Request) {
+	tenantID := r.URL.Query().Get("tenant_id")
+	if _, err := uuid.Parse(tenantID); err != nil {
+		writeError(w, errValidation("tenant_id"))
+		return
+	}
+	ids, err := h.students.ActiveIDs(r.Context(), tenantID)
+	if err != nil {
+		h.logger.Error("internal_active_students_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"student_ids": ids})
+}

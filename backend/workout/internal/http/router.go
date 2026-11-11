@@ -26,6 +26,7 @@ func NewRouter(
 	pendingHandler *PendingStudentsHandler,
 	erasureHandler *ErasureHandler,
 	overviewHandler *OverviewHandler,
+	todayHandler *CoachTodayHandler,
 	linker StudentLinker,
 ) http.Handler {
 	r := chi.NewRouter()
@@ -128,6 +129,9 @@ func NewRouter(
 			// Resumo em lote (último treino + plano ativo) da página de
 			// alunos; o vínculo é filtrado id a id no handler.
 			r.Post("/students/overview", overviewHandler.Students)
+
+			// Painel "hoje" do dashboard (P8.1): vínculo resolvido no handler.
+			r.Get("/coach/today", todayHandler.Get)
 
 			// Rotas com o aluno na URL: o vínculo é checado antes do handler.
 			r.Route("/students/{id}", func(r chi.Router) {

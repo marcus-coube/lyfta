@@ -90,6 +90,7 @@ func run(logger *slog.Logger) error {
 		whttp.NewPendingStudentsHandler(logger, pending),
 		whttp.NewErasureHandler(logger, repo.NewErasureRepo(pool)),
 		whttp.NewOverviewHandler(logger, repo.NewOverviewRepo(pool), coachLinks),
+		whttp.NewCoachTodayHandler(logger, repo.NewTodayRepo(pool), coachLinks),
 		coachLinks,
 	)
 

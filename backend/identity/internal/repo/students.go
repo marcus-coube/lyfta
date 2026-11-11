@@ -222,3 +222,66 @@ func (r *StudentRepo) StatusesOf(ctx context.Context, tenantID string, ids []str
 	}
 	return out, nil
 }
+
+// StudentStats são os contadores do dashboard (P8.1).
+type StudentStats struct {
+	Active         int
+	Inactive       int
+	PendingInvites int
+	NewThisMonth   int
+}
+
+// Stats conta os alunos do tenant: ativos, inativos, convidados que ainda não
+// aceitaram e criados a partir de `monthStart` (início do mês no fuso do
+// tenant). `coachID` != "" restringe aos alunos vinculados a esse professor.
+// Excluídos (deleting/deleted) ficam fora de tudo.
+func (r *StudentRepo) Stats(ctx context.Context, tenantID, coachID string, monthStart time.Time) (StudentStats, error) {
+	var s StudentStats
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		return tx.QueryRow(ctx, `
+			SELECT
+			  count(*) FILTER (WHERE u.status = 'active'),
+			  count(*) FILTER (WHERE u.status = 'inactive'),
+			  count(*) FILTER (WHERE u.status = 'invited'),
+			  count(*) FILTER (WHERE u.created_at >= $2)
+			FROM users u
+			JOIN user_roles ur ON ur.user_id = u.id AND ur.role = 'student'
+			WHERE u.status NOT IN ('deleting', 'deleted')
+			  AND ($1 = '' OR EXISTS (
+			    SELECT 1 FROM coach_students cs
+			    WHERE cs.student_id = u.id AND cs.tenant_id = u.tenant_id AND cs.coach_id::text = $1))`,
+			coachID, monthStart).Scan(&s.Active, &s.Inactive, &s.PendingInvites, &s.NewThisMonth)
+	})
+	if err != nil {
+		return StudentStats{}, fmt.Errorf("repo: estatísticas de alunos: %w", err)
+	}
+	return s, nil
+}
+
+// ActiveIDs devolve os ids dos alunos `active` do tenant (M2M do dashboard,
+// P8.1: o owner sem filtro de professor).
+func (r *StudentRepo) ActiveIDs(ctx context.Context, tenantID string) ([]string, error) {
+	ids := []string{}
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		rows, err := tx.Query(ctx, `
+			SELECT u.id::text FROM users u
+			JOIN user_roles ur ON ur.user_id = u.id AND ur.role = 'student'
+			WHERE u.status = 'active' ORDER BY u.id`)
+		if err != nil {
+			return err
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var id string
+			if err := rows.Scan(&id); err != nil {
+				return err
+			}
+			ids = append(ids, id)
+		}
+		return rows.Err()
+	})
+	if err != nil {
+		return nil, fmt.Errorf("repo: alunos ativos: %w", err)
+	}
+	return ids, nil
+}

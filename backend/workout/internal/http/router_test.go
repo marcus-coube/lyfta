@@ -51,6 +51,12 @@ func signToken(t *testing.T, priv ed25519.PrivateKey, tenantID string, roles []s
 // coach dono do plano dos demais, e o aluno lê o plano pelo próprio subject.
 func signTokenAs(t *testing.T, priv ed25519.PrivateKey, tenantID, subject string, roles []string, expiresAt time.Time) string {
 	t.Helper()
+	return signTokenTZ(t, priv, tenantID, subject, roles, "", expiresAt)
+}
+
+// signTokenTZ é signTokenAs com a claim `tz` (fuso do tenant, P5.1).
+func signTokenTZ(t *testing.T, priv ed25519.PrivateKey, tenantID, subject string, roles []string, tz string, expiresAt time.Time) string {
+	t.Helper()
 	claims := security.Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   subject,
@@ -60,6 +66,7 @@ func signTokenAs(t *testing.T, priv ed25519.PrivateKey, tenantID, subject string
 		TenantID: tenantID,
 		Roles:    roles,
 		Locale:   "pt-BR",
+		Timezone: tz,
 	}
 	signed, err := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims).SignedString(priv)
 	if err != nil {
@@ -131,6 +138,8 @@ func newTestRouterWithLinker(t *testing.T, publicPEM string, pool *pgxpool.Pool,
 	plans := repo.NewPlanRepo(pool)
 	sessions := repo.NewSessionRepo(pool)
 	pending := repo.NewPendingRepo(pool)
+	// Só os testes com coachlink de verdade (fake do identity) usam o painel.
+	todayRoster, _ := linker.(whttp.TodayRoster)
 	return whttp.NewRouter(logger, []string{"*"}, verifier, testInternalToken,
 		whttp.NewMediaHandler(logger, presigner),
 		whttp.NewExerciseHandler(logger, exercises, presigner),
@@ -140,6 +149,7 @@ func newTestRouterWithLinker(t *testing.T, publicPEM string, pool *pgxpool.Pool,
 		whttp.NewPendingStudentsHandler(logger, pending),
 		whttp.NewErasureHandler(logger, repo.NewErasureRepo(pool)),
 		whttp.NewOverviewHandler(logger, repo.NewOverviewRepo(pool), linker),
+		whttp.NewCoachTodayHandler(logger, repo.NewTodayRepo(pool), todayRoster),
 		linker,
 	)
 }
