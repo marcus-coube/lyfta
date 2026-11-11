@@ -203,13 +203,37 @@ release × vai pro 3.0).
   *verdes* no Android e no Chrome. Não estão: a maior parte do lado do coach/owner
   foi validada por API, não por tela, e a regressão do 1.0 não foi repetida inteira.
 
+**P8.4 — rodada de tela no Chrome (Mac, 2026-11-11, tenant `e2e-ui-1111`)**
+- Build web release servido em 3 origens (5790 owner, 5791 coach, 5792 aluno) sobre
+  a pilha 9181-9185; navegador em en. Detalhe por passo no e2e-2.md.
+- Pela tela: 1-3, 5, 7-13, 17, 18, 21-26, 28-31, 33, 35-37 ✅; 4 e 6 ⚠️ (abaixo).
+  Inclui o player web do bi-set por rodada (volume 1.680) e o check-in.
+- **Sessão web persiste** (FlutterSecureStorage no `localStorage`) e é
+  **compartilhada entre abas da mesma origem**: aceitar um convite numa aba troca a
+  conta da outra. Corrige a nota anterior "sessão não persiste na web". Para o E2E,
+  um papel por origem (ou janela anônima).
+
+*Achados da rodada de tela:*
+- **A1 — owner não tem tela para convidar coach** (passo 4): o convite da aba Alunos
+  só cria aluno; o coach só entra por API. Sem isso, academia com mais de um
+  professor não opera pelo app.
+- **A2 — bi-set montado no builder descansa entre exercícios**: o builder preenche
+  `Rest 60 s` em toda série e o `BlockRunner` respeita o descanso prescrito por série
+  dentro da rodada (regra da P6.5), então o aluno descansa 60 s entre supino e
+  remada, contra o texto do próprio bloco ("rest only at the end of each round").
+- A3 — o coach só vê a aba Financeiro depois de recarregar/relogar quando o owner
+  liga `own_students` (`tenantSettingsProvider` lido uma vez por sessão).
+- A4 — a baixa manual pede só data e nota; o roteiro falava em "forma" de pagamento.
+- A5 — "Start" da assinatura vem com a data do navegador, não a do fuso do tenant
+  (Auckland já estava em 12/11).
+- A6 — banner do builder em modo modelo fala em "aluno" ("The student still sees…").
+- A7 — o aceite de convite exige "dados de saúde (obrigatório)" também do coach.
+
 *Pendências — bloqueiam o release 2.0.0 (fechar a P8.4):*
-1. Chrome: percorrer pela tela os passos de owner/coach do e2e-2 que só têm API
-   (signup, fuso, plano, convites, ficha com objetivo/lesão, modelo com superset e
-   aplicar, assinar, baixa/estorno, toggle, inativar/reativar, filtro por
-   professor, banner de lesão no builder, "Carregar mais" dos check-ins).
+1. A1 e A2 (decisão do usuário: corrigir agora ou aceitar).
 2. Android: Minhas mensalidades, bloqueio da exclusão com a mensagem e o atalho,
-   login de aluno inativo e troca de idioma do aparelho (passos 9, 24, 25, 34, 36, 39).
+   login de aluno inativo e troca de idioma do aparelho (passos 9, 24, 25, 34, 36, 39)
+   — os mesmos fluxos passaram na tela web.
 3. Regressão do 1.0: smoke do e2e-final (13 linhas) no Android e no Chrome, e a
    foto, a bioimpedância, o chat com imagem/WS e o mês/streak da Agenda.
 4. iOS no simulador "quando disponível" — não bloqueia o APK/web, mas repetir
@@ -218,7 +242,8 @@ release × vai pro 3.0).
 *Pendências — vão para o 3.0 (ou decisão do usuário):*
 - Sem tela de aceite de convite no mobile (o link abre a versão web).
 - Token de acesso emitido antes da inativação vale até expirar (sem revogação).
-- Sessão não persiste ao recarregar na web.
+- A3-A7 acima.
+- "Carregar mais" dos check-ins sem dado real (> 30 check-ins); só teste de widget.
 - Treino do dia já baixado fica no idioma do último pull (nota da P8.3).
 - Criar assinatura já gera a fatura do mês: o job só gera de fato a do mês seguinte
   (comportamento do ADR-017, só registrado para o roteiro).
