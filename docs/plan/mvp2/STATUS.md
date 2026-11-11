@@ -3,7 +3,7 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** P8.4 (em andamento, checkbox aberto: roteiro feito na API, Chrome e Android; achados A1/A2/A8 corrigidos; falta só o smoke do 1.0 no Chrome — ver Notas da [P8](P8-dashboard.md) e [e2e-2.md](e2e-2.md)). **Fases P5, P6 e P7 fechadas.**
+**Próxima tarefa:** P8.4 (em andamento, checkbox aberto: roteiro feito na API, Chrome e Android; achados A1/A2/A8 corrigidos; smoke do 1.0 feito no Android e no Chrome; achados A9 e A10 aguardam decisão — ver Notas da [P8](P8-dashboard.md) e [e2e-2.md](e2e-2.md)). **Fases P5, P6 e P7 fechadas.**
 
 | Fase | Progresso | Situação |
 |---|---|---|
@@ -60,3 +60,4 @@ Os quatro bancos do 1.0 seguem na tabela do [STATUS do 1.0](../mvp1/STATUS.md).
 | 2026-11-11 | **P8.4, rodada de tela no Chrome:** owner, coach e aluno pela tela web (30 passos ✅ na coluna Chrome); achados A1 (owner sem tela de convite de coach) e A2 (bi-set do builder descansa entre exercícios) bloqueiam o release até decisão; sessão web persiste e é compartilhada entre abas da mesma origem |
 | 2026-11-11 | **A1 e A2 corrigidos:** owner convida professor pelo diálogo da aba Alunos; bi-set/circuito no builder nascem sem descanso por série (descanso do bloco só ao fim da rodada); verificados na tela |
 | 2026-11-11 | **P8.4, rodada Android:** passos 9, 24, 25, 34, 36 e 39 pela tela e smoke do 1.0 no Android verdes (offline com correção, check-in, foto/bioimpedância, chat com imagem e queda do WS, Agenda mês/streak, pt-BR/en/pt-PT, exclusão); achado A8 (projeção da Agenda um dia atrasada após treinar) corrigido. Falta o smoke do 1.0 no Chrome |
+| 2026-11-11 | **P8.4, rodada Chrome (aluno):** smoke do 1.0 na web verde (treino com timer e correção, Agenda, logout/relogin, exclusão). Achados A9 (correção > 1.000 kg perdida sem aviso) e A10 (login visível enquanto a sessão salva é revalidada) aguardam decisão |

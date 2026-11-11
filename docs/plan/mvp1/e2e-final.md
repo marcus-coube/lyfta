@@ -71,16 +71,16 @@ Rodar antes de cada release, em cada alvo. Marcar com data.
 | 1 | App abre sem tela vermelha; login com conta existente | ✅ 11-07 | ✅ 11-07 | ✅ 11-07 |
 | 2 | Signup do professor e aceite de convite (com consentimento) | ✅ 11-07 | ⬜ | ✅ 11-07 (professor) |
 | 3 | Hoje carrega treino; skeleton some | ✅ 11-07 | ⬜ | ✅ 11-07 |
-| 4 | Executar treino, timer de descanso, correção, encerrar | ✅ 11-07 | ⬜ | ⬜ |
+| 4 | Executar treino, timer de descanso, correção, encerrar | ✅ 11-07, 11-11 | ⬜ | ✅ 11-11 (correção > 1.000 kg perdida: A9 do 2.0) |
 | 5 | Offline: executar, reabrir, sincronizar (só mobile) | ✅ 11-07 | ⬜ | n/a |
 | 6 | Evolução: gráfico, medidas, bioimp, foto | ✅ 11-07 | ⬜ | ✅ 11-07 (professor) |
 | 7 | Chat: texto, imagem, WS reconecta após queda | ✅ 11-07 | ⬜ | ✅ 11-07 (professor) |
 | 8 | Push com app fechado abre o destino | pré-loja (L1) | pré-loja (L3) | n/a |
 | 9 | Check-in enviado e visto pelo professor | ✅ 11-07 | ⬜ | ✅ 11-07 (professor) |
-| 10 | Agenda: semana, mês, streak | ✅ 11-07 (mês corrigido) | ⬜ | ⬜ |
+| 10 | Agenda: semana, mês, streak | ✅ 11-07 (mês corrigido), 11-11 | ⬜ | ✅ 11-11 |
 | 11 | Idiomas pt-BR, pt-PT e en trocam sem string crua | ✅ pt-BR | ✅ pt-BR (gate) | ✅ en |
-| 12 | Logout e relogin; refresh de sessão após reabrir | ✅ 11-07 | ⬜ | ⬜ |
-| 13 | Exclusão de conta (quando implementada) | ✅ 11-07 | ⬜ | ⬜ |
+| 12 | Logout e relogin; refresh de sessão após reabrir | ✅ 11-07, 11-11 | ⬜ | ✅ 11-11 (login aparece enquanto o refresh roda: A10 do 2.0) |
+| 13 | Exclusão de conta (quando implementada) | ✅ 11-07, 11-11 | ⬜ | ✅ 11-11 |
 
 ## Registro da execução
 
@@ -90,3 +90,4 @@ Rodar antes de cada release, em cada alvo. Marcar com data.
 | 2026-11-07 | iOS (simulador iPhone 17) | **Parcial**: app abre em pt-BR e o gate de consentimento funciona; roteiro interrompido — o simulador passou a levar até 15 min por ação |
 | 2026-11-08 | iOS e Web (aluno) | **Aceitos pelo usuário sem execução completa** (P4.4 fechada). Repetir nas três plataformas antes da primeira subida para loja |
 | 2026-11-07 | Web (aluno) | **Parcial**: aceite de convite com consentimento ok; roteiro interrompido — painel do navegador oculto não renderiza |
+| 2026-11-11 | Android (`lyfta_pixel`) e Chrome (build web release, aluno) | Smoke de regressão do 2.0 (P8.4): Android linhas 1, 3–7 e 9–13 ✅; web linhas 4, 10, 12 e 13 ✅ pela tela do aluno. Achados A9 e A10 registrados no [e2e-2.md](../mvp2/e2e-2.md) |

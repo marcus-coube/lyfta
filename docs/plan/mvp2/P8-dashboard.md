@@ -254,9 +254,12 @@ novo em `agenda_day_test.dart`, verificado na tela. `flutter analyze` zero,
 *Pendências — bloqueiam o release 2.0.0 (fechar a P8.4):*
 1. (A1 e A2 resolvidos acima.)
 2. (Android resolvido na rodada 3.)
-3. Regressão do 1.0 no **Chrome**: smoke do e2e-final na web (linhas 4, 10, 12
-   e 13 seguem ⬜ no e2e-final; aluno web).
-4. iOS no simulador "quando disponível" — não bloqueia o APK/web, mas repetir
+3. (Smoke do 1.0 na web feito na rodada 4, aluno pela tela.)
+4. **A9 e A10 aguardam decisão** (bloqueiam × 3.0) — ver [e2e-2.md](e2e-2.md)
+   § Rodada 4: correção de série acima de 1.000 kg perdida sem aviso (aparelho
+   e servidor divergem) e formulário de login visível enquanto a sessão salva é
+   revalidada.
+5. iOS no simulador "quando disponível" — não bloqueia o APK/web, mas repetir
    antes da primeira subida para loja (segue a lista pré-loja L1-L10).
 
 *Pendências — vão para o 3.0 (ou decisão do usuário):*
