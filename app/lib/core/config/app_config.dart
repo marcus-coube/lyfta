@@ -56,6 +56,6 @@ class AppConfig {
   /// `version:` do pubspec.yaml ao virar release (P4.4).
   static const String appRelease = String.fromEnvironment(
     'APP_RELEASE',
-    defaultValue: '1.0.0+1',
+    defaultValue: '2.0.0+1',
   );
 }

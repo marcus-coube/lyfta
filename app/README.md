@@ -116,7 +116,7 @@ o erro só aparece no console. Para ligar:
 flutter run -d chrome \
   --dart-define=SENTRY_DSN=https://<chave>@<host>/<projeto> \
   --dart-define=SENTRY_ENVIRONMENT=production \
-  --dart-define=APP_RELEASE=1.0.0+1
+  --dart-define=APP_RELEASE=2.0.0+1
 ```
 
 `APP_RELEASE` deve repetir o `version:` do `pubspec.yaml`. O evento leva só
