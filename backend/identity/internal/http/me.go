@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/marcus-coube/lyfta/identity/internal/domain"
+	"github.com/marcus-coube/lyfta/identity/internal/erasure"
 	"github.com/marcus-coube/lyfta/identity/internal/repo"
 	"github.com/marcus-coube/lyfta/identity/internal/security"
 )
@@ -19,7 +20,10 @@ import (
 // usuário (ADR-008 §2). Devolve os nomes dos serviços que falharam; vazio =
 // tudo apagado. Cada serviço é idempotente, então repetir é seguro.
 type Eraser interface {
-	Erase(ctx context.Context, tenantID, userID string) (failed []string)
+	Erase(ctx context.Context, tenantID, userID string, profile erasure.Profile) (failed []string)
+	// Pending consulta o billing: fatura `open`/`overdue` bloqueia a exclusão
+	// (ADR-017 §5). Erro = billing inacessível.
+	Pending(ctx context.Context, tenantID, userID string) (erasure.Pending, error)
 }
 
 // AccountHandler concentra os endpoints da conta do próprio usuário:
@@ -232,7 +236,8 @@ type deleteAccountRequest struct {
 }
 
 // DeleteMe — DELETE /v1/me: exclusão de conta self-service (ADR-008 §2),
-// confirmada por senha. Fluxo: marca `deleting` (login e refresh bloqueados) →
+// confirmada por senha. Fluxo: consulta faturas pendentes no billing (409
+// `pending_invoices`, nada muda) → marca `deleting` (login e refresh bloqueados) →
 // pede a exclusão a cada serviço → anonimiza o usuário aqui. Falha num serviço
 // = 502 `erasure_failed`; o usuário segue `deleting` e a chamada pode ser
 // repetida enquanto o access token valer (nada é refeito em duplicidade: todo
@@ -281,13 +286,39 @@ func (h *AccountHandler) DeleteMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Quem deve não sai (ADR-017 §5): consulta o financeiro antes de mudar
+	// qualquer coisa. Billing fora do ar = 502, nada foi alterado.
+	pending, err := h.eraser.Pending(ctx, tenantID, userID)
+	if err != nil {
+		h.logger.Error("delete_me_pending_failed", slog.Any("error", err), slog.String("user_id", userID))
+		writeError(w, errErasureFailed([]string{"billing"}))
+		return
+	}
+	if pending.Pending {
+		writeError(w, errPendingInvoices(pending.OpenInvoices, pending.OverdueInvoices))
+		return
+	}
+
+	// Nome e e-mail seguem para o billing, que os retém (ADR-017 §5); lidos
+	// aqui porque a anonimização, no fim, os apaga.
+	user, err := h.auth.FindUserByID(ctx, tenantID, userID)
+	if err != nil {
+		if err == repo.ErrNotFound {
+			writeError(w, errUnauthenticated())
+			return
+		}
+		h.logger.Error("delete_me_profile_failed", slog.Any("error", err))
+		writeError(w, errInternal())
+		return
+	}
+
 	if err := h.users.MarkDeleting(ctx, tenantID, userID); err != nil {
 		h.logger.Error("delete_me_mark_failed", slog.Any("error", err))
 		writeError(w, errInternal())
 		return
 	}
 
-	if failed := h.eraser.Erase(ctx, tenantID, userID); len(failed) > 0 {
+	if failed := h.eraser.Erase(ctx, tenantID, userID, erasure.Profile{Name: user.Name, Email: user.Email}); len(failed) > 0 {
 		h.logger.Error("delete_me_erasure_failed", slog.Any("services", failed), slog.String("user_id", userID))
 		writeError(w, errErasureFailed(failed))
 		return

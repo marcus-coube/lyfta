@@ -59,6 +59,11 @@ extension ApiExceptionL10n on ApiException {
         return l10n.errorOwnerCannotDelete;
       case 'erasure_failed':
         return l10n.errorErasureFailed;
+      case 'pending_invoices':
+        return l10n.errorPendingInvoices(
+          ((params['open_invoices'] as num?)?.toInt() ?? 0) +
+              ((params['overdue_invoices'] as num?)?.toInt() ?? 0),
+        );
       // Vínculo professor↔aluno (ADR-016): aluno de outro professor, excluído
       // ou inexistente respondem o mesmo 404.
       case 'student_not_found':

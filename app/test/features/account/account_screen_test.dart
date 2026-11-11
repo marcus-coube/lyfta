@@ -195,4 +195,31 @@ void main() {
     expect(h.drafts.cleared, isFalse);
     expect(h.auth.deletionCompleted, isFalse);
   });
+
+  testWidgets('mensalidade em aberto explica o bloqueio e oferece o atalho',
+      (tester) async {
+    final h = await _pump(
+      tester,
+      deleteError: const ApiException(
+        code: 'pending_invoices',
+        statusCode: 409,
+        params: {'open_invoices': 1, 'overdue_invoices': 1},
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('account_delete')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('delete_password')),
+      'SenhaAluno123!',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('delete_confirm')));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.errorPendingInvoices(2)), findsOneWidget);
+    expect(find.byKey(const Key('delete_pending_invoices')), findsOneWidget);
+    expect(h.auth.deletionCompleted, isFalse);
+    expect(h.drafts.cleared, isFalse);
+  });
 }

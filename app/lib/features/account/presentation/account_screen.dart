@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/auth/auth_controller.dart';
 import '../../../core/auth/auth_state.dart';
 import '../../../core/design_system/design_system.dart';
+import '../../../core/http/api_exception.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../core/legal/legal_document.dart';
@@ -44,10 +47,15 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   Future<void> _confirmDelete() async {
     // Sucesso: `completeAccountDeletion` já derrubou a sessão e o router leva
     // ao login — nada a fazer aqui depois do diálogo.
-    await showDialog<bool>(
+    final result = await showDialog<_DeleteResult>(
       context: context,
       builder: (_) => const _DeleteAccountDialog(),
     );
+    // Mensalidade em aberto bloqueia a exclusão (ADR-017 §5): o diálogo
+    // oferece o atalho para o aluno ver o que precisa quitar.
+    if (result == _DeleteResult.openInvoices && mounted) {
+      unawaited(context.push('/my-invoices'));
+    }
   }
 
   @override
@@ -154,8 +162,11 @@ class _Section extends StatelessWidget {
   }
 }
 
-/// Aviso do que é apagado + confirmação por senha. Fecha com `true` quando a
-/// exclusão concluiu.
+/// Como o diálogo de exclusão fechou.
+enum _DeleteResult { deleted, openInvoices }
+
+/// Aviso do que é apagado + confirmação por senha. Fecha com
+/// [_DeleteResult.deleted] quando a exclusão concluiu.
 class _DeleteAccountDialog extends ConsumerStatefulWidget {
   const _DeleteAccountDialog();
 
@@ -168,6 +179,7 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
   final _password = TextEditingController();
   bool _loading = false;
   String? _error;
+  bool _hasOpenInvoices = false;
 
   @override
   void dispose() {
@@ -182,11 +194,13 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
     });
     try {
       await deleteAccount(ref, _password.text);
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) Navigator.of(context).pop(_DeleteResult.deleted);
     } catch (error) {
       if (mounted) {
         setState(() {
           _error = describeApiError(context, error);
+          _hasOpenInvoices =
+              error is ApiException && error.code == 'pending_invoices';
           _loading = false;
         });
       }
@@ -220,12 +234,22 @@ class _DeleteAccountDialogState extends ConsumerState<_DeleteAccountDialog> {
               const SizedBox(height: LySpace.x2),
               Text(_error!, style: LyType.bodySm(c.danger)),
             ],
+            if (_hasOpenInvoices)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  key: const Key('delete_pending_invoices'),
+                  onPressed: () =>
+                      Navigator.of(context).pop(_DeleteResult.openInvoices),
+                  child: Text(l10n.accountDeletePendingAction),
+                ),
+              ),
           ],
         ),
       ),
       actions: [
         TextButton(
-          onPressed: _loading ? null : () => Navigator.of(context).pop(false),
+          onPressed: _loading ? null : () => Navigator.of(context).pop(),
           child: Text(l10n.commonCancel),
         ),
         TextButton(

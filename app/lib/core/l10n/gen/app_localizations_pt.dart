@@ -1252,7 +1252,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get accountDeleteDialogBody =>
-      'Serão apagados: medidas, bioimpedância e fotos de evolução, inclusive os arquivos. Serão anonimizados: seus treinos executados e suas mensagens, que ficam sem o seu nome. Seu acesso será encerrado e isso não pode ser desfeito.';
+      'Serão apagados: medidas, bioimpedância e fotos de evolução, inclusive os arquivos. Serão anonimizados: seus treinos executados e suas mensagens, que ficam sem o seu nome. Seu acesso será encerrado e isso não pode ser desfeito. Os registros financeiros (mensalidades) guardam seu nome e e-mail, por obrigação legal.';
 
   @override
   String get accountDeletePasswordLabel => 'Confirme sua senha';
@@ -1323,6 +1323,20 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get errorErasureFailed =>
       'Não conseguimos concluir a exclusão agora. Tente de novo em instantes.';
+
+  @override
+  String errorPendingInvoices(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count mensalidades em aberto',
+      one: '1 mensalidade em aberto',
+    );
+    return 'Você tem $_temp0. Quite com a sua organização antes de excluir a conta.';
+  }
+
+  @override
+  String get accountDeletePendingAction => 'Ver minhas mensalidades';
 
   @override
   String errorTooManyRequests(int minutes) {
@@ -3807,7 +3821,7 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get accountDeleteDialogBody =>
-      'Serão apagados: medidas, bioimpedância e fotografias de evolução, incluindo os ficheiros. Serão anonimizados: os seus treinos executados e as suas mensagens, que ficam sem o seu nome. O seu acesso terminará e isto não pode ser desfeito.';
+      'Serão apagados: medidas, bioimpedância e fotografias de evolução, incluindo os ficheiros. Serão anonimizados: os seus treinos executados e as suas mensagens, que ficam sem o seu nome. O seu acesso terminará e isto não pode ser desfeito. Os registos financeiros (mensalidades) mantêm o seu nome e e-mail, por obrigação legal.';
 
   @override
   String get accountDeletePasswordLabel => 'Confirme a sua palavra-passe';
@@ -3878,6 +3892,20 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   @override
   String get errorErasureFailed =>
       'Não conseguimos concluir a eliminação agora. Tente novamente dentro de instantes.';
+
+  @override
+  String errorPendingInvoices(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count mensalidades em aberto',
+      one: '1 mensalidade em aberto',
+    );
+    return 'Tem $_temp0. Regularize com a sua organização antes de eliminar a conta.';
+  }
+
+  @override
+  String get accountDeletePendingAction => 'Ver as minhas mensalidades';
 
   @override
   String errorTooManyRequests(int minutes) {

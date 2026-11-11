@@ -1,5 +1,5 @@
 Lyfta Terms of Use
-Version 2026-11-v1
+Version 2026-11-v2
 
 1. What Lyfta is
 Lyfta is a training management platform for gyms, personal trainers and studios. Coaches build and follow training plans; students run them, track their progress and chat with their coach.

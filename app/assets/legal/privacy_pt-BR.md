@@ -1,5 +1,5 @@
 Política de Privacidade do Lyfta
-Versão 2026-11-v1
+Versão 2026-11-v2
 
 Esta política explica quais dados o Lyfta trata, para quê, e quais são os seus direitos conforme a Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018).
 
@@ -8,6 +8,7 @@ O Lyfta fornece a plataforma e a academia, estúdio ou personal que convidou voc
 
 2. Quais dados tratamos
 - Identificação: nome, e-mail e senha (guardada apenas como hash).
+- Financeiro: mensalidades, vencimentos e baixas registradas pela sua academia, estúdio ou personal, com o seu nome e e-mail.
 - Dados de saúde (dados pessoais sensíveis): treinos executados, cargas, medidas corporais e bioimpedância.
 - Fotos de evolução (opcional): imagens que você envia.
 - Comunicação: mensagens com o seu professor e avaliações de treino (check-in), inclusive relato de dor.
@@ -26,7 +27,7 @@ Os professores da sua academia e você. Prestadores de infraestrutura (hospedage
 Comunicação criptografada, fotos em armazenamento privado com links temporários, senhas com hash e acesso isolado entre academias.
 
 7. Por quanto tempo guardamos
-Enquanto sua conta existir. Ao excluir a conta: dados de saúde e fotos são apagados definitivamente; treinos executados e mensagens são anonimizados e deixam de se ligar a você; o registro dos seus consentimentos é mantido como prova, sem dados pessoais.
+Enquanto sua conta existir. Ao excluir a conta: dados de saúde e fotos são apagados definitivamente; treinos executados e mensagens são anonimizados e deixam de se ligar a você; o registro dos seus consentimentos é mantido como prova, sem dados pessoais. Os registros financeiros (mensalidades e pagamentos) continuam guardando o seu nome e e-mail após a exclusão, por obrigação legal de guarda e para o exercício regular de direitos (LGPD, art. 7º, II e VI, e art. 16, I); só a organização que emitiu as faturas os vê. Enquanto houver mensalidade em aberto ou vencida, a conta não pode ser excluída: é preciso quitar com a organização antes.
 
 8. Seus direitos (LGPD, art. 18)
 Confirmação e acesso aos dados, correção, eliminação, revogação do consentimento e informação sobre compartilhamento. A exclusão da conta está em Conta > Excluir minha conta; para os demais, escreva para privacidade@lyfta.app.

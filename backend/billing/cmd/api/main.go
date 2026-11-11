@@ -67,12 +67,12 @@ func run(logger *slog.Logger) error {
 	}
 
 	billing := ahttp.NewBillingHandler(logger,
-		repo.NewPlanRepo(pool), repo.NewSubscriptionRepo(pool), repo.NewInvoiceRepo(pool),
+		repo.NewPlanRepo(pool), repo.NewSubscriptionRepo(pool), repo.NewInvoiceRepo(pool), repo.NewErasureRepo(pool),
 		tenantsettings.NewClient(cfg.IdentityURL, cfg.InternalToken, cfg.TenantSettingsCacheTTL),
 		studentdir.NewClient(cfg.IdentityURL, cfg.InternalToken),
 		coachlink.NewClient(cfg.IdentityURL, cfg.InternalToken, cfg.CoachLinkCacheTTL),
 		nil)
-	router := ahttp.NewRouter(logger, cfg.CORSOrigins, verifier, billing)
+	router := ahttp.NewRouter(logger, cfg.CORSOrigins, verifier, cfg.InternalToken, billing)
 
 	// Geração mensal e vencimento (P7.3), no fuso de cada tenant.
 	monthly := job.NewMonthlyJob(logger, pool,

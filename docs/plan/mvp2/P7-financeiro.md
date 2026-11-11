@@ -138,7 +138,7 @@ nem valores, ligado vê só os alunos dele e sem estorno;
 testes de widget do campo de valor (pt-BR `1.234,56` e en `1,234.56` →
 `123456`) e da lista de faturas. Strings nos 3 idiomas.
 
-## - [ ] P7.5 Exclusão de conta com financeiro (identity, billing, Flutter)
+## - [x] P7.5 Exclusão de conta com financeiro (identity, billing, Flutter)
 
 **Objetivo:** ADR-017 §5 — quem deve não sai; quem sai continua legível no
 financeiro.
@@ -339,3 +339,39 @@ identity (pendente + billing fora do ar) e no billing (idempotência do DELETE).
   então toda baixa pelo app web caía no preflight ("sem conexão"). Header
   adicionado em `router.go` + teste de preflight em `router_test.go`.
 
+**P7.5 (Mac, 2026-11-10)**
+- billing: `GET /internal/v1/users/{id}/pending?tenant_id=` e `DELETE
+  /internal/v1/users/{id}?tenant_id=` (corpo `{name, email}`), sob
+  `RequireInternalToken` (`NewRouter` ganhou o token). `repo.ErasureRepo`:
+  `pending` = `open` e `overdue` do aluno (qualquer uma bloqueia, como no
+  ADR-017 §5). O DELETE cancela a assinatura vigente (**ativa ou pausada**) e
+  as faturas `open` com vencimento depois de hoje no fuso do tenant, e marca
+  `billing_customers.account_deleted_at` gravando nome/e-mail. Idempotente: o
+  UPDATE só pega titular ainda não excluído (a repetição não sobrescreve o
+  que a primeira retém). Aluno sem registro financeiro = 204 sem criar nada.
+- identity: `DELETE /v1/me` consulta o `pending` depois da senha e **antes** de
+  `MarkDeleting`; pendência = 409 `pending_invoices` (`open_invoices`,
+  `overdue_invoices` em `params`), billing fora do ar = 502 `erasure_failed`
+  com `services: ["billing"]`, nos dois casos nada muda. Nome/e-mail são lidos
+  antes de marcar `deleting` e seguem no corpo do DELETE do billing, o **único**
+  alvo com `Target.Profile` (os outros serviços não recebem dado pessoal). Novo
+  `BILLING_URL` (padrão `http://localhost:8085`) no `.env.example` do identity.
+- App: `pending_invoices` vira mensagem com a contagem (plural, 3 ARBs); o
+  diálogo de exclusão mostra o botão "Ver minhas mensalidades", que fecha o
+  diálogo e abre `/my-invoices`. O corpo do diálogo agora avisa que os
+  registros financeiros guardam nome e e-mail.
+- Termos: `TERMS_VERSION` 2026-11-v1 -> **2026-11-v2** (6 textos, default do app
+  e do identity, `.env.example`, README). A privacidade ganhou o item
+  "Financeiro" em §2 e a retenção + bloqueio em §7 (3 idiomas). Entra na
+  revisão jurídica (L6).
+- Testes: billing (pending, exclusão ponta a ponta, idempotência, token,
+  isolamento cross-tenant), identity (409 com contagens e conta intacta, billing
+  fora = 502 repetível, perfil enviado ao billing, cliente `erasure`), widget do
+  diálogo.
+- **Pendência do usuário:** `identity/.env` com `TERMS_VERSION` explícito precisa
+  virar `2026-11-v2` (igual ao app), senão o gate de consentimento diverge;
+  `BILLING_URL` só é necessária se o billing não estiver em localhost:8085.
+- Verificação manual (pilha real) **não feita** nesta sessão: roteiro em
+  "Aceite" — aluno com fatura vencida recebe 409 e a conta segue; aluno
+  quitado exclui e a fatura paga mostra nome, e-mail e "conta excluída" ao
+  owner.

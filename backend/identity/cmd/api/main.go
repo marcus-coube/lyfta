@@ -86,7 +86,8 @@ func run(logger *slog.Logger) error {
 		{Name: "assessment", BaseURL: cfg.AssessmentURL},
 		{Name: "workout", BaseURL: cfg.WorkoutURL},
 		{Name: "comms", BaseURL: cfg.CommsURL},
-	})
+		{Name: "billing", BaseURL: cfg.BillingURL, Profile: true},
+	}).WithBilling(cfg.BillingURL)
 
 	authHandler := ihttp.NewAuthHandler(logger, tenants, users, authRepo, issuer, cfg.TermsVersion)
 	invitationHandler := ihttp.NewInvitationHandler(logger, invitationRepo, tenants, users, consentRepo, repo.NewCoachLinkRepo(pool), issuer, mailer, cfg.AppURL, cfg.TermsVersion)

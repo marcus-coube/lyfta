@@ -1,5 +1,5 @@
 Termos de Utilização do Lyfta
-Versão 2026-11-v1
+Versão 2026-11-v2
 
 1. O que é o Lyfta
 O Lyfta é uma plataforma de gestão de treino para ginásios, personal trainers e estúdios. O treinador monta e acompanha treinos; o aluno executa, regista a evolução e conversa com o treinador.

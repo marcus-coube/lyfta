@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"testing"
 
 	"github.com/jackc/pgx/v5"
 
+	"github.com/marcus-coube/lyfta/identity/internal/erasure"
 	"github.com/marcus-coube/lyfta/identity/internal/repo"
 )
 
@@ -253,6 +255,10 @@ func TestDeleteAccountHappyPath(t *testing.T) {
 	if eraser.callCount() != 1 {
 		t.Fatalf("esperava 1 chamada de exclusão, obtive %d", eraser.callCount())
 	}
+	// O billing recebe nome e e-mail ANTES da anonimização (ADR-017 §5).
+	if got := eraser.profiles[0]; got.Name != "Aluna Consentida" || got.Email != email {
+		t.Fatalf("perfil enviado ao billing: %+v", got)
+	}
 
 	login := doPost(t, f.client, f.url+"/v1/auth/login", map[string]any{"email": email, "password": "SenhaAluno123!"})
 	if login.status != http.StatusUnauthorized {
@@ -285,6 +291,74 @@ func TestDeleteAccountHappyPath(t *testing.T) {
 	}
 	if status != "deleted" || gotEmail == email || gotName != "deleted" || gotHash != "" {
 		t.Fatalf("usuário não foi anonimizado: email=%q name=%q hash=%q status=%q", gotEmail, gotName, gotHash, status)
+	}
+}
+
+// TestDeleteAccountPendingInvoices: fatura em aberto = 409 pending_invoices com
+// as contagens, e nada muda — nenhum serviço é chamado e o login segue valendo
+// (Aceite do P7.5).
+func TestDeleteAccountPendingInvoices(t *testing.T) {
+	server, _, mailer, eraser := newTestServerWithEraser(t)
+	f := usersFixture{client: server.Client(), url: server.URL, mailer: mailer}
+	f.coachToken = signupCoach(t, f)
+	session, email := inviteStudentSession(t, f, map[string]bool{"health_data": true})
+	token := session["access_token"].(string)
+
+	eraser.setPending(erasure.Pending{Pending: true, OpenInvoices: 1, OverdueInvoices: 2}, nil)
+	del := doJSONAuth(t, f.client, http.MethodDelete, f.url+"/v1/me", token, map[string]string{"password": "SenhaAluno123!"})
+	if del.status != http.StatusConflict || del.body["code"] != "pending_invoices" {
+		t.Fatalf("esperava 409 pending_invoices, obtive %d %v", del.status, del.body)
+	}
+	params, _ := del.body["params"].(map[string]any)
+	if params["open_invoices"] != float64(1) || params["overdue_invoices"] != float64(2) {
+		t.Fatalf("contagens em params: %v", del.body)
+	}
+	if eraser.callCount() != 0 {
+		t.Fatal("pendência não pode disparar a exclusão nos serviços")
+	}
+	login := doPost(t, f.client, f.url+"/v1/auth/login", map[string]any{"email": email, "password": "SenhaAluno123!"})
+	if login.status != http.StatusOK {
+		t.Fatalf("conta deveria estar intacta (login 200), obtive %d %v", login.status, login.body)
+	}
+
+	// Quitou: a exclusão passa.
+	eraser.setPending(erasure.Pending{}, nil)
+	ok := doJSONAuth(t, f.client, http.MethodDelete, f.url+"/v1/me", token, map[string]string{"password": "SenhaAluno123!"})
+	if ok.status != http.StatusNoContent {
+		t.Fatalf("quitado deveria excluir (204), obtive %d %v", ok.status, ok.body)
+	}
+}
+
+// TestDeleteAccountBillingDown: billing fora do ar na consulta = 502
+// erasure_failed (billing), repetível, e a conta fica intacta.
+func TestDeleteAccountBillingDown(t *testing.T) {
+	server, _, mailer, eraser := newTestServerWithEraser(t)
+	f := usersFixture{client: server.Client(), url: server.URL, mailer: mailer}
+	f.coachToken = signupCoach(t, f)
+	session, email := inviteStudentSession(t, f, map[string]bool{"health_data": true})
+	token := session["access_token"].(string)
+
+	eraser.setPending(erasure.Pending{}, errors.New("billing fora do ar"))
+	del := doJSONAuth(t, f.client, http.MethodDelete, f.url+"/v1/me", token, map[string]string{"password": "SenhaAluno123!"})
+	if del.status != http.StatusBadGateway || del.body["code"] != "erasure_failed" {
+		t.Fatalf("esperava 502 erasure_failed, obtive %d %v", del.status, del.body)
+	}
+	params, _ := del.body["params"].(map[string]any)
+	if !contains(stringList(params["services"]), "billing") {
+		t.Fatalf("o 502 deveria nomear o billing: %v", del.body)
+	}
+	if eraser.callCount() != 0 {
+		t.Fatal("sem saber a pendência, nada pode ser apagado")
+	}
+	login := doPost(t, f.client, f.url+"/v1/auth/login", map[string]any{"email": email, "password": "SenhaAluno123!"})
+	if login.status != http.StatusOK {
+		t.Fatalf("conta deveria estar intacta, obtive %d", login.status)
+	}
+
+	eraser.setPending(erasure.Pending{}, nil)
+	again := doJSONAuth(t, f.client, http.MethodDelete, f.url+"/v1/me", token, map[string]string{"password": "SenhaAluno123!"})
+	if again.status != http.StatusNoContent {
+		t.Fatalf("repetição deveria concluir, obtive %d %v", again.status, again.body)
 	}
 }
 

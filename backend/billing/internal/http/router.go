@@ -17,6 +17,7 @@ func NewRouter(
 	logger *slog.Logger,
 	corsOrigins []string,
 	verifier *security.JWTVerifier,
+	internalToken string,
 	billing *BillingHandler,
 ) http.Handler {
 	r := chi.NewRouter()
@@ -37,6 +38,14 @@ func NewRouter(
 	}))
 
 	r.Get("/healthz", healthzHandler)
+
+	// M2M do identity (exclusão de conta, ADR-017 §5): token interno, sem JWT.
+	if billing != nil {
+		r.Route("/internal/v1", func(r chi.Router) {
+			r.Use(RequireInternalToken(internalToken))
+			billing.MountInternal(r)
+		})
+	}
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Use(RequireAuth(verifier))

@@ -142,12 +142,12 @@ func newEnv(t *testing.T) *env {
 		now: time.Date(2026, 11, 10, 12, 0, 0, 0, sp)}
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	billing := bhttp.NewBillingHandler(logger,
-		repo.NewPlanRepo(pool), repo.NewSubscriptionRepo(pool), repo.NewInvoiceRepo(pool),
+		repo.NewPlanRepo(pool), repo.NewSubscriptionRepo(pool), repo.NewInvoiceRepo(pool), repo.NewErasureRepo(pool),
 		tenantsettings.NewClient(identity.server.URL, testInternalToken, 0),
 		studentdir.NewClient(identity.server.URL, testInternalToken),
 		coachlink.NewClient(identity.server.URL, testInternalToken, 0),
 		func() time.Time { return e.now })
-	e.h = bhttp.NewRouter(logger, []string{"*"}, verifier, billing)
+	e.h = bhttp.NewRouter(logger, []string{"*"}, verifier, testInternalToken, billing)
 	return e
 }
 

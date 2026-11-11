@@ -87,7 +87,7 @@ tentativas — vazio em dev = memória, obrigatória com `APP_ENV=production`),
 `TRUST_PROXY` (identity; `true` só atrás de proxy reverso: o IP do limite passa a
 ser o último do `X-Forwarded-For`). LGPD (P4.5): `TERMS_VERSION`
 (identity; mesma versão dos textos em `app/assets/legal/`), `WORKOUT_URL`,
-`ASSESSMENT_URL` e `COMMS_URL` (identity, para a exclusão de conta) e
+`ASSESSMENT_URL`, `COMMS_URL` e `BILLING_URL` (identity, para a exclusão de conta) e
 `IDENTITY_URL` (assessment, para o consentimento de outra pessoa) — M2M com
 `INTERNAL_TOKEN`. Vínculo professor↔aluno (P4.7, ADR-016): `IDENTITY_URL` e
 `COACH_LINK_CACHE_TTL` (padrão `30s`) em workout, assessment, comms e billing.

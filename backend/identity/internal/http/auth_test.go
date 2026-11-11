@@ -19,6 +19,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/marcus-coube/lyfta/identity/internal/erasure"
 	ihttp "github.com/marcus-coube/lyfta/identity/internal/http"
 	"github.com/marcus-coube/lyfta/identity/internal/ratelimit"
 	"github.com/marcus-coube/lyfta/identity/internal/repo"
@@ -86,13 +87,33 @@ type fakeEraser struct {
 	mu      sync.Mutex
 	calls   []string
 	failing []string
+	// profiles: nome/e-mail recebidos em cada Erase.
+	profiles []erasure.Profile
+	// pending/pendingErr: resposta da consulta de faturas pendentes.
+	pending      erasure.Pending
+	pendingErr   error
+	pendingCalls int
 }
 
-func (f *fakeEraser) Erase(_ context.Context, tenantID, userID string) []string {
+func (f *fakeEraser) Erase(_ context.Context, tenantID, userID string, profile erasure.Profile) []string {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.calls = append(f.calls, tenantID+"/"+userID)
+	f.profiles = append(f.profiles, profile)
 	return f.failing
+}
+
+func (f *fakeEraser) Pending(_ context.Context, _, _ string) (erasure.Pending, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.pendingCalls++
+	return f.pending, f.pendingErr
+}
+
+func (f *fakeEraser) setPending(p erasure.Pending, err error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.pending, f.pendingErr = p, err
 }
 
 func (f *fakeEraser) setFailing(services ...string) {

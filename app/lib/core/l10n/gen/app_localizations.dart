@@ -2346,7 +2346,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountDeleteDialogBody.
   ///
   /// In pt, this message translates to:
-  /// **'Serão apagados: medidas, bioimpedância e fotos de evolução, inclusive os arquivos. Serão anonimizados: seus treinos executados e suas mensagens, que ficam sem o seu nome. Seu acesso será encerrado e isso não pode ser desfeito.'**
+  /// **'Serão apagados: medidas, bioimpedância e fotos de evolução, inclusive os arquivos. Serão anonimizados: seus treinos executados e suas mensagens, que ficam sem o seu nome. Seu acesso será encerrado e isso não pode ser desfeito. Os registros financeiros (mensalidades) guardam seu nome e e-mail, por obrigação legal.'**
   String get accountDeleteDialogBody;
 
   /// No description provided for @accountDeletePasswordLabel.
@@ -2468,6 +2468,18 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Não conseguimos concluir a exclusão agora. Tente de novo em instantes.'**
   String get errorErasureFailed;
+
+  /// Erro pending_invoices (409): exclusão de conta bloqueada por mensalidade em aberto. `count` = faturas abertas + vencidas.
+  ///
+  /// In pt, this message translates to:
+  /// **'Você tem {count, plural, =1{1 mensalidade em aberto} other{{count} mensalidades em aberto}}. Quite com a sua organização antes de excluir a conta.'**
+  String errorPendingInvoices(int count);
+
+  /// Atalho do diálogo de exclusão para Minhas mensalidades.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ver minhas mensalidades'**
+  String get accountDeletePendingAction;
 
   /// Limite de tentativas atingido (429): login, recuperação de senha, convite. `minutes` = tempo até liberar, arredondado para cima.
   ///

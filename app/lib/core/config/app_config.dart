@@ -39,7 +39,7 @@ class AppConfig {
   /// outra versão (`terms_version_mismatch`).
   static const String termsVersion = String.fromEnvironment(
     'TERMS_VERSION',
-    defaultValue: '2026-11-v1',
+    defaultValue: '2026-11-v2',
   );
 
   /// DSN do Sentry/GlitchTip (ADR-009 §5, P4.6). Vazio = desligado: dev e CI

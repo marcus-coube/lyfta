@@ -40,6 +40,7 @@ type BillingHandler struct {
 	plans    *repo.PlanRepo
 	subs     *repo.SubscriptionRepo
 	invoices *repo.InvoiceRepo
+	erasure  *repo.ErasureRepo
 	settings TenantSettings
 	students StudentDirectory
 	linker   StudentLinker
@@ -50,14 +51,14 @@ type BillingHandler struct {
 // NewBillingHandler cria o handler. now == nil usa o relógio do sistema.
 func NewBillingHandler(
 	logger *slog.Logger,
-	plans *repo.PlanRepo, subs *repo.SubscriptionRepo, invoices *repo.InvoiceRepo,
+	plans *repo.PlanRepo, subs *repo.SubscriptionRepo, invoices *repo.InvoiceRepo, erasure *repo.ErasureRepo,
 	settings TenantSettings, students StudentDirectory, linker StudentLinker,
 	now func() time.Time,
 ) *BillingHandler {
 	if now == nil {
 		now = time.Now
 	}
-	return &BillingHandler{logger: logger, plans: plans, subs: subs, invoices: invoices,
+	return &BillingHandler{logger: logger, plans: plans, subs: subs, invoices: invoices, erasure: erasure,
 		settings: settings, students: students, linker: linker, now: now}
 }
 

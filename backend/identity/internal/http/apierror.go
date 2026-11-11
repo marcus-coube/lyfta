@@ -96,6 +96,9 @@ var (
 	errErasureFailed = func(services []string) APIError {
 		return newAPIError(http.StatusBadGateway, "erasure_failed", "services", services)
 	}
+	errPendingInvoices = func(open, overdue int) APIError {
+		return newAPIError(http.StatusConflict, "pending_invoices", "open_invoices", open, "overdue_invoices", overdue)
+	}
 	errInvalidTimezone = func() APIError {
 		return newAPIError(http.StatusUnprocessableEntity, "invalid_timezone")
 	}

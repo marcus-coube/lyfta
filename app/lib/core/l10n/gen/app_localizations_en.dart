@@ -1250,7 +1250,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountDeleteDialogBody =>
-      'Erased: measurements, body composition and progress photos, including the files. Anonymized: your completed workouts and your messages, which lose your name. Your access ends and this cannot be undone.';
+      'Erased: measurements, body composition and progress photos, including the files. Anonymized: your completed workouts and your messages, which lose your name. Your access ends and this cannot be undone. Financial records (membership fees) keep your name and email, as required by law.';
 
   @override
   String get accountDeletePasswordLabel => 'Confirm your password';
@@ -1321,6 +1321,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorErasureFailed =>
       'We could not finish the deletion right now. Try again in a moment.';
+
+  @override
+  String errorPendingInvoices(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count open membership fees',
+      one: '1 open membership fee',
+    );
+    return 'You have $_temp0. Settle with your organization before deleting the account.';
+  }
+
+  @override
+  String get accountDeletePendingAction => 'View my membership fees';
 
   @override
   String errorTooManyRequests(int minutes) {
