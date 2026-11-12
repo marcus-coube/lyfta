@@ -255,11 +255,13 @@ novo em `agenda_day_test.dart`, verificado na tela. `flutter analyze` zero,
 1. (A1 e A2 resolvidos acima.)
 2. (Android resolvido na rodada 3.)
 3. (Smoke do 1.0 na web feito na rodada 4, aluno pela tela.)
-4. **A9 e A10 aguardam decisão** (bloqueiam × 3.0) — ver [e2e-2.md](e2e-2.md)
-   § Rodada 4: correção de série acima de 1.000 kg perdida sem aviso (aparelho
-   e servidor divergem) e formulário de login visível enquanto a sessão salva é
-   revalidada.
-5. iOS no simulador "quando disponível" — não bloqueia o APK/web, mas repetir
+4. (A9 e A10 corrigidos em 11-12 — ver [e2e-2.md](e2e-2.md) § Rodada 4:
+   validação de carga/reps no player e na correção, splash durante a
+   revalidação da sessão. `flutter analyze` zero, 245 testes.)
+5. **Refazer os artefatos 2.0.0** (APK release e build web) com a configuração
+   padrão, depois das correções — o `build/web` local aponta para a pilha de
+   teste (9181–9185).
+6. iOS no simulador "quando disponível" — não bloqueia o APK/web, mas repetir
    antes da primeira subida para loja (segue a lista pré-loja L1-L10).
 
 *Pendências — vão para o 3.0 (ou decisão do usuário):*

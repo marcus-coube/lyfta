@@ -3,7 +3,7 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** P8.4 (em andamento, checkbox aberto: roteiro feito na API, Chrome e Android; achados A1/A2/A8 corrigidos; smoke do 1.0 feito no Android e no Chrome; achados A9 e A10 aguardam decisão — ver Notas da [P8](P8-dashboard.md) e [e2e-2.md](e2e-2.md)). **Fases P5, P6 e P7 fechadas.**
+**Próxima tarefa:** P8.4 (em andamento, checkbox aberto: roteiro feito na API, Chrome e Android; achados A1/A2/A8/A9/A10 corrigidos; smoke do 1.0 feito no Android e no Chrome; falta refazer o APK e o build web do 2.0.0 — ver Notas da [P8](P8-dashboard.md) e [e2e-2.md](e2e-2.md)). **Fases P5, P6 e P7 fechadas.**
 
 | Fase | Progresso | Situação |
 |---|---|---|
@@ -61,3 +61,4 @@ Os quatro bancos do 1.0 seguem na tabela do [STATUS do 1.0](../mvp1/STATUS.md).
 | 2026-11-11 | **A1 e A2 corrigidos:** owner convida professor pelo diálogo da aba Alunos; bi-set/circuito no builder nascem sem descanso por série (descanso do bloco só ao fim da rodada); verificados na tela |
 | 2026-11-11 | **P8.4, rodada Android:** passos 9, 24, 25, 34, 36 e 39 pela tela e smoke do 1.0 no Android verdes (offline com correção, check-in, foto/bioimpedância, chat com imagem e queda do WS, Agenda mês/streak, pt-BR/en/pt-PT, exclusão); achado A8 (projeção da Agenda um dia atrasada após treinar) corrigido. Falta o smoke do 1.0 no Chrome |
 | 2026-11-11 | **P8.4, rodada Chrome (aluno):** smoke do 1.0 na web verde (treino com timer e correção, Agenda, logout/relogin, exclusão). Achados A9 (correção > 1.000 kg perdida sem aviso) e A10 (login visível enquanto a sessão salva é revalidada) aguardam decisão |
+| 2026-11-12 | **A9 e A10 corrigidos:** player e "Corrigir série" validam 0–1.000 reps/kg antes de registrar (nada sai para a fila fora do limite do servidor); splash enquanto a sessão salva é revalidada, com volta à rota pedida. `flutter analyze` zero, 245 testes; verificados no build web (splash ao recarregar, volta ao player, carga fora do limite barrada, aparelho e servidor iguais após correção) |
