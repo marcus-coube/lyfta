@@ -657,6 +657,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sessionLoadKg => 'Load (kg)';
 
   @override
+  String get sessionRepsOutOfRange => '0 to 1,000';
+
+  @override
+  String get sessionLoadOutOfRange => '0 to 1,000 kg';
+
+  @override
   String get sessionMarkDone => 'Log set';
 
   @override

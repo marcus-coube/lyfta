@@ -52,6 +52,13 @@ abstract final class LyTheme {
           borderRadius: LyRadius.md,
           borderSide: BorderSide(color: c.danger),
         ),
+        // Campo com erro e focado continua vermelho: sem isto o Flutter
+        // herda a borda de foco (accent) e o erro some à vista (A9).
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: LyRadius.md,
+          borderSide: BorderSide(color: c.danger, width: 1.5),
+        ),
+        errorStyle: LyType.caption(c.danger),
       ),
       extensions: [c],
     );

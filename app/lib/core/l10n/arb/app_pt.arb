@@ -326,6 +326,14 @@
   "@sessionLoadKg": {
     "description": "Rótulo do campo de carga executada."
   },
+  "sessionRepsOutOfRange": "De 0 a 1.000",
+  "@sessionRepsOutOfRange": {
+    "description": "Erro do campo de repetições fora do limite aceito pelo servidor (0–1000)."
+  },
+  "sessionLoadOutOfRange": "De 0 a 1.000 kg",
+  "@sessionLoadOutOfRange": {
+    "description": "Erro do campo de carga inválida ou fora do limite aceito pelo servidor (0–1000 kg)."
+  },
   "sessionMarkDone": "Registrar série",
   "@sessionMarkDone": {
     "description": "Ação que grava a série executada."

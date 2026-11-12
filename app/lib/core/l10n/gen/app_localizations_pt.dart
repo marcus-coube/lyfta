@@ -657,6 +657,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get sessionLoadKg => 'Carga (kg)';
 
   @override
+  String get sessionRepsOutOfRange => 'De 0 a 1.000';
+
+  @override
+  String get sessionLoadOutOfRange => 'De 0 a 1.000 kg';
+
+  @override
   String get sessionMarkDone => 'Registrar série';
 
   @override
@@ -3341,6 +3347,12 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get sessionLoadKg => 'Carga (kg)';
+
+  @override
+  String get sessionRepsOutOfRange => 'De 0 a 1000';
+
+  @override
+  String get sessionLoadOutOfRange => 'De 0 a 1000 kg';
 
   @override
   String get sessionMarkDone => 'Registar série';

@@ -143,4 +143,81 @@ void main() {
     // Corrigir nunca edita o fato: vira revisão do log original (ADR-003 §5).
     expect(captured.revises, 'log-1');
   });
+
+  testWidgets('carga acima de 1.000 kg não registra e marca o campo (A9)',
+      (tester) async {
+    await tester.pumpWidget(
+      _host(
+        SetRow(
+          setNo: 1,
+          prescribed: PrescribedSet(repsMin: 10, repsMax: 10),
+          onLog: onLog,
+        ),
+      ),
+    );
+
+    final l10n = lookupAppLocalizations(const Locale('pt'));
+    await tester.enterText(find.byType(TextField).last, '5255,5');
+    await tester.tap(find.byIcon(Icons.check_circle_outline));
+    await tester.pumpAndSettle();
+
+    // O servidor rejeitaria e a fila descartaria sem aviso: nem chega a sair.
+    expect(captured.calls, 0);
+    expect(find.text(l10n.sessionLoadOutOfRange), findsOneWidget);
+
+    // Mexer no campo limpa o erro; valor válido registra normalmente.
+    await tester.enterText(find.byType(TextField).last, '55');
+    await tester.pump();
+    expect(find.text(l10n.sessionLoadOutOfRange), findsNothing);
+    await tester.tap(find.byIcon(Icons.check_circle_outline));
+    await tester.pumpAndSettle();
+    expect(captured.calls, 1);
+    expect(captured.load, 55);
+  });
+
+  testWidgets('correção fora do limite não fecha o diálogo (A9)',
+      (tester) async {
+    final logged = LocalSetLog(
+      clientId: 'log-1',
+      sessionClientId: 'session-1',
+      exerciseId: 'ex-1',
+      setNo: 1,
+      performedAt: DateTime.utc(2026, 8, 31),
+      repsDone: 10,
+      loadKg: 52.5,
+    );
+    await tester.pumpWidget(
+      _host(
+        SetRow(
+          setNo: 1,
+          prescribed: PrescribedSet(repsMin: 10, repsMax: 10),
+          logged: logged,
+          onLog: onLog,
+        ),
+      ),
+    );
+
+    final l10n = lookupAppLocalizations(const Locale('pt'));
+    await tester.tap(find.byIcon(Icons.edit_outlined));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '1001');
+    await tester.enterText(find.byType(TextField).last, '1000,5');
+    await tester.tap(find.text(l10n.commonSave));
+    await tester.pumpAndSettle();
+
+    expect(captured.calls, 0);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text(l10n.sessionRepsOutOfRange), findsOneWidget);
+    expect(find.text(l10n.sessionLoadOutOfRange), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).first, '10');
+    await tester.enterText(find.byType(TextField).last, '1000');
+    await tester.tap(find.text(l10n.commonSave));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(captured.calls, 1);
+    expect(captured.load, 1000);
+    expect(captured.revises, 'log-1');
+  });
 }

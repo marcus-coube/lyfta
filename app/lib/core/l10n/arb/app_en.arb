@@ -204,6 +204,8 @@
   "todayEmptyDay": "This workout has no exercises.",
   "sessionReps": "Reps",
   "sessionLoadKg": "Load (kg)",
+  "sessionRepsOutOfRange": "0 to 1,000",
+  "sessionLoadOutOfRange": "0 to 1,000 kg",
   "sessionMarkDone": "Log set",
   "sessionSetDone": "Logged",
   "sessionRestTitle": "Rest",

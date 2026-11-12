@@ -204,6 +204,8 @@
   "todayEmptyDay": "Este treino não tem exercícios.",
   "sessionReps": "Reps",
   "sessionLoadKg": "Carga (kg)",
+  "sessionRepsOutOfRange": "De 0 a 1000",
+  "sessionLoadOutOfRange": "De 0 a 1000 kg",
   "sessionMarkDone": "Registar série",
   "sessionSetDone": "Registada",
   "sessionRestTitle": "Descanso",

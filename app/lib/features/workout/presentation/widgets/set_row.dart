@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/design_system/design_system.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../shared/domain/plan.dart';
+import '../../domain/set_input.dart';
 import '../../domain/today.dart';
 import '../../domain/workout_event.dart';
 import '../prescription_format.dart';
@@ -43,6 +44,10 @@ class _SetRowState extends State<SetRow> {
   bool _loadInitialized = false;
   bool _saving = false;
 
+  /// Resultado da última tentativa de registrar: campo fora do limite fica
+  /// marcado até o aluno mexer nele de novo.
+  SetInput? _rejected;
+
   /// Reps sai da prescrição: é o que o professor mandou fazer. O topo da
   /// faixa é o alvo — quem não alcançar, corrige para baixo.
   String get _initialReps {
@@ -78,15 +83,27 @@ class _SetRowState extends State<SetRow> {
     super.dispose();
   }
 
-  Future<void> _submit({String? revises, int? reps, double? load}) async {
+  /// Registro da série pendente: só sai se os campos estiverem dentro do
+  /// que o servidor aceita (A9 — rejeitado some da fila sem aviso).
+  Future<void> _logPending() async {
+    final input = SetInput.parse(reps: _reps.text, load: _load.text);
+    if (!input.isValid) {
+      setState(() => _rejected = input);
+      return;
+    }
+    if (_rejected != null) setState(() => _rejected = null);
+    await _submit(reps: input.reps, load: input.load);
+  }
+
+  Future<void> _submit({
+    required int? reps,
+    required double? load,
+    String? revises,
+  }) async {
     if (_saving) return;
     setState(() => _saving = true);
     try {
-      await widget.onLog(
-        reps ?? int.tryParse(_reps.text.trim()),
-        load ?? double.tryParse(_load.text.trim().replaceAll(',', '.')),
-        revises,
-      );
+      await widget.onLog(reps, load, revises);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -107,11 +124,20 @@ class _SetRowState extends State<SetRow> {
           setNo: widget.setNo,
           logged: logged,
           saving: _saving,
-          onLog: () => _submit(),
+          onLog: _logPending,
           onFix: () => _openFix(logged!),
         );
         final content = logged == null
-            ? _Inputs(reps: _reps, load: _load, saving: _saving)
+            ? _Inputs(
+                reps: _reps,
+                load: _load,
+                saving: _saving,
+                repsInvalid: _rejected?.repsInvalid ?? false,
+                loadInvalid: _rejected?.loadInvalid ?? false,
+                onChanged: () {
+                  if (_rejected != null) setState(() => _rejected = null);
+                },
+              )
             : _LoggedSummary(log: logged);
 
         return Padding(
@@ -228,21 +254,49 @@ class _ActionButton extends StatelessWidget {
 }
 
 class _Inputs extends StatelessWidget {
-  const _Inputs({required this.reps, required this.load, required this.saving});
+  const _Inputs({
+    required this.reps,
+    required this.load,
+    required this.saving,
+    required this.repsInvalid,
+    required this.loadInvalid,
+    required this.onChanged,
+  });
 
   final TextEditingController reps;
   final TextEditingController load;
   final bool saving;
+  final bool repsInvalid;
+  final bool loadInvalid;
+  final VoidCallback onChanged;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: _NumberField(controller: reps, label: l10n.sessionReps, enabled: !saving)),
+        Expanded(
+          child: _NumberField(
+            controller: reps,
+            label: l10n.sessionReps,
+            enabled: !saving,
+            errorText: repsInvalid ? l10n.sessionRepsOutOfRange : null,
+            onChanged: onChanged,
+          ),
+        ),
         const SizedBox(width: LySpace.x2),
-        Expanded(child: _NumberField(controller: load, label: l10n.sessionLoadKg, enabled: !saving, decimal: true)),
+        Expanded(
+          child: _NumberField(
+            controller: load,
+            label: l10n.sessionLoadKg,
+            enabled: !saving,
+            decimal: true,
+            errorText: loadInvalid ? l10n.sessionLoadOutOfRange : null,
+            onChanged: onChanged,
+          ),
+        ),
       ],
     );
   }
@@ -254,12 +308,16 @@ class _NumberField extends StatelessWidget {
     required this.label,
     this.enabled = true,
     this.decimal = false,
+    this.errorText,
+    this.onChanged,
   });
 
   final TextEditingController controller;
   final String label;
   final bool enabled;
   final bool decimal;
+  final String? errorText;
+  final VoidCallback? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -268,6 +326,7 @@ class _NumberField extends StatelessWidget {
     return TextField(
       controller: controller,
       enabled: enabled,
+      onChanged: onChanged == null ? null : (_) => onChanged!(),
       keyboardType: TextInputType.numberWithOptions(decimal: decimal),
       inputFormatters: [
         FilteringTextInputFormatter.allow(
@@ -278,6 +337,8 @@ class _NumberField extends StatelessWidget {
       style: LyType.numeric(c.textPrimary, size: 16),
       decoration: InputDecoration(
         labelText: label,
+        errorText: errorText,
+        errorMaxLines: 2,
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: LySpace.x2,
@@ -340,11 +401,28 @@ class _FixSetDialogState extends State<_FixSetDialog> {
         : formatLoad(widget.logged.loadKg!, widget.locale),
   );
 
+  SetInput? _rejected;
+
   @override
   void dispose() {
     _reps.dispose();
     _load.dispose();
     super.dispose();
+  }
+
+  /// Correção fora do limite não fecha o diálogo: é exatamente o caso do
+  /// A9, em que o servidor descartaria a correção e as seguintes.
+  void _save() {
+    final input = SetInput.parse(reps: _reps.text, load: _load.text);
+    if (!input.isValid) {
+      setState(() => _rejected = input);
+      return;
+    }
+    Navigator.of(context).pop((input.reps, input.load));
+  }
+
+  void _clearError() {
+    if (_rejected != null) setState(() => _rejected = null);
   }
 
   @override
@@ -355,14 +433,28 @@ class _FixSetDialogState extends State<_FixSetDialog> {
       title: Text(l10n.sessionEditSet(widget.setNo)),
       content: Row(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(child: _NumberField(controller: _reps, label: l10n.sessionReps)),
+          Expanded(
+            child: _NumberField(
+              controller: _reps,
+              label: l10n.sessionReps,
+              errorText: (_rejected?.repsInvalid ?? false)
+                  ? l10n.sessionRepsOutOfRange
+                  : null,
+              onChanged: _clearError,
+            ),
+          ),
           const SizedBox(width: LySpace.x3),
           Expanded(
             child: _NumberField(
               controller: _load,
               label: l10n.sessionLoadKg,
               decimal: true,
+              errorText: (_rejected?.loadInvalid ?? false)
+                  ? l10n.sessionLoadOutOfRange
+                  : null,
+              onChanged: _clearError,
             ),
           ),
         ],
@@ -373,12 +465,7 @@ class _FixSetDialogState extends State<_FixSetDialog> {
           child: Text(l10n.commonCancel),
         ),
         TextButton(
-          onPressed: () => Navigator.of(context).pop(
-            (
-              int.tryParse(_reps.text.trim()),
-              double.tryParse(_load.text.trim().replaceAll(',', '.')),
-            ),
-          ),
+          onPressed: _save,
           child: Text(l10n.commonSave),
         ),
       ],

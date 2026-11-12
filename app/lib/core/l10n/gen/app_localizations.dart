@@ -1323,6 +1323,18 @@ abstract class AppLocalizations {
   /// **'Carga (kg)'**
   String get sessionLoadKg;
 
+  /// Erro do campo de repetições fora do limite aceito pelo servidor (0–1000).
+  ///
+  /// In pt, this message translates to:
+  /// **'De 0 a 1.000'**
+  String get sessionRepsOutOfRange;
+
+  /// Erro do campo de carga inválida ou fora do limite aceito pelo servidor (0–1000 kg).
+  ///
+  /// In pt, this message translates to:
+  /// **'De 0 a 1.000 kg'**
+  String get sessionLoadOutOfRange;
+
   /// Ação que grava a série executada.
   ///
   /// In pt, this message translates to:
