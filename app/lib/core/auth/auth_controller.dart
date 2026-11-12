@@ -46,7 +46,15 @@ class AuthController extends Notifier<AuthState> {
   }
 
   Future<void> _restoreSession() async {
-    final stored = await _tokenStorage.readSession();
+    final StoredSession? stored;
+    try {
+      stored = await _tokenStorage.readSession();
+    } catch (_) {
+      // Armazenamento ilegível não pode prender o app no splash (A10): sem
+      // sessão legível, o caminho é o login.
+      state = const AuthState.unauthenticated();
+      return;
+    }
     if (stored == null) {
       state = const AuthState.unauthenticated();
       return;

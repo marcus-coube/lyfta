@@ -6,6 +6,8 @@ import 'package:lyfta/core/auth/auth_state.dart';
 import 'package:lyfta/core/design_system/design_system.dart';
 import 'package:lyfta/core/l10n/gen/app_localizations.dart';
 import 'package:lyfta/core/router/app_router.dart';
+import 'package:lyfta/features/auth/presentation/login_screen.dart';
+import 'package:lyfta/features/auth/presentation/splash_screen.dart';
 import 'package:lyfta/features/dashboard/data/dashboard_repository.dart';
 import 'package:lyfta/features/students/presentation/students_controller.dart';
 import 'package:lyfta/features/workout/data/sync_worker.dart';
@@ -49,9 +51,19 @@ class _IdleSync extends SyncWorker {
   SyncState build() => const SyncState();
 }
 
-ProviderContainer _container() {
+/// Sessão guardada ainda sendo revalidada: o status fica `unknown` até o
+/// teste decidir como a revalidação termina.
+class _PendingAuth extends AuthController {
+  @override
+  AuthState build() => const AuthState.unknown();
+
+  void resolveSignedOut() => state = const AuthState.unauthenticated();
+}
+
+ProviderContainer _container({bool pendingAuth = false}) {
   return ProviderContainer(
     overrides: [
+      if (pendingAuth) authControllerProvider.overrideWith(_PendingAuth.new),
       studentsProvider.overrideWith(_EmptyStudents.new),
       dashboardRepositoryProvider.overrideWithValue(FakeDashboardRepository()),
       todayControllerProvider.overrideWith(_NoPlanToday.new),
@@ -76,11 +88,16 @@ Widget _app(ProviderContainer container) {
 
 void main() {
   testWidgets('sem sessão, rota protegida redireciona para /login', (tester) async {
-    final container = _container();
+    // O secure storage não responde em teste: a revalidação termina "sem
+    // sessão" pela mão do teste.
+    final container = _container(pendingAuth: true);
     addTearDown(container.dispose);
 
     container.read(appRouterProvider).go('/home');
     await tester.pumpWidget(_app(container));
+    await tester.pump();
+    (container.read(authControllerProvider.notifier) as _PendingAuth)
+        .resolveSignedOut();
     await tester.pumpAndSettle();
 
     expect(find.byType(TextButton), findsWidgets);
@@ -148,5 +165,74 @@ void main() {
     container.read(appRouterProvider).go('/login');
     await tester.pumpAndSettle();
     expect(location(), '/consent');
+  });
+
+  group('revalidando a sessão guardada (A10)', () {
+    String location(ProviderContainer container) => container
+        .read(appRouterProvider)
+        .routerDelegate
+        .currentConfiguration
+        .uri
+        .toString();
+
+    testWidgets('mostra o splash, nunca o formulário de login', (tester) async {
+      final container = _container(pendingAuth: true);
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(_app(container));
+      await tester.pump();
+
+      expect(location(container), '/splash');
+      expect(find.byType(SplashScreen), findsOneWidget);
+      expect(find.byType(LoginScreen), findsNothing);
+
+      // Revalidou: cai no app, sem passar pelo login.
+      container
+          .read(authControllerProvider.notifier)
+          .signInStub({UserRole.student});
+      await tester.pumpAndSettle();
+      expect(location(container), '/home');
+    });
+
+    testWidgets('rota protegida pedida volta depois da revalidação',
+        (tester) async {
+      final container = _container(pendingAuth: true);
+      addTearDown(container.dispose);
+
+      container.read(appRouterProvider).go('/session');
+      await tester.pumpWidget(_app(container));
+      await tester.pump();
+      expect(location(container), startsWith('/splash?from='));
+
+      container
+          .read(authControllerProvider.notifier)
+          .signInStub({UserRole.student});
+      await tester.pump();
+      expect(location(container), '/session');
+    });
+
+    testWidgets('sessão inválida termina no login', (tester) async {
+      final container = _container(pendingAuth: true);
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(_app(container));
+      await tester.pump();
+
+      (container.read(authControllerProvider.notifier) as _PendingAuth)
+          .resolveSignedOut();
+      await tester.pumpAndSettle();
+      expect(location(container), '/login');
+      expect(find.byType(LoginScreen), findsOneWidget);
+    });
+
+    testWidgets('link de convite não espera a revalidação', (tester) async {
+      final container = _container(pendingAuth: true);
+      addTearDown(container.dispose);
+
+      container.read(appRouterProvider).go('/invite?token=abc');
+      await tester.pumpWidget(_app(container));
+      await tester.pump();
+      expect(location(container), '/invite?token=abc');
+    });
   });
 }

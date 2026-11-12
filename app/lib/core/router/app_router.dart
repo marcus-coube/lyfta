@@ -8,6 +8,7 @@ import '../../features/auth/presentation/invite_accept_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/reset_password_screen.dart';
 import '../../features/auth/presentation/signup_screen.dart';
+import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/billing/presentation/my_invoices_screen.dart';
 import '../../features/builder/presentation/plan_builder_screen.dart';
 import '../../features/chat/presentation/chat_screen.dart';
@@ -25,20 +26,39 @@ import '../auth/auth_state.dart';
 /// Rotas públicas — acessíveis mesmo sem sessão.
 const _publicPaths = {'/login', '/signup', '/invite', '/forgot', '/reset'};
 
+/// Tela de espera da revalidação da sessão guardada (A10).
+const _splashPath = '/splash';
+
 /// Router único do app. Redirect central decide:
-/// - sem sessão (ou status ainda desconhecido) fora de rota pública → `/login`;
+/// - status ainda desconhecido (sessão guardada sendo revalidada) → `/splash`,
+///   lembrando em `?from=` a rota protegida pedida (recarregar a página na
+///   web volta para ela); rotas públicas além de `/login` seguem abertas;
+/// - sem sessão fora de rota pública → `/login`;
 /// - sessão ativa em rota pública (ex.: usuário volta para `/login` já
 ///   logado) → `/home`;
 /// - autenticado sem consentimento vigente → `/consent` (ADR-008 §1);
 /// - `/home` escolhe o shell pelo [ActiveContext] atual (coach × student).
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: _splashPath,
     debugLogDiagnostics: kDebugMode,
     refreshListenable: _AuthChangeNotifier(ref),
     redirect: (context, state) {
       final authState = ref.read(authControllerProvider);
-      final isPublic = _publicPaths.contains(state.matchedLocation);
+      final location = state.matchedLocation;
+      final isPublic = _publicPaths.contains(location);
+      final onSplash = location == _splashPath;
+
+      if (authState.status == AuthStatus.unknown) {
+        // Convite, cadastro e reset abertos por link não dependem da sessão
+        // guardada; `/login` e as rotas protegidas esperam a revalidação.
+        if (onSplash || (isPublic && location != '/login')) return null;
+        final from = state.uri.toString();
+        return isPublic || from == '/home'
+            ? _splashPath
+            : Uri(path: _splashPath, queryParameters: {'from': from})
+                .toString();
+      }
 
       if (authState.status == AuthStatus.authenticated) {
         // Gate de consentimento (ADR-008 §1, P4.5): sem consentimento vigente
@@ -47,6 +67,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         final onConsent = state.matchedLocation == '/consent';
         if (authState.consentPending) return onConsent ? null : '/consent';
         if (onConsent) return '/home';
+        if (onSplash) {
+          return _safeFrom(state.uri.queryParameters['from']) ?? '/home';
+        }
         // Convite aberto por quem já está logado (outra conta no mesmo
         // aparelho/navegador): mostra o convite em vez de ignorá-lo — a tela
         // avisa que ativar troca de conta (E2E P4.4).
@@ -57,10 +80,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return isPublic ? '/home' : null;
       }
 
-      // unknown ou unauthenticated: só rotas públicas são permitidas.
+      // unauthenticated: só rotas públicas são permitidas.
       return isPublic ? null : '/login';
     },
     routes: [
+      GoRoute(
+        path: _splashPath,
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
@@ -174,6 +201,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+/// Só caminho interno do próprio app volta do `?from=` — nunca URL absoluta,
+/// `//host` nem o próprio splash.
+String? _safeFrom(String? from) {
+  if (from == null || !from.startsWith('/') || from.startsWith('//')) {
+    return null;
+  }
+  if (Uri.tryParse(from)?.path == _splashPath) return null;
+  return from;
+}
 
 /// Ponte entre `Riverpod` (estado de auth) e `Listenable` (o que `go_router`
 /// espera em `refreshListenable`) — reavalia o redirect a cada mudança de
