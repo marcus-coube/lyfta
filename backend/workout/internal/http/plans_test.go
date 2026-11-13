@@ -2,7 +2,9 @@ package http_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -51,6 +53,7 @@ type apiPlan struct {
 						TargetUnit   string   `json:"target_unit"`
 						TargetValue  *float64 `json:"target_value"`
 						RestSeconds  *int     `json:"rest_seconds"`
+						Label        *string  `json:"label"`
 					} `json:"sets"`
 				} `json:"exercises"`
 			} `json:"blocks"`
@@ -410,6 +413,86 @@ func TestDraftValidation(t *testing.T) {
 			t.Fatalf("esperava validation_error em student_id, veio %d %s", rec.Code, rec.Body.String())
 		}
 	})
+}
+
+// clusterBody é um dia com um bloco cluster cuja 1ª série leva rótulo.
+func clusterBody(exerciseID string, label any) map[string]any {
+	return map[string]any{"days": []map[string]any{{
+		"label": "A",
+		"blocks": []map[string]any{{
+			"block_type": "cluster", "rest_seconds": 20,
+			"exercises": []map[string]any{{
+				"exercise_id": exerciseID,
+				"sets": []map[string]any{
+					{"reps_min": 2, "reps_max": 2, "label": label},
+					{"reps_min": 2, "reps_max": 2},
+				},
+			}},
+		}},
+	}}}
+}
+
+// TestClusterAndSetLabel é o Aceite do P9.1 pela API: bloco cluster com série
+// rotulada publica e volta no GET do plano e no /me/plan; rótulo em branco
+// vira ausência de rótulo.
+func TestClusterAndSetLabel(t *testing.T) {
+	a := builderFixture(t)
+	planID := createPlan(t, a, a.coach)
+
+	rec := do(t, a.handler, http.MethodPut, "/v1/plans/"+planID+"/draft", a.coach,
+		clusterBody(a.exerciseID, "  Aquecimento "))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("salvar rascunho: %d %s", rec.Code, rec.Body.String())
+	}
+	if rec = do(t, a.handler, http.MethodPost, "/v1/plans/"+planID+"/publish", a.coach, nil); rec.Code != http.StatusOK {
+		t.Fatalf("publicar: %d %s", rec.Code, rec.Body.String())
+	}
+
+	for name, path := range map[string]struct{ url, token string }{
+		"coach": {"/v1/plans/" + planID, a.coach},
+		"aluno": {"/v1/me/plan", a.student},
+	} {
+		rec = do(t, a.handler, http.MethodGet, path.url, path.token, nil)
+		if rec.Code != http.StatusOK {
+			t.Fatalf("%s lendo plano: %d %s", name, rec.Code, rec.Body.String())
+		}
+		block := decodePlanBody(t, rec.Body.Bytes()).Version.Days[0].Blocks[0]
+		if block.BlockType != "cluster" {
+			t.Fatalf("%s: esperava bloco cluster, veio %q", name, block.BlockType)
+		}
+		sets := block.Exercises[0].Sets
+		if sets[0].Label == nil || *sets[0].Label != "Aquecimento" || sets[1].Label != nil {
+			t.Fatalf("%s: rótulo não voltou como esperado: %+v", name, sets)
+		}
+	}
+
+	// Rótulo em branco = null (vale para o rascunho seguinte).
+	rec = do(t, a.handler, http.MethodPut, "/v1/plans/"+planID+"/draft", a.coach, clusterBody(a.exerciseID, "   "))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("salvar rascunho com rótulo em branco: %d %s", rec.Code, rec.Body.String())
+	}
+	if got := decodePlanBody(t, rec.Body.Bytes()).Version.Days[0].Blocks[0].Exercises[0].Sets[0].Label; got != nil {
+		t.Fatalf("rótulo em branco deveria virar null, veio %q", *got)
+	}
+}
+
+func TestSetLabelTooLong(t *testing.T) {
+	a := builderFixture(t)
+	planID := createPlan(t, a, a.coach)
+
+	// 24 caracteres (multibyte inclusive) passa; 25 é validation_error no campo.
+	ok := strings.Repeat("é", 24)
+	if rec := do(t, a.handler, http.MethodPut, "/v1/plans/"+planID+"/draft", a.coach, clusterBody(a.exerciseID, ok)); rec.Code != http.StatusOK {
+		t.Fatalf("24 caracteres deveria passar: %d %s", rec.Code, rec.Body.String())
+	}
+	rec := do(t, a.handler, http.MethodPut, "/v1/plans/"+planID+"/draft", a.coach,
+		clusterBody(a.exerciseID, strings.Repeat("a", 25)))
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("esperava 400, veio %d %s", rec.Code, rec.Body.String())
+	}
+	if e := decodeError(t, rec); e.Code != "validation_error" || !strings.HasSuffix(fmt.Sprint(e.Params["field"]), ".label") {
+		t.Fatalf("esperava validation_error em ...label, veio %+v", e)
+	}
 }
 
 func createPlan(t *testing.T, a builderActors, token string) string {

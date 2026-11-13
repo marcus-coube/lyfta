@@ -152,7 +152,7 @@ func (h planView) daysToDTO(ctx context.Context, tenantID string, days []domain.
 					set := setDTO{
 						ID: s.ID, SetNo: s.SetNo, RepsMin: s.RepsMin, RepsMax: s.RepsMax,
 						TargetLoadKg: s.TargetLoadKg, TargetValue: s.TargetValue,
-						RestSeconds: s.RestSeconds, Tempo: s.Tempo,
+						RestSeconds: s.RestSeconds, Tempo: s.Tempo, Label: s.Label,
 					}
 					if s.TargetUnit != nil {
 						set.TargetUnit = string(*s.TargetUnit)

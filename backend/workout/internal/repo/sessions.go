@@ -540,7 +540,8 @@ const daySnapshotQuery = `
 	                                   'target_unit', ps.target_unit,
 	                                   'target_value', ps.target_value,
 	                                   'rest_seconds', ps.rest_seconds,
-	                                   'tempo', ps.tempo
+	                                   'tempo', ps.tempo,
+	                                   'label', ps.label
 	                               ) ORDER BY ps.set_no)
 	                               FROM prescribed_sets ps WHERE ps.block_exercise_id = be.id
 	                           ), '[]'::jsonb)

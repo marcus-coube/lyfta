@@ -190,15 +190,15 @@ func (r *PlanRepo) AddPrescribedSet(ctx context.Context, s domain.PrescribedSet)
 	err = WithTenant(ctx, r.pool, s.TenantID, func(tx pgx.Tx) error {
 		const q = `
 			INSERT INTO prescribed_sets (id, tenant_id, block_exercise_id, set_no, reps_min, reps_max,
-			                             target_load_kg, target_unit, target_value, rest_seconds, tempo)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`
+			                             target_load_kg, target_unit, target_value, rest_seconds, tempo, label)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
 		var unit any
 		if s.TargetUnit != nil {
 			unit = string(*s.TargetUnit)
 		}
 		_, execErr := tx.Exec(ctx, q,
 			s.ID, s.TenantID, s.BlockExerciseID, s.SetNo, s.RepsMin, s.RepsMax,
-			s.TargetLoadKg, unit, s.TargetValue, s.RestSeconds, nullString(s.Tempo),
+			s.TargetLoadKg, unit, s.TargetValue, s.RestSeconds, nullString(s.Tempo), s.Label,
 		)
 		return execErr
 	})
@@ -356,7 +356,7 @@ func versionTreeTx(ctx context.Context, tx pgx.Tx, versionID string) ([]domain.D
 
 		const qSets = `
 			SELECT ps.id, ps.tenant_id, ps.block_exercise_id, ps.set_no, ps.reps_min, ps.reps_max,
-			       ps.target_load_kg, ps.target_unit, ps.target_value, ps.rest_seconds, COALESCE(ps.tempo, '')
+			       ps.target_load_kg, ps.target_unit, ps.target_value, ps.rest_seconds, COALESCE(ps.tempo, ''), ps.label
 			FROM prescribed_sets ps
 			JOIN block_exercises be ON be.id = ps.block_exercise_id
 			JOIN workout_blocks b ON b.id = be.block_id
@@ -370,7 +370,7 @@ func versionTreeTx(ctx context.Context, tx pgx.Tx, versionID string) ([]domain.D
 		for rows.Next() {
 			var st domain.PrescribedSet
 			if err := rows.Scan(&st.ID, &st.TenantID, &st.BlockExerciseID, &st.SetNo, &st.RepsMin, &st.RepsMax,
-				&st.TargetLoadKg, &st.TargetUnit, &st.TargetValue, &st.RestSeconds, &st.Tempo); err != nil {
+				&st.TargetLoadKg, &st.TargetUnit, &st.TargetValue, &st.RestSeconds, &st.Tempo, &st.Label); err != nil {
 				rows.Close()
 				return err
 			}
@@ -691,10 +691,10 @@ func insertTreeTx(ctx context.Context, tx pgx.Tx, tenantID, versionID string, da
 					}
 					if _, err := tx.Exec(ctx, `
 						INSERT INTO prescribed_sets (id, tenant_id, block_exercise_id, set_no, reps_min, reps_max,
-						                             target_load_kg, target_unit, target_value, rest_seconds, tempo)
-						VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+						                             target_load_kg, target_unit, target_value, rest_seconds, tempo, label)
+						VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
 						set.ID, set.TenantID, set.BlockExerciseID, set.SetNo, set.RepsMin, set.RepsMax,
-						set.TargetLoadKg, unit, set.TargetValue, set.RestSeconds, nullString(set.Tempo)); err != nil {
+						set.TargetLoadKg, unit, set.TargetValue, set.RestSeconds, nullString(set.Tempo), set.Label); err != nil {
 						return nil, err
 					}
 					be.Sets = append(be.Sets, set)

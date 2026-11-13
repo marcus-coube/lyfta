@@ -28,6 +28,7 @@ const (
 	BlockTypeSuperset  BlockType = "superset"
 	BlockTypeDropset   BlockType = "dropset"
 	BlockTypeRestPause BlockType = "rest_pause"
+	BlockTypeCluster   BlockType = "cluster"
 	BlockTypeCircuit   BlockType = "circuit"
 )
 
@@ -127,6 +128,8 @@ type PrescribedSet struct {
 	TargetValue     *float64
 	RestSeconds     *int
 	Tempo           string
+	// Label é o rótulo livre do coach ("Aquecimento"), até 24 caracteres (ADR-019).
+	Label *string
 }
 
 // PlanSummary é a linha da lista de planos de um aluno: o plano com o resumo
@@ -145,7 +148,7 @@ type PlanSummary struct {
 // IsValidBlockType diz se o tipo de bloco pertence ao CHECK da tabela.
 func IsValidBlockType(v BlockType) bool {
 	switch v {
-	case BlockTypeStraight, BlockTypeSuperset, BlockTypeDropset, BlockTypeRestPause, BlockTypeCircuit:
+	case BlockTypeStraight, BlockTypeSuperset, BlockTypeDropset, BlockTypeRestPause, BlockTypeCircuit, BlockTypeCluster:
 		return true
 	default:
 		return false

@@ -2,6 +2,7 @@ package repo_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"testing"
 	"time"
@@ -437,5 +438,82 @@ func TestOverrideNextDay(t *testing.T) {
 	}
 	if got := f.nextDayLabel(t); got != "A" {
 		t.Fatalf("depois do C a rotação volta ao A, veio %q", got)
+	}
+}
+
+// TestSnapshotCarriesClusterAndLabel é o Aceite do P9.1 no repositório: o
+// bloco cluster e o rótulo da série são gravados, lidos de volta na árvore
+// publicada e congelados no snapshot da sessão (ADR-019 §4).
+func TestSnapshotCarriesClusterAndLabel(t *testing.T) {
+	pool := testPool(t)
+	ctx := context.Background()
+	tenantID, studentID := newTenant(), uuid.NewString()
+	plans := repo.NewPlanRepo(pool)
+	sessions := repo.NewSessionRepo(pool)
+	exercise := seedExercise(t, pool, tenantID)
+	plan := newPlan(t, plans, tenantID, studentID, uuid.NewString())
+
+	label := "Aquecimento"
+	days := []domain.Day{{
+		Label: "A", Title: "Treino A",
+		Blocks: []domain.Block{{
+			BlockType: domain.BlockTypeCluster, RestSeconds: 20,
+			Exercises: []domain.BlockExercise{{
+				ExerciseID: exercise.ID,
+				Sets: []domain.PrescribedSet{
+					{RepsMin: intPtr(2), RepsMax: intPtr(2), Label: &label},
+					{RepsMin: intPtr(2), RepsMax: intPtr(2)},
+				},
+			}},
+		}},
+	}}
+	if _, _, err := plans.ReplaceDraft(ctx, tenantID, plan.ID, "", days); err != nil {
+		t.Fatalf("gravar rascunho: %v", err)
+	}
+	version, _, err := plans.PublishDraft(ctx, tenantID, plan.ID, "")
+	if err != nil {
+		t.Fatalf("publicar: %v", err)
+	}
+	tree, err := plans.GetVersionTree(ctx, tenantID, version.ID)
+	if err != nil {
+		t.Fatalf("ler árvore: %v", err)
+	}
+	block := tree[0].Blocks[0]
+	if block.BlockType != domain.BlockTypeCluster {
+		t.Fatalf("esperava bloco cluster, veio %q", block.BlockType)
+	}
+	sets := block.Exercises[0].Sets
+	if sets[0].Label == nil || *sets[0].Label != label || sets[1].Label != nil {
+		t.Fatalf("rótulo não voltou da árvore: %+v", sets)
+	}
+
+	res, err := sessions.ApplyEvents(ctx, tenantID, studentID, []domain.SyncEvent{{
+		ClientID: uuid.NewString(), Type: domain.SyncEventSessionStart,
+		PerformedAt: time.Now(), DayID: tree[0].ID,
+	}})
+	if err != nil || res[0].Status != domain.SyncStatusAccepted {
+		t.Fatalf("iniciar sessão: %v %+v", err, res)
+	}
+	raw, err := sessions.SessionSnapshot(ctx, tenantID, studentID, res[0].SessionID)
+	if err != nil {
+		t.Fatalf("ler snapshot: %v", err)
+	}
+	var snap struct {
+		Blocks []struct {
+			BlockType string `json:"block_type"`
+			Exercises []struct {
+				Sets []struct {
+					Label *string `json:"label"`
+				} `json:"sets"`
+			} `json:"exercises"`
+		} `json:"blocks"`
+	}
+	if err := json.Unmarshal(raw, &snap); err != nil {
+		t.Fatalf("decodificar snapshot: %v (%s)", err, raw)
+	}
+	b := snap.Blocks[0]
+	if b.BlockType != "cluster" || b.Exercises[0].Sets[0].Label == nil ||
+		*b.Exercises[0].Sets[0].Label != label || b.Exercises[0].Sets[1].Label != nil {
+		t.Fatalf("snapshot sem cluster/rótulo: %s", raw)
 	}
 }

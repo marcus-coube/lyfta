@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -44,6 +45,7 @@ const (
 	maxDayTitleLen       = 120
 	maxNotesLen          = 500
 	maxTempoLen          = 16
+	maxLabelLen          = 24
 	maxDays              = 14
 	maxBlocksPerDay      = 30
 	maxExercisesPerBlock = 12
@@ -68,6 +70,7 @@ type setDTO struct {
 	TargetValue  *float64 `json:"target_value"`
 	RestSeconds  *int     `json:"rest_seconds"`
 	Tempo        string   `json:"tempo,omitempty"`
+	Label        *string  `json:"label,omitempty"`
 }
 
 type blockExerciseDTO struct {
@@ -639,6 +642,15 @@ func parseSet(s setDTO, prefix string) (domain.PrescribedSet, *APIError) {
 	}
 	if len(set.Tempo) > maxTempoLen {
 		return domain.PrescribedSet{}, fail(prefix + ".tempo")
+	}
+	if s.Label != nil {
+		// Vazio (ou só espaços) = sem rótulo; o limite conta caracteres, não bytes.
+		if label := strings.TrimSpace(*s.Label); label != "" {
+			if utf8.RuneCountInString(label) > maxLabelLen {
+				return domain.PrescribedSet{}, fail(prefix + ".label")
+			}
+			set.Label = &label
+		}
 	}
 
 	if unit := domain.TargetUnit(strings.TrimSpace(s.TargetUnit)); unit != "" {

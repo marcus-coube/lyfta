@@ -12,7 +12,7 @@ Refs normativas: ADR-004, ADR-018, [ADR-019](../../adr/ADR-019-prescricao-cluste
 
 ---
 
-## - [ ] P9.1 Cluster e rótulo por série (workout)
+## - [x] P9.1 Cluster e rótulo por série (workout)
 
 **Objetivo:** servidor aceita `cluster` e `label` e os entrega ao aluno.
 **Decisões:** D1, D2.
@@ -128,3 +128,19 @@ chips e modal; treino straight sem rótulo fica idêntico ao 2.0.
 ## Notas de execução
 
 (o agente anota aqui descobertas, dívidas e desvios aprovados)
+
+**P9.1 (2026-11-13)**
+- CHECK de `block_type` confirmado no banco: `workout_blocks_block_type_check`
+  (nome gerado). A 0021 troca por constraint de mesmo nome; o rótulo ganhou
+  `prescribed_sets_label_len`. `down` recusa rodar com bloco `cluster`
+  (testado: up → down → up).
+- Rótulo inválido (> 24 caracteres, contados em runas) responde **400**
+  `validation_error` com `params.field = ...label`, o padrão de todos os campos
+  do builder (o plano diz "422"; 422 aqui é só `unknown_exercise`). Vazio ou só
+  espaços vira `null`.
+- Os pontos de gravação eram dois `INSERT` (`AddPrescribedSet`, `insertTreeTx`);
+  `versionTreeTx` é a leitura e também ganhou `label`. Aplicar modelo, duplicar
+  e salvar como modelo passam por leitura + `insertTreeTx`.
+- Passo 6 (tempo), **para a P9.3**: o servidor já grava/devolve `tempo`; o
+  `PrescribedSet` do app precisa modelar o campo e devolvê-lo no `PUT .../draft`
+  (hoje a cadência se perde a cada salvamento). Nada mudou no servidor.
