@@ -214,6 +214,11 @@ func (h *HistoryHandler) StudentSession(w http.ResponseWriter, r *http.Request) 
 		coachSessionDTO: coachSessionFromSummary(detail.Summary),
 		Blocks:          make([]coachBlockDTO, 0, len(snap.Blocks)),
 	}
+	// O app numera o set_no de forma contínua por exercício dentro da sessão
+	// (`TodayData.runs`/`setNoOffset`): um exercício que reaparece em outro
+	// bloco do dia loga a partir de offset+1. O casamento com o log segue a
+	// mesma numeração; o `set_no` exibido continua o do snapshot.
+	used := make(map[string]int, len(ids))
 	for _, b := range snap.Blocks {
 		block := coachBlockDTO{BlockType: b.BlockType, Exercises: make([]coachExerciseDTO, 0, len(b.Exercises))}
 		for _, e := range b.Exercises {
@@ -222,7 +227,9 @@ func (h *HistoryHandler) StudentSession(w http.ResponseWriter, r *http.Request) 
 				name = ex.DisplayName
 			}
 			exercise := coachExerciseDTO{ExerciseID: e.ExerciseID, Name: name, Sets: make([]coachSetDTO, 0, len(e.Sets))}
-			for _, s := range e.Sets {
+			offset := used[e.ExerciseID]
+			used[e.ExerciseID] = offset + len(e.Sets)
+			for i, s := range e.Sets {
 				set := coachSetDTO{
 					SetNo: s.SetNo, Label: s.Label,
 					Prescribed: coachPrescribedDTO{
@@ -233,7 +240,7 @@ func (h *HistoryHandler) StudentSession(w http.ResponseWriter, r *http.Request) 
 				if s.Variation != nil {
 					set.VariationName = &s.Variation.Name
 				}
-				if l, ok := done[setKey{e.ExerciseID, s.SetNo}]; ok {
+				if l, ok := done[setKey{e.ExerciseID, offset + i + 1}]; ok {
 					set.Done = &coachDoneDTO{
 						RepsDone: l.RepsDone, LoadKg: l.LoadKg, RPE: l.RPE,
 						PerformedAt: l.PerformedAt, Revised: l.Revises != nil,

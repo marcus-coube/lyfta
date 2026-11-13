@@ -162,3 +162,46 @@ func TestCoachSessionNotFound(t *testing.T) {
 		t.Errorf("lookup vazio deveria ser 400: %d", rec.Code)
 	}
 }
+
+// TestCoachSessionDetailRepeatedExercise: o mesmo exercício em dois blocos do
+// dia loga 1–2 e 3–4 (set_no contínuo, como o app); cada bloco do detalhe
+// recebe as próprias cargas.
+func TestCoachSessionDetailRepeatedExercise(t *testing.T) {
+	a := builderFixture(t)
+	planID := createPlan(t, a, a.coach)
+	body := draftBody(a.exerciseID, "A")
+	day := body["days"].([]map[string]any)[0]
+	blocks := day["blocks"].([]map[string]any)
+	day["blocks"] = []map[string]any{blocks[0], blocks[0]}
+	if rec := do(t, a.handler, http.MethodPut, "/v1/plans/"+planID+"/draft", a.coach, body); rec.Code != http.StatusOK {
+		t.Fatalf("salvar rascunho: %d %s", rec.Code, rec.Body.String())
+	}
+	if rec := do(t, a.handler, http.MethodPost, "/v1/plans/"+planID+"/publish", a.coach, nil); rec.Code != http.StatusOK {
+		t.Fatalf("publicar: %d %s", rec.Code, rec.Body.String())
+	}
+	today := decodeToday(t, do(t, a.handler, http.MethodGet, "/v1/me/today", a.student, nil))
+	batch := newWorkoutBatch(today.Day.ID, a.exerciseID, 20, 22, 40, 42)
+	if rec := do(t, a.handler, http.MethodPost, "/v1/sync/workout-logs", a.student, batch.body()); rec.Code != http.StatusOK {
+		t.Fatalf("sincronizar: %d %s", rec.Code, rec.Body.String())
+	}
+
+	var detail apiCoachSession
+	rec := do(t, a.handler, http.MethodGet, "/v1/students/"+a.studentID+"/sessions/"+batch.sessionClient, a.coach, nil)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("detalhe: %d %s", rec.Code, rec.Body.String())
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &detail); err != nil || len(detail.Blocks) != 2 {
+		t.Fatalf("decodificar detalhe: %v %s", err, rec.Body.String())
+	}
+	want := [][]float64{{20, 22}, {40, 42}}
+	for bi, b := range detail.Blocks {
+		for si, s := range b.Exercises[0].Sets {
+			if s.Done == nil || s.Done.LoadKg == nil || *s.Done.LoadKg != want[bi][si] {
+				t.Fatalf("bloco %d série %d: esperado %v, veio %+v", bi, si, want[bi][si], s.Done)
+			}
+			if s.SetNo != si+1 {
+				t.Fatalf("set_no exibido é o do snapshot: %d", s.SetNo)
+			}
+		}
+	}
+}
