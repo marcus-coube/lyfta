@@ -3,15 +3,15 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** P8.4 (em andamento, checkbox aberto: roteiro feito na API, Chrome e Android; achados A1/A2/A8/A9/A10 corrigidos; smoke do 1.0 feito no Android e no Chrome; falta refazer o APK e o build web do 2.0.0 — ver Notas da [P8](P8-dashboard.md) e [e2e-2.md](e2e-2.md)). **Fases P5, P6 e P7 fechadas.**
+**MVP 2.0 fechado (19/19) em 2026-11-12.** A `P8.4` fechou por decisão do usuário com o roteiro 2.0 e a regressão do 1.0 verdes no Android (emulador) e no Chrome, achados A1/A2/A8/A9/A10 corrigidos e artefatos `2.0.0+2` (APK release e build web), sem execução no iOS — repetir no simulador antes da primeira subida em loja (lista pré-loja do [STATUS do 1.0](../mvp1/STATUS.md)). Ver Notas da [P8](P8-dashboard.md) e [e2e-2.md](e2e-2.md); pendências que vão para o 3.0 estão lá.
 
 | Fase | Progresso | Situação |
 |---|---|---|
 | P5 — Alunos | 5/5 | fechada |
 | P6 — Builder | 5/5 | fechada |
 | P7 — Financeiro | 5/5 | fechada |
-| P8 — Dashboard e release | 3/4 | em andamento |
-| **Total** | **18/19** | |
+| P8 — Dashboard e release | 4/4 | fechada |
+| **Total** | **19/19** | |
 
 ## Bancos locais
 
@@ -62,3 +62,5 @@ Os quatro bancos do 1.0 seguem na tabela do [STATUS do 1.0](../mvp1/STATUS.md).
 | 2026-11-11 | **P8.4, rodada Android:** passos 9, 24, 25, 34, 36 e 39 pela tela e smoke do 1.0 no Android verdes (offline com correção, check-in, foto/bioimpedância, chat com imagem e queda do WS, Agenda mês/streak, pt-BR/en/pt-PT, exclusão); achado A8 (projeção da Agenda um dia atrasada após treinar) corrigido. Falta o smoke do 1.0 no Chrome |
 | 2026-11-11 | **P8.4, rodada Chrome (aluno):** smoke do 1.0 na web verde (treino com timer e correção, Agenda, logout/relogin, exclusão). Achados A9 (correção > 1.000 kg perdida sem aviso) e A10 (login visível enquanto a sessão salva é revalidada) aguardam decisão |
 | 2026-11-12 | **A9 e A10 corrigidos:** player e "Corrigir série" validam 0–1.000 reps/kg antes de registrar (nada sai para a fila fora do limite do servidor); splash enquanto a sessão salva é revalidada, com volta à rota pedida. `flutter analyze` zero, 245 testes; verificados no build web (splash ao recarregar, volta ao player, carga fora do limite barrada, aparelho e servidor iguais após correção) |
+| 2026-11-12 | **Artefatos 2.0.0+2:** versão subida (pubspec, `APP_RELEASE`, README); `flutter build apk --release` (75,5 MB) e `flutter build web --release` com a configuração padrão, sem loja (ADR-015) |
+| 2026-11-12 | **P8.4 fechada — MVP 2.0 concluído (19/19)** por decisão do usuário; iOS no simulador fica para antes da primeira subida em loja |

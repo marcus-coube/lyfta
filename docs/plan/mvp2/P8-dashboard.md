@@ -59,7 +59,7 @@ retry sem afetar os outros (teste de widget); coach não vê cards de valor.
 script de contraste (ou teste) cobre os tokens dark; itens anotados com teste
 ou verificação registrada nas Notas.
 
-## - [ ] P8.4 E2E do 2.0 e release 2.0.0
+## - [x] P8.4 E2E do 2.0 e release 2.0.0
 
 **Objetivo:** pacote validado ponta a ponta sem regredir o 1.0.
 **Passos:**
@@ -184,7 +184,11 @@ release × vai pro 3.0).
   (aluno e coach voltam) e HTTP (aluno na `/me`, coach na ficha). Sem exclusão
   de coach hoje: `created_by` de coach removido ficaria órfão (só um id).
 
-**P8.4 (Mac, 2026-11-11) — em andamento, checkbox em aberto**
+**P8.4 (Mac, 2026-11-11 → 2026-11-12) — fechada em 2026-11-12 por decisão do usuário**
+- Fechamento: roteiro 2.0 e regressão do 1.0 verdes no Android (emulador) e
+  no Chrome; achados A1, A2, A8, A9 e A10 corrigidos; artefatos `2.0.0+2`.
+  iOS no simulador fica para antes da primeira subida em loja (pendência 6,
+  lista pré-loja), como no fechamento da P4.4 do 1.0.
 - Feito: roteiro [e2e-2.md](e2e-2.md) (40 passos, colunas API/Android/Chrome/iOS);
   varredura verde (`flutter analyze` zero, 231 testes Flutter, `go vet` + `go test
   -count=1` nos 5 serviços — `backend/` só tem identity, workout, assessment,
@@ -251,16 +255,17 @@ de hoje); `buildAgendaDays` desconta um passo quando hoje tem sessão, teste
 novo em `agenda_day_test.dart`, verificado na tela. `flutter analyze` zero,
 235 testes.
 
-*Pendências — bloqueiam o release 2.0.0 (fechar a P8.4):*
+*Pendências que bloqueavam o release 2.0.0 (todas resolvidas; a 6 não bloqueia):*
 1. (A1 e A2 resolvidos acima.)
 2. (Android resolvido na rodada 3.)
 3. (Smoke do 1.0 na web feito na rodada 4, aluno pela tela.)
 4. (A9 e A10 corrigidos em 11-12 — ver [e2e-2.md](e2e-2.md) § Rodada 4:
    validação de carga/reps no player e na correção, splash durante a
    revalidação da sessão. `flutter analyze` zero, 245 testes.)
-5. **Refazer os artefatos 2.0.0** (APK release e build web) com a configuração
-   padrão, depois das correções — o `build/web` local aponta para a pilha de
-   teste (9181–9185).
+5. (Artefatos refeitos em 11-12 como `2.0.0+2` — pubspec, default de
+   `APP_RELEASE` e README: `flutter build apk --release` (75,5 MB) e
+   `flutter build web --release` com a configuração padrão (8081–8085), sem
+   loja (ADR-015).)
 6. iOS no simulador "quando disponível" — não bloqueia o APK/web, mas repetir
    antes da primeira subida para loja (segue a lista pré-loja L1-L10).
 
