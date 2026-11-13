@@ -1937,6 +1937,9 @@
   "sessionBlockDropset": "Ao terminar a série, reduza a carga e continue logo em seguida, quase sem descanso.",
   "sessionBlockRestPause": "Faça a série perto da falha, descanse poucos segundos e continue com a mesma carga.",
   "sessionBlockNow": "Agora",
+  "sessionBlockCluster": "Faça as mini-séries em sequência, com descanso curto entre elas, mantendo a mesma carga.",
+  "sessionVariationInfo": "Sobre a variação",
+  "sessionVariationClose": "Fechar",
   "homeCoachTabBilling": "Financeiro",
   "@homeCoachTabBilling": {
     "description": "Aba do professor com faturas e planos de mensalidade."

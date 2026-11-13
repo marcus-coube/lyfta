@@ -3951,6 +3951,24 @@ abstract class AppLocalizations {
   /// **'Agora'**
   String get sessionBlockNow;
 
+  /// No description provided for @sessionBlockCluster.
+  ///
+  /// In pt, this message translates to:
+  /// **'Faça as mini-séries em sequência, com descanso curto entre elas, mantendo a mesma carga.'**
+  String get sessionBlockCluster;
+
+  /// No description provided for @sessionVariationInfo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sobre a variação'**
+  String get sessionVariationInfo;
+
+  /// No description provided for @sessionVariationClose.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fechar'**
+  String get sessionVariationClose;
+
   /// Aba do professor com faturas e planos de mensalidade.
   ///
   /// In pt, this message translates to:

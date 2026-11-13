@@ -6,6 +6,7 @@ library;
 
 export 'components/ly_button.dart';
 export 'components/ly_card.dart';
+export 'components/ly_chip.dart';
 export 'components/ly_logo.dart';
 export 'components/ly_text_field.dart';
 export 'theme/ly_theme.dart';

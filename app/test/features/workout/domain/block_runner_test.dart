@@ -78,6 +78,29 @@ void main() {
     expect(r.restAfter('A', 1), const Duration(seconds: 10));
   });
 
+  test('cluster encadeia as mini-séries; descanso série ?? bloco', () {
+    final b = Block(
+      blockType: BlockType.cluster,
+      restSeconds: 90,
+      exercises: [
+        BlockExercise(
+          exerciseId: 'A',
+          sets: [
+            PrescribedSet(repsMax: 3, restSeconds: 15),
+            PrescribedSet(repsMax: 3, restSeconds: 15),
+            PrescribedSet(repsMax: 3),
+          ],
+        ),
+      ],
+    );
+    final r = BlockRunner.fromRuns(_runs(b)).single;
+    expect(r.isRounds, isFalse);
+    expect(r.isGrouped, isTrue);
+    expect(_order(r), ['A1', 'A2', 'A3']);
+    expect(r.restAfter('A', 1), const Duration(seconds: 15));
+    expect(r.restAfter('A', 3), const Duration(seconds: 90));
+  });
+
   test('straight: um runner por exercício, descanso igual ao 1.0', () {
     final b = Block(
       restSeconds: 75,

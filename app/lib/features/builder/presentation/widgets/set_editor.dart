@@ -364,14 +364,14 @@ class _SetRowState extends State<_SetRow> {
             runSpacing: LySpace.x1,
             children: [
               if (label != null && label.isNotEmpty)
-                _SetChip(
+                LyChip(
                   key: Key('set-${widget.index}-label-chip'),
                   icon: Icons.label_outline,
                   text: label,
                   color: c.warning,
                 ),
               if (variation != null)
-                _SetChip(
+                LyChip(
                   key: Key('set-${widget.index}-variation-chip'),
                   icon: Icons.tune,
                   text: variation.name,
@@ -399,49 +399,6 @@ class _SetRowState extends State<_SetRow> {
     if (choice == null || !mounted) return;
     setState(() => widget.set.variation = choice.variation);
     widget.onChanged();
-  }
-}
-
-/// Chip informativo sob a linha da série (rótulo ou variação).
-class _SetChip extends StatelessWidget {
-  const _SetChip({
-    required this.icon,
-    required this.text,
-    required this.color,
-    super.key,
-  });
-
-  final IconData icon;
-  final String text;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: LySpace.x2,
-        vertical: LySpace.x1,
-      ),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: LyRadius.pill,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: LySpace.x1),
-          Flexible(
-            child: Text(
-              text,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: LyType.caption(context.ly.textPrimary),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

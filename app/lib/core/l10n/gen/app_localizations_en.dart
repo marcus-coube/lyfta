@@ -2237,6 +2237,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sessionBlockNow => 'Now';
 
   @override
+  String get sessionBlockCluster =>
+      'Do the mini-sets back to back, with short rests between them, keeping the same weight.';
+
+  @override
+  String get sessionVariationInfo => 'About this variation';
+
+  @override
+  String get sessionVariationClose => 'Close';
+
+  @override
   String get homeCoachTabBilling => 'Billing';
 
   @override

@@ -2238,6 +2238,16 @@ class AppLocalizationsPt extends AppLocalizations {
   String get sessionBlockNow => 'Agora';
 
   @override
+  String get sessionBlockCluster =>
+      'Faça as mini-séries em sequência, com descanso curto entre elas, mantendo a mesma carga.';
+
+  @override
+  String get sessionVariationInfo => 'Sobre a variação';
+
+  @override
+  String get sessionVariationClose => 'Fechar';
+
+  @override
   String get homeCoachTabBilling => 'Financeiro';
 
   @override
@@ -5029,6 +5039,16 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get sessionBlockNow => 'Agora';
+
+  @override
+  String get sessionBlockCluster =>
+      'Faça as mini-séries em sequência, com descanso curto entre elas, mantendo a mesma carga.';
+
+  @override
+  String get sessionVariationInfo => 'Sobre a variação';
+
+  @override
+  String get sessionVariationClose => 'Fechar';
 
   @override
   String get homeCoachTabBilling => 'Financeiro';

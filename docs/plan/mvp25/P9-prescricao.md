@@ -99,7 +99,7 @@ builder mostra tudo, inclusive `tempo` preservado num plano que já o tinha;
 testes de widget do `set_editor` (rótulo, variação, copiar para as próximas) e
 da tela Variações (criar, nome duplicado vira mensagem i18n).
 
-## - [ ] P9.4 App — player: cluster e chips na série (Flutter)
+## - [x] P9.4 App — player: cluster e chips na série (Flutter)
 
 **Objetivo:** o aluno vê rótulo e variação na série e executa cluster.
 **Passos:**
@@ -196,3 +196,28 @@ chips e modal; treino straight sem rótulo fica idêntico ao 2.0.
   em Biblioteca > Variações, montar um cluster com a 1ª série "Aquecimento" e a 2ª
   com a variação, publicar, recarregar o builder e conferir; plano que já tinha
   `tempo` mantém o valor após salvar.
+- Aceite manual da P9.3 verificado no Chrome em 2026-11-13: variação criada,
+  cluster com "Aquecimento" e variação publicado, builder recarregado ok;
+  `tempo` 3010 preservado nas duas séries.
+
+**P9.4 (2026-11-13)**
+- O parse de `label`/`variation` já vinha da P9.3 (o Hoje reaproveita
+  `PrescribedSet.fromJson`); `SetVariation.fromJson` passou a tolerar `id`
+  ausente (snapshot da sessão não o traz). Nada no TodayCache nem no drift.
+- Novo componente `LyChip` (`core/design_system/components/ly_chip.dart`), o
+  chip privado do builder promovido; builder e player o usam. Com `onInfo` ganha
+  o (i) de 48 dp ao lado da pílula (sem inflar o chip). Rótulo = `warning`,
+  variação = `info`.
+- `SetRow`: faixa de chips sob a linha (pendente e registrada); sem rótulo nem
+  variação a árvore de widgets é a mesma do 2.0. (i) abre `AlertDialog` (nome +
+  descrição); variação sem descrição não tem (i).
+- `BlockRunner` não precisou de código: `cluster` já cai no ramo sequencial
+  (como dropset/rest_pause; descanso `série ?? bloco`) — só ganhou teste.
+  `block_card.dart`: `sessionBlockCluster` nas 3 ARBs (+ `sessionVariationInfo`,
+  `sessionVariationClose`). `session_player_screen`/`today_screen` já tratam
+  não-straight de forma genérica (conferido). Tela Hoje não lista séries: nada
+  mudou (passo 4).
+- **Não verificado visualmente:** player rodando (emulador/Chrome) e com a rede
+  cortada; só analyze + testes unitários/de widget. Repetir: publicar o treino
+  da P9.3, abrir o dia como aluno, conferir chip "Aquecimento", chip da variação
+  e (i), e o cluster em sequência; repetir offline.

@@ -140,9 +140,7 @@ class _SetRowState extends State<SetRow> {
               )
             : _LoggedSummary(log: logged);
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: LySpace.x3),
-          child: narrow
+        final row = narrow
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -167,6 +165,17 @@ class _SetRowState extends State<SetRow> {
                     const SizedBox(width: LySpace.x2),
                     action,
                   ],
+                );
+
+        // Sem rótulo nem variação a linha é idêntica à do 2.0.
+        final chips = _SetChips(prescribed: widget.prescribed);
+        return Padding(
+          padding: const EdgeInsets.only(bottom: LySpace.x3),
+          child: chips.isEmpty
+              ? row
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [row, chips],
                 ),
         );
       },
@@ -187,6 +196,74 @@ class _SetRowState extends State<SetRow> {
     );
     if (result == null) return;
     await _submit(revises: logged.clientId, reps: result.$1, load: result.$2);
+  }
+}
+
+/// Faixa de chips sob a linha: rótulo ("Aquecimento") e variação com (i).
+/// Tudo vem copiado no payload do Hoje, então funciona offline.
+class _SetChips extends StatelessWidget {
+  const _SetChips({required this.prescribed});
+
+  final PrescribedSet prescribed;
+
+  String? get _label {
+    final l = prescribed.label?.trim();
+    return l == null || l.isEmpty ? null : l;
+  }
+
+  bool get isEmpty => _label == null && prescribed.variation == null;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ly;
+    final l10n = AppLocalizations.of(context);
+    final label = _label;
+    final variation = prescribed.variation;
+    final hasDescription = variation != null && variation.description.trim().isNotEmpty;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: LySpace.x1),
+      child: Wrap(
+        spacing: LySpace.x2,
+        runSpacing: LySpace.x1,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          if (label != null)
+            LyChip(
+              key: const Key('set-row-label-chip'),
+              icon: Icons.label_outline,
+              text: label,
+              color: c.warning,
+            ),
+          if (variation != null)
+            LyChip(
+              key: const Key('set-row-variation-chip'),
+              icon: Icons.tune,
+              text: variation.name,
+              color: c.info,
+              infoKey: const Key('set-row-variation-info'),
+              infoTooltip: l10n.sessionVariationInfo,
+              onInfo: hasDescription
+                  ? () => showDialog<void>(
+                        context: context,
+                        builder: (dialogContext) => AlertDialog(
+                          title: Text(variation.name),
+                          content: SingleChildScrollView(
+                            child: Text(variation.description),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(dialogContext).pop(),
+                              child: Text(l10n.sessionVariationClose),
+                            ),
+                          ],
+                        ),
+                      )
+                  : null,
+            ),
+        ],
+      ),
+    );
   }
 }
 

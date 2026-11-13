@@ -220,4 +220,62 @@ void main() {
     expect(captured.load, 1000);
     expect(captured.revises, 'log-1');
   });
+
+  testWidgets('chips de rótulo e variação; (i) abre o modal com a descrição',
+      (tester) async {
+    await tester.pumpWidget(
+      _host(
+        SetRow(
+          setNo: 1,
+          prescribed: PrescribedSet(
+            repsMax: 10,
+            label: 'Aquecimento',
+            variation: const SetVariation(
+              id: 'v1',
+              name: 'Pausa no fundo',
+              description: 'Segure 2 s embaixo.',
+            ),
+          ),
+          onLog: onLog,
+        ),
+      ),
+    );
+
+    expect(find.text('Aquecimento'), findsOneWidget);
+    expect(find.text('Pausa no fundo'), findsOneWidget);
+    final size = tester.getSize(find.byKey(const Key('set-row-variation-info')));
+    expect(size.width, greaterThanOrEqualTo(48));
+    expect(size.height, greaterThanOrEqualTo(48));
+
+    await tester.tap(find.byKey(const Key('set-row-variation-info')));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Segure 2 s embaixo.'), findsOneWidget);
+    await tester.tap(find.text('Fechar'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
+  });
+
+  testWidgets('variação sem descrição não tem (i); série comum não tem chips',
+      (tester) async {
+    await tester.pumpWidget(
+      _host(
+        SetRow(
+          setNo: 1,
+          prescribed: PrescribedSet(
+            repsMax: 10,
+            variation: const SetVariation(id: 'v1', name: 'Pausa'),
+          ),
+          onLog: onLog,
+        ),
+      ),
+    );
+    expect(find.text('Pausa'), findsOneWidget);
+    expect(find.byKey(const Key('set-row-variation-info')), findsNothing);
+
+    await tester.pumpWidget(
+      _host(SetRow(setNo: 1, prescribed: PrescribedSet(repsMax: 10), onLog: onLog)),
+    );
+    expect(find.byType(LyChip), findsNothing);
+  });
 }
