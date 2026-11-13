@@ -152,6 +152,9 @@ func NewRouter(
 				// professor acompanha (P2.5).
 				r.Get("/exercises/logged", historyHandler.StudentLogged)
 				r.Get("/exercises/{exercise_id}/history", historyHandler.StudentHistory)
+				// Sessão do aluno para o check-in do professor (P11.1).
+				r.Post("/sessions/lookup", historyHandler.LookupStudentSessions)
+				r.Get("/sessions/{client_id}", historyHandler.StudentSession)
 			})
 		})
 	})

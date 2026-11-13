@@ -398,40 +398,148 @@ func (r *SessionRepo) RecentSessions(ctx context.Context, tenantID, studentID st
 		limit = maxRecentSessions
 	}
 	var out []domain.SessionSummary
-
 	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
-		const q = `
-			SELECT s.id,
-			       COALESCE(s.snapshot -> 'day' ->> 'label', ''),
-			       s.started_at, s.finished_at,
-			       count(l.id),
-			       COALESCE(sum(l.load_kg * l.reps_done), 0)
-			FROM workout_sessions s
-			LEFT JOIN workout_set_logs l
-			       ON l.session_id = s.id AND ` + effectiveLogFilter + `
-			WHERE s.student_id = $1
-			GROUP BY s.id
-			ORDER BY s.started_at DESC
-			LIMIT $2`
-		rows, err := tx.Query(ctx, q, studentID, limit)
-		if err != nil {
-			return err
-		}
-		defer rows.Close()
-		for rows.Next() {
-			var s domain.SessionSummary
-			if err := rows.Scan(&s.ID, &s.DayLabel, &s.StartedAt, &s.FinishedAt,
-				&s.TotalSets, &s.TotalVolumeKg); err != nil {
-				return err
-			}
-			out = append(out, s)
-		}
-		return rows.Err()
+		var err error
+		out, err = summarizeSessions(ctx, tx,
+			`WHERE s.student_id = $1 ORDER BY s.started_at DESC LIMIT $2`, studentID, limit)
+		return err
 	})
 	if err != nil {
 		return nil, fmt.Errorf("repo: listar sessões recentes: %w", err)
 	}
 	return out, nil
+}
+
+// sessionSummaryColumns é o cabeçalho de uma sessão sem os totais: eles saem
+// de domain.MeasureSession, a definição única das métricas (P11.1).
+const sessionSummaryColumns = `
+	SELECT s.id, s.client_id,
+	       COALESCE(s.snapshot -> 'day' ->> 'label', ''),
+	       COALESCE(p.title, ''),
+	       s.started_at, s.finished_at
+	FROM workout_sessions s
+	LEFT JOIN workout_plan_versions v ON v.id = s.plan_version_id
+	LEFT JOIN workout_plans p ON p.id = v.plan_id `
+
+// summarizeSessions lê as sessões do filtro (cláusulas WHERE/ORDER/LIMIT) e
+// calcula os totais a partir dos logs efetivos, numa segunda consulta só.
+func summarizeSessions(ctx context.Context, tx pgx.Tx, clause string, args ...any) ([]domain.SessionSummary, error) {
+	rows, err := tx.Query(ctx, sessionSummaryColumns+clause, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []domain.SessionSummary
+	for rows.Next() {
+		var s domain.SessionSummary
+		if err := rows.Scan(&s.ID, &s.ClientID, &s.DayLabel, &s.PlanTitle, &s.StartedAt, &s.FinishedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, s)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	rows.Close()
+
+	ids := make([]string, len(out))
+	for i, s := range out {
+		ids[i] = s.ID
+	}
+	logs, err := effectiveLogs(ctx, tx, ids)
+	if err != nil {
+		return nil, err
+	}
+	for i, s := range out {
+		out[i] = s.WithMetrics(domain.MeasureSession(logs[s.ID], s.StartedAt, s.FinishedAt))
+	}
+	return out, nil
+}
+
+// effectiveLogs devolve os logs efetivos (última revisão vence) por sessão.
+func effectiveLogs(ctx context.Context, tx pgx.Tx, sessionIDs []string) (map[string][]domain.SetLog, error) {
+	out := make(map[string][]domain.SetLog, len(sessionIDs))
+	if len(sessionIDs) == 0 {
+		return out, nil
+	}
+	rows, err := tx.Query(ctx, `
+		SELECT l.session_id, l.exercise_id, l.set_no, l.reps_done, l.load_kg, l.rpe,
+		       l.performed_at, l.client_id, l.revises
+		FROM workout_set_logs l
+		WHERE l.session_id = ANY($1::uuid[]) AND `+effectiveLogFilter+`
+		ORDER BY l.session_id, l.set_no, l.performed_at, l.logged_at`, sessionIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var l domain.SetLog
+		if err := rows.Scan(&l.SessionID, &l.ExerciseID, &l.SetNo, &l.RepsDone, &l.LoadKg, &l.RPE,
+			&l.PerformedAt, &l.ClientID, &l.Revises); err != nil {
+			return nil, err
+		}
+		out[l.SessionID] = append(out[l.SessionID], l)
+	}
+	return out, rows.Err()
+}
+
+// maxLookupSessions é o teto de client_ids por lookup.
+const maxLookupSessions = 50
+
+// SessionsByClientIDs resume, em lote, as sessões do aluno pelos client_ids.
+// Id que o servidor não conhece (fila offline do aluno) não vem na lista.
+func (r *SessionRepo) SessionsByClientIDs(ctx context.Context, tenantID, studentID string, clientIDs []string) ([]domain.SessionSummary, error) {
+	var out []domain.SessionSummary
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		var err error
+		out, err = summarizeSessions(ctx, tx,
+			`WHERE s.student_id = $1 AND s.client_id = ANY($2::uuid[]) ORDER BY s.started_at DESC`,
+			studentID, clientIDs)
+		return err
+	})
+	if err != nil {
+		return nil, fmt.Errorf("repo: sessões por client_id: %w", err)
+	}
+	return out, nil
+}
+
+// SessionDetail é uma sessão do aluno vista pelo professor: resumo, snapshot
+// congelado (o prescrito, ADR-004) e logs efetivos (o feito). ErrNotFound se
+// a sessão não existe ou é de outro aluno.
+type SessionDetail struct {
+	Summary  domain.SessionSummary
+	Snapshot json.RawMessage
+	Logs     []domain.SetLog
+}
+
+// SessionDetailByClientID lê o detalhe pelo client_id da sessão.
+func (r *SessionRepo) SessionDetailByClientID(ctx context.Context, tenantID, studentID, clientID string) (SessionDetail, error) {
+	var d SessionDetail
+	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
+		items, err := summarizeSessions(ctx, tx,
+			`WHERE s.student_id = $1 AND s.client_id = $2`, studentID, clientID)
+		if err != nil {
+			return err
+		}
+		if len(items) == 0 {
+			return ErrNotFound
+		}
+		d.Summary = items[0]
+		if err := tx.QueryRow(ctx, `SELECT snapshot FROM workout_sessions WHERE id = $1`,
+			d.Summary.ID).Scan(&d.Snapshot); err != nil {
+			return err
+		}
+		logs, err := effectiveLogs(ctx, tx, []string{d.Summary.ID})
+		d.Logs = logs[d.Summary.ID]
+		return err
+	})
+	if errors.Is(err, ErrNotFound) {
+		return SessionDetail{}, ErrNotFound
+	}
+	if err != nil {
+		return SessionDetail{}, fmt.Errorf("repo: detalhe da sessão: %w", err)
+	}
+	return d, nil
 }
 
 // SessionsInRange devolve as sessões do aluno com `started_at` dentro de
@@ -448,35 +556,12 @@ func (r *SessionRepo) RecentSessions(ctx context.Context, tenantID, studentID st
 // consulta — nenhuma migration nova foi necessária.
 func (r *SessionRepo) SessionsInRange(ctx context.Context, tenantID, studentID string, from, to time.Time) ([]domain.SessionSummary, error) {
 	var out []domain.SessionSummary
-
 	err := WithTenant(ctx, r.pool, tenantID, func(tx pgx.Tx) error {
-		const q = `
-			SELECT s.id,
-			       COALESCE(s.snapshot -> 'day' ->> 'label', ''),
-			       s.started_at, s.finished_at,
-			       count(l.id),
-			       COALESCE(sum(l.load_kg * l.reps_done), 0)
-			FROM workout_sessions s
-			LEFT JOIN workout_set_logs l
-			       ON l.session_id = s.id AND ` + effectiveLogFilter + `
-			WHERE s.student_id = $1
-			  AND s.started_at >= $2 AND s.started_at < $3
-			GROUP BY s.id
-			ORDER BY s.started_at ASC`
-		rows, err := tx.Query(ctx, q, studentID, from, to)
-		if err != nil {
-			return err
-		}
-		defer rows.Close()
-		for rows.Next() {
-			var s domain.SessionSummary
-			if err := rows.Scan(&s.ID, &s.DayLabel, &s.StartedAt, &s.FinishedAt,
-				&s.TotalSets, &s.TotalVolumeKg); err != nil {
-				return err
-			}
-			out = append(out, s)
-		}
-		return rows.Err()
+		var err error
+		out, err = summarizeSessions(ctx, tx,
+			`WHERE s.student_id = $1 AND s.started_at >= $2 AND s.started_at < $3
+			 ORDER BY s.started_at ASC`, studentID, from, to)
+		return err
 	})
 	if err != nil {
 		return nil, fmt.Errorf("repo: listar sessões por período: %w", err)

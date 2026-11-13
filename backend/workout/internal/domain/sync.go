@@ -98,10 +98,20 @@ type PreviousLoad struct {
 // TotalVolumeKg é Σ(carga × reps) das séries efetivas — a métrica que o
 // resumo de fim de sessão também usa.
 type SessionSummary struct {
-	ID            string
-	DayLabel      string
-	StartedAt     time.Time
-	FinishedAt    *time.Time
-	TotalSets     int
-	TotalVolumeKg float64
+	ID              string
+	ClientID        string
+	DayLabel        string
+	PlanTitle       string
+	StartedAt       time.Time
+	FinishedAt      *time.Time
+	TotalSets       int
+	TotalVolumeKg   float64
+	RepsTotal       int
+	DurationSeconds *int
+}
+
+// WithMetrics preenche os totais a partir da definição única.
+func (s SessionSummary) WithMetrics(m SessionMetrics) SessionSummary {
+	s.TotalSets, s.RepsTotal, s.TotalVolumeKg, s.DurationSeconds = m.Sets, m.Reps, m.VolumeKg, m.DurationSeconds
+	return s
 }

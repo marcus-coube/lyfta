@@ -86,6 +86,18 @@ type sessionSummaryDTO struct {
 	FinishedAt    *time.Time `json:"finished_at"`
 	TotalSets     int        `json:"total_sets"`
 	TotalVolumeKg float64    `json:"total_volume_kg"`
+	// RepsTotal e DurationSeconds vêm de domain.MeasureSession — a mesma
+	// definição do resumo do coach (P11.1) e do app (P10.2).
+	RepsTotal       int  `json:"reps_total"`
+	DurationSeconds *int `json:"duration_seconds"`
+}
+
+func summaryDTO(s domain.SessionSummary) sessionSummaryDTO {
+	return sessionSummaryDTO{
+		ID: s.ID, DayLabel: s.DayLabel, StartedAt: s.StartedAt, FinishedAt: s.FinishedAt,
+		TotalSets: s.TotalSets, TotalVolumeKg: s.TotalVolumeKg,
+		RepsTotal: s.RepsTotal, DurationSeconds: s.DurationSeconds,
+	}
 }
 
 // rotationDayDTO é um dia do rodízio visto de fora do treino: rótulo e ordem,
@@ -177,10 +189,7 @@ func (h *SyncHandler) Today(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, s := range recent {
-		resp.RecentSessions = append(resp.RecentSessions, sessionSummaryDTO{
-			ID: s.ID, DayLabel: s.DayLabel, StartedAt: s.StartedAt, FinishedAt: s.FinishedAt,
-			TotalSets: s.TotalSets, TotalVolumeKg: s.TotalVolumeKg,
-		})
+		resp.RecentSessions = append(resp.RecentSessions, summaryDTO(s))
 	}
 
 	// A rotação é montada antes de decidir se hoje tem treino: em dia de
@@ -674,10 +683,7 @@ func (h *SyncHandler) Sessions(w http.ResponseWriter, r *http.Request) {
 
 	resp := sessionsResponse{Items: make([]sessionSummaryDTO, 0, len(items))}
 	for _, s := range items {
-		resp.Items = append(resp.Items, sessionSummaryDTO{
-			ID: s.ID, DayLabel: s.DayLabel, StartedAt: s.StartedAt, FinishedAt: s.FinishedAt,
-			TotalSets: s.TotalSets, TotalVolumeKg: s.TotalVolumeKg,
-		})
+		resp.Items = append(resp.Items, summaryDTO(s))
 	}
 	writeJSON(w, http.StatusOK, resp)
 }

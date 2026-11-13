@@ -517,3 +517,67 @@ func TestSnapshotCarriesClusterAndLabel(t *testing.T) {
 		t.Fatalf("snapshot sem cluster/rótulo: %s", raw)
 	}
 }
+
+// TestSessionDetailEffectiveLogs: a revisão vence na leitura do detalhe e nas
+// métricas (reps, volume e séries contam a versão corrigida uma vez só), e a
+// sessão de outro aluno não é encontrada.
+func TestSessionDetailEffectiveLogs(t *testing.T) {
+	f := newExecFixture(t, "A")
+	ctx := context.Background()
+	events := execEvents(f.dayByLabel(t, "A").ID, f.exerciseID, 40, 50)
+	if _, err := f.sessions.ApplyEvents(ctx, f.tenantID, f.studentID, events); err != nil {
+		t.Fatalf("execução: %v", err)
+	}
+	original := events[1]
+	revision := domain.SyncEvent{
+		ClientID: uuid.NewString(), Type: domain.SyncEventSetRevision,
+		PerformedAt: original.PerformedAt, SessionClientID: original.SessionClientID,
+		ExerciseID: f.exerciseID, SetNo: 1, RepsDone: intPtr(8), LoadKg: floatPtr(45),
+		Revises: original.ClientID,
+	}
+	if _, err := f.sessions.ApplyEvents(ctx, f.tenantID, f.studentID, []domain.SyncEvent{revision}); err != nil {
+		t.Fatalf("revisão: %v", err)
+	}
+
+	d, err := f.sessions.SessionDetailByClientID(ctx, f.tenantID, f.studentID, original.SessionClientID)
+	if err != nil {
+		t.Fatalf("detalhe: %v", err)
+	}
+	if len(d.Logs) != 2 || d.Logs[0].ClientID != revision.ClientID || *d.Logs[0].LoadKg != 45 || d.Logs[0].Revises == nil {
+		t.Fatalf("o log efetivo da série 1 é a revisão: %+v", d.Logs)
+	}
+	s := d.Summary
+	if s.TotalSets != 2 || s.RepsTotal != 18 || s.TotalVolumeKg != 45*8+50*10 {
+		t.Fatalf("métricas devem contar só os logs efetivos: %+v", s)
+	}
+	if s.DurationSeconds == nil || *s.DurationSeconds != 1800 || s.PlanTitle == "" {
+		t.Fatalf("duração/plano: %+v", s)
+	}
+
+	if _, err := f.sessions.SessionDetailByClientID(ctx, f.tenantID, uuid.NewString(), original.SessionClientID); !errors.Is(err, repo.ErrNotFound) {
+		t.Fatalf("sessão de outro aluno deveria ser ErrNotFound, veio %v", err)
+	}
+	if _, err := f.sessions.SessionDetailByClientID(ctx, newTenant(), f.studentID, original.SessionClientID); !errors.Is(err, repo.ErrNotFound) {
+		t.Fatalf("outro tenant deveria ser ErrNotFound, veio %v", err)
+	}
+}
+
+// TestSessionWithoutFinish: sem session_finish a duração é nula, mas as
+// métricas das séries já valem; o lookup devolve só o que existe.
+func TestSessionWithoutFinish(t *testing.T) {
+	f := newExecFixture(t, "A")
+	ctx := context.Background()
+	events := execEvents(f.dayByLabel(t, "A").ID, f.exerciseID, 40)
+	events = events[:len(events)-1] // sem finish
+	if _, err := f.sessions.ApplyEvents(ctx, f.tenantID, f.studentID, events); err != nil {
+		t.Fatalf("execução: %v", err)
+	}
+	items, err := f.sessions.SessionsByClientIDs(ctx, f.tenantID, f.studentID,
+		[]string{events[0].ClientID, uuid.NewString()})
+	if err != nil || len(items) != 1 {
+		t.Fatalf("lookup: %v %+v", err, items)
+	}
+	if items[0].FinishedAt != nil || items[0].DurationSeconds != nil || items[0].TotalSets != 1 || items[0].RepsTotal != 10 {
+		t.Fatalf("sessão sem finish: %+v", items[0])
+	}
+}

@@ -59,6 +59,10 @@ var (
 	errStudentNotFound = func() APIError {
 		return newAPIError(http.StatusNotFound, "student_not_found")
 	}
+	// Sessão inexistente, ainda não sincronizada ou de outro aluno (P11.1).
+	errSessionNotFound = func() APIError {
+		return newAPIError(http.StatusNotFound, "session_not_found")
+	}
 	errNotFound = func(resource string) APIError {
 		return newAPIError(http.StatusNotFound, "not_found", "resource", resource)
 	}

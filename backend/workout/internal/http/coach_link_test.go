@@ -175,6 +175,8 @@ func TestCoachLinkCrossCoach(t *testing.T) {
 		{http.MethodGet, studentURL + "/plans", nil},
 		{http.MethodGet, studentURL + "/exercises/logged", nil},
 		{http.MethodGet, studentURL + "/exercises/" + exerciseID + "/history", nil},
+		{http.MethodPost, studentURL + "/sessions/lookup", map[string]any{"client_ids": []string{uuid.NewString()}}},
+		{http.MethodGet, studentURL + "/sessions/" + uuid.NewString(), nil},
 		{http.MethodPost, "/v1/me/plan/override-day", map[string]any{"student_id": student, "day_id": uuid.NewString()}},
 	}
 	assertBlocked := func(token, who string) {

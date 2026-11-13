@@ -16,7 +16,7 @@ Refs normativas: ADR-003, ADR-004, ADR-013, ADR-016.
 
 ---
 
-## - [ ] P11.1 Sessão do aluno para o coach (workout)
+## - [x] P11.1 Sessão do aluno para o coach (workout)
 
 **Objetivo:** resumo em lote e detalhe de sessão, por `client_id`.
 **Passos:**
@@ -72,4 +72,9 @@ depois do sync; teste de widget do card (com e sem sessão) e do detalhe.
 
 ## Notas de execução
 
-(o agente anota aqui descobertas, dívidas e desvios aprovados)
+**P11.1 (2026-11-13)**
+- Rotas no `HistoryHandler` (`internal/http/coach_sessions.go`), dentro de `/v1/students/{id}` (herdam `RequireStudentLink` e o filtro owner/coach): `POST .../sessions/lookup` e `GET .../sessions/{client_id}`. `session_not_found` novo em `apierror.go`.
+- Métricas únicas em `domain.MeasureSession` (`internal/domain/session_metrics.go`), espelho do `session_metrics.dart`. O repo (`summarizeSessions`) deixou de somar no SQL: lê as sessões e os logs efetivos (`effectiveLogFilter`) e chama a função — `RecentSessions`, `SessionsInRange`, lookup e detalhe passam por ela. `sessionSummaryDTO` ganhou `reps_total` e `duration_seconds` (só campos novos; o app atual ignora).
+- Divergência do app, intencional (spec): duração nula se negativa ou > 12 h; o Dart devolve `Duration.zero` no negativo. Volume ignora log sem carga ou sem reps (igual ao Dart). Volume arredondado a 2 casas.
+- Detalhe casa feito × prescrito por (`exercise_id`, `set_no`). Se o mesmo exercício aparecer em dois blocos do dia, as séries de mesmo número dividem o mesmo log — dívida aceita (o player também identifica o log por exercício+série).
+- `plan_title` vem do plano da versão da sessão (título atual do plano, não congelado no snapshot).
