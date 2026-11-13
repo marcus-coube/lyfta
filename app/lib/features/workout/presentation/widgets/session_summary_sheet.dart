@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/design_system/design_system.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
+import '../../domain/session_metrics.dart';
 import '../prescription_format.dart';
 import '../session_controller.dart';
 
@@ -26,7 +27,7 @@ class _SessionSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.ly;
     final l10n = AppLocalizations.of(context);
-    final elapsed = state.elapsed;
+    final metrics = state.metrics();
 
     return SafeArea(
       child: Padding(
@@ -36,23 +37,13 @@ class _SessionSummary extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(l10n.sessionSummaryTitle, style: LyType.h2(c.textPrimary)),
-            const SizedBox(height: LySpace.x6),
-            Row(
-              children: [
-                _Metric(
-                  label: l10n.sessionSummarySets,
-                  value: state.completedSets.toString(),
-                ),
-                _Metric(
-                  label: l10n.sessionSummaryVolume,
-                  value: formatLoad(state.totalVolumeKg, l10n.localeName),
-                ),
-                _Metric(
-                  label: l10n.sessionSummaryDuration,
-                  value: l10n.sessionDurationMinutes(elapsed.inMinutes),
-                ),
-              ],
+            const SizedBox(height: LySpace.x1),
+            Text(
+              l10n.sessionTitle(state.session.dayLabel),
+              style: LyType.bodySm(c.textSecondary),
             ),
+            const SizedBox(height: LySpace.x6),
+            SessionMetricsGrid(metrics: metrics),
             const SizedBox(height: LySpace.x8),
             LyButton(
               label: l10n.sessionSummaryClose,
@@ -61,6 +52,48 @@ class _SessionSummary extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// As quatro métricas do treino em grade 2×2 — o resumo final e o modal de
+/// treino concluído mostram a mesma coisa.
+class SessionMetricsGrid extends StatelessWidget {
+  const SessionMetricsGrid({super.key, required this.metrics});
+
+  final SessionMetrics metrics;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      children: [
+        Row(
+          children: [
+            _Metric(
+              label: l10n.sessionSummarySets,
+              value: metrics.sets.toString(),
+            ),
+            _Metric(
+              label: l10n.sessionSummaryReps,
+              value: metrics.reps.toString(),
+            ),
+          ],
+        ),
+        const SizedBox(height: LySpace.x4),
+        Row(
+          children: [
+            _Metric(
+              label: l10n.sessionSummaryVolume,
+              value: formatLoad(metrics.volumeKg, l10n.localeName),
+            ),
+            _Metric(
+              label: l10n.sessionSummaryDuration,
+              value: formatClock(metrics.duration),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

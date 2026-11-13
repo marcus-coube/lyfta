@@ -12,6 +12,7 @@ import '../../../shared/widgets/exercise_media.dart';
 import '../../../shared/widgets/ly_shell_scaffold.dart';
 import '../../checkin/presentation/checkin_sheet.dart';
 import '../domain/block_runner.dart';
+import '../domain/session_metrics.dart';
 import '../domain/today.dart';
 import 'exercise_fields.dart';
 import 'rest_timer_controller.dart';
@@ -44,6 +45,17 @@ class _SessionPlayerScreenState extends ConsumerState<SessionPlayerScreen> {
     final l10n = AppLocalizations.of(context);
     final session = ref.watch(sessionControllerProvider);
     _dayLabel = session.valueOrNull?.session.dayLabel ?? _dayLabel;
+    final allLogged = session.valueOrNull?.allSetsLogged ?? false;
+
+    // Registrar a série que fecha o dia abre o modal. Só a transição
+    // "faltava série → todas com log" conta: corrigir uma série (que troca
+    // o log, sem criar outro) e o "Voltar" nunca reabrem (D3).
+    ref.listen(sessionControllerProvider, (prev, next) {
+      final before = prev?.valueOrNull;
+      final after = next.valueOrNull;
+      if (before == null || after == null) return;
+      if (!before.allSetsLogged && after.allSetsLogged) _showComplete();
+    });
 
     return Scaffold(
       backgroundColor: c.background,
@@ -51,10 +63,17 @@ class _SessionPlayerScreenState extends ConsumerState<SessionPlayerScreen> {
         title: Text(l10n.sessionTitle(_dayLabel)),
         actions: [
           if (session.valueOrNull != null)
-            TextButton(
-              onPressed: () => _confirmFinish(context, ref),
-              child: Text(l10n.sessionFinish),
-            ),
+            // Com tudo registrado, "Finalizar" ganha destaque (D3).
+            if (allLogged)
+              FilledButton(
+                onPressed: () => _confirmFinish(context, ref),
+                child: Text(l10n.sessionFinish),
+              )
+            else
+              TextButton(
+                onPressed: () => _confirmFinish(context, ref),
+                child: Text(l10n.sessionFinish),
+              ),
         ],
       ),
       body: session.when(
@@ -91,7 +110,49 @@ class _SessionPlayerScreenState extends ConsumerState<SessionPlayerScreen> {
       ),
     );
     if (confirmed != true || !context.mounted) return;
+    await _finish(context, ref);
+  }
 
+  /// Modal de treino concluído (P10.2 §3): "Finalizar" segue o fluxo de hoje,
+  /// "Voltar" só fecha — a sessão e o cronômetro continuam.
+  Future<void> _showComplete() async {
+    final state = ref.read(sessionControllerProvider).valueOrNull;
+    if (state == null || !mounted) return;
+    final l10n = AppLocalizations.of(context);
+    final metrics = state.metrics();
+
+    final finish = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.sessionCompleteTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.sessionCompleteBody),
+            const SizedBox(height: LySpace.x4),
+            SessionMetricsGrid(metrics: metrics),
+          ],
+        ),
+        actions: [
+          TextButton(
+            key: const Key('complete-back'),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.sessionCompleteBack),
+          ),
+          FilledButton(
+            key: const Key('complete-finish'),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.sessionFinish),
+          ),
+        ],
+      ),
+    );
+    if (finish != true || !mounted) return;
+    await _finish(context, ref);
+  }
+
+  Future<void> _finish(BuildContext context, WidgetRef ref) async {
     ref.read(restTimerProvider.notifier).stop();
     final finished = await ref.read(sessionControllerProvider.notifier).finish();
     if (finished == null || !context.mounted) return;
@@ -132,6 +193,7 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
 
     return Column(
       children: [
+        _SessionClock(startedAt: state.session.startedAt),
         Expanded(
           child: Center(
             child: ConstrainedBox(
@@ -165,6 +227,59 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
         ),
         const RestTimerBar(),
       ],
+    );
+  }
+}
+
+/// Cronômetro geral (P10.2 §1): tempo desde o início da sessão, derivado do
+/// relógio — sobrevive a fechar e reabrir o app, e não tem pausa.
+///
+/// O `Timer` e o `setState` vivem só aqui: a lista de exercícios é irmã deste
+/// widget e não reconstrói a cada tique.
+class _SessionClock extends StatefulWidget {
+  const _SessionClock({required this.startedAt});
+
+  final DateTime startedAt;
+
+  @override
+  State<_SessionClock> createState() => _SessionClockState();
+}
+
+class _SessionClockState extends State<_SessionClock> {
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ly;
+    final l10n = AppLocalizations.of(context);
+    final elapsed = DateTime.now().difference(widget.startedAt);
+
+    return Semantics(
+      label: l10n.sessionClockLabel,
+      value: formatClock(elapsed),
+      excludeSemantics: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: LySpace.x2),
+        child: Text(
+          formatClock(elapsed),
+          key: const Key('session-clock'),
+          style: LyType.numeric(c.textPrimary, size: 22),
+        ),
+      ),
     );
   }
 }
@@ -276,6 +391,12 @@ class _ExerciseCard extends ConsumerWidget {
     // Corrigir uma série antiga não é motivo para começar a descansar de
     // novo — só a série recém-feita dispara o timer.
     if (revises != null) return;
+    // Última série do dia: não há o que descansar, a tela abre o modal de
+    // treino concluído (P10.2 §3).
+    if (ref.read(sessionControllerProvider).valueOrNull?.allSetsLogged ??
+        false) {
+      return;
+    }
     ref.read(restTimerProvider.notifier).start(
           rest: run.restAt(index),
           label: exerciseName,

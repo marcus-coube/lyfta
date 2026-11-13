@@ -702,6 +702,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sessionSummaryClose => 'Close';
 
   @override
+  String get sessionSummaryReps => 'Reps';
+
+  @override
+  String get sessionClockLabel => 'Workout time';
+
+  @override
+  String get sessionCompleteTitle => 'Workout complete';
+
+  @override
+  String get sessionCompleteBody =>
+      'You logged every set for today. Finish the workout?';
+
+  @override
+  String get sessionCompleteBack => 'Back';
+
+  @override
   String get sessionTargetFreeReps => 'free reps';
 
   @override

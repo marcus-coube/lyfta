@@ -386,6 +386,26 @@
   "@sessionSummaryClose": {
     "description": "Fecha o resumo do treino."
   },
+  "sessionSummaryReps": "Repetições",
+  "@sessionSummaryReps": {
+    "description": "Rótulo do total de repetições no resumo do treino."
+  },
+  "sessionClockLabel": "Tempo de treino",
+  "@sessionClockLabel": {
+    "description": "Rótulo de acessibilidade do cronômetro geral do player."
+  },
+  "sessionCompleteTitle": "Treino concluído",
+  "@sessionCompleteTitle": {
+    "description": "Título do modal aberto ao registrar a última série do dia."
+  },
+  "sessionCompleteBody": "Você registrou todas as séries de hoje. Quer finalizar?",
+  "@sessionCompleteBody": {
+    "description": "Texto do modal de treino concluído."
+  },
+  "sessionCompleteBack": "Voltar",
+  "@sessionCompleteBack": {
+    "description": "Fecha o modal de treino concluído e mantém a sessão aberta."
+  },
   "sessionTargetFreeReps": "reps livres",
   "@sessionTargetFreeReps": {
     "description": "Prescrição sem faixa de repetições."

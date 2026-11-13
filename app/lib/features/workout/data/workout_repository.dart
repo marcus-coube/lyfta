@@ -198,7 +198,7 @@ class WorkoutRepository {
 
   /// Fecha o treino. O servidor só avança a rotação A→B com pelo menos uma
   /// série registrada (P1.5) — abrir e desistir não gasta o dia.
-  Future<void> finishSession({
+  Future<DateTime> finishSession({
     required String studentId,
     required String sessionClientId,
   }) async {
@@ -213,6 +213,7 @@ class WorkoutRepository {
         payload: {'session_client_id': sessionClientId},
       ),
     );
+    return finishedAt;
   }
 
   /// Drena a fila num lote só. Devolve quantos eventos saíram da fila;

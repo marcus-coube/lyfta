@@ -211,6 +211,12 @@ class BlockCard extends ConsumerWidget {
         );
     // Correção não reinicia o descanso (igual ao straight).
     if (revises != null) return;
+    // Última série do dia: não há o que descansar, a tela abre o modal de
+    // treino concluído (P10.2 §3).
+    if (ref.read(sessionControllerProvider).valueOrNull?.allSetsLogged ??
+        false) {
+      return;
+    }
 
     // A série recém-feita já conta como feita para achar a próxima.
     final next = runner.stepAfter(

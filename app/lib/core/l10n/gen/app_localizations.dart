@@ -1413,6 +1413,36 @@ abstract class AppLocalizations {
   /// **'Fechar'**
   String get sessionSummaryClose;
 
+  /// Rótulo do total de repetições no resumo do treino.
+  ///
+  /// In pt, this message translates to:
+  /// **'Repetições'**
+  String get sessionSummaryReps;
+
+  /// Rótulo de acessibilidade do cronômetro geral do player.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tempo de treino'**
+  String get sessionClockLabel;
+
+  /// Título do modal aberto ao registrar a última série do dia.
+  ///
+  /// In pt, this message translates to:
+  /// **'Treino concluído'**
+  String get sessionCompleteTitle;
+
+  /// Texto do modal de treino concluído.
+  ///
+  /// In pt, this message translates to:
+  /// **'Você registrou todas as séries de hoje. Quer finalizar?'**
+  String get sessionCompleteBody;
+
+  /// Fecha o modal de treino concluído e mantém a sessão aberta.
+  ///
+  /// In pt, this message translates to:
+  /// **'Voltar'**
+  String get sessionCompleteBack;
+
   /// Prescrição sem faixa de repetições.
   ///
   /// In pt, this message translates to:

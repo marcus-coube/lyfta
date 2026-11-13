@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/auth/auth_controller.dart';
 import '../data/sync_worker.dart';
 import '../data/workout_repository.dart';
+import '../domain/session_metrics.dart';
 import '../domain/today.dart';
 import '../domain/workout_event.dart';
 
@@ -34,10 +35,26 @@ class SessionState {
 
   int get completedSets => logs.length;
 
-  double get totalVolumeKg =>
-      logs.fold(0, (sum, log) => sum + log.volumeKg);
+  /// Todas as séries prescritas do dia já têm log (P10.2 §3). Dia sem série
+  /// nunca está "completo".
+  bool get allSetsLogged {
+    var total = 0;
+    for (final run in today.runs) {
+      for (var i = 0; i < run.exercise.sets.length; i++) {
+        total++;
+        if (logFor(run.exerciseId, run.setNoAt(i)) == null) return false;
+      }
+    }
+    return total > 0;
+  }
 
-  Duration get elapsed => DateTime.now().difference(session.startedAt);
+  /// Métricas da sessão: até [now] enquanto aberta, até `finishedAt` depois
+  /// de finalizada.
+  SessionMetrics metrics({DateTime? now}) => SessionMetrics.of(
+        logs,
+        startedAt: session.startedAt,
+        endedAt: session.finishedAt ?? now ?? DateTime.now(),
+      );
 }
 
 final sessionControllerProvider =
@@ -124,13 +141,26 @@ class SessionController extends AsyncNotifier<SessionState?> {
   Future<SessionState?> finish() async {
     final current = state.valueOrNull;
     if (current == null) return null;
-    await ref.read(workoutRepositoryProvider).finishSession(
+    final finishedAt = await ref.read(workoutRepositoryProvider).finishSession(
           studentId: _studentId,
           sessionClientId: current.session.clientId,
         );
     state = const AsyncData(null);
     _kickSync();
-    return current;
+    // O resumo mede a duração até o instante gravado no `session_finish`.
+    final s = current.session;
+    return SessionState(
+      session: LocalSession(
+        clientId: s.clientId,
+        dayId: s.dayId,
+        dayLabel: s.dayLabel,
+        dayTitle: s.dayTitle,
+        startedAt: s.startedAt,
+        finishedAt: finishedAt,
+      ),
+      today: current.today,
+      logs: current.logs,
+    );
   }
 
   void _kickSync() {

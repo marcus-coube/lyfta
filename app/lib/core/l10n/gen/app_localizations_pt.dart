@@ -702,6 +702,22 @@ class AppLocalizationsPt extends AppLocalizations {
   String get sessionSummaryClose => 'Fechar';
 
   @override
+  String get sessionSummaryReps => 'Repetições';
+
+  @override
+  String get sessionClockLabel => 'Tempo de treino';
+
+  @override
+  String get sessionCompleteTitle => 'Treino concluído';
+
+  @override
+  String get sessionCompleteBody =>
+      'Você registrou todas as séries de hoje. Quer finalizar?';
+
+  @override
+  String get sessionCompleteBack => 'Voltar';
+
+  @override
   String get sessionTargetFreeReps => 'reps livres';
 
   @override
@@ -3515,6 +3531,22 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get sessionSummaryClose => 'Fechar';
+
+  @override
+  String get sessionSummaryReps => 'Repetições';
+
+  @override
+  String get sessionClockLabel => 'Tempo de treino';
+
+  @override
+  String get sessionCompleteTitle => 'Treino concluído';
+
+  @override
+  String get sessionCompleteBody =>
+      'Registou todas as séries de hoje. Quer terminar?';
+
+  @override
+  String get sessionCompleteBack => 'Voltar';
 
   @override
   String get sessionTargetFreeReps => 'reps livres';

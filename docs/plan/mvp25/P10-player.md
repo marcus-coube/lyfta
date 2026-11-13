@@ -35,7 +35,7 @@ Refs normativas: ADR-003.
 4; com a 1ª já registrada, digitar na 2ª replica só para 3ª e 4ª; em bi-set,
 replicar no exercício A não mexe no B; teste de widget dos três casos.
 
-## - [ ] P10.2 Cronômetro geral e modal de treino concluído (Flutter)
+## - [x] P10.2 Cronômetro geral e modal de treino concluído (Flutter)
 
 **Objetivo:** o aluno vê o tempo de treino e é levado ao fim quando termina.
 **Decisão:** D3.
@@ -80,3 +80,21 @@ unitário das métricas (com revisão de série) e de widget do modal (abre na
   rodadas diferentes mas dividem o mesmo objeto). `SetRow.fields` é opcional:
   sem ele a linha segue dona do controller. Efeito colateral bom: o que foi
   digitado sobrevive à lista descartar o cartão fora da tela.
+- **P10.2:** `domain/session_metrics.dart` é a definição única das métricas
+  (`SessionMetrics.of` ignora o log apontado por `revises`, então aceita lista
+  crua ou já revisada; `formatClock` dá `h:mm:ss`). `SessionState.metrics()` e
+  `allSetsLogged` (toda série prescrita de `today.runs` tem log; dia sem série
+  nunca completa) saem dele; `elapsed`/`totalVolumeKg` foram removidos.
+  `finishSession` agora devolve o `finishedAt` gravado no `session_finish` e
+  `finish()` devolve o estado com ele, para o resumo medir a duração exata.
+  Cronômetro: `_SessionClock` (Timer de 1 s e `setState` só nele, irmão da
+  lista no `Column`; `Semantics` com rótulo fixo e valor, sem live region).
+  Modal: a tela do player faz `ref.listen` e abre o diálogo na **transição**
+  "faltava série -> todas com log"; revisão troca o log sem criar outro, e
+  "Voltar" não precisa de flag. Os cartões (`_ExerciseCard`, `BlockCard`) só
+  deixam de iniciar o descanso quando `allSetsLogged`. Com tudo registrado o
+  "Finalizar" da AppBar vira `FilledButton`. O fluxo de fim foi extraído para
+  `_finish` (modal e AppBar compartilham). Resumo e modal usam
+  `SessionMetricsGrid` (séries, reps, volume, duração) e mostram o rótulo do
+  dia. Sessão reaberta já completa não abre o modal (sem transição).
+  Dívida: o cronômetro lê `DateTime.now()`; o teste espera 1,1 s reais.
