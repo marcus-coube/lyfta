@@ -2827,4 +2827,70 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorVariationNotFound =>
       'That variation no longer exists or was archived. Pick another.';
+
+  @override
+  String get checkinSessionNotSynced => 'Workout not synced yet';
+
+  @override
+  String get checkinSessionLookupFailed => 'Could not load the workout.';
+
+  @override
+  String checkinSessionSets(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets',
+      one: '1 set',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String checkinSessionReps(int count) {
+    return '$count reps';
+  }
+
+  @override
+  String checkinSessionVolume(String volume) {
+    return '$volume kg';
+  }
+
+  @override
+  String get checkinDetailTitle => 'Check-in workout';
+
+  @override
+  String get checkinDetailAnswers => 'Student feedback';
+
+  @override
+  String get checkinDetailColSet => 'Set';
+
+  @override
+  String get checkinDetailColPrescribed => 'Prescribed';
+
+  @override
+  String get checkinDetailColDone => 'Done';
+
+  @override
+  String checkinDetailSetNo(int number) {
+    return 'Set $number';
+  }
+
+  @override
+  String get checkinDetailNotDone => 'Not done';
+
+  @override
+  String get checkinDetailRevised => 'Corrected';
+
+  @override
+  String checkinDetailDoneLoad(String load) {
+    return '$load kg';
+  }
+
+  @override
+  String checkinDetailDoneRpe(String rpe) {
+    return 'RPE $rpe';
+  }
+
+  @override
+  String get errorSessionNotFound => 'This workout is not available.';
 }

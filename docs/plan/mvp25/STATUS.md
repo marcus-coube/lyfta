@@ -3,15 +3,15 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** `P11.2`. Decisões D1–D7 confirmadas; nenhuma tarefa travada.
+**Próxima tarefa:** `P12.1`. Decisões D1–D7 confirmadas; nenhuma tarefa travada.
 
 | Fase | Progresso | Situação |
 |---|---|---|
 | P9 — Prescrição (cluster, rótulo, variações) | 4/4 | fechada (2026-11-13) |
 | P10 — Player do aluno | 2/2 | fechada (2026-11-13) |
-| P11 — Check-in do professor | 1/2 | em andamento |
+| P11 — Check-in do professor | 2/2 | fechada (2026-11-13) |
 | P12 — Mídia de execução e release | 0/4 | não iniciada |
-| **Total** | **7/12** | |
+| **Total** | **8/12** | |
 
 ## Decisões (detalhe no [README](README.md#decisões-a-confirmar-antes-da-tarefa-indicada))
 
@@ -42,3 +42,4 @@ Nenhum banco novo. Migrations novas: workout `0021`, `0022`; comms `0008`.
 | 2026-11-13 | P10.1 pronta: replicar carga para as outras séries (estado dos campos em `ExerciseFields`, só tela, sem evento nem fila) |
 | 2026-11-13 | P10.2 pronta (P10 fechada): cronômetro geral `h:mm:ss`, métricas únicas em `domain/session_metrics.dart` (séries, reps, volume, duração), modal "Treino concluído" na última série (sem descanso, Voltar mantém a sessão) |
 | 2026-11-13 | P11.1 pronta: `POST /v1/students/{id}/sessions/lookup` e `GET /v1/students/{id}/sessions/{client_id}` no workout, métricas numa função só (`domain.MeasureSession`) que também alimenta o resumo do aluno (`reps_total`, `duration_seconds`) |
+| 2026-11-13 | P11.2 pronta (P11 fechada): card do check-in com treino e métricas (lookup por página), detalhe `/students/:id/sessions/:clientId` com prescrito × feito, série corrigida/não feita, tabela ≥ 840 px |

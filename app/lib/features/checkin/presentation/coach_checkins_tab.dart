@@ -2,15 +2,20 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_error_state.dart';
 import '../../../shared/widgets/ly_skeleton.dart';
+import '../../workout/domain/session_metrics.dart';
+import '../../workout/presentation/prescription_format.dart';
 import '../domain/checkin.dart';
+import '../domain/coach_session.dart';
+import 'checkin_answers.dart';
 import 'checkins_controller.dart';
+import 'coach_sessions_controller.dart';
 
 /// Aba de check-ins na ficha do aluno, vista pelo coach (P3.5 §3) — a fila
 /// já ordenada pelo servidor (não revisados primeiro, P3.3), com o badge de
@@ -81,6 +86,7 @@ class CoachCheckinsTab extends ConsumerWidget {
                 );
               }
               return _CheckinCard(
+                studentId: studentId,
                 checkin: state.items[index],
                 onReview: () => ref
                     .read(checkinsProvider(studentId).notifier)
@@ -94,49 +100,41 @@ class CoachCheckinsTab extends ConsumerWidget {
   }
 }
 
-class _CheckinCard extends StatelessWidget {
-  const _CheckinCard({required this.checkin, required this.onReview});
+class _CheckinCard extends ConsumerWidget {
+  const _CheckinCard({
+    required this.studentId,
+    required this.checkin,
+    required this.onReview,
+  });
 
+  final String studentId;
   final WorkoutCheckin checkin;
   final VoidCallback onReview;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final c = context.ly;
     final l10n = AppLocalizations.of(context);
+    final sessions = ref.watch(coachSessionsProvider(studentId));
 
     return LyCard(
       padding: const EdgeInsets.all(LySpace.x4),
+      onTap: () => context.push(
+        '/students/$studentId/sessions/${checkin.sessionClientId}',
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  l10n.checkinCardScores(checkin.rating, checkin.difficulty),
-                  style: LyType.label(c.textPrimary),
-                ),
-              ),
-              _PainBadge(pain: checkin.pain),
-            ],
-          ),
-          const SizedBox(height: LySpace.x1),
-          Text(
-            _dateLabel(context, checkin.createdAt),
-            style: LyType.caption(c.textSecondary),
-          ),
-          if (checkin.painNotes.isNotEmpty) ...[
-            const SizedBox(height: LySpace.x2),
-            Text(
-              l10n.checkinCardPainWhere(checkin.painNotes),
-              style: LyType.bodySm(c.textPrimary),
+          CheckinAnswers(checkin: checkin),
+          const SizedBox(height: LySpace.x3),
+          _SessionLine(
+            session: sessions.found[checkin.sessionClientId],
+            failed: sessions.failed.contains(checkin.sessionClientId),
+            looked: sessions.looked.contains(checkin.sessionClientId),
+            onRetry: () => unawaited(
+              ref.read(coachSessionsProvider(studentId).notifier).retry(),
             ),
-          ],
-          if (checkin.comment.isNotEmpty) ...[
-            const SizedBox(height: LySpace.x2),
-            Text(checkin.comment, style: LyType.bodySm(c.textPrimary)),
-          ],
+          ),
           const SizedBox(height: LySpace.x3),
           if (checkin.isReviewed)
             Row(
@@ -157,39 +155,91 @@ class _CheckinCard extends StatelessWidget {
       ),
     );
   }
-
-  /// Dia/mês e hora na ordem do locale (`07/11 16:16` em pt, `11/7 4:16 PM`
-  /// em en) — antes era `dd/MM` fixo e o inglês lia 11 de julho (E2E P4.4).
-  String _dateLabel(BuildContext context, DateTime dt) {
-    final locale = Localizations.localeOf(context).toString();
-    return DateFormat.Md(locale).add_jm().format(dt.toLocal());
-  }
 }
 
-class _PainBadge extends StatelessWidget {
-  const _PainBadge({required this.pain});
+/// Linha do treino no card (P11.2 §1): rótulo do dia + plano e as métricas.
+/// Sem sessão no servidor ainda: aviso neutro; lookup falho: sem a linha e
+/// com retry. Enquanto o lookup não voltou, nada (a lista não espera por ele).
+class _SessionLine extends StatelessWidget {
+  const _SessionLine({
+    required this.session,
+    required this.failed,
+    required this.looked,
+    required this.onRetry,
+  });
 
-  final PainLevel pain;
+  final CoachSession? session;
+  final bool failed;
+  final bool looked;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
-    if (pain == PainLevel.none) return const SizedBox.shrink();
     final c = context.ly;
     final l10n = AppLocalizations.of(context);
-    final color = pain == PainLevel.strong ? c.danger : c.warning;
-    final label = pain == PainLevel.strong
-        ? l10n.checkinPainStrong
-        : l10n.checkinPainMild;
+    final s = session;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: LySpace.x2, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: LyRadius.pill,
-      ),
-      child: Text(label, style: LyType.caption(color)),
-    );
+    if (s != null) {
+      return Column(
+        key: const Key('checkin_session_line'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            sessionTitleWithPlan(l10n, s),
+            style: LyType.label(c.textPrimary),
+          ),
+          const SizedBox(height: LySpace.x1),
+          Text(
+            sessionMetricsLine(l10n, s),
+            style: LyType.caption(c.textSecondary),
+          ),
+        ],
+      );
+    }
+    if (failed) {
+      return Row(
+        key: const Key('checkin_session_failed'),
+        children: [
+          Expanded(
+            child: Text(
+              l10n.checkinSessionLookupFailed,
+              style: LyType.caption(c.textSecondary),
+            ),
+          ),
+          TextButton(
+            key: const Key('checkin_session_retry'),
+            onPressed: onRetry,
+            child: Text(l10n.commonRetry),
+          ),
+        ],
+      );
+    }
+    if (looked) {
+      return Text(
+        l10n.checkinSessionNotSynced,
+        key: const Key('checkin_session_not_synced'),
+        style: LyType.caption(c.textSecondary),
+      );
+    }
+    return const SizedBox.shrink();
   }
+}
+
+/// `Treino A · Plano de força`.
+String sessionTitleWithPlan(AppLocalizations l10n, CoachSession s) {
+  final title = l10n.sessionTitle(s.dayLabel);
+  return s.planTitle.isEmpty ? title : '$title · ${s.planTitle}';
+}
+
+/// `12 séries · 96 reps · 4.200 kg · 0:52:10` (duração só se confiável).
+String sessionMetricsLine(AppLocalizations l10n, CoachSession s) {
+  return [
+    l10n.checkinSessionSets(s.setsCount),
+    l10n.checkinSessionReps(s.repsTotal),
+    l10n.checkinSessionVolume(formatLoad(s.volumeKg, l10n.localeName)),
+    if (s.durationSeconds != null)
+      formatClock(Duration(seconds: s.durationSeconds!)),
+  ].join(' · ');
 }
 
 /// Rótulo da aba Check-ins com o badge de não revisados (P3.5 §3, Aceite

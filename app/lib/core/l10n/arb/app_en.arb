@@ -902,5 +902,57 @@
   "variationsArchivedDone": "Variation archived.",
   "variationsUnarchivedDone": "Variation unarchived.",
   "errorVariationNameTaken": "An active variation with that name already exists.",
-  "errorVariationNotFound": "That variation no longer exists or was archived. Pick another."
+  "errorVariationNotFound": "That variation no longer exists or was archived. Pick another.",
+  "checkinSessionNotSynced": "Workout not synced yet",
+  "checkinSessionLookupFailed": "Could not load the workout.",
+  "checkinSessionSets": "{count, plural, =1{1 set} other{{count} sets}}",
+  "@checkinSessionSets": {
+    "description": "Séries da sessão no card do check-in.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "checkinSessionReps": "{count} reps",
+  "@checkinSessionReps": {
+    "description": "Repetições totais da sessão.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "checkinSessionVolume": "{volume} kg",
+  "@checkinSessionVolume": {
+    "description": "Volume total da sessão em kg.",
+    "placeholders": {
+      "volume": {"type": "String"}
+    }
+  },
+  "checkinDetailTitle": "Check-in workout",
+  "checkinDetailAnswers": "Student feedback",
+  "checkinDetailColSet": "Set",
+  "checkinDetailColPrescribed": "Prescribed",
+  "checkinDetailColDone": "Done",
+  "checkinDetailSetNo": "Set {number}",
+  "@checkinDetailSetNo": {
+    "description": "Série no detalhe do treino (layout estreito).",
+    "placeholders": {
+      "number": {"type": "int"}
+    }
+  },
+  "checkinDetailNotDone": "Not done",
+  "checkinDetailRevised": "Corrected",
+  "checkinDetailDoneLoad": "{load} kg",
+  "@checkinDetailDoneLoad": {
+    "description": "Carga feita na série.",
+    "placeholders": {
+      "load": {"type": "String"}
+    }
+  },
+  "checkinDetailDoneRpe": "RPE {rpe}",
+  "@checkinDetailDoneRpe": {
+    "description": "RPE informado na série.",
+    "placeholders": {
+      "rpe": {"type": "String"}
+    }
+  },
+  "errorSessionNotFound": "This workout is not available."
 }

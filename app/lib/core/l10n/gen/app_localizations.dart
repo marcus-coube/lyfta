@@ -4958,6 +4958,102 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Essa variação não existe mais ou foi arquivada. Escolha outra.'**
   String get errorVariationNotFound;
+
+  /// No description provided for @checkinSessionNotSynced.
+  ///
+  /// In pt, this message translates to:
+  /// **'Treino ainda não sincronizado'**
+  String get checkinSessionNotSynced;
+
+  /// No description provided for @checkinSessionLookupFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível carregar o treino.'**
+  String get checkinSessionLookupFailed;
+
+  /// Séries da sessão no card do check-in.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, =1{1 série} other{{count} séries}}'**
+  String checkinSessionSets(int count);
+
+  /// Repetições totais da sessão.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count} reps'**
+  String checkinSessionReps(int count);
+
+  /// Volume total da sessão em kg.
+  ///
+  /// In pt, this message translates to:
+  /// **'{volume} kg'**
+  String checkinSessionVolume(String volume);
+
+  /// No description provided for @checkinDetailTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Treino do check-in'**
+  String get checkinDetailTitle;
+
+  /// No description provided for @checkinDetailAnswers.
+  ///
+  /// In pt, this message translates to:
+  /// **'Avaliação do aluno'**
+  String get checkinDetailAnswers;
+
+  /// No description provided for @checkinDetailColSet.
+  ///
+  /// In pt, this message translates to:
+  /// **'Série'**
+  String get checkinDetailColSet;
+
+  /// No description provided for @checkinDetailColPrescribed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Prescrito'**
+  String get checkinDetailColPrescribed;
+
+  /// No description provided for @checkinDetailColDone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Feito'**
+  String get checkinDetailColDone;
+
+  /// Série no detalhe do treino (layout estreito).
+  ///
+  /// In pt, this message translates to:
+  /// **'Série {number}'**
+  String checkinDetailSetNo(int number);
+
+  /// No description provided for @checkinDetailNotDone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não feita'**
+  String get checkinDetailNotDone;
+
+  /// No description provided for @checkinDetailRevised.
+  ///
+  /// In pt, this message translates to:
+  /// **'Corrigida'**
+  String get checkinDetailRevised;
+
+  /// Carga feita na série.
+  ///
+  /// In pt, this message translates to:
+  /// **'{load} kg'**
+  String checkinDetailDoneLoad(String load);
+
+  /// RPE informado na série.
+  ///
+  /// In pt, this message translates to:
+  /// **'RPE {rpe}'**
+  String checkinDetailDoneRpe(String rpe);
+
+  /// No description provided for @errorSessionNotFound.
+  ///
+  /// In pt, this message translates to:
+  /// **'Este treino não está disponível.'**
+  String get errorSessionNotFound;
 }
 
 class _AppLocalizationsDelegate

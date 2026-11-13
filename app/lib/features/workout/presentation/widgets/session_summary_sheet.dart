@@ -59,9 +59,17 @@ class _SessionSummary extends StatelessWidget {
 /// As quatro métricas do treino em grade 2×2 — o resumo final e o modal de
 /// treino concluído mostram a mesma coisa.
 class SessionMetricsGrid extends StatelessWidget {
-  const SessionMetricsGrid({super.key, required this.metrics});
+  const SessionMetricsGrid({
+    super.key,
+    required this.metrics,
+    this.durationKnown = true,
+  });
 
   final SessionMetrics metrics;
+
+  /// Falso quando a duração não é confiável (check-in visto pelo professor,
+  /// P11.2): mostra "—" em vez de `0:00:00`.
+  final bool durationKnown;
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +97,7 @@ class SessionMetricsGrid extends StatelessWidget {
             ),
             _Metric(
               label: l10n.sessionSummaryDuration,
-              value: formatClock(metrics.duration),
+              value: durationKnown ? formatClock(metrics.duration) : '—',
             ),
           ],
         ),

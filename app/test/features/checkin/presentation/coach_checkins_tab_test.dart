@@ -7,7 +7,9 @@ import 'package:lyfta/core/l10n/gen/app_localizations.dart';
 import 'package:lyfta/core/realtime/comms_socket.dart';
 import 'package:lyfta/core/realtime/comms_socket_provider.dart';
 import 'package:lyfta/features/checkin/data/checkin_repository.dart';
+import 'package:lyfta/features/checkin/data/coach_session_repository.dart';
 import 'package:lyfta/features/checkin/domain/checkin.dart';
+import 'package:lyfta/features/checkin/domain/coach_session.dart';
 import 'package:lyfta/features/checkin/presentation/coach_checkins_tab.dart';
 
 WorkoutCheckin _checkin(int n) => WorkoutCheckin(
@@ -43,14 +45,36 @@ class _PagedRepository extends CheckinRepository {
   }
 }
 
+class _LookupRepository extends CoachSessionRepository {
+  _LookupRepository() : super(Dio());
+
+  final calls = <List<String>>[];
+
+  @override
+  Future<Map<String, CoachSession>> lookup(
+    String studentId,
+    List<String> clientIds,
+  ) async {
+    calls.add(clientIds);
+    return const {};
+  }
+}
+
 void main() {
   testWidgets('fila acima de uma página: botão carrega a seguinte e some',
       (tester) async {
     final repository = _PagedRepository();
+    final lookups = _LookupRepository();
+    // Tela alta: o ListView é preguiçoso e os cards ficaram mais altos com a
+    // linha do treino.
+    tester.view.physicalSize = const Size(800, 4000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           checkinRepositoryProvider.overrideWithValue(repository),
+          coachSessionRepositoryProvider.overrideWithValue(lookups),
           commsSocketProvider.overrideWithValue(
             CommsSocketService(
               readAccessToken: () async => null,
@@ -76,6 +100,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.cursors, [null, 'p2']);
+    // Um lookup por página: a segunda só pergunta pelo que a primeira não
+    // trouxe (nada voltou, então as 3 anteriores entram de novo).
+    expect(lookups.calls.first, ['sess0', 'sess1', 'sess2']);
+    expect(lookups.calls.length, 2);
+    expect(lookups.calls.last, containsAll(['sess10', 'sess11']));
     expect(find.byKey(const Key('checkins_load_more')), findsNothing);
     expect(find.byType(LyCard), findsNWidgets(5));
   });

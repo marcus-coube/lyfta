@@ -11,6 +11,7 @@ import '../../features/auth/presentation/signup_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/billing/presentation/my_invoices_screen.dart';
 import '../../features/builder/presentation/plan_builder_screen.dart';
+import '../../features/checkin/presentation/coach_session_screen.dart';
 import '../../features/chat/presentation/chat_screen.dart';
 import '../../features/coach_shell/presentation/coach_shell_screen.dart';
 import '../../features/consent/presentation/consent_screen.dart';
@@ -171,6 +172,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           studentId: state.pathParameters['id']!,
           studentName: state.extra as String?,
           initialTab: StudentTab.parse(state.uri.queryParameters['tab']),
+        ),
+      ),
+      // Treino de um check-in (P11.2): rota própria para sobreviver ao reload
+      // na web; o check-in vem da mesma fila da aba, não de `extra`.
+      GoRoute(
+        path: '/students/:id/sessions/:clientId',
+        builder: (context, state) => CoachSessionScreen(
+          studentId: state.pathParameters['id']!,
+          clientId: state.pathParameters['clientId']!,
         ),
       ),
       // Conversa própria pelo mesmo motivo do builder/evolução: recarregar

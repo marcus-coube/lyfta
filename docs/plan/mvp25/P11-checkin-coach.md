@@ -46,7 +46,7 @@ coach fora do vínculo = 404 `student_not_found`; números batem com o resumo da
 P10.2 para a mesma sessão; testes de handler (feliz, vínculo, não encontrada)
 e de repo (revisão, sessão sem finish).
 
-## - [ ] P11.2 App — check-in com métricas e detalhe do treino (Flutter)
+## - [x] P11.2 App — check-in com métricas e detalhe do treino (Flutter)
 
 **Objetivo:** o professor avalia o check-in olhando o treino.
 **Passos:**
@@ -78,3 +78,10 @@ depois do sync; teste de widget do card (com e sem sessão) e do detalhe.
 - Divergência do app, intencional (spec): duração nula se negativa ou > 12 h; o Dart devolve `Duration.zero` no negativo. Volume ignora log sem carga ou sem reps (igual ao Dart). Volume arredondado a 2 casas.
 - Detalhe casa feito × prescrito por (`exercise_id`, `set_no` contínuo por exercício na sessão), a mesma numeração do app (`TodayData.runs`/`setNoOffset`): exercício repetido em outro bloco do dia casa com offset+1… (`TestCoachSessionDetailRepeatedExercise`). O `set_no` exibido é o do snapshot.
 - `plan_title` vem do plano da versão da sessão (título atual do plano, não congelado no snapshot).
+
+**P11.2 (2026-11-13)**
+- Lookup por página: `coachSessionsProvider(studentId)` (`coach_sessions_controller.dart`) escuta `checkinsProvider` e, a cada mudança da lista (1ª página, "carregar mais", refresh, revisão), chama `POST .../sessions/lookup` em lotes de 50 com os `session_client_id` que ainda não têm sessão. Estado: `found`, `looked`, `failed`. Sessão fora do `found` depois do lookup = "Treino ainda não sincronizado" e é perguntada de novo a cada recarga (ganha a linha depois do sync).
+- Falha do lookup: capturada, o card fica sem a linha e com "Tentar de novo" (`retry()` refaz só o que falhou); a lista nunca cai.
+- Rota nova `/students/:id/sessions/:clientId` (`CoachSessionScreen`); o check-in (respostas e "Marcar como visto") vem do mesmo `checkinsProvider` da aba, não de `extra` — recarregar na web funciona; check-in fora das páginas já carregadas fica sem as respostas no detalhe.
+- Reuso: `SessionMetricsGrid` (ganhou `durationKnown`: "—" quando `duration_seconds` é nulo), `prescriptionLabel`/`formatLoad`/`formatClock`, `LyChip` de rótulo/variação; `CheckinAnswers` extraído do card para servir aos dois. `session_not_found` mapeado em `describeApiError`.
+- `set_no` exibido é o do snapshot. Dívida: `sessions.looked` re-consulta no loadMore os ids ainda não sincronizados das páginas anteriores (custo desprezível, ≤ 50 por lote).

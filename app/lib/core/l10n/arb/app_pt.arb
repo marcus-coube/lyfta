@@ -2473,5 +2473,57 @@
   "variationsArchivedDone": "Variação arquivada.",
   "variationsUnarchivedDone": "Variação desarquivada.",
   "errorVariationNameTaken": "Já existe uma variação ativa com esse nome.",
-  "errorVariationNotFound": "Essa variação não existe mais ou foi arquivada. Escolha outra."
+  "errorVariationNotFound": "Essa variação não existe mais ou foi arquivada. Escolha outra.",
+  "checkinSessionNotSynced": "Treino ainda não sincronizado",
+  "checkinSessionLookupFailed": "Não foi possível carregar o treino.",
+  "checkinSessionSets": "{count, plural, =1{1 série} other{{count} séries}}",
+  "@checkinSessionSets": {
+    "description": "Séries da sessão no card do check-in.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "checkinSessionReps": "{count} reps",
+  "@checkinSessionReps": {
+    "description": "Repetições totais da sessão.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "checkinSessionVolume": "{volume} kg",
+  "@checkinSessionVolume": {
+    "description": "Volume total da sessão em kg.",
+    "placeholders": {
+      "volume": {"type": "String"}
+    }
+  },
+  "checkinDetailTitle": "Treino do check-in",
+  "checkinDetailAnswers": "Avaliação do aluno",
+  "checkinDetailColSet": "Série",
+  "checkinDetailColPrescribed": "Prescrito",
+  "checkinDetailColDone": "Feito",
+  "checkinDetailSetNo": "Série {number}",
+  "@checkinDetailSetNo": {
+    "description": "Série no detalhe do treino (layout estreito).",
+    "placeholders": {
+      "number": {"type": "int"}
+    }
+  },
+  "checkinDetailNotDone": "Não feita",
+  "checkinDetailRevised": "Corrigida",
+  "checkinDetailDoneLoad": "{load} kg",
+  "@checkinDetailDoneLoad": {
+    "description": "Carga feita na série.",
+    "placeholders": {
+      "load": {"type": "String"}
+    }
+  },
+  "checkinDetailDoneRpe": "RPE {rpe}",
+  "@checkinDetailDoneRpe": {
+    "description": "RPE informado na série.",
+    "placeholders": {
+      "rpe": {"type": "String"}
+    }
+  },
+  "errorSessionNotFound": "Este treino não está disponível."
 }

@@ -68,6 +68,8 @@ extension ApiExceptionL10n on ApiException {
       // ou inexistente respondem o mesmo 404.
       case 'student_not_found':
         return l10n.errorStudentNotFound;
+      case 'session_not_found':
+        return l10n.errorSessionNotFound;
       case 'invitation_not_found':
         return l10n.errorInvitationNotFound;
       case 'invitation_already_accepted':

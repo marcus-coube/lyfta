@@ -2828,6 +2828,73 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get errorVariationNotFound =>
       'Essa variação não existe mais ou foi arquivada. Escolha outra.';
+
+  @override
+  String get checkinSessionNotSynced => 'Treino ainda não sincronizado';
+
+  @override
+  String get checkinSessionLookupFailed =>
+      'Não foi possível carregar o treino.';
+
+  @override
+  String checkinSessionSets(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count séries',
+      one: '1 série',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String checkinSessionReps(int count) {
+    return '$count reps';
+  }
+
+  @override
+  String checkinSessionVolume(String volume) {
+    return '$volume kg';
+  }
+
+  @override
+  String get checkinDetailTitle => 'Treino do check-in';
+
+  @override
+  String get checkinDetailAnswers => 'Avaliação do aluno';
+
+  @override
+  String get checkinDetailColSet => 'Série';
+
+  @override
+  String get checkinDetailColPrescribed => 'Prescrito';
+
+  @override
+  String get checkinDetailColDone => 'Feito';
+
+  @override
+  String checkinDetailSetNo(int number) {
+    return 'Série $number';
+  }
+
+  @override
+  String get checkinDetailNotDone => 'Não feita';
+
+  @override
+  String get checkinDetailRevised => 'Corrigida';
+
+  @override
+  String checkinDetailDoneLoad(String load) {
+    return '$load kg';
+  }
+
+  @override
+  String checkinDetailDoneRpe(String rpe) {
+    return 'RPE $rpe';
+  }
+
+  @override
+  String get errorSessionNotFound => 'Este treino não está disponível.';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -5661,4 +5728,71 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   @override
   String get errorVariationNotFound =>
       'Essa variação já não existe ou foi arquivada. Escolhe outra.';
+
+  @override
+  String get checkinSessionNotSynced => 'Treino ainda não sincronizado';
+
+  @override
+  String get checkinSessionLookupFailed =>
+      'Não foi possível carregar o treino.';
+
+  @override
+  String checkinSessionSets(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count séries',
+      one: '1 série',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String checkinSessionReps(int count) {
+    return '$count reps';
+  }
+
+  @override
+  String checkinSessionVolume(String volume) {
+    return '$volume kg';
+  }
+
+  @override
+  String get checkinDetailTitle => 'Treino do check-in';
+
+  @override
+  String get checkinDetailAnswers => 'Avaliação do aluno';
+
+  @override
+  String get checkinDetailColSet => 'Série';
+
+  @override
+  String get checkinDetailColPrescribed => 'Prescrito';
+
+  @override
+  String get checkinDetailColDone => 'Feito';
+
+  @override
+  String checkinDetailSetNo(int number) {
+    return 'Série $number';
+  }
+
+  @override
+  String get checkinDetailNotDone => 'Não feita';
+
+  @override
+  String get checkinDetailRevised => 'Corrigida';
+
+  @override
+  String checkinDetailDoneLoad(String load) {
+    return '$load kg';
+  }
+
+  @override
+  String checkinDetailDoneRpe(String rpe) {
+    return 'RPE $rpe';
+  }
+
+  @override
+  String get errorSessionNotFound => 'Este treino não está disponível.';
 }
