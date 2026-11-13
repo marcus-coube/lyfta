@@ -13,6 +13,7 @@ import '../../../shared/widgets/ly_shell_scaffold.dart';
 import '../../checkin/presentation/checkin_sheet.dart';
 import '../domain/block_runner.dart';
 import '../domain/today.dart';
+import 'exercise_fields.dart';
 import 'rest_timer_controller.dart';
 import 'session_controller.dart';
 import 'widgets/block_card.dart';
@@ -104,13 +105,29 @@ class _SessionPlayerScreenState extends ConsumerState<SessionPlayerScreen> {
   }
 }
 
-class _SessionBody extends ConsumerWidget {
+class _SessionBody extends ConsumerStatefulWidget {
   const _SessionBody({required this.state});
 
   final SessionState state;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_SessionBody> createState() => _SessionBodyState();
+}
+
+class _SessionBodyState extends ConsumerState<_SessionBody> {
+  /// Campos de carga por exercício: vivem o player inteiro, para a lista
+  /// poder descartar cartões fora da tela sem perder o que foi digitado.
+  final _registry = ExerciseFieldsRegistry();
+
+  @override
+  void dispose() {
+    _registry.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = widget.state;
     final runners = BlockRunner.fromRuns(state.today.runs);
 
     return Column(
@@ -130,9 +147,17 @@ class _SessionBody extends ConsumerWidget {
                   final runner = runners[index];
                   // Straight: um cartão por exercício, idêntico ao 1.0.
                   if (!runner.isGrouped) {
-                    return _ExerciseCard(run: runner.runs.single, state: state);
+                    return _ExerciseCard(
+                      run: runner.runs.single,
+                      state: state,
+                      registry: _registry,
+                    );
                   }
-                  return BlockCard(runner: runner, state: state);
+                  return BlockCard(
+                    runner: runner,
+                    state: state,
+                    registry: _registry,
+                  );
                 },
               ),
             ),
@@ -145,10 +170,15 @@ class _SessionBody extends ConsumerWidget {
 }
 
 class _ExerciseCard extends ConsumerWidget {
-  const _ExerciseCard({required this.run, required this.state});
+  const _ExerciseCard({
+    required this.run,
+    required this.state,
+    required this.registry,
+  });
 
   final ExerciseRun run;
   final SessionState state;
+  final ExerciseFieldsRegistry registry;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -156,6 +186,12 @@ class _ExerciseCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final exercise = run.exercise.exercise;
     final previous = state.today.previousLoads[run.exerciseId];
+    final name = exercise?.name ?? l10n.builderUnknownExercise;
+    final fields = registry.forRun(run, name)
+      ..bind(
+        name: name,
+        isLogged: (setNo) => state.logFor(run.exerciseId, setNo) != null,
+      );
 
     return LyCard(
       padding: const EdgeInsets.all(LySpace.x4),
@@ -203,6 +239,7 @@ class _ExerciseCard extends ConsumerWidget {
               prescribed: run.exercise.sets[i],
               previous: previous?.setNoOrNull(run.setNoAt(i)),
               logged: state.logFor(run.exerciseId, run.setNoAt(i)),
+              fields: fields,
               onLog: (reps, load, revises) => _log(
                 context,
                 ref,

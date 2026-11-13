@@ -2247,6 +2247,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sessionVariationClose => 'Close';
 
   @override
+  String get sessionReplicateLoad => 'Copy to the other sets';
+
+  @override
+  String sessionReplicateConfirm(String load, String exercise) {
+    return 'Copy $load kg to all sets of $exercise?';
+  }
+
+  @override
+  String get sessionReplicateAction => 'Copy';
+
+  @override
+  String get sessionReplicateDismiss => 'Dismiss';
+
+  @override
   String get homeCoachTabBilling => 'Billing';
 
   @override

@@ -3,15 +3,15 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** `P10.1`. Decisões D1–D7 confirmadas; nenhuma tarefa travada.
+**Próxima tarefa:** `P10.2`. Decisões D1–D7 confirmadas; nenhuma tarefa travada.
 
 | Fase | Progresso | Situação |
 |---|---|---|
 | P9 — Prescrição (cluster, rótulo, variações) | 4/4 | fechada (2026-11-13) |
-| P10 — Player do aluno | 0/2 | não iniciada |
+| P10 — Player do aluno | 1/2 | em andamento |
 | P11 — Check-in do professor | 0/2 | não iniciada |
 | P12 — Mídia de execução e release | 0/4 | não iniciada |
-| **Total** | **4/12** | |
+| **Total** | **5/12** | |
 
 ## Decisões (detalhe no [README](README.md#decisões-a-confirmar-antes-da-tarefa-indicada))
 
@@ -39,3 +39,4 @@ Nenhum banco novo. Migrations novas: workout `0021`, `0022`; comms `0008`.
 | 2026-11-13 | P9.2 pronta: migration workout `0022` (`set_variations` + `prescribed_sets.variation_id`), CRUD `/v1/variations`, validação no `SaveDraft`, variação no plano, no Hoje e no snapshot |
 | 2026-11-13 | P9.3 pronta: builder com cluster, rótulo e variação por série (chips, menu ⋮), `tempo` em round-trip e tela Variações na aba Biblioteca |
 | 2026-11-13 | P9.4 pronta (P9 fechada): chips de rótulo e variação com (i) na série do player (`LyChip` no design system), `sessionBlockCluster`; cluster conduzido como dropset |
+| 2026-11-13 | P10.1 pronta: replicar carga para as outras séries (estado dos campos em `ExerciseFields`, só tela, sem evento nem fila) |

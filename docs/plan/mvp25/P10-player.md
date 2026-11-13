@@ -12,7 +12,7 @@ Refs normativas: ADR-003.
 
 ---
 
-## - [ ] P10.1 Replicar carga para as outras séries (Flutter)
+## - [x] P10.1 Replicar carga para as outras séries (Flutter)
 
 **Objetivo:** digitar a carga uma vez por exercício.
 **Passos:**
@@ -71,3 +71,12 @@ unitário das métricas (com revisão de série) e de widget do modal (abre na
 ## Notas de execução
 
 (o agente anota aqui descobertas, dívidas e desvios aprovados)
+
+- **P10.1:** o estado da carga subiu do `SetRow` para `ExerciseFields`
+  (`presentation/exercise_fields.dart`, um `ChangeNotifier` por exercício do
+  dia, chave `exerciseId:setNoOffset`), guardado num `ExerciseFieldsRegistry`
+  no `_SessionBodyState` do player. `_ExerciseCard` e `BlockCard` passam o
+  `fields` do exercício a cada `SetRow` (em bi-set as séries de A ficam em
+  rodadas diferentes mas dividem o mesmo objeto). `SetRow.fields` é opcional:
+  sem ele a linha segue dona do controller. Efeito colateral bom: o que foi
+  digitado sobrevive à lista descartar o cartão fora da tela.

@@ -7,6 +7,7 @@ import '../../../../shared/domain/plan.dart';
 import '../../domain/set_input.dart';
 import '../../domain/today.dart';
 import '../../domain/workout_event.dart';
+import '../exercise_fields.dart';
 import '../prescription_format.dart';
 
 /// Callback de registro: repetições, carga e — quando é correção — o
@@ -25,6 +26,7 @@ class SetRow extends StatefulWidget {
     required this.onLog,
     this.previous,
     this.logged,
+    this.fields,
     super.key,
   });
 
@@ -33,6 +35,10 @@ class SetRow extends StatefulWidget {
   final PreviousLoadSet? previous;
   final LocalSetLog? logged;
   final OnLogSet onLog;
+
+  /// Campos do exercício, quando o dono quer replicar carga entre séries
+  /// (P10.1). Sem ele a linha é dona do seu controller, como antes.
+  final ExerciseFields? fields;
 
   @override
   State<SetRow> createState() => _SetRowState();
@@ -71,7 +77,9 @@ class _SetRowState extends State<SetRow> {
     super.didChangeDependencies();
     if (!_loadInitialized) {
       final locale = Localizations.localeOf(context).toString();
-      _load = TextEditingController(text: _initialLoad(locale));
+      final initial = _initialLoad(locale);
+      _load = widget.fields?.loadFor(widget.setNo, initial) ??
+          TextEditingController(text: initial);
       _loadInitialized = true;
     }
   }
@@ -79,7 +87,7 @@ class _SetRowState extends State<SetRow> {
   @override
   void dispose() {
     _reps.dispose();
-    _load.dispose();
+    if (widget.fields == null) _load.dispose();
     super.dispose();
   }
 
@@ -137,6 +145,7 @@ class _SetRowState extends State<SetRow> {
                 onChanged: () {
                   if (_rejected != null) setState(() => _rejected = null);
                 },
+                onLoadChanged: () => widget.fields?.loadEdited(widget.setNo),
               )
             : _LoggedSummary(log: logged);
 
@@ -169,17 +178,62 @@ class _SetRowState extends State<SetRow> {
 
         // Sem rótulo nem variação a linha é idêntica à do 2.0.
         final chips = _SetChips(prescribed: widget.prescribed);
+        final fields = widget.fields;
+        final base = chips.isEmpty
+            ? row
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [row, chips],
+              );
+        Widget body = base;
+        if (fields != null && logged == null) {
+          body = ListenableBuilder(
+            listenable: fields,
+            builder: (context, _) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                base,
+                if (fields.offerFor(widget.setNo))
+                  _ReplicateOffer(
+                    onReplicate: _askReplicate,
+                    onDismiss: fields.dismiss,
+                  ),
+              ],
+            ),
+          );
+        }
         return Padding(
           padding: const EdgeInsets.only(bottom: LySpace.x3),
-          child: chips.isEmpty
-              ? row
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [row, chips],
-                ),
+          child: body,
         );
       },
     );
+  }
+
+  /// "Replicar X kg para todas as séries de {exercício}?" — confirmar só
+  /// preenche os campos (P10.1); a validação 0–1.000 vem no registro.
+  Future<void> _askReplicate() async {
+    final fields = widget.fields!;
+    final l10n = AppLocalizations.of(context);
+    final load = fields.sourceText(widget.setNo);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        content: Text(l10n.sessionReplicateConfirm(load, fields.exerciseName)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          TextButton(
+            key: const Key('replicate-confirm'),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.sessionReplicateAction),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) fields.replicate(widget.setNo);
   }
 
   /// Correção de uma série já registrada. Não edita o fato: manda outro log
@@ -196,6 +250,35 @@ class _SetRowState extends State<SetRow> {
     );
     if (result == null) return;
     await _submit(revises: logged.clientId, reps: result.$1, load: result.$2);
+  }
+}
+
+/// Ação sob a linha: replicar a carga digitada para as outras séries.
+class _ReplicateOffer extends StatelessWidget {
+  const _ReplicateOffer({required this.onReplicate, required this.onDismiss});
+
+  final VoidCallback onReplicate;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Row(
+      children: [
+        TextButton.icon(
+          key: const Key('replicate-offer'),
+          onPressed: onReplicate,
+          icon: const Icon(Icons.copy_all_outlined),
+          label: Text(l10n.sessionReplicateLoad),
+        ),
+        IconButton(
+          key: const Key('replicate-dismiss'),
+          onPressed: onDismiss,
+          tooltip: l10n.sessionReplicateDismiss,
+          icon: const Icon(Icons.close),
+        ),
+      ],
+    );
   }
 }
 
@@ -338,6 +421,7 @@ class _Inputs extends StatelessWidget {
     required this.repsInvalid,
     required this.loadInvalid,
     required this.onChanged,
+    required this.onLoadChanged,
   });
 
   final TextEditingController reps;
@@ -346,6 +430,7 @@ class _Inputs extends StatelessWidget {
   final bool repsInvalid;
   final bool loadInvalid;
   final VoidCallback onChanged;
+  final VoidCallback onLoadChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -371,7 +456,10 @@ class _Inputs extends StatelessWidget {
             enabled: !saving,
             decimal: true,
             errorText: loadInvalid ? l10n.sessionLoadOutOfRange : null,
-            onChanged: onChanged,
+            onChanged: () {
+              onChanged();
+              onLoadChanged();
+            },
           ),
         ),
       ],

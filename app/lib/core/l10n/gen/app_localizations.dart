@@ -3969,6 +3969,30 @@ abstract class AppLocalizations {
   /// **'Fechar'**
   String get sessionVariationClose;
 
+  /// No description provided for @sessionReplicateLoad.
+  ///
+  /// In pt, this message translates to:
+  /// **'Replicar para as outras séries'**
+  String get sessionReplicateLoad;
+
+  /// Pergunta do diálogo de replicar a carga digitada para as demais séries do exercício.
+  ///
+  /// In pt, this message translates to:
+  /// **'Replicar {load} kg para todas as séries de {exercise}?'**
+  String sessionReplicateConfirm(String load, String exercise);
+
+  /// No description provided for @sessionReplicateAction.
+  ///
+  /// In pt, this message translates to:
+  /// **'Replicar'**
+  String get sessionReplicateAction;
+
+  /// No description provided for @sessionReplicateDismiss.
+  ///
+  /// In pt, this message translates to:
+  /// **'Dispensar'**
+  String get sessionReplicateDismiss;
+
   /// Aba do professor com faturas e planos de mensalidade.
   ///
   /// In pt, this message translates to:

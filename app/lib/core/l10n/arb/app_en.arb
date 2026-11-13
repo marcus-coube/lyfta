@@ -674,6 +674,17 @@
   "sessionBlockCluster": "Do the mini-sets back to back, with short rests between them, keeping the same weight.",
   "sessionVariationInfo": "About this variation",
   "sessionVariationClose": "Close",
+  "sessionReplicateLoad": "Copy to the other sets",
+  "sessionReplicateConfirm": "Copy {load} kg to all sets of {exercise}?",
+  "@sessionReplicateConfirm": {
+    "description": "Pergunta do diálogo de replicar a carga digitada para as demais séries do exercício.",
+    "placeholders": {
+      "load": {"type": "String"},
+      "exercise": {"type": "String"}
+    }
+  },
+  "sessionReplicateAction": "Copy",
+  "sessionReplicateDismiss": "Dismiss",
   "homeCoachTabBilling": "Billing",
   "billingTabInvoices": "Invoices",
   "billingTabPlans": "Plans",

@@ -651,6 +651,17 @@
   "sessionBlockCluster": "Faça as mini-séries em sequência, com descanso curto entre elas, mantendo a mesma carga.",
   "sessionVariationInfo": "Sobre a variação",
   "sessionVariationClose": "Fechar",
+  "sessionReplicateLoad": "Replicar para as outras séries",
+  "sessionReplicateConfirm": "Replicar {load} kg para todas as séries de {exercise}?",
+  "@sessionReplicateConfirm": {
+    "description": "Pergunta do diálogo de replicar a carga digitada para as demais séries do exercício.",
+    "placeholders": {
+      "load": {"type": "String"},
+      "exercise": {"type": "String"}
+    }
+  },
+  "sessionReplicateAction": "Replicar",
+  "sessionReplicateDismiss": "Dispensar",
   "homeCoachTabBilling": "Financeiro",
   "billingTabInvoices": "Faturas",
   "billingTabPlans": "Planos",

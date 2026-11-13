@@ -2248,6 +2248,20 @@ class AppLocalizationsPt extends AppLocalizations {
   String get sessionVariationClose => 'Fechar';
 
   @override
+  String get sessionReplicateLoad => 'Replicar para as outras séries';
+
+  @override
+  String sessionReplicateConfirm(String load, String exercise) {
+    return 'Replicar $load kg para todas as séries de $exercise?';
+  }
+
+  @override
+  String get sessionReplicateAction => 'Replicar';
+
+  @override
+  String get sessionReplicateDismiss => 'Dispensar';
+
+  @override
   String get homeCoachTabBilling => 'Financeiro';
 
   @override
@@ -5049,6 +5063,20 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get sessionVariationClose => 'Fechar';
+
+  @override
+  String get sessionReplicateLoad => 'Replicar para as outras séries';
+
+  @override
+  String sessionReplicateConfirm(String load, String exercise) {
+    return 'Replicar $load kg para todas as séries de $exercise?';
+  }
+
+  @override
+  String get sessionReplicateAction => 'Replicar';
+
+  @override
+  String get sessionReplicateDismiss => 'Dispensar';
 
   @override
   String get homeCoachTabBilling => 'Financeiro';

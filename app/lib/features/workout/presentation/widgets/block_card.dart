@@ -10,6 +10,8 @@ import '../../../../shared/domain/plan.dart';
 import '../../../../shared/l10n/plan_l10n.dart';
 import '../../../../shared/widgets/exercise_media.dart';
 import '../../domain/block_runner.dart';
+import '../../domain/today.dart';
+import '../exercise_fields.dart';
 import '../rest_timer_controller.dart';
 import '../session_controller.dart';
 import 'set_row.dart';
@@ -19,10 +21,18 @@ import 'set_row.dart';
 /// é o mesmo da linha do straight — só a ordem e o descanso vêm do
 /// [BlockRunner].
 class BlockCard extends ConsumerWidget {
-  const BlockCard({required this.runner, required this.state, super.key});
+  const BlockCard({
+    required this.runner,
+    required this.state,
+    this.registry,
+    super.key,
+  });
 
   final BlockRunner runner;
   final SessionState state;
+
+  /// Campos por exercício (P10.1); sem ele não há replicar carga.
+  final ExerciseFieldsRegistry? registry;
 
   bool _isDone(BlockStep s) => state.logFor(s.exerciseId, s.setNo) != null;
 
@@ -162,12 +172,24 @@ class BlockCard extends ConsumerWidget {
             prescribed: step.run.exercise.sets[step.setIndex],
             previous: previous?.setNoOrNull(step.setNo),
             logged: state.logFor(step.exerciseId, step.setNo),
+            fields: _fieldsFor(step.run, name),
             onLog: (reps, load, revises) =>
                 _log(context, ref, step, reps, load, revises),
           ),
         ],
       ),
     );
+  }
+
+  /// Séries do mesmo exercício ficam em rodadas diferentes, mas dividem o
+  /// mesmo [ExerciseFields].
+  ExerciseFields? _fieldsFor(ExerciseRun run, String name) {
+    final fields = registry?.forRun(run, name);
+    fields?.bind(
+      name: name,
+      isLogged: (setNo) => state.logFor(run.exerciseId, setNo) != null,
+    );
+    return fields;
   }
 
   Future<void> _log(
