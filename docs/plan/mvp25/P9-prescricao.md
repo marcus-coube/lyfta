@@ -38,7 +38,7 @@ Refs normativas: ADR-004, ADR-018, [ADR-019](../../adr/ADR-019-prescricao-cluste
 copia rótulo; `block_type` desconhecido segue 422; testes de handler (feliz +
 rótulo de 25 caracteres) e de repo do snapshot.
 
-## - [ ] P9.2 Variações (workout)
+## - [x] P9.2 Variações (workout)
 
 **Objetivo:** cadastro de variações do tenant e vínculo por série.
 **Passos:**
@@ -144,3 +144,29 @@ chips e modal; treino straight sem rótulo fica idêntico ao 2.0.
 - Passo 6 (tempo), **para a P9.3**: o servidor já grava/devolve `tempo`; o
   `PrescribedSet` do app precisa modelar o campo e devolvê-lo no `PUT .../draft`
   (hoje a cadência se perde a cada salvamento). Nada mudou no servidor.
+
+**P9.2 (2026-11-13)**
+- Migration `0022_set_variations` (up → down 1 → up verificado). Além do pedido:
+  CHECK de tamanho também em `name`/`description`, `created_by` sem FK (id do
+  identity, ADR-013) e índice parcial `(tenant_id, variation_id)` em
+  `prescribed_sets`. A FK `variation_id` não tem `ON DELETE` (não há DELETE).
+- Validação (422 `variation_not_found`) vive no repo (`assertVariationsUsable`,
+  dentro da transação do `SaveDraft`), porque a FK ignora RLS e precisa de banco;
+  `parseSet` só checa o formato do UUID (400 `validation_error` em
+  `...variation_id`, vazio = sem variação). Cópias de árvore (modelo, duplicar,
+  reaplicar) **não** validam: copiam o que já existe, inclusive arquivada.
+- "Série que já apontava": as séries do rascunho não têm identidade estável (o
+  `PUT .../draft` reescreve a árvore), então o critério é por contagem: uma
+  variação arquivada pode aparecer em até N séries, N = quantas séries da
+  **última versão** do plano (rascunho ou publicada) já a usam. Trocar uma série
+  para a arquivada, ou acrescentar uma, estoura N e é recusado.
+- `GET /v1/plans/{id}` e `/v1/me/today` compartilham a serialização
+  (`daysToDTO`): ambos devolvem `variation: {id, name, description}` (o `id` vai
+  junto no Hoje; inofensivo, o aluno só usa nome/descrição). O snapshot da sessão
+  (`daySnapshotQuery`) copia só `{name, description}` e fica congelado.
+- Erro de campo malformado segue 400 `validation_error` (padrão do builder), não
+  422; 422 só para `variation_not_found`.
+- Pendência para a P9.3: `variation_id` é só escrita e `variation` só leitura no
+  `setDTO`; o app deve devolver o `variation_id` no `PUT .../draft` (e o `tempo`).
+  Exclusão de conta: `set_variations.created_by` não é anonimizado (é
+  conteúdo do tenant); revisar se a LGPD exigir.

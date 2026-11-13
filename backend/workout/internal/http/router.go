@@ -27,6 +27,7 @@ func NewRouter(
 	erasureHandler *ErasureHandler,
 	overviewHandler *OverviewHandler,
 	todayHandler *CoachTodayHandler,
+	variationHandler *VariationHandler,
 	linker StudentLinker,
 ) http.Handler {
 	r := chi.NewRouter()
@@ -125,6 +126,14 @@ func NewRouter(
 			r.Post("/templates/{id}/assign", planHandler.AssignTemplate)
 			r.Get("/templates/{id}/recipients", planHandler.ListRecipients)
 			r.Post("/templates/{id}/reapply", planHandler.ReapplyTemplate)
+
+			// Variações de série do tenant (ADR-019, P9.2): owner e coach
+			// leem e escrevem; não há DELETE (só arquivar).
+			r.Get("/variations", variationHandler.List)
+			r.Post("/variations", variationHandler.Create)
+			r.Put("/variations/{id}", variationHandler.Update)
+			r.Post("/variations/{id}/archive", variationHandler.Archive)
+			r.Post("/variations/{id}/unarchive", variationHandler.Unarchive)
 
 			// Resumo em lote (último treino + plano ativo) da página de
 			// alunos; o vínculo é filtrado id a id no handler.

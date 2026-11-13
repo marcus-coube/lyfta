@@ -190,15 +190,15 @@ func (r *PlanRepo) AddPrescribedSet(ctx context.Context, s domain.PrescribedSet)
 	err = WithTenant(ctx, r.pool, s.TenantID, func(tx pgx.Tx) error {
 		const q = `
 			INSERT INTO prescribed_sets (id, tenant_id, block_exercise_id, set_no, reps_min, reps_max,
-			                             target_load_kg, target_unit, target_value, rest_seconds, tempo, label)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`
+			                             target_load_kg, target_unit, target_value, rest_seconds, tempo, label, variation_id)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`
 		var unit any
 		if s.TargetUnit != nil {
 			unit = string(*s.TargetUnit)
 		}
 		_, execErr := tx.Exec(ctx, q,
 			s.ID, s.TenantID, s.BlockExerciseID, s.SetNo, s.RepsMin, s.RepsMax,
-			s.TargetLoadKg, unit, s.TargetValue, s.RestSeconds, nullString(s.Tempo), s.Label,
+			s.TargetLoadKg, unit, s.TargetValue, s.RestSeconds, nullString(s.Tempo), s.Label, s.VariationID,
 		)
 		return execErr
 	})
@@ -356,8 +356,10 @@ func versionTreeTx(ctx context.Context, tx pgx.Tx, versionID string) ([]domain.D
 
 		const qSets = `
 			SELECT ps.id, ps.tenant_id, ps.block_exercise_id, ps.set_no, ps.reps_min, ps.reps_max,
-			       ps.target_load_kg, ps.target_unit, ps.target_value, ps.rest_seconds, COALESCE(ps.tempo, ''), ps.label
+			       ps.target_load_kg, ps.target_unit, ps.target_value, ps.rest_seconds, COALESCE(ps.tempo, ''), ps.label,
+			       ps.variation_id, sv.name, sv.description
 			FROM prescribed_sets ps
+			LEFT JOIN set_variations sv ON sv.id = ps.variation_id
 			JOIN block_exercises be ON be.id = ps.block_exercise_id
 			JOIN workout_blocks b ON b.id = be.block_id
 			JOIN workout_days d ON d.id = b.day_id
@@ -368,11 +370,22 @@ func versionTreeTx(ctx context.Context, tx pgx.Tx, versionID string) ([]domain.D
 			return err
 		}
 		for rows.Next() {
-			var st domain.PrescribedSet
+			var (
+				st      domain.PrescribedSet
+				varName *string
+				varDesc *string
+			)
 			if err := rows.Scan(&st.ID, &st.TenantID, &st.BlockExerciseID, &st.SetNo, &st.RepsMin, &st.RepsMax,
-				&st.TargetLoadKg, &st.TargetUnit, &st.TargetValue, &st.RestSeconds, &st.Tempo, &st.Label); err != nil {
+				&st.TargetLoadKg, &st.TargetUnit, &st.TargetValue, &st.RestSeconds, &st.Tempo, &st.Label,
+				&st.VariationID, &varName, &varDesc); err != nil {
 				rows.Close()
 				return err
+			}
+			if st.VariationID != nil && varName != nil {
+				st.Variation = &domain.VariationRef{ID: *st.VariationID, Name: *varName}
+				if varDesc != nil {
+					st.Variation.Description = *varDesc
+				}
 			}
 			pos := exerciseIdx[st.BlockExerciseID]
 			be := &days[pos.day].Blocks[pos.block].Exercises[pos.exercise]
@@ -577,6 +590,9 @@ func (r *PlanRepo) SaveDraft(ctx context.Context, tenantID, planID string, in Dr
 			return err
 		}
 
+		if err := assertVariationsUsable(ctx, tx, planID, in.Days); err != nil {
+			return err
+		}
 		v, err := replaceDraftTreeTx(ctx, tx, tenantID, planID, in.Days)
 		if err != nil {
 			return err
@@ -589,7 +605,8 @@ func (r *PlanRepo) SaveDraft(ctx context.Context, tenantID, planID string, in Dr
 		return domain.PlanVersion{}, nil, ErrNotFound
 	}
 	var unknown UnknownExerciseError
-	if errors.As(err, &unknown) || errors.Is(err, ErrPlanArchived) {
+	var unknownVariation UnknownVariationError
+	if errors.As(err, &unknown) || errors.As(err, &unknownVariation) || errors.Is(err, ErrPlanArchived) {
 		return domain.PlanVersion{}, nil, err
 	}
 	if err != nil {
@@ -691,10 +708,10 @@ func insertTreeTx(ctx context.Context, tx pgx.Tx, tenantID, versionID string, da
 					}
 					if _, err := tx.Exec(ctx, `
 						INSERT INTO prescribed_sets (id, tenant_id, block_exercise_id, set_no, reps_min, reps_max,
-						                             target_load_kg, target_unit, target_value, rest_seconds, tempo, label)
-						VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+						                             target_load_kg, target_unit, target_value, rest_seconds, tempo, label, variation_id)
+						VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
 						set.ID, set.TenantID, set.BlockExerciseID, set.SetNo, set.RepsMin, set.RepsMax,
-						set.TargetLoadKg, unit, set.TargetValue, set.RestSeconds, nullString(set.Tempo), set.Label); err != nil {
+						set.TargetLoadKg, unit, set.TargetValue, set.RestSeconds, nullString(set.Tempo), set.Label, set.VariationID); err != nil {
 						return nil, err
 					}
 					be.Sets = append(be.Sets, set)

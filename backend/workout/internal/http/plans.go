@@ -71,6 +71,15 @@ type setDTO struct {
 	RestSeconds  *int     `json:"rest_seconds"`
 	Tempo        string   `json:"tempo,omitempty"`
 	Label        *string  `json:"label,omitempty"`
+	// VariationID só entra na escrita; a leitura devolve Variation (join).
+	VariationID *string       `json:"variation_id,omitempty"`
+	Variation   *variationRef `json:"variation,omitempty"`
+}
+
+type variationRef struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 type blockExerciseDTO struct {
@@ -310,12 +319,16 @@ func (h *PlanHandler) UpdateDraft(w http.ResponseWriter, r *http.Request) {
 	}
 	version, _, err := h.plans.SaveDraft(r.Context(), claims.TenantID, plan.ID, in)
 	var unknown repo.UnknownExerciseError
+	var unknownVariation repo.UnknownVariationError
 	switch {
 	case errors.Is(err, repo.ErrNotFound):
 		writeError(w, errNotFound("plan"))
 		return
 	case errors.As(err, &unknown):
 		writeError(w, errUnknownExercise(unknown.ExerciseID))
+		return
+	case errors.As(err, &unknownVariation):
+		writeError(w, errVariationNotFound(unknownVariation.VariationID))
 		return
 	case errors.Is(err, repo.ErrPlanArchived):
 		writeError(w, archivedError(plan))
@@ -650,6 +663,17 @@ func parseSet(s setDTO, prefix string) (domain.PrescribedSet, *APIError) {
 				return domain.PrescribedSet{}, fail(prefix + ".label")
 			}
 			set.Label = &label
+		}
+	}
+
+	if s.VariationID != nil {
+		// Existência/arquivamento são checados no repo (precisa do banco);
+		// aqui só o formato. Vazio = sem variação.
+		if id := strings.TrimSpace(*s.VariationID); id != "" {
+			if _, err := uuid.Parse(id); err != nil {
+				return domain.PrescribedSet{}, fail(prefix + ".variation_id")
+			}
+			set.VariationID = &id
 		}
 	}
 

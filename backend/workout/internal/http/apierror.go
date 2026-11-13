@@ -82,6 +82,14 @@ var (
 	errUnknownExercise = func(exerciseID string) APIError {
 		return newAPIError(http.StatusUnprocessableEntity, "unknown_exercise", "exercise_id", exerciseID)
 	}
+	// A série aponta para variação inexistente no tenant ou arquivada (ADR-019).
+	errVariationNotFound = func(variationID string) APIError {
+		return newAPIError(http.StatusUnprocessableEntity, "variation_not_found", "variation_id", variationID)
+	}
+	// Nome de variação repetido entre as ativas do tenant (ADR-019).
+	errVariationNameTaken = func() APIError {
+		return newAPIError(http.StatusConflict, "variation_name_taken")
+	}
 	// O lote de sync veio maior que o teto: o device tem de fatiar a fila.
 	errBatchTooLarge = func(maxEvents int) APIError {
 		return newAPIError(http.StatusBadRequest, "batch_too_large", "max_events", maxEvents)

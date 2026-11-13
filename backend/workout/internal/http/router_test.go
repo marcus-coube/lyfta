@@ -150,6 +150,7 @@ func newTestRouterWithLinker(t *testing.T, publicPEM string, pool *pgxpool.Pool,
 		whttp.NewErasureHandler(logger, repo.NewErasureRepo(pool)),
 		whttp.NewOverviewHandler(logger, repo.NewOverviewRepo(pool), linker),
 		whttp.NewCoachTodayHandler(logger, repo.NewTodayRepo(pool), todayRoster),
+		whttp.NewVariationHandler(logger, repo.NewVariationRepo(pool)),
 		linker,
 	)
 }

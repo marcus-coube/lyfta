@@ -157,6 +157,9 @@ func (h planView) daysToDTO(ctx context.Context, tenantID string, days []domain.
 					if s.TargetUnit != nil {
 						set.TargetUnit = string(*s.TargetUnit)
 					}
+					if s.Variation != nil {
+						set.Variation = &variationRef{ID: s.Variation.ID, Name: s.Variation.Name, Description: s.Variation.Description}
+					}
 					item.Sets = append(item.Sets, set)
 				}
 				block.Exercises = append(block.Exercises, item)

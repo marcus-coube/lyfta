@@ -130,6 +130,17 @@ type PrescribedSet struct {
 	Tempo           string
 	// Label é o rótulo livre do coach ("Aquecimento"), até 24 caracteres (ADR-019).
 	Label *string
+	// VariationID é a variação cadastrada vinculada à série (ADR-019); Variation
+	// é o resumo lido com join (nome e descrição atuais, ou os copiados no snapshot).
+	VariationID *string
+	Variation   *VariationRef
+}
+
+// VariationRef é o que a leitura da série carrega da variação.
+type VariationRef struct {
+	ID          string
+	Name        string
+	Description string
 }
 
 // PlanSummary é a linha da lista de planos de um aluno: o plano com o resumo

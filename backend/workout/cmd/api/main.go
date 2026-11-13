@@ -91,6 +91,7 @@ func run(logger *slog.Logger) error {
 		whttp.NewErasureHandler(logger, repo.NewErasureRepo(pool)),
 		whttp.NewOverviewHandler(logger, repo.NewOverviewRepo(pool), coachLinks),
 		whttp.NewCoachTodayHandler(logger, repo.NewTodayRepo(pool), coachLinks),
+		whttp.NewVariationHandler(logger, repo.NewVariationRepo(pool)),
 		coachLinks,
 	)
 

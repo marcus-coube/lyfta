@@ -541,7 +541,11 @@ const daySnapshotQuery = `
 	                                   'target_value', ps.target_value,
 	                                   'rest_seconds', ps.rest_seconds,
 	                                   'tempo', ps.tempo,
-	                                   'label', ps.label
+	                                   'label', ps.label,
+	                                   'variation', (
+	                                       SELECT jsonb_build_object('name', sv.name, 'description', sv.description)
+	                                       FROM set_variations sv WHERE sv.id = ps.variation_id
+	                                   )
 	                               ) ORDER BY ps.set_no)
 	                               FROM prescribed_sets ps WHERE ps.block_exercise_id = be.id
 	                           ), '[]'::jsonb)
