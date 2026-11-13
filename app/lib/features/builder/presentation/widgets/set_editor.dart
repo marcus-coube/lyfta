@@ -5,6 +5,7 @@ import '../../../../core/design_system/design_system.dart';
 import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../shared/domain/plan.dart';
 import '../../../../shared/l10n/plan_l10n.dart';
+import 'set_editor_dialogs.dart';
 
 /// Editor da prescrição estruturada de um exercício (ADR-012 §4).
 ///
@@ -57,8 +58,10 @@ class SetEditor extends StatelessWidget {
                       // Objetos novos (e não só campos copiados): cada linha
                       // guarda os controllers do que mostrou na 1ª montagem, e
                       // a chave por objeto os recria com o valor novo.
+                      // Rótulo não vai junto ("Aquecimento" é da primeira);
+                      // a variação vai.
                       for (var j = i + 1; j < sets.length; j++) {
-                        sets[j] = sets[i].copy();
+                        sets[j] = sets[i].copy(keepLabel: false);
                       }
                       onChanged();
                     }
@@ -270,14 +273,35 @@ class _SetRowState extends State<_SetRow> {
       onPressed: widget.onDuplicate,
       icon: Icon(Icons.copy_outlined, size: 18, color: c.textSecondary),
     );
-    // Remover e copiar para as próximas dividem um menu: ficam longe do
-    // gesto mais usado (duplicar) e não custam largura a mais na linha.
+    // Rótulo, variação, copiar para as próximas e remover dividem um menu:
+    // ficam longe do gesto mais usado (duplicar) e não custam largura a mais
+    // na linha.
     final more = PopupMenuButton<String>(
       key: Key('set-${widget.index}-menu'),
       icon: Icon(Icons.more_vert, size: 18, color: c.textSecondary),
-      onSelected: (action) =>
-          action == 'copy' ? widget.onCopyToNext!() : widget.onRemove!(),
+      onSelected: (action) {
+        switch (action) {
+          case 'label':
+            _editLabel();
+          case 'variation':
+            _editVariation();
+          case 'copy':
+            widget.onCopyToNext!();
+          default:
+            widget.onRemove!();
+        }
+      },
       itemBuilder: (context) => [
+        PopupMenuItem(
+          key: Key('set-${widget.index}-label-action'),
+          value: 'label',
+          child: Text(l10n.builderSetLabelAction),
+        ),
+        PopupMenuItem(
+          key: Key('set-${widget.index}-variation-action'),
+          value: 'variation',
+          child: Text(l10n.builderSetVariationAction),
+        ),
         if (widget.onCopyToNext != null)
           PopupMenuItem(
             key: Key('set-${widget.index}-copy-next'),
@@ -295,7 +319,7 @@ class _SetRowState extends State<_SetRow> {
     final actions = widget.readOnly ? const <Widget>[] : [duplicate, more];
     const gap = SizedBox(width: LySpace.x2);
 
-    return LayoutBuilder(
+    final fields = LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth >= _singleRowMinWidth) {
           return Row(
@@ -322,6 +346,101 @@ class _SetRowState extends State<_SetRow> {
           ],
         );
       },
+    );
+
+    final label = widget.set.label;
+    final variation = widget.set.variation;
+    if ((label == null || label.isEmpty) && variation == null) return fields;
+
+    // Chips abaixo da linha — visíveis também em leitura (sem menu).
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        fields,
+        Padding(
+          padding: const EdgeInsets.only(left: _indexWidth, top: LySpace.x1),
+          child: Wrap(
+            spacing: LySpace.x2,
+            runSpacing: LySpace.x1,
+            children: [
+              if (label != null && label.isNotEmpty)
+                _SetChip(
+                  key: Key('set-${widget.index}-label-chip'),
+                  icon: Icons.label_outline,
+                  text: label,
+                  color: c.warning,
+                ),
+              if (variation != null)
+                _SetChip(
+                  key: Key('set-${widget.index}-variation-chip'),
+                  icon: Icons.tune,
+                  text: variation.name,
+                  color: c.info,
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _editLabel() async {
+    final result = await showSetLabelDialog(context, initial: widget.set.label);
+    if (result == null || !mounted) return;
+    setState(() => widget.set.label = result.isEmpty ? null : result);
+    widget.onChanged();
+  }
+
+  Future<void> _editVariation() async {
+    final choice = await showVariationPicker(
+      context,
+      currentId: widget.set.variation?.id,
+    );
+    if (choice == null || !mounted) return;
+    setState(() => widget.set.variation = choice.variation);
+    widget.onChanged();
+  }
+}
+
+/// Chip informativo sob a linha da série (rótulo ou variação).
+class _SetChip extends StatelessWidget {
+  const _SetChip({
+    required this.icon,
+    required this.text,
+    required this.color,
+    super.key,
+  });
+
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: LySpace.x2,
+        vertical: LySpace.x1,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: LyRadius.pill,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: LySpace.x1),
+          Flexible(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: LyType.caption(context.ly.textPrimary),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

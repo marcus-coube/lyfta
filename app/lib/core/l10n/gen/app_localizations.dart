@@ -4694,6 +4694,198 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Recebido nos últimos 6 meses'**
   String get dashboardCardSeries;
+
+  /// No description provided for @builderBlockCluster.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cluster'**
+  String get builderBlockCluster;
+
+  /// No description provided for @builderSetLabelAction.
+  ///
+  /// In pt, this message translates to:
+  /// **'Rótulo…'**
+  String get builderSetLabelAction;
+
+  /// No description provided for @builderSetVariationAction.
+  ///
+  /// In pt, this message translates to:
+  /// **'Variação…'**
+  String get builderSetVariationAction;
+
+  /// No description provided for @builderLabelTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Rótulo da série'**
+  String get builderLabelTitle;
+
+  /// No description provided for @builderLabelField.
+  ///
+  /// In pt, this message translates to:
+  /// **'Rótulo'**
+  String get builderLabelField;
+
+  /// No description provided for @builderLabelHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Vazio remove o rótulo.'**
+  String get builderLabelHint;
+
+  /// No description provided for @builderLabelSuggestWarmup.
+  ///
+  /// In pt, this message translates to:
+  /// **'Aquecimento'**
+  String get builderLabelSuggestWarmup;
+
+  /// No description provided for @builderLabelSuggestRecognition.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reconhecimento'**
+  String get builderLabelSuggestRecognition;
+
+  /// No description provided for @builderLabelSuggestTopSet.
+  ///
+  /// In pt, this message translates to:
+  /// **'Top set'**
+  String get builderLabelSuggestTopSet;
+
+  /// No description provided for @builderLabelSuggestBackOff.
+  ///
+  /// In pt, this message translates to:
+  /// **'Back-off'**
+  String get builderLabelSuggestBackOff;
+
+  /// No description provided for @builderVariationTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Variação da série'**
+  String get builderVariationTitle;
+
+  /// No description provided for @builderVariationSearch.
+  ///
+  /// In pt, this message translates to:
+  /// **'Buscar variação'**
+  String get builderVariationSearch;
+
+  /// No description provided for @builderVariationNone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma'**
+  String get builderVariationNone;
+
+  /// No description provided for @builderVariationNew.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova variação'**
+  String get builderVariationNew;
+
+  /// No description provided for @builderVariationEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma variação cadastrada.'**
+  String get builderVariationEmpty;
+
+  /// No description provided for @libraryTabExercises.
+  ///
+  /// In pt, this message translates to:
+  /// **'Exercícios'**
+  String get libraryTabExercises;
+
+  /// No description provided for @libraryTabVariations.
+  ///
+  /// In pt, this message translates to:
+  /// **'Variações'**
+  String get libraryTabVariations;
+
+  /// No description provided for @variationsSearchLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Buscar variação'**
+  String get variationsSearchLabel;
+
+  /// No description provided for @variationsNew.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova variação'**
+  String get variationsNew;
+
+  /// No description provided for @variationsEdit.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editar variação'**
+  String get variationsEdit;
+
+  /// No description provided for @variationsEmpty.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nenhuma variação ainda. Cadastre, por exemplo, \"Pausa no fundo\" e use nas séries do treino.'**
+  String get variationsEmpty;
+
+  /// No description provided for @variationsNameLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nome'**
+  String get variationsNameLabel;
+
+  /// No description provided for @variationsDescriptionLabel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Descrição (opcional)'**
+  String get variationsDescriptionLabel;
+
+  /// No description provided for @variationsShowArchived.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mostrar arquivadas'**
+  String get variationsShowArchived;
+
+  /// No description provided for @variationsArchive.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivar'**
+  String get variationsArchive;
+
+  /// No description provided for @variationsUnarchive.
+  ///
+  /// In pt, this message translates to:
+  /// **'Desarquivar'**
+  String get variationsUnarchive;
+
+  /// No description provided for @variationsArchivedBadge.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivada'**
+  String get variationsArchivedBadge;
+
+  /// No description provided for @variationsSaved.
+  ///
+  /// In pt, this message translates to:
+  /// **'Variação salva.'**
+  String get variationsSaved;
+
+  /// No description provided for @variationsArchivedDone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Variação arquivada.'**
+  String get variationsArchivedDone;
+
+  /// No description provided for @variationsUnarchivedDone.
+  ///
+  /// In pt, this message translates to:
+  /// **'Variação desarquivada.'**
+  String get variationsUnarchivedDone;
+
+  /// No description provided for @errorVariationNameTaken.
+  ///
+  /// In pt, this message translates to:
+  /// **'Já existe uma variação ativa com esse nome.'**
+  String get errorVariationNameTaken;
+
+  /// No description provided for @errorVariationNotFound.
+  ///
+  /// In pt, this message translates to:
+  /// **'Essa variação não existe mais ou foi arquivada. Escolha outra.'**
+  String get errorVariationNotFound;
 }
 
 class _AppLocalizationsDelegate

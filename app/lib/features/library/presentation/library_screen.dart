@@ -6,9 +6,68 @@ import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/l10n/taxonomy_l10n.dart';
 import '../../../shared/domain/exercise.dart';
+import '../../variations/presentation/variations_screen.dart';
 import 'exercise_form_screen.dart';
 import 'library_controller.dart';
 import '../../../shared/widgets/exercise_media.dart';
+
+/// Aba Biblioteca do coach: segmento "Exercícios | Variações" (P9.3).
+class LibraryHomeScreen extends StatefulWidget {
+  const LibraryHomeScreen({super.key});
+
+  @override
+  State<LibraryHomeScreen> createState() => _LibraryHomeScreenState();
+}
+
+class _LibraryHomeScreenState extends State<LibraryHomeScreen> {
+  bool _variations = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.ly;
+    final l10n = AppLocalizations.of(context);
+
+    return ColoredBox(
+      color: c.background,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              LySpace.x4,
+              LySpace.x3,
+              LySpace.x4,
+              LySpace.x1,
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<bool>(
+                key: const Key('library_segment'),
+                segments: [
+                  ButtonSegment(
+                    value: false,
+                    label: Text(l10n.libraryTabExercises),
+                  ),
+                  ButtonSegment(
+                    value: true,
+                    label: Text(l10n.libraryTabVariations),
+                  ),
+                ],
+                selected: {_variations},
+                onSelectionChanged: (value) =>
+                    setState(() => _variations = value.first),
+              ),
+            ),
+          ),
+          Expanded(
+            child: _variations
+                ? const VariationsScreen()
+                : const LibraryScreen(),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 /// Biblioteca de exercícios do professor (P1.6): busca, filtros da taxonomia
 /// e criação de exercício próprio.

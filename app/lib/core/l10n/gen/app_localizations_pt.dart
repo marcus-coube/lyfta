@@ -2689,6 +2689,105 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get dashboardCardSeries => 'Recebido nos últimos 6 meses';
+
+  @override
+  String get builderBlockCluster => 'Cluster';
+
+  @override
+  String get builderSetLabelAction => 'Rótulo…';
+
+  @override
+  String get builderSetVariationAction => 'Variação…';
+
+  @override
+  String get builderLabelTitle => 'Rótulo da série';
+
+  @override
+  String get builderLabelField => 'Rótulo';
+
+  @override
+  String get builderLabelHint => 'Vazio remove o rótulo.';
+
+  @override
+  String get builderLabelSuggestWarmup => 'Aquecimento';
+
+  @override
+  String get builderLabelSuggestRecognition => 'Reconhecimento';
+
+  @override
+  String get builderLabelSuggestTopSet => 'Top set';
+
+  @override
+  String get builderLabelSuggestBackOff => 'Back-off';
+
+  @override
+  String get builderVariationTitle => 'Variação da série';
+
+  @override
+  String get builderVariationSearch => 'Buscar variação';
+
+  @override
+  String get builderVariationNone => 'Nenhuma';
+
+  @override
+  String get builderVariationNew => 'Nova variação';
+
+  @override
+  String get builderVariationEmpty => 'Nenhuma variação cadastrada.';
+
+  @override
+  String get libraryTabExercises => 'Exercícios';
+
+  @override
+  String get libraryTabVariations => 'Variações';
+
+  @override
+  String get variationsSearchLabel => 'Buscar variação';
+
+  @override
+  String get variationsNew => 'Nova variação';
+
+  @override
+  String get variationsEdit => 'Editar variação';
+
+  @override
+  String get variationsEmpty =>
+      'Nenhuma variação ainda. Cadastre, por exemplo, \"Pausa no fundo\" e use nas séries do treino.';
+
+  @override
+  String get variationsNameLabel => 'Nome';
+
+  @override
+  String get variationsDescriptionLabel => 'Descrição (opcional)';
+
+  @override
+  String get variationsShowArchived => 'Mostrar arquivadas';
+
+  @override
+  String get variationsArchive => 'Arquivar';
+
+  @override
+  String get variationsUnarchive => 'Desarquivar';
+
+  @override
+  String get variationsArchivedBadge => 'Arquivada';
+
+  @override
+  String get variationsSaved => 'Variação salva.';
+
+  @override
+  String get variationsArchivedDone => 'Variação arquivada.';
+
+  @override
+  String get variationsUnarchivedDone => 'Variação desarquivada.';
+
+  @override
+  String get errorVariationNameTaken =>
+      'Já existe uma variação ativa com esse nome.';
+
+  @override
+  String get errorVariationNotFound =>
+      'Essa variação não existe mais ou foi arquivada. Escolha outra.';
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -5383,4 +5482,103 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get dashboardCardSeries => 'Recebido nos últimos 6 meses';
+
+  @override
+  String get builderBlockCluster => 'Cluster';
+
+  @override
+  String get builderSetLabelAction => 'Etiqueta…';
+
+  @override
+  String get builderSetVariationAction => 'Variação…';
+
+  @override
+  String get builderLabelTitle => 'Etiqueta da série';
+
+  @override
+  String get builderLabelField => 'Etiqueta';
+
+  @override
+  String get builderLabelHint => 'Vazio remove a etiqueta.';
+
+  @override
+  String get builderLabelSuggestWarmup => 'Aquecimento';
+
+  @override
+  String get builderLabelSuggestRecognition => 'Reconhecimento';
+
+  @override
+  String get builderLabelSuggestTopSet => 'Top set';
+
+  @override
+  String get builderLabelSuggestBackOff => 'Back-off';
+
+  @override
+  String get builderVariationTitle => 'Variação da série';
+
+  @override
+  String get builderVariationSearch => 'Pesquisar variação';
+
+  @override
+  String get builderVariationNone => 'Nenhuma';
+
+  @override
+  String get builderVariationNew => 'Nova variação';
+
+  @override
+  String get builderVariationEmpty => 'Nenhuma variação registada.';
+
+  @override
+  String get libraryTabExercises => 'Exercícios';
+
+  @override
+  String get libraryTabVariations => 'Variações';
+
+  @override
+  String get variationsSearchLabel => 'Pesquisar variação';
+
+  @override
+  String get variationsNew => 'Nova variação';
+
+  @override
+  String get variationsEdit => 'Editar variação';
+
+  @override
+  String get variationsEmpty =>
+      'Nenhuma variação ainda. Regista, por exemplo, \"Pausa no fundo\" e usa nas séries do treino.';
+
+  @override
+  String get variationsNameLabel => 'Nome';
+
+  @override
+  String get variationsDescriptionLabel => 'Descrição (opcional)';
+
+  @override
+  String get variationsShowArchived => 'Mostrar arquivadas';
+
+  @override
+  String get variationsArchive => 'Arquivar';
+
+  @override
+  String get variationsUnarchive => 'Desarquivar';
+
+  @override
+  String get variationsArchivedBadge => 'Arquivada';
+
+  @override
+  String get variationsSaved => 'Variação guardada.';
+
+  @override
+  String get variationsArchivedDone => 'Variação arquivada.';
+
+  @override
+  String get variationsUnarchivedDone => 'Variação desarquivada.';
+
+  @override
+  String get errorVariationNameTaken =>
+      'Já existe uma variação ativa com esse nome.';
+
+  @override
+  String get errorVariationNotFound =>
+      'Essa variação já não existe ou foi arquivada. Escolhe outra.';
 }

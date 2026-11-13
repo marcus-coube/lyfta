@@ -2688,4 +2688,103 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardCardSeries => 'Received in the last 6 months';
+
+  @override
+  String get builderBlockCluster => 'Cluster';
+
+  @override
+  String get builderSetLabelAction => 'Label…';
+
+  @override
+  String get builderSetVariationAction => 'Variation…';
+
+  @override
+  String get builderLabelTitle => 'Set label';
+
+  @override
+  String get builderLabelField => 'Label';
+
+  @override
+  String get builderLabelHint => 'Leave empty to remove the label.';
+
+  @override
+  String get builderLabelSuggestWarmup => 'Warm-up';
+
+  @override
+  String get builderLabelSuggestRecognition => 'Feeder set';
+
+  @override
+  String get builderLabelSuggestTopSet => 'Top set';
+
+  @override
+  String get builderLabelSuggestBackOff => 'Back-off';
+
+  @override
+  String get builderVariationTitle => 'Set variation';
+
+  @override
+  String get builderVariationSearch => 'Search variation';
+
+  @override
+  String get builderVariationNone => 'None';
+
+  @override
+  String get builderVariationNew => 'New variation';
+
+  @override
+  String get builderVariationEmpty => 'No variations yet.';
+
+  @override
+  String get libraryTabExercises => 'Exercises';
+
+  @override
+  String get libraryTabVariations => 'Variations';
+
+  @override
+  String get variationsSearchLabel => 'Search variation';
+
+  @override
+  String get variationsNew => 'New variation';
+
+  @override
+  String get variationsEdit => 'Edit variation';
+
+  @override
+  String get variationsEmpty =>
+      'No variations yet. Add one, such as \"Bottom pause\", and use it on workout sets.';
+
+  @override
+  String get variationsNameLabel => 'Name';
+
+  @override
+  String get variationsDescriptionLabel => 'Description (optional)';
+
+  @override
+  String get variationsShowArchived => 'Show archived';
+
+  @override
+  String get variationsArchive => 'Archive';
+
+  @override
+  String get variationsUnarchive => 'Unarchive';
+
+  @override
+  String get variationsArchivedBadge => 'Archived';
+
+  @override
+  String get variationsSaved => 'Variation saved.';
+
+  @override
+  String get variationsArchivedDone => 'Variation archived.';
+
+  @override
+  String get variationsUnarchivedDone => 'Variation unarchived.';
+
+  @override
+  String get errorVariationNameTaken =>
+      'An active variation with that name already exists.';
+
+  @override
+  String get errorVariationNotFound =>
+      'That variation no longer exists or was archived. Pick another.';
 }

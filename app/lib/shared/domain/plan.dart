@@ -7,13 +7,15 @@ enum BlockType {
   superset,
   dropset,
   restPause,
-  circuit;
+  circuit,
+  cluster;
 
   static BlockType fromCode(String? code) => switch (code) {
         'superset' => BlockType.superset,
         'dropset' => BlockType.dropset,
         'rest_pause' => BlockType.restPause,
         'circuit' => BlockType.circuit,
+        'cluster' => BlockType.cluster,
         _ => BlockType.straight,
       };
 
@@ -23,6 +25,7 @@ enum BlockType {
         BlockType.dropset => 'dropset',
         BlockType.restPause => 'rest_pause',
         BlockType.circuit => 'circuit',
+        BlockType.cluster => 'cluster',
       };
 
   /// Conduzido por rodadas (superset e circuito, P6.5): o descanso do bloco
@@ -58,6 +61,32 @@ enum TargetUnit {
   bool get needsValue => this != TargetUnit.kg;
 }
 
+/// Variação cadastrada da série (ADR-019): nome e descrição que o professor
+/// escreveu uma vez para o tenant. Na leitura do plano vem junto da série;
+/// na escrita só o [id] volta ao servidor.
+class SetVariation {
+  const SetVariation({
+    required this.id,
+    required this.name,
+    this.description = '',
+    this.archived = false,
+  });
+
+  factory SetVariation.fromJson(Map<String, dynamic> json) => SetVariation(
+        id: json['id'] as String,
+        name: json['name'] as String? ?? '',
+        description: json['description'] as String? ?? '',
+        archived: json['archived_at'] != null,
+      );
+
+  final String id;
+  final String name;
+  final String description;
+
+  /// Só a lista de `/v1/variations` informa; na série vale sempre `false`.
+  final bool archived;
+}
+
 /// Prescrição estruturada de uma série (ADR-012 §4) — nunca texto livre,
 /// porque o gráfico de carga do MVP depende destes campos serem consultáveis.
 ///
@@ -73,9 +102,13 @@ class PrescribedSet {
     this.targetUnit,
     this.targetValue,
     this.restSeconds,
+    this.label,
+    this.variation,
+    this.tempo,
   });
 
   factory PrescribedSet.fromJson(Map<String, dynamic> json) {
+    final variation = json['variation'] as Map<String, dynamic>?;
     return PrescribedSet(
       repsMin: json['reps_min'] as int?,
       repsMax: json['reps_max'] as int?,
@@ -83,6 +116,9 @@ class PrescribedSet {
       targetUnit: TargetUnit.tryParse(json['target_unit'] as String?),
       targetValue: (json['target_value'] as num?)?.toDouble(),
       restSeconds: json['rest_seconds'] as int?,
+      label: json['label'] as String?,
+      variation: variation == null ? null : SetVariation.fromJson(variation),
+      tempo: json['tempo'] as String?,
     );
   }
 
@@ -93,13 +129,26 @@ class PrescribedSet {
   double? targetValue;
   int? restSeconds;
 
-  PrescribedSet copy() => PrescribedSet(
+  /// Rótulo livre da série ("Aquecimento", "Top set"…), até 24 caracteres.
+  String? label;
+  SetVariation? variation;
+
+  /// Cadência (ex.: "3-1-1-0"). Sem UI no builder: existe para **voltar** ao
+  /// servidor — o `PUT /draft` substitui a árvore e o campo se perdia.
+  String? tempo;
+
+  /// Cópia da série. [keepLabel] = false para propagar a prescrição sem o
+  /// rótulo: "aquecimento" é da primeira série, não das seguintes.
+  PrescribedSet copy({bool keepLabel = true}) => PrescribedSet(
         repsMin: repsMin,
         repsMax: repsMax,
         targetLoadKg: targetLoadKg,
         targetUnit: targetUnit,
         targetValue: targetValue,
         restSeconds: restSeconds,
+        label: keepLabel ? label : null,
+        variation: variation,
+        tempo: tempo,
       );
 
   Map<String, dynamic> toJson() => {
@@ -109,6 +158,9 @@ class PrescribedSet {
         if (targetUnit != null) 'target_unit': targetUnit!.code,
         'target_value': targetValue,
         'rest_seconds': restSeconds,
+        'label': label,
+        'variation_id': variation?.id,
+        if (tempo != null && tempo!.isNotEmpty) 'tempo': tempo,
       };
 }
 

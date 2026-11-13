@@ -69,7 +69,7 @@ ao `/me/today` com nome e descrição; editar o nome da variação **não** alte
 snapshot de uma sessão já iniciada (teste); arquivada some do `status=active` e
 não entra em série nova; testes de handler (feliz + nome duplicado).
 
-## - [ ] P9.3 App — builder: cluster, rótulo, variação e tela Variações (Flutter)
+## - [x] P9.3 App — builder: cluster, rótulo, variação e tela Variações (Flutter)
 
 **Objetivo:** o coach cadastra variações e prescreve os três recursos.
 **Passos:**
@@ -170,3 +170,29 @@ chips e modal; treino straight sem rótulo fica idêntico ao 2.0.
   `setDTO`; o app deve devolver o `variation_id` no `PUT .../draft` (e o `tempo`).
   Exclusão de conta: `set_variations.created_by` não é anonimizado (é
   conteúdo do tenant); revisar se a LGPD exigir.
+
+**P9.3 (2026-11-13)**
+- App: `BlockType.cluster`, `SetVariation` (em `shared/domain/plan.dart`, para o
+  domínio compartilhado não importar `features/`) e `PrescribedSet` com `label`,
+  `variation` e `tempo`. `toJson` devolve `label`, `variation_id` (só o id) e
+  `tempo` (omitido se vazio): o round-trip do `tempo` está coberto por teste
+  unitário (`test/shared/plan_roundtrip_test.dart`).
+- Menu ⋮ da série ganhou "Rótulo…" e "Variação…" (diálogos em
+  `set_editor_dialogs.dart`); chips sob a linha, também em leitura. "Copiar para
+  as próximas" usa `copy(keepLabel: false)`; adicionar/duplicar série seguem
+  copiando tudo (inclusive o rótulo), como o plano pede só para o "copiar para as
+  próximas".
+- Seletor de variação: busca no servidor (só ativas), "Nenhuma" e atalho "Nova
+  variação" (abre o diálogo de criação e já seleciona). Tela Variações em
+  `features/variations/` como segmento da aba Biblioteca (`LibraryHomeScreen`);
+  `domain/` ficou só com o filtro de status (o modelo mora no shared).
+- Erros: `variation_name_taken` vira mensagem no campo nome do diálogo;
+  `variation_not_found` (422) ganhou texto i18n no `api_exception_l10n`.
+- Desvio mínimo: `block_card.dart` (`_methodText`) é um switch exaustivo e
+  precisou de um ramo para `cluster` (texto vazio por ora); o texto do método
+  (`sessionBlockCluster*`) e a condução do cluster são da P9.4.
+- **Não verificado visualmente** (sem emulador/Chrome nesta execução): só
+  analyze + testes de widget. Aceite manual a repetir: criar "Pausa no fundo"
+  em Biblioteca > Variações, montar um cluster com a 1ª série "Aquecimento" e a 2ª
+  com a variação, publicar, recarregar o builder e conferir; plano que já tinha
+  `tempo` mantém o valor após salvar.

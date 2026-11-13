@@ -17,4 +17,5 @@ String blockTypeLabel(AppLocalizations l10n, BlockType type) => switch (type) {
       BlockType.dropset => l10n.builderBlockDropset,
       BlockType.restPause => l10n.builderBlockRestPause,
       BlockType.circuit => l10n.builderBlockCircuit,
+      BlockType.cluster => l10n.builderBlockCluster,
     };

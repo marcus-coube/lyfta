@@ -92,7 +92,7 @@ class _CoachShellScreenState extends ConsumerState<CoachShellScreen> {
       body: switch (tab) {
         _CoachTab.dashboard => const DashboardScreen(),
         _CoachTab.students => const StudentsScreen(),
-        _CoachTab.library => const LibraryScreen(),
+        _CoachTab.library => const LibraryHomeScreen(),
         _CoachTab.templates => const TemplatesScreen(),
         _CoachTab.billing => const FinanceScreen(),
         _CoachTab.chat => const ChatHomeScreen(isCoach: true),

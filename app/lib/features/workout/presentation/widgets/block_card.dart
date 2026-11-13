@@ -214,5 +214,6 @@ String _methodText(AppLocalizations l10n, BlockType type) => switch (type) {
       BlockType.circuit => l10n.sessionBlockCircuit,
       BlockType.dropset => l10n.sessionBlockDropset,
       BlockType.restPause => l10n.sessionBlockRestPause,
-      BlockType.straight => '',
+      // Texto do método do cluster entra na P9.4.
+      BlockType.cluster || BlockType.straight => '',
     };

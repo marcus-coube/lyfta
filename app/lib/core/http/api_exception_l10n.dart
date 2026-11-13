@@ -122,6 +122,11 @@ extension ApiExceptionL10n on ApiException {
         return l10n.errorSubscriptionExists;
       case 'invalid_subscription_state':
         return l10n.errorInvalidSubscriptionState;
+      // Variações de série (ADR-019, P9.3).
+      case 'variation_name_taken':
+        return l10n.errorVariationNameTaken;
+      case 'variation_not_found':
+        return l10n.errorVariationNotFound;
       case 'network_error':
         return l10n.errorNetwork;
       case 'internal_error':

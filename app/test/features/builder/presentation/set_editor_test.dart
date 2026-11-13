@@ -1,31 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lyfta/features/variations/data/variation_repository.dart';
 import 'package:lyfta/core/design_system/design_system.dart';
 import 'package:lyfta/core/l10n/gen/app_localizations.dart';
 import 'package:lyfta/shared/domain/plan.dart';
 import 'package:lyfta/features/builder/presentation/widgets/set_editor.dart';
+
+import '../../variations/fake_variations.dart';
 
 /// Monta o editor isolado, com tema e i18n reais — é o componente que o
 /// professor mais usa no builder (P1.6).
 Future<List<PrescribedSet>> _pumpEditor(
   WidgetTester tester, {
   List<PrescribedSet>? sets,
+  FakeVariations? variations,
 }) async {
   final list = sets ?? [PrescribedSet(repsMin: 8, repsMax: 12, restSeconds: 60)];
   var changes = 0;
 
   await tester.pumpWidget(
-    MaterialApp(
-      theme: LyTheme.dark(),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: StatefulBuilder(
-          builder: (context, setState) => SingleChildScrollView(
-            child: SetEditor(
-              sets: list,
-              onChanged: () => setState(() => changes++),
+    ProviderScope(
+      overrides: [
+        variationRepositoryProvider
+            .overrideWithValue(variations ?? FakeVariations()),
+      ],
+      child: MaterialApp(
+        theme: LyTheme.dark(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: StatefulBuilder(
+            builder: (context, setState) => SingleChildScrollView(
+              child: SetEditor(
+                sets: list,
+                onChanged: () => setState(() => changes++),
+              ),
             ),
           ),
         ),
@@ -133,6 +144,135 @@ void main() {
     );
     expect(reps.controller?.text, '5');
     expect(identical(sets[1], sets[2]), isFalse);
+  });
+
+  testWidgets('rótulo: sugestão preenche o campo, salvar grava o texto e aparece o chip',
+      (tester) async {
+    final sets = await _pumpEditor(
+      tester,
+      sets: [PrescribedSet(repsMin: 8), PrescribedSet(repsMin: 8)],
+    );
+    final l10n = AppLocalizations.of(tester.element(find.byType(SetEditor)));
+
+    await tester.tap(find.byKey(const Key('set-0-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('set-0-label-action')));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(Key('set-label-suggestion-${l10n.builderLabelSuggestWarmup}')),
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('set-label-save')));
+    await tester.pumpAndSettle();
+
+    expect(sets[0].label, l10n.builderLabelSuggestWarmup);
+    expect(sets[1].label, isNull);
+    expect(find.byKey(const Key('set-0-label-chip')), findsOneWidget);
+
+    // Campo vazio remove o rótulo.
+    await tester.tap(find.byKey(const Key('set-0-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('set-0-label-action')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('set-label-field')), '');
+    await tester.tap(find.byKey(const Key('set-label-save')));
+    await tester.pumpAndSettle();
+    expect(sets[0].label, isNull);
+    expect(find.byKey(const Key('set-0-label-chip')), findsNothing);
+  });
+
+  testWidgets('variação: escolher da lista, trocar por Nenhuma e criar uma nova pelo atalho',
+      (tester) async {
+    final fake = FakeVariations(
+      [const SetVariation(id: 'v1', name: 'Pausa no fundo', description: 'd')],
+    );
+    final sets = await _pumpEditor(
+      tester,
+      sets: [PrescribedSet(repsMin: 8), PrescribedSet(repsMin: 8)],
+      variations: fake,
+    );
+
+    Future<void> openPicker() async {
+      await tester.tap(find.byKey(const Key('set-1-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('set-1-variation-action')));
+      await tester.pumpAndSettle();
+    }
+
+    await openPicker();
+    await tester.tap(find.byKey(const Key('set-variation-v1')));
+    await tester.pumpAndSettle();
+    expect(sets[1].variation?.id, 'v1');
+    expect(find.byKey(const Key('set-1-variation-chip')), findsOneWidget);
+
+    await openPicker();
+    await tester.tap(find.byKey(const Key('set-variation-none')));
+    await tester.pumpAndSettle();
+    expect(sets[1].variation, isNull);
+
+    await openPicker();
+    await tester.tap(find.byKey(const Key('set-variation-new')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('variation_name')), 'Tempo lento');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('variation_save')));
+    await tester.pumpAndSettle();
+    expect(sets[1].variation?.name, 'Tempo lento');
+    expect(fake.items.length, 2);
+  });
+
+  testWidgets('copiar para as próximas copia a variação e não copia o rótulo',
+      (tester) async {
+    const variation = SetVariation(id: 'v1', name: 'Pausa');
+    final sets = await _pumpEditor(
+      tester,
+      sets: [
+        PrescribedSet(repsMin: 5, label: 'Aquecimento', variation: variation),
+        PrescribedSet(repsMin: 8),
+        PrescribedSet(repsMin: 8),
+      ],
+    );
+
+    await tester.tap(find.byKey(const Key('set-0-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('set-0-copy-next')));
+    await tester.pumpAndSettle();
+
+    expect(sets[0].label, 'Aquecimento');
+    for (final set in sets.skip(1)) {
+      expect(set.variation?.id, 'v1');
+      expect(set.label, isNull);
+    }
+  });
+
+  testWidgets('em leitura os chips aparecem e não há menu', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: LyTheme.dark(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: SetEditor(
+              sets: [
+                PrescribedSet(
+                  repsMin: 8,
+                  label: 'Top set',
+                  variation: const SetVariation(id: 'v', name: 'Pausa'),
+                ),
+              ],
+              readOnly: true,
+              onChanged: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('set-0-label-chip')), findsOneWidget);
+    expect(find.byKey(const Key('set-0-variation-chip')), findsOneWidget);
+    expect(find.byKey(const Key('set-0-menu')), findsNothing);
   });
 
   testWidgets('sem série anterior a nova usa o descanso padrão do bloco',
