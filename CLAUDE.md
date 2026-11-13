@@ -22,27 +22,37 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
   `internal/security` de cada um).
 - `docs/` — documentação. **Fonte de verdade de produto e arquitetura.**
 - `.claude/agents/mvp-dev.md` — agente (Sonnet) que executa os planos do MVP
-  (1.0 e 2.0), uma tarefa por invocação.
+  (1.0, 2.0 e 2.5), uma tarefa por invocação.
 
 ## Onde está a verdade (ler antes de propor mudanças)
 - **[docs/000-product_description.md](docs/000-product_description.md)** — roadmap em
   **pacotes** (MVP 1.0 → 2.0 → 3.0 → 4.0 running → V2 IA → Futuro).
 - **[docs/014-plano-de-documentacao.md](docs/014-plano-de-documentacao.md)** — plano de
   docs + marcos de implementação e de-para marco→pacote.
-- **[docs/adr/](docs/adr/)** — decisões estruturais (ADR-001..018). São normativas.
+- **[docs/adr/](docs/adr/)** — decisões estruturais (ADR-001..020). São normativas.
 - **[docs/plan/mvp1/](docs/plan/mvp1/)** — plano de execução do MVP 1.0 (P0–P4,
   32 tarefas, protocolo do agente). Fechado; lista pré-loja (L1–L10) no `STATUS.md`.
 - **[docs/plan/mvp2/](docs/plan/mvp2/)** — plano do MVP 2.0 (P5–P8, 19 tarefas):
   alunos, builder completo, financeiro só com baixa manual, dashboard. Progresso
   em `STATUS.md`.
 - **[docs/benchmarking/](docs/benchmarking/)** — auditoria HubFit × Trainerize × Lyfta.
+- **[docs/plan/mvp25/](docs/plan/mvp25/)** — plano do MVP 2.5 (P9–P12, 12 tarefas):
+  ajustes da validação com o cliente — cluster set, rótulo e variações por série,
+  player (replicar carga, cronômetro, conclusão), check-in do professor com o
+  treino, mídia de execução. Progresso e decisões D1–D7 em `STATUS.md`.
 - `docs/guidelines/` — convenções de código (ex.: `flutter.md`).
 
-## Estado atual (2026-11-09)
-**Executando o plano do MVP 2.0** ([docs/plan/mvp2/](docs/plan/mvp2/)) na ordem
-P5→P8, uma tarefa por vez via agente `mvp-dev` (comando: "implemente P5.X").
-**Progresso vivo em [STATUS.md](docs/plan/mvp2/STATUS.md)** — ler ele primeiro para
-saber a próxima tarefa; pendências por tarefa nas "Notas de execução" da fase.
+## Estado atual (2026-11-12)
+**MVP 2.5 planejado (0/12, 2026-11-13)** — pacote intermediário com os ajustes
+da validação do 2.0 com o cliente: plano em [docs/plan/mvp25/](docs/plan/mvp25/README.md),
+ADR-019 (cluster, rótulo e variação por série) e ADR-020 (mídia de execução no
+`comms`, apagada 7 dias após a ciência do professor) aceitos; decisões D1–D7
+confirmadas no [STATUS](docs/plan/mvp25/STATUS.md). Próxima tarefa: P9.1. Vem antes do 3.0.
+**MVP 2.0 fechado (19/19, 2026-11-12)** — plano em [docs/plan/mvp2/](docs/plan/mvp2/),
+histórico em [STATUS.md](docs/plan/mvp2/STATUS.md); release `2.0.0+2` (APK
+release e build web, sem loja). O próximo pacote (3.0) ainda **não tem plano
+de execução**: escrevê-lo é o próximo passo (roadmap no doc 000; pendências
+"vão para o 3.0" nas Notas da [P8](docs/plan/mvp2/P8-dashboard.md)).
 **MVP 1.0 fechado: P0–P4 concluídas, 32/32 (2026-11-08):** `identity` completo (auth, convites,
 reset, lista de usuários do tenant), CI no GitHub Actions
 (`.github/workflows/ci.yml`) e o serviço `workout` completo do lado servidor —
@@ -107,7 +117,7 @@ bioimpedância e anamnese (meta semanal só do coach), e no app a lista de
 alunos paginada com "último treino" (`POST /v1/students/overview` no
 workout), ficha `/students/:id` (Dados/Treino/Evolução/Check-ins), "Meus
 dados" e "Meu objetivo" do aluno. Ninguém usa o app ainda: contratos podem
-mudar em vez de acumular dívida. **P6 fechada (5/5, 2026-11-10):** (modelos e ciclo de vida no `workout`; no app, aba Modelos, aplicar/reaplicar em lote e ficha com Aplicar modelo/Duplicar/Arquivar/Ativar, arquivado somente leitura; builder com reordenar por alça, duplicar dia/bloco, histórico de versões e próximo dia; player por bloco: bi-set/circuito conduzidos por rodada e dropset/rest-pause encadeados, via `BlockRunner`). **P7.1–P7.5 prontas, P7 fechada** (17/19): `billing` (8085, `lyfta_billing`) com schema do ADR-007 + RLS e a API do financeiro (planos, assinaturas, faturas, baixa manual idempotente, estorno, status derivado, `/me/invoices`, matriz owner/coach `own_students`/`status_only`) e o job mensal (tick de 15 min com advisory lock: gera a fatura do mês e vence as abertas no fuso de cada tenant). No app, a aba Financeiro (owner e coach `own_students`: faturas, baixa, estorno, planos), a aba Financeiro da ficha, o selo "inadimplente", o toggle da Organização e "Minhas mensalidades" do aluno (P7.4). P7.5: exclusão de conta consulta o billing (409 `pending_invoices`, titular retido como "conta excluída", `TERMS_VERSION` 2026-11-v2). P8.1 (agregações do dashboard nos 4 serviços) e P8.2 (aba Início no app) e P8.3 (locale por `Accept-Language`, contraste/toque, paginação de check-ins, `created_by` no assessment) prontas; P8.4 (E2E do 2.0, versão 2.0.0+1) em andamento — execução parcial, pendências que bloqueiam o release nas Notas da P8. Financeiro do 2.0 é o sexto serviço, `billing`, **só
+mudar em vez de acumular dívida. **P6 fechada (5/5, 2026-11-10):** (modelos e ciclo de vida no `workout`; no app, aba Modelos, aplicar/reaplicar em lote e ficha com Aplicar modelo/Duplicar/Arquivar/Ativar, arquivado somente leitura; builder com reordenar por alça, duplicar dia/bloco, histórico de versões e próximo dia; player por bloco: bi-set/circuito conduzidos por rodada e dropset/rest-pause encadeados, via `BlockRunner`). **P7.1–P7.5 prontas, P7 fechada** (17/19): `billing` (8085, `lyfta_billing`) com schema do ADR-007 + RLS e a API do financeiro (planos, assinaturas, faturas, baixa manual idempotente, estorno, status derivado, `/me/invoices`, matriz owner/coach `own_students`/`status_only`) e o job mensal (tick de 15 min com advisory lock: gera a fatura do mês e vence as abertas no fuso de cada tenant). No app, a aba Financeiro (owner e coach `own_students`: faturas, baixa, estorno, planos), a aba Financeiro da ficha, o selo "inadimplente", o toggle da Organização e "Minhas mensalidades" do aluno (P7.4). P7.5: exclusão de conta consulta o billing (409 `pending_invoices`, titular retido como "conta excluída", `TERMS_VERSION` 2026-11-v2). P8.1 (agregações do dashboard nos 4 serviços) e P8.2 (aba Início no app) e P8.3 (locale por `Accept-Language`, contraste/toque, paginação de check-ins, `created_by` no assessment) prontas; A **P8.4 fechou o 2.0** (2026-11-12, decisão do usuário): roteiro [e2e-2.md](docs/plan/mvp2/e2e-2.md) e regressão do 1.0 verdes no Android (emulador) e no Chrome, achados A1/A2/A8/A9/A10 corrigidos (A9: player valida carga/reps 0–1.000 como o sync; A10: `/splash` enquanto a sessão salva é revalidada), versão `2.0.0+2`; iOS no simulador fica para antes da 1ª subida em loja. Financeiro do 2.0 é o sexto serviço, `billing`, **só
 com baixa manual** — PIX adiado; acesso do coach configurável por organização ([ADR-017](docs/adr/ADR-017-financeiro-servico-billing-baixa-manual.md));
 modelos de treino aplicados por cópia ([ADR-018](docs/adr/ADR-018-modelos-de-treino-por-copia.md)).
 Tudo só em emulador: o que depende de
@@ -131,7 +141,7 @@ funcionam em **todas** as plataformas (mobile e web).
    (instalado no Mac; pendente no Windows).
 5. Segredos são locais por máquina (`.env` de cada serviço, nunca no git);
    `backend/.env.example` documenta as variáveis.
-6. Continuar: dizer "implemente <próxima tarefa do docs/plan/mvp2/STATUS.md>".
+6. Continuar: MVP 2.5 em [docs/plan/mvp25/](docs/plan/mvp25/STATUS.md) (próxima: P9.1); o 3.0 ainda não tem plano.
 
 ## Convenções inegociáveis
 - **Decisão estrutural nova → novo ADR**, nunca edição silenciosa de doc.

@@ -31,6 +31,8 @@ onde densidade vale mais que volume.
 | [ADR-016](adr/ADR-016-vinculo-professor-aluno.md) | Vínculo professor↔aluno no identity; checagem M2M com cache |
 | [ADR-017](adr/ADR-017-financeiro-servico-billing-baixa-manual.md) | Financeiro do 2.0 no serviço `billing`; só baixa manual (PIX adiado) |
 | [ADR-018](adr/ADR-018-modelos-de-treino-por-copia.md) | Modelos de treino aplicados por cópia, sem vínculo vivo |
+| [ADR-019](adr/ADR-019-prescricao-cluster-rotulo-variacao.md) | Cluster set, rótulo e variação por série |
+| [ADR-020](adr/ADR-020-midia-de-execucao-retencao.md) | Mídia de execução no `comms`, com retenção |
 
 Novas decisões estruturais → novo ADR, nunca edição silenciosa de docs.
 
