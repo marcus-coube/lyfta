@@ -98,3 +98,7 @@ unitário das métricas (com revisão de série) e de widget do modal (abre na
   `SessionMetricsGrid` (séries, reps, volume, duração) e mostram o rótulo do
   dia. Sessão reaberta já completa não abre o modal (sem transição).
   Dívida: o cronômetro lê `DateTime.now()`; o teste espera 1,1 s reais.
+
+**Verificação no Android (2026-11-15, emulador, APK debug na pilha local)**
+- Verde: replicar carga (50 kg nas 4 séries, oferta some), cronômetro sobrevive a `force-stop` e reabertura (0:00:37 antes; ao reabrir, tempo real desde o `startedAt`, sem zerar), "Continuar treino", "Finalizar" da AppBar com série pendente, resumo com duração cobrindo o intervalo fechado (1 série · 12 reps · 600 kg · 0:02:29) e check-in.
+- Achado **anterior ao 2.5** (não corrigido aqui): `PreviousLoads` (workout) toma a última sessão com o exercício **incluindo a sessão aberta** já sincronizada. Ao reabrir no meio do treino, as séries pendentes perdem a "carga anterior" e voltam ao alvo, e o Hoje mostra "Anterior" do treino em andamento.
