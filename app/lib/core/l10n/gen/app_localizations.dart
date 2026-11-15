@@ -1551,6 +1551,12 @@ abstract class AppLocalizations {
   /// **'{value} {unit}'**
   String sessionTargetWithUnit(String value, String unit);
 
+  /// Carga-alvo prescrita em kg, curta (ex.: 20 kg).
+  ///
+  /// In pt, this message translates to:
+  /// **'{value} kg'**
+  String sessionTargetKg(String value);
+
   /// Corpo da notificação de fim de descanso.
   ///
   /// In pt, this message translates to:

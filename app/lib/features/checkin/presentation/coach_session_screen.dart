@@ -172,29 +172,34 @@ class _ExerciseCard extends StatelessWidget {
     final c = context.ly;
     final l10n = AppLocalizations.of(context);
 
-    return LyCard(
-      padding: const EdgeInsets.all(LySpace.x4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(exercise.name, style: LyType.label(c.textPrimary)),
-          const SizedBox(height: LySpace.x3),
-          if (wide) ...[
-            Row(
-              children: [
-                _HeaderCell(l10n.checkinDetailColSet, 1),
-                _HeaderCell(l10n.checkinDetailColPrescribed, 3),
-                _HeaderCell(l10n.checkinDetailColDone, 3),
-              ],
-            ),
-            const Divider(height: LySpace.x4),
+    // Largura total: a coluna pai alinha ao início e, no layout estreito,
+    // nada aqui dentro estica — o card encolheria ao texto.
+    return SizedBox(
+      width: double.infinity,
+      child: LyCard(
+        padding: const EdgeInsets.all(LySpace.x4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(exercise.name, style: LyType.label(c.textPrimary)),
+            const SizedBox(height: LySpace.x3),
+            if (wide) ...[
+              Row(
+                children: [
+                  _HeaderCell(l10n.checkinDetailColSet, 1),
+                  _HeaderCell(l10n.checkinDetailColPrescribed, 3),
+                  _HeaderCell(l10n.checkinDetailColDone, 3),
+                ],
+              ),
+              const Divider(height: LySpace.x4),
+            ],
+            for (final set in exercise.sets)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: LySpace.x1),
+                child: wide ? _WideSetRow(set: set) : _NarrowSetRow(set: set),
+              ),
           ],
-          for (final set in exercise.sets)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: LySpace.x1),
-              child: wide ? _WideSetRow(set: set) : _NarrowSetRow(set: set),
-            ),
-        ],
+        ),
       ),
     );
   }

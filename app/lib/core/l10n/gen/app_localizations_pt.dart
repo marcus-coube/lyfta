@@ -809,6 +809,11 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String sessionTargetKg(String value) {
+    return '$value kg';
+  }
+
+  @override
   String sessionRestNotificationBody(String exercise) {
     return 'Hora da próxima série de $exercise.';
   }
@@ -3704,6 +3709,11 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   @override
   String sessionTargetWithUnit(String value, String unit) {
     return '$value $unit';
+  }
+
+  @override
+  String sessionTargetKg(String value) {
+    return '$value kg';
   }
 
   @override

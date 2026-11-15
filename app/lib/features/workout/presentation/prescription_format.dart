@@ -32,11 +32,15 @@ String _repsLabel(AppLocalizations l10n, PrescribedSet set) {
 }
 
 String? _targetLabel(AppLocalizations l10n, PrescribedSet set) {
-  final unit = set.targetUnit;
-  if (unit == null) return null;
+  // Sem unidade é kg: o builder grava `target_load_kg` sem `target_unit`
+  // quando o professor não troca a unidade (`set_editor.dart`).
+  final unit = set.targetUnit ?? TargetUnit.kg;
   // O alvo mora em duas colunas: absoluto em kg, relativo em %1RM/RPE/RIR.
   final value = unit == TargetUnit.kg ? set.targetLoadKg : set.targetValue;
   if (value == null) return null;
+  if (unit == TargetUnit.kg) {
+    return l10n.sessionTargetKg(formatLoad(value, l10n.localeName));
+  }
   return l10n.sessionTargetWithUnit(
     formatLoad(value, l10n.localeName),
     targetUnitLabel(l10n, unit),

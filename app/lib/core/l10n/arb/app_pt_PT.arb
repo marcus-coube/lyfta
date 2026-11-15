@@ -242,6 +242,7 @@
   "sessionTargetRepsRange": "{min}–{max} reps",
   "sessionTargetReps": "{reps} reps",
   "sessionTargetWithUnit": "{value} {unit}",
+  "sessionTargetKg": "{value} kg",
   "sessionRestNotificationBody": "Hora da próxima série de {exercise}.",
   "sessionFinishBody": "{count, plural, =0{Não registaste qualquer série — o treino de hoje não será marcado como feito.} =1{Registaste 1 série. O treino de hoje será concluído.} other{Registaste {count} séries. O treino de hoje será concluído.}}",
   "sessionDurationMinutes": "{minutes} min",

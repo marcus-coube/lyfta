@@ -809,6 +809,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String sessionTargetKg(String value) {
+    return '$value kg';
+  }
+
+  @override
   String sessionRestNotificationBody(String exercise) {
     return 'Time for your next set of $exercise.';
   }

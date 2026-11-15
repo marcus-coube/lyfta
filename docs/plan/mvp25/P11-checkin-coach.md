@@ -85,3 +85,9 @@ depois do sync; teste de widget do card (com e sem sessão) e do detalhe.
 - Rota nova `/students/:id/sessions/:clientId` (`CoachSessionScreen`); o check-in (respostas e "Marcar como visto") vem do mesmo `checkinsProvider` da aba, não de `extra` — recarregar na web funciona; check-in fora das páginas já carregadas fica sem as respostas no detalhe.
 - Reuso: `SessionMetricsGrid` (ganhou `durationKnown`: "—" quando `duration_seconds` é nulo), `prescriptionLabel`/`formatLoad`/`formatClock`, `LyChip` de rótulo/variação; `CheckinAnswers` extraído do card para servir aos dois. `session_not_found` mapeado em `describeApiError`.
 - `set_no` exibido é o do snapshot. Dívida: `sessions.looked` re-consulta no loadMore os ids ainda não sincronizados das páginas anteriores (custo desprezível, ≤ 50 por lote).
+
+**Verificação no app (2026-11-15, web, pilha local)** — aluno (375 px) treina plano com bloco simples 4× e bi-set 2×2; professor (1280 px e 375 px) abre o check-in.
+- Verde: replicar carga (4 séries; oferta some após o uso; bi-set não mexe no outro exercício), cronômetro, modal na última série sem novo descanso, "Voltar" + correção sem reabrir, resumo (8 séries · 96 reps · 3.084 kg · 0:01:05) idêntico ao card e ao detalhe do professor, "Marcar como visto" no detalhe.
+- Corrigido: `prescriptionLabel` escondia a carga-alvo quando `target_unit` é nulo — o builder grava assim quando a unidade fica no padrão kg; afetava player e detalhe desde o P1. Sem unidade = kg, e kg sai curto (`sessionTargetKg`, "20 kg" em vez de "20 Carga (kg)"). Teste em `prescription_format_test.dart`.
+- Corrigido: no layout estreito o card do exercício encolhia ao texto; agora ocupa a largura.
+- Não verificável na web: cronômetro após reabrir o app (banco local em memória na web, P1.7) — fica para o Android.

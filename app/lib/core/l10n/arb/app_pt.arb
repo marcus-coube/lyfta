@@ -539,6 +539,15 @@
     }
   },
   "sessionTargetWithUnit": "{value} {unit}",
+  "sessionTargetKg": "{value} kg",
+  "@sessionTargetKg": {
+    "description": "Carga-alvo prescrita em kg, curta (ex.: 20 kg).",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "@sessionTargetWithUnit": {
     "description": "Alvo de carga prescrito com a unidade (kg, %1RM, RPE, RIR).",
     "placeholders": {
