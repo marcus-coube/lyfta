@@ -2898,4 +2898,123 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorSessionNotFound => 'This workout is not available.';
+
+  @override
+  String get sessionMediaAction => 'Send video to coach';
+
+  @override
+  String get sessionMediaTitle => 'Send to your coach';
+
+  @override
+  String sessionMediaForExercise(String name) {
+    return 'Exercise: $name';
+  }
+
+  @override
+  String get sessionMediaWarning =>
+      '20 MB limit per file (videos up to 60 s). The media is deleted 7 days after your coach views or replies to it — or after 30 days if they don\'t.';
+
+  @override
+  String get sessionMediaKindVideo => 'Video';
+
+  @override
+  String get sessionMediaKindPhoto => 'Photo';
+
+  @override
+  String get sessionMediaCamera => 'Camera';
+
+  @override
+  String get sessionMediaGallery => 'Gallery';
+
+  @override
+  String get sessionMediaNote => 'Note (optional)';
+
+  @override
+  String sessionMediaPicked(String kind, String size) {
+    return '$kind ready: $size MB';
+  }
+
+  @override
+  String get sessionMediaSend => 'Send';
+
+  @override
+  String get sessionMediaPickError =>
+      'Couldn\'t prepare the file. Try another one.';
+
+  @override
+  String sessionMediaTooLarge(String size, int max) {
+    return 'The file is $size MB, over the $max MB limit. Nothing was sent.';
+  }
+
+  @override
+  String get sessionMediaNeedsConnection =>
+      'Sending media needs internet. Your workout carries on as usual; try again when you\'re connected.';
+
+  @override
+  String sessionMediaLimitReached(int max) {
+    return 'You\'ve already sent the maximum of $max files in this workout. Remove one to send another.';
+  }
+
+  @override
+  String get sessionMediaConsentBody =>
+      'To send photos and videos to your coach, allow photo use in Account > Privacy.';
+
+  @override
+  String get sessionMediaOpenPrivacy => 'Open privacy';
+
+  @override
+  String get sessionMediaRetryLoad => 'Try again';
+
+  @override
+  String get sessionMediaListTitle => 'Sent in this workout';
+
+  @override
+  String get sessionMediaWholeWorkout => 'Workout';
+
+  @override
+  String sessionMediaStatusSent(String date) {
+    return 'Sent · expires $date';
+  }
+
+  @override
+  String sessionMediaStatusSeen(String date) {
+    return 'Seen by coach · expires $date';
+  }
+
+  @override
+  String get sessionMediaStatusExpired => 'Media expired';
+
+  @override
+  String sessionMediaUploading(int percent) {
+    return 'Uploading… $percent%';
+  }
+
+  @override
+  String get sessionMediaCancel => 'Cancel upload';
+
+  @override
+  String get sessionMediaRetry => 'Try again';
+
+  @override
+  String get sessionMediaDiscard => 'Discard';
+
+  @override
+  String get sessionMediaRemove => 'Remove';
+
+  @override
+  String errorSessionMediaLimit(int max) {
+    return 'Limit of $max files per workout reached.';
+  }
+
+  @override
+  String get errorInvalidMediaKey =>
+      'Couldn\'t register the file. Try sending it again.';
+
+  @override
+  String get errorMediaNotUploaded => 'The upload didn\'t finish. Try again.';
+
+  @override
+  String errorFileTooLargeMax(int max) {
+    return 'File too large. The limit is $max MB.';
+  }
 }

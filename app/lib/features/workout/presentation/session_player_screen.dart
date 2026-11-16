@@ -11,6 +11,8 @@ import '../../../shared/l10n/plan_l10n.dart';
 import '../../../shared/widgets/exercise_media.dart';
 import '../../../shared/widgets/ly_shell_scaffold.dart';
 import '../../checkin/presentation/checkin_sheet.dart';
+import '../../session_media/presentation/send_media_sheet.dart';
+import '../../session_media/presentation/session_media_section.dart';
 import '../domain/block_runner.dart';
 import '../domain/session_metrics.dart';
 import '../domain/today.dart';
@@ -62,6 +64,22 @@ class _SessionPlayerScreenState extends ConsumerState<SessionPlayerScreen> {
       appBar: AppBar(
         title: Text(l10n.sessionTitle(_dayLabel)),
         actions: [
+          if (session.valueOrNull != null)
+            // Mídia sem exercício (P12.2 §1).
+            PopupMenuButton<String>(
+              key: const Key('session-menu'),
+              onSelected: (_) => showSendMediaSheet(
+                context,
+                sessionClientId: session.value!.session.clientId,
+              ),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  key: const Key('session-menu-media'),
+                  value: 'media',
+                  child: Text(l10n.sessionMediaAction),
+                ),
+              ],
+            ),
           if (session.valueOrNull != null)
             // Com tudo registrado, "Finalizar" ganha destaque (D3).
             if (allLogged)
@@ -203,9 +221,15 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
               constraints: const BoxConstraints(maxWidth: lyShellRailBreakpoint),
               child: ListView.separated(
                 padding: const EdgeInsets.all(LySpace.x4),
-                itemCount: runners.length,
+                itemCount: runners.length + 1,
                 separatorBuilder: (_, __) => const SizedBox(height: LySpace.x4),
                 itemBuilder: (context, index) {
+                  // Último item: "Enviados neste treino" (P12.2 §6).
+                  if (index == runners.length) {
+                    return SessionMediaSection(
+                      sessionClientId: state.session.clientId,
+                    );
+                  }
                   final runner = runners[index];
                   // Straight: um cartão por exercício, idêntico ao 1.0.
                   if (!runner.isGrouped) {
@@ -344,6 +368,11 @@ class _ExerciseCard extends ConsumerWidget {
                     ],
                   ],
                 ),
+              ),
+              SessionMediaButton(
+                sessionClientId: state.session.clientId,
+                exerciseId: run.exerciseId,
+                exerciseName: name,
               ),
             ],
           ),

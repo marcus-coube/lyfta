@@ -5060,6 +5060,198 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Este treino não está disponível.'**
   String get errorSessionNotFound;
+
+  /// No description provided for @sessionMediaAction.
+  ///
+  /// In pt, this message translates to:
+  /// **'Enviar vídeo ao professor'**
+  String get sessionMediaAction;
+
+  /// No description provided for @sessionMediaTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Enviar ao professor'**
+  String get sessionMediaTitle;
+
+  /// Exercício ao qual a mídia se refere.
+  ///
+  /// In pt, this message translates to:
+  /// **'Exercício: {name}'**
+  String sessionMediaForExercise(String name);
+
+  /// No description provided for @sessionMediaWarning.
+  ///
+  /// In pt, this message translates to:
+  /// **'Limite de 20 MB por arquivo (vídeo de até 60 s). A mídia é apagada 7 dias depois que seu professor visualizar ou responder — ou em 30 dias, se ele não ver.'**
+  String get sessionMediaWarning;
+
+  /// No description provided for @sessionMediaKindVideo.
+  ///
+  /// In pt, this message translates to:
+  /// **'Vídeo'**
+  String get sessionMediaKindVideo;
+
+  /// No description provided for @sessionMediaKindPhoto.
+  ///
+  /// In pt, this message translates to:
+  /// **'Foto'**
+  String get sessionMediaKindPhoto;
+
+  /// No description provided for @sessionMediaCamera.
+  ///
+  /// In pt, this message translates to:
+  /// **'Câmera'**
+  String get sessionMediaCamera;
+
+  /// No description provided for @sessionMediaGallery.
+  ///
+  /// In pt, this message translates to:
+  /// **'Galeria'**
+  String get sessionMediaGallery;
+
+  /// No description provided for @sessionMediaNote.
+  ///
+  /// In pt, this message translates to:
+  /// **'Observação (opcional)'**
+  String get sessionMediaNote;
+
+  /// Arquivo escolhido: tipo e tamanho.
+  ///
+  /// In pt, this message translates to:
+  /// **'{kind} pronto: {size} MB'**
+  String sessionMediaPicked(String kind, String size);
+
+  /// No description provided for @sessionMediaSend.
+  ///
+  /// In pt, this message translates to:
+  /// **'Enviar'**
+  String get sessionMediaSend;
+
+  /// No description provided for @sessionMediaPickError.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível preparar o arquivo. Tente outro.'**
+  String get sessionMediaPickError;
+
+  /// Arquivo acima do limite.
+  ///
+  /// In pt, this message translates to:
+  /// **'O arquivo tem {size} MB, acima do limite de {max} MB. Nada foi enviado.'**
+  String sessionMediaTooLarge(String size, int max);
+
+  /// No description provided for @sessionMediaNeedsConnection.
+  ///
+  /// In pt, this message translates to:
+  /// **'Enviar mídia precisa de internet. Seu treino continua normalmente; tente de novo quando tiver conexão.'**
+  String get sessionMediaNeedsConnection;
+
+  /// Limite de mídias por treino.
+  ///
+  /// In pt, this message translates to:
+  /// **'Você já enviou o máximo de {max} arquivos neste treino. Remova um para enviar outro.'**
+  String sessionMediaLimitReached(int max);
+
+  /// No description provided for @sessionMediaConsentBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Para enviar fotos e vídeos ao professor, autorize o uso de fotos em Conta > Privacidade.'**
+  String get sessionMediaConsentBody;
+
+  /// No description provided for @sessionMediaOpenPrivacy.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abrir privacidade'**
+  String get sessionMediaOpenPrivacy;
+
+  /// No description provided for @sessionMediaRetryLoad.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tentar de novo'**
+  String get sessionMediaRetryLoad;
+
+  /// No description provided for @sessionMediaListTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Enviados neste treino'**
+  String get sessionMediaListTitle;
+
+  /// No description provided for @sessionMediaWholeWorkout.
+  ///
+  /// In pt, this message translates to:
+  /// **'Treino'**
+  String get sessionMediaWholeWorkout;
+
+  /// Mídia enviada, data em que expira.
+  ///
+  /// In pt, this message translates to:
+  /// **'Enviado · expira em {date}'**
+  String sessionMediaStatusSent(String date);
+
+  /// Mídia vista pelo professor, data em que expira.
+  ///
+  /// In pt, this message translates to:
+  /// **'Visto pelo professor · expira em {date}'**
+  String sessionMediaStatusSeen(String date);
+
+  /// No description provided for @sessionMediaStatusExpired.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mídia expirada'**
+  String get sessionMediaStatusExpired;
+
+  /// Progresso do envio.
+  ///
+  /// In pt, this message translates to:
+  /// **'Enviando… {percent}%'**
+  String sessionMediaUploading(int percent);
+
+  /// No description provided for @sessionMediaCancel.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelar envio'**
+  String get sessionMediaCancel;
+
+  /// No description provided for @sessionMediaRetry.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tentar de novo'**
+  String get sessionMediaRetry;
+
+  /// No description provided for @sessionMediaDiscard.
+  ///
+  /// In pt, this message translates to:
+  /// **'Descartar'**
+  String get sessionMediaDiscard;
+
+  /// No description provided for @sessionMediaRemove.
+  ///
+  /// In pt, this message translates to:
+  /// **'Remover'**
+  String get sessionMediaRemove;
+
+  /// Limite de mídias por treino.
+  ///
+  /// In pt, this message translates to:
+  /// **'Limite de {max} arquivos por treino atingido.'**
+  String errorSessionMediaLimit(int max);
+
+  /// No description provided for @errorInvalidMediaKey.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível registrar o arquivo. Tente enviar de novo.'**
+  String get errorInvalidMediaKey;
+
+  /// No description provided for @errorMediaNotUploaded.
+  ///
+  /// In pt, this message translates to:
+  /// **'O envio não terminou. Tente de novo.'**
+  String get errorMediaNotUploaded;
+
+  /// Arquivo acima do limite do servidor.
+  ///
+  /// In pt, this message translates to:
+  /// **'Arquivo grande demais. O limite é {max} MB.'**
+  String errorFileTooLargeMax(int max);
 }
 
 class _AppLocalizationsDelegate

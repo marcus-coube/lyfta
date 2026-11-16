@@ -66,7 +66,7 @@ Refs normativas: ADR-003, ADR-008, ADR-016, [ADR-020](../../adr/ADR-020-midia-de
 feedback vira mensagem no chat do aluno; coach fora do vínculo = 404; exclusão
 de conta remove objetos; teste de isolamento cross-tenant.
 
-## - [ ] P12.2 App — anexar mídia no treino (Flutter, aluno)
+## - [x] P12.2 App — anexar mídia no treino (Flutter, aluno)
 
 **Objetivo:** gravar ou escolher mídia sem sair do player.
 **Decisão:** D4.
@@ -136,6 +136,19 @@ classificados (corrige agora / vai para o 3.0) nas Notas; artefatos gerados.
 ---
 
 ## Notas de execução
+
+**P12.2 (2026-11-16)**
+
+- Código em `app/lib/features/session_media/`: `domain/session_media.dart` (modelo + limites 20 MB / 3 por sessão / 280 da nota), `data/session_media_repository.dart` (presign → PUT com progresso e `CancelToken` → registro; `Dio` limpo no PUT, igual ao chat e às fotos de progresso), `data/media_preparer.dart` (seletor + compressão atrás de `MediaPreparer`, trocável no teste), `presentation/session_media_controller.dart` (envio fora da tela), `send_media_sheet.dart` e `session_media_section.dart`.
+- Onde fica a ação: ícone de câmera de vídeo no cabeçalho do cartão de cada exercício (straight e blocos bi-set/circuito/dropset/rest-pause/cluster) e item "Enviar vídeo ao professor" no menu ⋮ da AppBar do player (sem exercício). "Enviados neste treino" é o último item da lista do player.
+- Não bloqueia: a folha só escolhe/comprime/valida e entrega ao `SessionMediaController` (`NotifierProvider.family` por `session.clientId`, vivo enquanto o app roda), fecha na hora e o upload segue assíncrono — nenhum caminho do `logSet`, do cronômetro, do `ExerciseFieldsRegistry` ou do modal de conclusão passa por ele. Um envio por vez; progresso, cancelar e "tentar de novo" na linha da lista; falha mantém os bytes na memória enquanto o app estiver aberto (sem fila persistente, ADR-020).
+- Compressão e limite: vídeo `pickVideo(maxDuration: 60 s)` + `VideoCompress` (MediumQuality, com áudio) → MP4; se o plugin devolver `null` segue o original e o tamanho decide. Foto: mesma compressão JPEG (1280 px, q82) das fotos de progresso. Web: sem compressão. Acima de 20 MB (depois de comprimir): mensagem com o tamanho (`sessionMediaTooLarge`), nada vai ao servidor. O servidor continua validando (`file_too_large`, `session_media_limit`...).
+- Consentimento e offline: a folha lê `consentStatusProvider` (`GET /v1/me/consents`). Sem `progress_photos` mostra o aviso e o botão "Abrir privacidade" (leva à Conta) e não oferece câmera; sem rede esse `GET` falha e a folha explica que precisa de conexão (o treino segue); com 3 mídias mostra o limite. O aviso de retenção (20 MB, 7 dias após ver/responder, 30 dias) aparece sempre, antes de escolher o arquivo.
+- `describeApiError` ganhou `session_media_limit`, `invalid_media_key`, `media_not_uploaded` e `file_too_large` com `max_bytes` (o texto antigo de 50 MB só vale sem o parâmetro).
+- Permissões: `CAMERA` e `RECORD_AUDIO` (+ `uses-feature` não obrigatório) no `AndroidManifest`; chaves do `Info.plist` no `app/README.md` (iOS é gerado). `video_compress ^3.1.4` no `pubspec` (D4).
+- Verificação: `flutter analyze` limpo, `flutter test` 291+ verdes (novo `test/features/session_media/`: folha com aviso, limite de tamanho, limite de 3, sem consentimento, offline, envio que fecha a folha e segue em segundo plano; lista com enviado/visto/expirado e remover; controller com falha + retry e um envio por vez), `flutter build apk --debug` e `flutter build web` compilam com o `video_compress`.
+- **Verificar manualmente no emulador Android (não feito aqui):** (1) gravar um vídeo curto pela câmera no meio do treino e ver a compressão (MP4 menor); (2) enviar e continuar registrando séries durante o upload (cronômetro e descanso seguem); (3) arquivo > 20 MB da galeria é recusado com o tamanho; (4) rede cortada: a folha informa a necessidade de conexão e o treino segue; cortar a rede no meio do upload mostra "Tentar de novo" e retomar funciona; (5) conta sem `progress_photos` cai na tela Conta; (6) iOS: conferir as chaves do `Info.plist`.
+- Dívidas: (1) o aluno não vê a miniatura de vídeo (só ícone; sem geração de thumbnail); (2) a lista só recarrega do servidor ao abrir o player (estado "visto" aparece ao reabrir, não em tempo real); (3) o botão de mídia por exercício adiciona um ícone ao cabeçalho do cartão — se o cliente achar poluído, mover para o menu.
 
 **P12.1 (2026-11-16)**
 

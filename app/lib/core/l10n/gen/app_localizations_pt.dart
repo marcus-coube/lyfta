@@ -2900,6 +2900,125 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get errorSessionNotFound => 'Este treino não está disponível.';
+
+  @override
+  String get sessionMediaAction => 'Enviar vídeo ao professor';
+
+  @override
+  String get sessionMediaTitle => 'Enviar ao professor';
+
+  @override
+  String sessionMediaForExercise(String name) {
+    return 'Exercício: $name';
+  }
+
+  @override
+  String get sessionMediaWarning =>
+      'Limite de 20 MB por arquivo (vídeo de até 60 s). A mídia é apagada 7 dias depois que seu professor visualizar ou responder — ou em 30 dias, se ele não ver.';
+
+  @override
+  String get sessionMediaKindVideo => 'Vídeo';
+
+  @override
+  String get sessionMediaKindPhoto => 'Foto';
+
+  @override
+  String get sessionMediaCamera => 'Câmera';
+
+  @override
+  String get sessionMediaGallery => 'Galeria';
+
+  @override
+  String get sessionMediaNote => 'Observação (opcional)';
+
+  @override
+  String sessionMediaPicked(String kind, String size) {
+    return '$kind pronto: $size MB';
+  }
+
+  @override
+  String get sessionMediaSend => 'Enviar';
+
+  @override
+  String get sessionMediaPickError =>
+      'Não foi possível preparar o arquivo. Tente outro.';
+
+  @override
+  String sessionMediaTooLarge(String size, int max) {
+    return 'O arquivo tem $size MB, acima do limite de $max MB. Nada foi enviado.';
+  }
+
+  @override
+  String get sessionMediaNeedsConnection =>
+      'Enviar mídia precisa de internet. Seu treino continua normalmente; tente de novo quando tiver conexão.';
+
+  @override
+  String sessionMediaLimitReached(int max) {
+    return 'Você já enviou o máximo de $max arquivos neste treino. Remova um para enviar outro.';
+  }
+
+  @override
+  String get sessionMediaConsentBody =>
+      'Para enviar fotos e vídeos ao professor, autorize o uso de fotos em Conta > Privacidade.';
+
+  @override
+  String get sessionMediaOpenPrivacy => 'Abrir privacidade';
+
+  @override
+  String get sessionMediaRetryLoad => 'Tentar de novo';
+
+  @override
+  String get sessionMediaListTitle => 'Enviados neste treino';
+
+  @override
+  String get sessionMediaWholeWorkout => 'Treino';
+
+  @override
+  String sessionMediaStatusSent(String date) {
+    return 'Enviado · expira em $date';
+  }
+
+  @override
+  String sessionMediaStatusSeen(String date) {
+    return 'Visto pelo professor · expira em $date';
+  }
+
+  @override
+  String get sessionMediaStatusExpired => 'Mídia expirada';
+
+  @override
+  String sessionMediaUploading(int percent) {
+    return 'Enviando… $percent%';
+  }
+
+  @override
+  String get sessionMediaCancel => 'Cancelar envio';
+
+  @override
+  String get sessionMediaRetry => 'Tentar de novo';
+
+  @override
+  String get sessionMediaDiscard => 'Descartar';
+
+  @override
+  String get sessionMediaRemove => 'Remover';
+
+  @override
+  String errorSessionMediaLimit(int max) {
+    return 'Limite de $max arquivos por treino atingido.';
+  }
+
+  @override
+  String get errorInvalidMediaKey =>
+      'Não foi possível registrar o arquivo. Tente enviar de novo.';
+
+  @override
+  String get errorMediaNotUploaded => 'O envio não terminou. Tente de novo.';
+
+  @override
+  String errorFileTooLargeMax(int max) {
+    return 'Arquivo grande demais. O limite é $max MB.';
+  }
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -5805,4 +5924,123 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get errorSessionNotFound => 'Este treino não está disponível.';
+
+  @override
+  String get sessionMediaAction => 'Enviar vídeo ao professor';
+
+  @override
+  String get sessionMediaTitle => 'Enviar ao professor';
+
+  @override
+  String sessionMediaForExercise(String name) {
+    return 'Exercício: $name';
+  }
+
+  @override
+  String get sessionMediaWarning =>
+      'Limite de 20 MB por ficheiro (vídeo até 60 s). O conteúdo é apagado 7 dias depois de o professor o visualizar ou responder — ou aos 30 dias, se ele não o vir.';
+
+  @override
+  String get sessionMediaKindVideo => 'Vídeo';
+
+  @override
+  String get sessionMediaKindPhoto => 'Fotografia';
+
+  @override
+  String get sessionMediaCamera => 'Câmara';
+
+  @override
+  String get sessionMediaGallery => 'Galeria';
+
+  @override
+  String get sessionMediaNote => 'Observação (opcional)';
+
+  @override
+  String sessionMediaPicked(String kind, String size) {
+    return '$kind pronto: $size MB';
+  }
+
+  @override
+  String get sessionMediaSend => 'Enviar';
+
+  @override
+  String get sessionMediaPickError =>
+      'Não foi possível preparar o ficheiro. Tenta outro.';
+
+  @override
+  String sessionMediaTooLarge(String size, int max) {
+    return 'O ficheiro tem $size MB, acima do limite de $max MB. Nada foi enviado.';
+  }
+
+  @override
+  String get sessionMediaNeedsConnection =>
+      'Enviar conteúdo precisa de internet. O teu treino continua normalmente; tenta de novo quando tiveres ligação.';
+
+  @override
+  String sessionMediaLimitReached(int max) {
+    return 'Já enviaste o máximo de $max ficheiros neste treino. Remove um para enviar outro.';
+  }
+
+  @override
+  String get sessionMediaConsentBody =>
+      'Para enviar fotografias e vídeos ao professor, autoriza o uso de fotografias em Conta > Privacidade.';
+
+  @override
+  String get sessionMediaOpenPrivacy => 'Abrir privacidade';
+
+  @override
+  String get sessionMediaRetryLoad => 'Tentar de novo';
+
+  @override
+  String get sessionMediaListTitle => 'Enviados neste treino';
+
+  @override
+  String get sessionMediaWholeWorkout => 'Treino';
+
+  @override
+  String sessionMediaStatusSent(String date) {
+    return 'Enviado · expira em $date';
+  }
+
+  @override
+  String sessionMediaStatusSeen(String date) {
+    return 'Visto pelo professor · expira em $date';
+  }
+
+  @override
+  String get sessionMediaStatusExpired => 'Conteúdo expirado';
+
+  @override
+  String sessionMediaUploading(int percent) {
+    return 'A enviar… $percent%';
+  }
+
+  @override
+  String get sessionMediaCancel => 'Cancelar envio';
+
+  @override
+  String get sessionMediaRetry => 'Tentar de novo';
+
+  @override
+  String get sessionMediaDiscard => 'Descartar';
+
+  @override
+  String get sessionMediaRemove => 'Remover';
+
+  @override
+  String errorSessionMediaLimit(int max) {
+    return 'Limite de $max ficheiros por treino atingido.';
+  }
+
+  @override
+  String get errorInvalidMediaKey =>
+      'Não foi possível registar o ficheiro. Tenta enviar de novo.';
+
+  @override
+  String get errorMediaNotUploaded => 'O envio não terminou. Tenta de novo.';
+
+  @override
+  String errorFileTooLargeMax(int max) {
+    return 'Ficheiro demasiado grande. O limite é $max MB.';
+  }
 }

@@ -9,6 +9,7 @@ import '../../../../core/l10n/gen/app_localizations.dart';
 import '../../../../shared/domain/plan.dart';
 import '../../../../shared/l10n/plan_l10n.dart';
 import '../../../../shared/widgets/exercise_media.dart';
+import '../../../session_media/presentation/session_media_section.dart';
 import '../../domain/block_runner.dart';
 import '../../domain/today.dart';
 import '../exercise_fields.dart';
@@ -109,6 +110,11 @@ class BlockCard extends ConsumerWidget {
                   style: LyType.title(c.textPrimary),
                 ),
               ),
+              SessionMediaButton(
+                sessionClientId: state.session.clientId,
+                exerciseId: run.exerciseId,
+                exerciseName: exercise?.name ?? l10n.builderUnknownExercise,
+              ),
             ],
           ),
         ),
@@ -162,6 +168,12 @@ class BlockCard extends ConsumerWidget {
                         ? Text(name, style: LyType.label(c.textPrimary))
                         : const SizedBox.shrink(),
                   ),
+                  if (showName)
+                    SessionMediaButton(
+                      sessionClientId: state.session.clientId,
+                      exerciseId: step.exerciseId,
+                      exerciseName: name,
+                    ),
                   if (isCurrent)
                     Text(l10n.sessionBlockNow, style: LyType.caption(c.accent)),
                 ],

@@ -35,7 +35,20 @@ extension ApiExceptionL10n on ApiException {
       case 'unsupported_media_type':
         return l10n.errorUnsupportedMedia;
       case 'file_too_large':
-        return l10n.errorFileTooLarge;
+        // Mídia de execução (P12.1) informa o teto real; o resto mantém o texto.
+        final maxBytes = (params['max_bytes'] as num?)?.toInt();
+        return maxBytes == null
+            ? l10n.errorFileTooLarge
+            : l10n.errorFileTooLargeMax(maxBytes ~/ (1024 * 1024));
+      // Mídia de execução (ADR-020, P12.2).
+      case 'session_media_limit':
+        return l10n.errorSessionMediaLimit(
+          (params['max'] as num?)?.toInt() ?? 3,
+        );
+      case 'invalid_media_key':
+        return l10n.errorInvalidMediaKey;
+      case 'media_not_uploaded':
+        return l10n.errorMediaNotUploaded;
       // Builder (P1.4): `reason` diz qual nível do plano ficou vazio.
       case 'plan_incomplete':
         return switch (params['reason']?.toString()) {

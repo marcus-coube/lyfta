@@ -41,6 +41,9 @@ dependencies:
   fl_chart: ^0.69.2
   image_picker: ^1.1.2
   flutter_image_compress: ^2.3.0
+  # Mídia de execução (P12.2, ADR-020, D4): vídeo do aluno comprimido para MP4
+  # no celular antes do upload (teto de 20 MB). Sem efeito na web.
+  video_compress: ^3.1.4
   # Chat e push (P3.5): WebSocket do `comms` (`GET /ws?token=`, P3.2) é
   # entrega quente — a mesma reconexão-com-backoff do worker offline do
   # P1.7, mas para eventos em tempo real em vez de fila de escrita.

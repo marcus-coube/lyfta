@@ -107,6 +107,26 @@ xcrun simctl spawn booted defaults write -g AppleLanguages -array pt-BR en-BR
 Push no iOS ainda não está configurado (falta o `GoogleService-Info.plist` e a
 chave APNs no Firebase); o app tolera a ausência e roda sem push.
 
+### Mídia de execução (P12.2): permissões e `video_compress`
+
+O aluno grava ou escolhe vídeo/foto no player e envia ao professor (ADR-020).
+`video_compress` (D4) comprime o vídeo para MP4 no celular; na web não há
+compressão, só a validação de 20 MB. Android: `CAMERA` e `RECORD_AUDIO` já
+estão no `AndroidManifest.xml` versionado. **iOS** (`ios/` é gerado): depois do
+`flutter create`, acrescentar ao `ios/Runner/Info.plist`:
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>Gravar o vídeo ou a foto do treino para enviar ao professor.</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>Gravar o áudio do vídeo do treino.</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Escolher um vídeo ou foto do treino para enviar ao professor.</string>
+```
+
+(as fotos de evolução já pediam câmera/galeria; confira se as chaves existem
+antes de duplicar). Sem elas o iOS encerra o app ao abrir a câmera.
+
 ## Relato de erros (Sentry/GlitchTip, P4.6)
 
 Desligado por padrão: com `SENTRY_DSN` vazio (dev e CI) nada sai do aparelho e

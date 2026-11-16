@@ -43,11 +43,11 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 - `docs/guidelines/` — convenções de código (ex.: `flutter.md`).
 
 ## Estado atual (2026-11-12)
-**MVP 2.5 em execução (9/12, P9, P10 e P11 fechadas; P12.1 pronta em 2026-11-16)** — pacote intermediário com os ajustes
+**MVP 2.5 em execução (10/12, P9, P10 e P11 fechadas; P12.1 e P12.2 prontas, 2026-11-16)** — pacote intermediário com os ajustes
 da validação do 2.0 com o cliente: plano em [docs/plan/mvp25/](docs/plan/mvp25/README.md),
 ADR-019 (cluster, rótulo e variação por série) e ADR-020 (mídia de execução no
 `comms`, apagada 7 dias após a ciência do professor) aceitos; decisões D1–D7
-confirmadas no [STATUS](docs/plan/mvp25/STATUS.md). O `comms` já serve a mídia de execução (P12.1: presign 20 MB, ciência do professor, feedback pelo chat, expiração 7/30 dias, `TERMS_VERSION` 2026-11-v3). Próxima tarefa: P12.2 (app do aluno). Vem antes do 3.0.
+confirmadas no [STATUS](docs/plan/mvp25/STATUS.md). O `comms` já serve a mídia de execução (P12.1: presign 20 MB, ciência do professor, feedback pelo chat, expiração 7/30 dias, `TERMS_VERSION` 2026-11-v3). O app do aluno já anexa vídeo/foto no player (P12.2: `features/session_media`, `video_compress`, upload fora do caminho do treino, lista "Enviados neste treino"). Próxima tarefa: P12.3 (professor avalia a mídia). Vem antes do 3.0.
 **MVP 2.0 fechado (19/19, 2026-11-12)** — plano em [docs/plan/mvp2/](docs/plan/mvp2/),
 histórico em [STATUS.md](docs/plan/mvp2/STATUS.md); release `2.0.0+2` (APK
 release e build web, sem loja). O próximo pacote (3.0) ainda **não tem plano
@@ -141,7 +141,7 @@ funcionam em **todas** as plataformas (mobile e web).
    (instalado no Mac; pendente no Windows).
 5. Segredos são locais por máquina (`.env` de cada serviço, nunca no git);
    `backend/.env.example` documenta as variáveis.
-6. Continuar: MVP 2.5 em [docs/plan/mvp25/](docs/plan/mvp25/STATUS.md) (próxima: P12.2); o 3.0 ainda não tem plano.
+6. Continuar: MVP 2.5 em [docs/plan/mvp25/](docs/plan/mvp25/STATUS.md) (próxima: P12.3); o 3.0 ainda não tem plano.
 
 ## Convenções inegociáveis
 - **Decisão estrutural nova → novo ADR**, nunca edição silenciosa de doc.
