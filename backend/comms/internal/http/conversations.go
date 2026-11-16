@@ -226,7 +226,7 @@ func (h *ConversationHandler) ListMessages(w http.ResponseWriter, r *http.Reques
 
 	resp := messageListResponse{Items: make([]messageDTO, 0, len(items))}
 	for _, m := range items {
-		resp.Items = append(resp.Items, h.toMessageDTO(r, m))
+		resp.Items = append(resp.Items, h.toMessageDTO(r.Context(), m))
 	}
 	if hasMore && len(items) > 0 {
 		last := items[len(items)-1]
@@ -307,11 +307,30 @@ func (h *ConversationHandler) SendMessage(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	dto := h.toMessageDTO(r, created)
-	h.publish(r, conv, wsEvent{Type: "message.new", ConversationID: conv.ID, Message: &dto})
-	h.pushToRecipientIfOffline(r, conv, created)
+	dto := h.toMessageDTO(r.Context(), created)
+	h.publish(r.Context(), conv, wsEvent{Type: "message.new", ConversationID: conv.ID, Message: &dto})
+	h.pushToRecipientIfOffline(r.Context(), conv, created)
 
 	writeJSON(w, http.StatusCreated, dto)
+}
+
+// PostText grava uma mensagem de texto de senderID na conversa e a entrega pelo
+// caminho normal do chat (message.new no WS dos dois participantes e push ao
+// destinatário se estiver offline). É o que SendMessage faz depois de validar o
+// corpo da requisição, exposto para o feedback do professor sobre uma mídia
+// de execução virar mensagem (ADR-020 §4, P12.1).
+func (h *ConversationHandler) PostText(ctx context.Context, conv domain.Conversation, senderID, body string) (domain.Message, error) {
+	created, err := h.messages.Create(ctx, domain.Message{
+		TenantID: conv.TenantID, ConversationID: conv.ID, SenderID: senderID,
+		Type: domain.MessageTypeText, Body: body,
+	})
+	if err != nil {
+		return domain.Message{}, err
+	}
+	dto := h.toMessageDTO(ctx, created)
+	h.publish(ctx, conv, wsEvent{Type: "message.new", ConversationID: conv.ID, Message: &dto})
+	h.pushToRecipientIfOffline(ctx, conv, created)
+	return created, nil
 }
 
 // pushToRecipientIfOffline manda push de nova mensagem pro OUTRO participante
@@ -321,7 +340,7 @@ func (h *ConversationHandler) SendMessage(w http.ResponseWriter, r *http.Request
 // (h.publish acima); duplicar como push também seria ruído. Falha ao
 // consultar presença ou notifier nil (testes que não exercitam push) não
 // impedem a resposta — a mensagem já está gravada.
-func (h *ConversationHandler) pushToRecipientIfOffline(r *http.Request, conv domain.Conversation, msg domain.Message) {
+func (h *ConversationHandler) pushToRecipientIfOffline(ctx context.Context, conv domain.Conversation, msg domain.Message) {
 	if h.notifier == nil {
 		return
 	}
@@ -330,7 +349,7 @@ func (h *ConversationHandler) pushToRecipientIfOffline(r *http.Request, conv dom
 		recipientID = conv.StudentID
 	}
 
-	online, err := pubsub.IsOnline(r.Context(), h.redisClient, recipientID)
+	online, err := pubsub.IsOnline(ctx, h.redisClient, recipientID)
 	if err != nil {
 		h.logger.Error("push_presence_check_failed", slog.Any("error", err))
 		online = false // presença indisponível: prefere mandar push a mais do que perder o aviso.
@@ -339,7 +358,7 @@ func (h *ConversationHandler) pushToRecipientIfOffline(r *http.Request, conv dom
 		return
 	}
 
-	h.notifier.Send(r.Context(), conv.TenantID, recipientID, push.KindMessageNew, map[string]string{
+	h.notifier.Send(ctx, conv.TenantID, recipientID, push.KindMessageNew, map[string]string{
 		"type": "message.new", "conversation_id": conv.ID,
 	})
 }
@@ -368,7 +387,7 @@ func (h *ConversationHandler) MarkRead(w http.ResponseWriter, r *http.Request) {
 
 	if len(ids) > 0 {
 		now := time.Now().UTC()
-		h.publish(r, conv, wsEvent{
+		h.publish(r.Context(), conv, wsEvent{
 			Type: "message.read", ConversationID: conv.ID,
 			ReaderID: claims.Subject, MessageIDs: ids, ReadAt: &now,
 		})
@@ -417,14 +436,14 @@ func authorizeParticipant(ctx context.Context, logger *slog.Logger, linker Stude
 // publish serializa o evento e publica no canal Redis dos dois participantes
 // (internal/pubsub). Falha ao publicar não derruba a requisição — a mensagem
 // já está no banco, e o cliente recupera o gap via REST.
-func (h *ConversationHandler) publish(r *http.Request, conv domain.Conversation, event wsEvent) {
+func (h *ConversationHandler) publish(ctx context.Context, conv domain.Conversation, event wsEvent) {
 	payload, err := json.Marshal(event)
 	if err != nil {
 		h.logger.Error("ws_event_marshal_failed", slog.Any("error", err))
 		return
 	}
 	for _, userID := range []string{conv.StudentID, conv.CoachID} {
-		if err := pubsub.PublishToUser(r.Context(), h.redisClient, userID, payload); err != nil {
+		if err := pubsub.PublishToUser(ctx, h.redisClient, userID, payload); err != nil {
 			h.logger.Error("ws_event_publish_failed", slog.Any("error", err), slog.String("user_id", userID))
 		}
 	}
@@ -436,19 +455,19 @@ func (h *ConversationHandler) toConversationDTO(r *http.Request, s domain.Conver
 		CreatedAt: s.CreatedAt, LastMessageAt: s.LastMessageAt, UnreadCount: s.UnreadCount,
 	}
 	if s.LastMessage != nil {
-		lm := h.toMessageDTO(r, *s.LastMessage)
+		lm := h.toMessageDTO(r.Context(), *s.LastMessage)
 		dto.LastMessage = &lm
 	}
 	return dto
 }
 
-func (h *ConversationHandler) toMessageDTO(r *http.Request, m domain.Message) messageDTO {
+func (h *ConversationHandler) toMessageDTO(ctx context.Context, m domain.Message) messageDTO {
 	dto := messageDTO{
 		ID: m.ID, ConversationID: m.ConversationID, SenderID: m.SenderID,
 		Type: string(m.Type), Body: m.Body, CreatedAt: m.CreatedAt, ReadAt: m.ReadAt,
 	}
 	if m.Type == domain.MessageTypeImage && m.MediaKey != "" {
-		mediaURL, err := h.presigner.ReadURL(r.Context(), m.MediaKey)
+		mediaURL, err := h.presigner.ReadURL(ctx, m.MediaKey)
 		if err != nil {
 			h.logger.Error("message_read_url_failed", slog.Any("error", err))
 		}

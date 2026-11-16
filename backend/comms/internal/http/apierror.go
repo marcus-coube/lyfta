@@ -80,6 +80,23 @@ var (
 	errNoCoach = func() APIError {
 		return newAPIError(http.StatusConflict, "no_coach")
 	}
+	// Mídia de execução (ADR-020): sessão já com 3 mídias; objeto não subiu;
+	// consentimento ausente (ADR-008 §1).
+	errSessionMediaLimit = func(max int) APIError {
+		return newAPIError(http.StatusUnprocessableEntity, "session_media_limit", "max", max)
+	}
+	errMediaNotUploaded = func() APIError {
+		return newAPIError(http.StatusUnprocessableEntity, "media_not_uploaded")
+	}
+	errMediaTooLarge = func(maxBytes int64) APIError {
+		return newAPIError(http.StatusUnprocessableEntity, "file_too_large", "max_bytes", maxBytes)
+	}
+	errMediaTypeNotAllowed = func(contentType string) APIError {
+		return newAPIError(http.StatusUnprocessableEntity, "unsupported_media_type", "content_type", contentType)
+	}
+	errConsentRequired = func(purpose string) APIError {
+		return newAPIError(http.StatusForbidden, "consent_required", "purpose", purpose)
+	}
 	errInternal = func() APIError {
 		return newAPIError(http.StatusInternalServerError, "internal_error")
 	}

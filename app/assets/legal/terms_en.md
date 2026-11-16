@@ -1,5 +1,5 @@
 Lyfta Terms of Use
-Version 2026-11-v2
+Version 2026-11-v3
 
 1. What Lyfta is
 Lyfta is a training management platform for gyms, personal trainers and studios. Coaches build and follow training plans; students run them, track their progress and chat with their coach.
@@ -14,10 +14,10 @@ Use the app only for training and physical follow-up. Do not upload illegal or o
 Lyfta is an organization tool. It does not replace medical evaluation or in-person guidance from a fitness professional. Stop exercising if you feel pain or unwell and seek care.
 
 5. Your data
-The processing of your personal data follows the Privacy Policy. Health data is only processed with your consent, which you can withdraw at any time under Account > Privacy.
+The processing of your personal data follows the Privacy Policy. Health data is only processed with your consent, which you can withdraw at any time under Account > Privacy. Videos and photos you attach to a workout follow the progress-photos consent and are erased 7 days after your coach views or replies to them (or after 30 days if nobody views them).
 
 6. Deleting your account
-You can delete your account at any time under Account > Delete my account. Health data and photos are erased; completed workouts and messages are anonymized.
+You can delete your account at any time under Account > Delete my account. Health data, photos and videos are erased; completed workouts and messages are anonymized.
 
 7. Changes to these terms
 When these terms change, the version above changes and we will ask for your acceptance again before you keep using the app.

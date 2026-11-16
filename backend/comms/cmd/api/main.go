@@ -126,21 +126,30 @@ func run(logger *slog.Logger) error {
 	notifier := push.NewNotifier(logger, deviceTokens, notifications, pusher)
 
 	coachLinks := coachlink.NewClient(cfg.IdentityURL, cfg.InternalToken, cfg.CoachLinkCacheTTL)
+	sessionMedia := repo.NewSessionMediaRepo(pool)
+	conversationHandler := chttp.NewConversationHandler(logger, conversations, messages, presigner, redisClient, notifier, coachLinks)
+
 	router := chttp.NewRouter(logger, cfg.CORSOrigins, verifier, cfg.InternalToken,
-		chttp.NewConversationHandler(logger, conversations, messages, presigner, redisClient, notifier, coachLinks),
+		conversationHandler,
 		chttp.NewMediaHandler(logger, conversations, presigner, coachLinks),
 		chttp.NewWSHandler(logger, verifier, hub, redisClient),
-		chttp.NewCheckinHandler(logger, checkins, coachLinks, redisClient, notifier),
+		chttp.NewCheckinHandler(logger, checkins, coachLinks, redisClient, notifier).WithSessionMedia(sessionMedia),
 		chttp.NewDeviceHandler(logger, deviceTokens),
-		chttp.NewErasureHandler(logger, repo.NewErasureRepo(pool)),
+		chttp.NewErasureHandler(logger, repo.NewErasureRepo(pool), presigner),
+		chttp.NewSessionMediaHandler(logger, sessionMedia, presigner, coachLinks, conversations, conversationHandler, notifier),
 	)
 
 	// Job diário "treino pendente" (P3.4, passo 3) — M2M com o workout
 	// (ADR-013 §4/§5), dedupe por notification_log e pg_advisory_lock contra
 	// duas instâncias rodando ao mesmo tempo (ver internal/job).
 	workoutClient := workoutclient.NewClient(cfg.WorkoutBaseURL, cfg.InternalToken)
-	pendingJob := job.NewPendingWorkoutJob(logger, pool, workoutClient, tenantclient.NewClient(cfg.IdentityURL, cfg.InternalToken, tenantclient.DefaultTTL), coachLinks, notifications, notifier, pendingWorkoutTriggerHour)
+	tenantClient := tenantclient.NewClient(cfg.IdentityURL, cfg.InternalToken, tenantclient.DefaultTTL)
+	pendingJob := job.NewPendingWorkoutJob(logger, pool, workoutClient, tenantClient, coachLinks, notifications, notifier, pendingWorkoutTriggerHour)
 	go pendingJob.Run(ctx)
+
+	// Expiração da mídia de execução (ADR-020, P12.1): mesmo advisory lock do
+	// job acima, um tick a cada 5 min.
+	go job.NewMediaExpiryJob(logger, pool, sessionMedia, presigner, tenantClient).Run(ctx)
 
 	server := &http.Server{
 		Addr:              ":" + cfg.Port,

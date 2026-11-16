@@ -34,6 +34,7 @@ func NewRouter(
 	checkinHandler *CheckinHandler,
 	deviceHandler *DeviceHandler,
 	erasureHandler *ErasureHandler,
+	sessionMediaHandler *SessionMediaHandler,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -92,6 +93,19 @@ func NewRouter(
 			r.Get("/checkins", checkinHandler.List)
 			r.Get("/checkins/stats", checkinHandler.Stats)
 			r.Post("/checkins/{id}/review", checkinHandler.Review)
+		})
+
+		// Mídia de execução (ADR-020, P12.1): o aluno anexa ao treino (exige a
+		// finalidade progress_photos, checada no handler) e o professor dá
+		// ciência, restrito aos alunos vinculados (ADR-016).
+		r.Post("/me/session-media/presign", sessionMediaHandler.Presign)
+		r.Post("/me/session-media", sessionMediaHandler.Create)
+		r.Get("/me/session-media", sessionMediaHandler.ListMine)
+		r.Delete("/me/session-media/{id}", sessionMediaHandler.DeleteMine)
+		r.Group(func(r chi.Router) {
+			r.Use(RequireRole("owner", "coach"))
+			r.Get("/session-media", sessionMediaHandler.List)
+			r.Post("/session-media/{id}/ack", sessionMediaHandler.Ack)
 		})
 
 		// Registro de token de push (P3.4, passo 1) — qualquer usuário

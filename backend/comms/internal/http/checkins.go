@@ -26,11 +26,19 @@ const maxCheckinNoteLen = 500
 // registra ao concluir a sessão, o coach revisa a fila (não revisados
 // primeiro, Aceite do P3.3).
 type CheckinHandler struct {
-	logger      *slog.Logger
-	checkins    *repo.CheckinRepo
-	linker      StudentLinker
-	redisClient *redis.Client
-	notifier    *push.Notifier
+	logger       *slog.Logger
+	checkins     *repo.CheckinRepo
+	linker       StudentLinker
+	redisClient  *redis.Client
+	notifier     *push.Notifier
+	sessionMedia *repo.SessionMediaRepo
+}
+
+// WithSessionMedia liga a contagem de mídia sem ciência em /checkins/stats
+// (P12.1); sem ela o campo `unacked_media` fica 0.
+func (h *CheckinHandler) WithSessionMedia(m *repo.SessionMediaRepo) *CheckinHandler {
+	h.sessionMedia = m
+	return h
 }
 
 // NewCheckinHandler cria o handler de check-ins.
@@ -239,7 +247,8 @@ func (h *CheckinHandler) List(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, resp)
 }
 
-// Stats — GET /v1/checkins/stats (P8.1): quantos check-ins esperam revisão.
+// Stats — GET /v1/checkins/stats (P8.1): quantos check-ins esperam revisão e
+// (P12.1) quantas mídias de execução esperam ciência.
 // Coach conta só os alunos dele; owner conta o tenant inteiro, com
 // `?coach_id=` opcional para filtrar por professor.
 func (h *CheckinHandler) Stats(w http.ResponseWriter, r *http.Request) {
@@ -278,7 +287,16 @@ func (h *CheckinHandler) Stats(w http.ResponseWriter, r *http.Request) {
 		writeError(w, errInternal())
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]int{"unreviewed": n})
+	unackedMedia := 0
+	if h.sessionMedia != nil {
+		unackedMedia, err = h.sessionMedia.CountUnacked(r.Context(), claims.TenantID, ids)
+		if err != nil {
+			h.logger.Error("session_media_stats_failed", slog.Any("error", err))
+			writeError(w, errInternal())
+			return
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]int{"unreviewed": n, "unacked_media": unackedMedia})
 }
 
 // Review marca um check-in como visto pelo coach autenticado — idempotente

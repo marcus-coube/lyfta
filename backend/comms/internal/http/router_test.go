@@ -72,7 +72,7 @@ func newTestRouter(t *testing.T) http.Handler {
 	var wsHandler *chttp.WSHandler
 	var checkinHandler *chttp.CheckinHandler
 	var deviceHandler *chttp.DeviceHandler
-	return chttp.NewRouter(logger, []string{"*"}, verifier, "", conversationHandler, mediaHandler, wsHandler, checkinHandler, deviceHandler, nil)
+	return chttp.NewRouter(logger, []string{"*"}, verifier, "", conversationHandler, mediaHandler, wsHandler, checkinHandler, deviceHandler, nil, nil)
 }
 
 func TestHealthzIsPublic(t *testing.T) {
@@ -112,7 +112,7 @@ func TestWhoamiAcceptsValidToken(t *testing.T) {
 	var wsHandler *chttp.WSHandler
 	var checkinHandler *chttp.CheckinHandler
 	var deviceHandler *chttp.DeviceHandler
-	handler := chttp.NewRouter(logger, []string{"*"}, verifier, "", conversationHandler, mediaHandler, wsHandler, checkinHandler, deviceHandler, nil)
+	handler := chttp.NewRouter(logger, []string{"*"}, verifier, "", conversationHandler, mediaHandler, wsHandler, checkinHandler, deviceHandler, nil, nil)
 
 	token := signToken(t, priv, "tenant-a", "user-a", []string{"coach"})
 	req := httptest.NewRequest(http.MethodGet, "/v1/whoami", nil)

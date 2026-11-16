@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 
@@ -16,11 +17,19 @@ import (
 type ErasureHandler struct {
 	logger  *slog.Logger
 	erasure *repo.ErasureRepo
+	objects StudentObjectEraser
 }
 
-// NewErasureHandler cria o handler.
-func NewErasureHandler(logger *slog.Logger, erasure *repo.ErasureRepo) *ErasureHandler {
-	return &ErasureHandler{logger: logger, erasure: erasure}
+// StudentObjectEraser apaga do storage a mídia de execução de um aluno
+// (satisfeito por *media.Presigner).
+type StudentObjectEraser interface {
+	DeleteStudentObjects(ctx context.Context, tenantID, studentID string) error
+}
+
+// NewErasureHandler cria o handler. objects pode ser nil só nos testes que não
+// exercitam o storage.
+func NewErasureHandler(logger *slog.Logger, erasure *repo.ErasureRepo, objects StudentObjectEraser) *ErasureHandler {
+	return &ErasureHandler{logger: logger, erasure: erasure, objects: objects}
 }
 
 // EraseUser — DELETE /internal/v1/users/{id}?tenant_id=. Idempotente: repetir
@@ -35,6 +44,15 @@ func (h *ErasureHandler) EraseUser(w http.ResponseWriter, r *http.Request) {
 	if _, err := uuid.Parse(tenantID); err != nil {
 		writeError(w, errValidation("tenant_id"))
 		return
+	}
+	// Objetos primeiro (ADR-020 §5): se o storage falhar o identity repete a
+	// chamada — idempotente — e as linhas ainda apontam para o que sobrou.
+	if h.objects != nil {
+		if err := h.objects.DeleteStudentObjects(r.Context(), tenantID, userID); err != nil {
+			h.logger.Error("erase_user_objects_failed", slog.Any("error", err))
+			writeError(w, errInternal())
+			return
+		}
 	}
 	if err := h.erasure.EraseUser(r.Context(), tenantID, userID); err != nil {
 		h.logger.Error("erase_user_failed", slog.Any("error", err))

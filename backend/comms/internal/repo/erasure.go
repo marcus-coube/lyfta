@@ -29,6 +29,7 @@ func NewErasureRepo(pool *pgxpool.Pool) *ErasureRepo {
 //   - check-ins: autor/revisor anônimos e os textos livres (dor, comentário)
 //     apagados — são dado de saúde digitado pelo aluno, e as notas numéricas
 //     ficam como estatística sem titular;
+//   - mídia de execução: linhas excluídas (e quem deu ciência vira anônimo);
 //   - tokens de push e log de notificações: excluídos.
 //
 // A conversa em si (o par aluno-coach) permanece: o UUID dela aponta para um
@@ -39,6 +40,7 @@ func (r *ErasureRepo) EraseUser(ctx context.Context, tenantID, userID string) er
 			`UPDATE messages SET sender_id = $2 WHERE sender_id = $1`,
 			`UPDATE workout_checkins SET student_id = $2, pain_notes = NULL, comment = NULL WHERE student_id = $1`,
 			`UPDATE workout_checkins SET reviewed_by = $2 WHERE reviewed_by = $1`,
+			`UPDATE session_media SET acked_by = $2 WHERE acked_by = $1`,
 		} {
 			if _, err := tx.Exec(ctx, q, userID, AnonymousUserID); err != nil {
 				return err
@@ -47,6 +49,9 @@ func (r *ErasureRepo) EraseUser(ctx context.Context, tenantID, userID string) er
 		for _, q := range []string{
 			`DELETE FROM device_tokens WHERE user_id = $1`,
 			`DELETE FROM notification_log WHERE user_id = $1`,
+			// Mídia de execução (ADR-020 §5): as linhas somem; os objetos o
+			// handler já apagou do storage antes de chamar aqui.
+			`DELETE FROM session_media WHERE student_id = $1`,
 		} {
 			if _, err := tx.Exec(ctx, q, userID); err != nil {
 				return err

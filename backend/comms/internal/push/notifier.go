@@ -26,6 +26,8 @@ const (
 	KindMessageNew        Kind = "message_new"
 	KindCheckinPainStrong Kind = "checkin_pain_strong"
 	KindWorkoutPending    Kind = "workout_pending"
+	// KindSessionMedia avisa o professor de mídia de execução nova (P12.1).
+	KindSessionMedia Kind = "session_media_new"
 )
 
 // Pusher é o transporte de push — satisfeito por *fcm.Client em produção e

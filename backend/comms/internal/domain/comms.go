@@ -133,3 +133,24 @@ type DeviceToken struct {
 	Locale    string
 	UpdatedAt time.Time
 }
+
+// SessionMedia é a mídia (vídeo/foto) que o aluno anexa ao treino para o
+// professor avaliar (ADR-020, P12.1). MediaKey vazio = já expirada: o objeto
+// foi apagado e a linha ficou só para o histórico.
+type SessionMedia struct {
+	ID              string
+	TenantID        string
+	StudentID       string
+	SessionClientID string
+	ExerciseID      string
+	ExerciseName    string
+	MediaKey        string
+	ContentType     string
+	SizeBytes       int64
+	Note            string
+	CreatedAt       time.Time
+	AckedBy         string
+	AckedAt         *time.Time
+	DeleteAfter     time.Time
+	DeletedAt       *time.Time
+}

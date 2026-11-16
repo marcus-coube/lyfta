@@ -24,7 +24,7 @@ func erasureRouter(t *testing.T) http.Handler {
 	}
 	logger := slog.New(slog.DiscardHandler)
 	return chttp.NewRouter(logger, []string{"*"}, verifier, erasureTestToken,
-		nil, nil, nil, nil, nil, chttp.NewErasureHandler(logger, repo.NewErasureRepo(pool)))
+		nil, nil, nil, nil, nil, chttp.NewErasureHandler(logger, repo.NewErasureRepo(pool), nil), nil)
 }
 
 func doErase(router http.Handler, token, userID, tenantID string) *httptest.ResponseRecorder {

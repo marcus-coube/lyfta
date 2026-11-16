@@ -17,7 +17,7 @@ Refs normativas: ADR-003, ADR-008, ADR-016, [ADR-020](../../adr/ADR-020-midia-de
 
 ---
 
-## - [ ] P12.1 Mídia de execução (comms)
+## - [x] P12.1 Mídia de execução (comms)
 
 **Objetivo:** upload, leitura, ciência do professor e expiração.
 **Decisões:** D5, D6, D7.
@@ -137,4 +137,46 @@ classificados (corrige agora / vai para o 3.0) nas Notas; artefatos gerados.
 
 ## Notas de execução
 
-(o agente anota aqui descobertas, dívidas e desvios aprovados)
+**P12.1 (2026-11-16)**
+
+- Rotas (comms): aluno `POST /v1/me/session-media/presign`, `POST /v1/me/session-media`,
+  `GET /v1/me/session-media?session_client_id=`, `DELETE /v1/me/session-media/{id}`;
+  professor/owner `GET /v1/session-media?student_id=&pending=` e
+  `POST /v1/session-media/{id}/ack`; `GET /v1/checkins/stats` ganhou `unacked_media`.
+  Migration comms `0008_session_media` (RLS, 3 índices; `media_key` nullable: some na expiração).
+- Erros 422 do fluxo: `file_too_large` (presign > 20 MB, ou objeto > 20 MB no HEAD do
+  registro), `unsupported_media_type`, `invalid_media_key`, `media_not_uploaded` (HEAD 404),
+  `session_media_limit` (4ª mídia; o objeto recusado é apagado do storage). Tamanho e tipo
+  gravados vêm do HEAD, não do cliente. 403 `consent_required` sem `progress_photos` nas
+  claims (só no presign e no registro: listar e retirar nunca são barrados).
+- O limite de 3 por sessão conta linhas (inclusive expiradas) sob `pg_advisory_xact_lock`
+  da sessão. Registrar a mesma chave de novo devolve a linha existente (idempotente).
+- Ack: `delete_after = LEAST(delete_after, acked_at + 7d)` num UPDATE condicionado a
+  `acked_at IS NULL`; o relógio do instante da ciência é injetável no handler. Feedback
+  vira mensagem de texto do próprio ator (coach ou owner) no chat direto com o aluno, via
+  `ConversationHandler.PostText` (mesmo caminho do chat: `message.new` no WS dos dois e
+  push se o aluno estiver offline). O corpo é `[exercício · AAAA-MM-DD] texto` (cabeçalho
+  neutro quanto ao idioma). Ack + feedback repetidos reenviam a mensagem (sem dedupe).
+- Job de expiração (`internal/job/media_expiry.go`): tick de 5 min, mesmo
+  `pg_try_advisory_lock` (chave `pendingLockKey`) do job de treino pendente — uma instância
+  por vez, quem não pega o lock volta no tick seguinte. O RLS exige um tenant por consulta,
+  então varre os tenants listados pelo identity (`tenantclient`, como o job de pendentes).
+  Apaga o objeto e só então marca `deleted_at` (+ `media_key = NULL`); falha no S3 não marca.
+  Relógio injetável (`WithClock`).
+- Storage: `media.Presigner` ganhou `PresignSessionMediaPut`, `Head`, `DeleteObject`,
+  `DeleteStudentObjects` (só a pasta `.../session-media/` do aluno: as fotos de evolução do
+  assessment dividem a árvore `tenants/{t}/students/{s}/` e não podem ser tocadas) e
+  `SignedReadURL` (sempre assinada, ignora `S3_PUBLIC_BASE_URL`: mídia de execução nunca é
+  pública). Exclusão de conta: o handler apaga os objetos e depois `ErasureRepo` apaga as
+  linhas e anonimiza `acked_by`.
+- Termos: `TERMS_VERSION` `2026-11-v2` → `2026-11-v3` (identity `config.go`/`.env.example`,
+  `AppConfig.termsVersion`, `app/README.md` e os 6 textos de `assets/legal/`, que passam a
+  citar a mídia de execução, a retenção de 7/30 dias e a retirada pelo aluno). Todo usuário
+  aceita de novo no primeiro login; `.env` locais com `TERMS_VERSION` explícito precisam
+  acompanhar. Revisão jurídica segue na L6 do pré-loja.
+- Dívidas: (1) o coach continua vendo a mídia depois que o aluno revoga `progress_photos`
+  até ela expirar (o assessment bloqueia a leitura do coach nesse caso; aqui exigiria
+  consulta M2M de consentimento no `GET /v1/session-media`); (2) o cabeçalho da mensagem de
+  feedback não é traduzido; (3) o push de mídia nova só vai ao coach atual do aluno
+  (`CoachOf`), nunca ao owner; (4) sem teste automatizado de PUT real de 20 MB — o teto é
+  garantido pela assinatura (conferido contra o MinIO no HEAD do round-trip de 14 bytes).

@@ -59,7 +59,7 @@ func Load() (Config, error) {
 		AppEnv:        getEnv("APP_ENV", "development"),
 		SentryDSN:     os.Getenv("SENTRY_DSN"),
 		SentryRelease: os.Getenv("SENTRY_RELEASE"),
-		TermsVersion:  getEnv("TERMS_VERSION", "2026-11-v2"),
+		TermsVersion:  getEnv("TERMS_VERSION", "2026-11-v3"),
 		WorkoutURL:    getEnv("WORKOUT_URL", "http://localhost:8082"),
 		AssessmentURL: getEnv("ASSESSMENT_URL", "http://localhost:8083"),
 		CommsURL:      getEnv("COMMS_URL", "http://localhost:8084"),

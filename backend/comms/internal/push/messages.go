@@ -15,6 +15,11 @@ var texts = map[Kind]map[string]struct{ Title, Body string }{
 		"pt-PT": {Title: "Alerta de dor", Body: "Um aluno relatou dor forte no treino."},
 		"en":    {Title: "Pain alert", Body: "A student reported strong pain during training."},
 	},
+	KindSessionMedia: {
+		"pt-BR": {Title: "Mídia para avaliar", Body: "Um aluno enviou um vídeo ou foto do treino."},
+		"pt-PT": {Title: "Multimédia para avaliar", Body: "Um aluno enviou um vídeo ou foto do treino."},
+		"en":    {Title: "Media to review", Body: "A student sent a video or photo from their workout."},
+	},
 	KindWorkoutPending: {
 		"pt-BR": {Title: "Treino pendente", Body: "Seu treino de hoje te espera."},
 		"pt-PT": {Title: "Treino pendente", Body: "O seu treino de hoje espera por si."},

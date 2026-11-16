@@ -1,5 +1,5 @@
 Termos de Utilização do Lyfta
-Versão 2026-11-v2
+Versão 2026-11-v3
 
 1. O que é o Lyfta
 O Lyfta é uma plataforma de gestão de treino para ginásios, personal trainers e estúdios. O treinador monta e acompanha treinos; o aluno executa, regista a evolução e conversa com o treinador.
@@ -14,10 +14,10 @@ Utilize a app apenas para treino e acompanhamento físico. Não envie conteúdo 
 O Lyfta é uma ferramenta de organização. Não substitui avaliação médica nem a orientação presencial de um profissional de exercício físico. Interrompa o exercício em caso de dor ou mal-estar e procure atendimento.
 
 5. Os seus dados
-O tratamento dos seus dados pessoais segue a Política de Privacidade. Os dados de saúde só são tratados com o seu consentimento, que pode revogar a qualquer momento em Conta > Privacidade.
+O tratamento dos seus dados pessoais segue a Política de Privacidade. Os dados de saúde só são tratados com o seu consentimento, que pode revogar a qualquer momento em Conta > Privacidade. Os vídeos e fotografias que anexa a um treino seguem o consentimento das fotografias de evolução e são apagados 7 dias depois de o treinador os visualizar ou responder (ou em 30 dias, se ninguém os vir).
 
 6. Eliminação da conta
-Pode eliminar a sua conta a qualquer momento em Conta > Eliminar a minha conta. Os dados de saúde e as fotografias são apagados; os treinos executados e as mensagens são anonimizados.
+Pode eliminar a sua conta a qualquer momento em Conta > Eliminar a minha conta. Os dados de saúde, as fotografias e os vídeos são apagados; os treinos executados e as mensagens são anonimizados.
 
 7. Alterações a estes termos
 Quando estes termos mudarem, a versão acima muda e pediremos novamente a sua aceitação antes de continuar a usar a app.

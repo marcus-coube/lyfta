@@ -99,7 +99,7 @@ func newServerWithLinker(t *testing.T, linker chttp.StudentLinker) (*httptest.Se
 	wsHandler := chttp.NewWSHandler(logger, verifier, hub, redisClient)
 	checkinHandler := chttp.NewCheckinHandler(logger, checkins, linker, redisClient, nil)
 
-	router := chttp.NewRouter(logger, []string{"*"}, verifier, "", conversationHandler, mediaHandler, wsHandler, checkinHandler, nil, nil)
+	router := chttp.NewRouter(logger, []string{"*"}, verifier, "", conversationHandler, mediaHandler, wsHandler, checkinHandler, nil, nil, nil)
 	server := httptest.NewServer(router)
 	t.Cleanup(server.Close)
 	return server, priv, hub

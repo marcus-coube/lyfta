@@ -12,7 +12,7 @@ de código entre serviços — só HTTP).
 | `identity/` | 8081 | `lyfta_identity` | Tenants, usuários, papéis, JWT, convites (Resend), recuperação de senha |
 | `workout/` | 8082 | `lyfta_workout` | Biblioteca de exercícios, templates (ADR-004), execução, sync offline (ADR-003), mídia |
 | `assessment/` | 8083 | `lyfta_assessment` | Medidas, bioimpedância, fotos de evolução, anamnese e lesões |
-| `comms/` | 8084 | `lyfta_comms` | Chat (WS+REST), check-in de treino, push FCM |
+| `comms/` | 8084 | `lyfta_comms` | Chat (WS+REST), check-in de treino, push FCM, mídia de execução (ADR-020) |
 | `billing/` | 8085 | `lyfta_billing` | Financeiro (ADR-007/017): planos de mensalidade, assinaturas, faturas, baixa manual |
 
 ## Stack pinada (não trocar sem ADR)
