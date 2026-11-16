@@ -328,8 +328,12 @@ func advanceRotation(ctx context.Context, tx pgx.Tx, studentID, finishedDayID st
 	return err
 }
 
-// PreviousLoads devolve, por exercício pedido, as séries da última sessão em
-// que o aluno o executou — a "carga anterior" do ADR-004.
+// PreviousLoads devolve, por exercício pedido, as séries da última sessão
+// **concluída** em que o aluno o executou — a "carga anterior" do ADR-004.
+//
+// Sessão aberta não conta: é o treino em andamento (o app relê o Hoje ao
+// reabrir no meio dele) e a "anterior" viraria a série que o aluno acabou de
+// fazer. Mesma regra da rotação, que só anda no `session_finish`.
 //
 // A busca é por `exercise_id` e ignora plano e versão de propósito: o aluno
 // que trocou de treino continua vendo com quanto fez o supino da última vez.
@@ -346,6 +350,7 @@ func (r *SessionRepo) PreviousLoads(ctx context.Context, tenantID, studentID str
 				FROM workout_set_logs l
 				JOIN workout_sessions s ON s.id = l.session_id
 				WHERE s.student_id = $2
+				  AND s.finished_at IS NOT NULL
 				  AND l.exercise_id = ANY($1::uuid[])
 				  AND ` + effectiveLogFilter + `
 			),

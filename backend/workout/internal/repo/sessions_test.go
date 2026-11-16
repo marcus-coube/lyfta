@@ -306,6 +306,37 @@ func TestPreviousLoadCrossesPlans(t *testing.T) {
 	}
 }
 
+// TestPreviousLoadIgnoresOpenSession: o treino em andamento (sem
+// session_finish) não vira "carga anterior" — ao reabrir o app no meio dele, o
+// aluno continua vendo a última sessão concluída.
+func TestPreviousLoadIgnoresOpenSession(t *testing.T) {
+	f := newExecFixture(t, "A")
+	ctx := context.Background()
+	dayA := f.dayByLabel(t, "A")
+
+	if _, err := f.sessions.ApplyEvents(ctx, f.tenantID, f.studentID,
+		execEvents(dayA.ID, f.exerciseID, 40, 42.5)); err != nil {
+		t.Fatalf("sessão concluída: %v", err)
+	}
+	open := execEvents(dayA.ID, f.exerciseID, 50)
+	open = open[:len(open)-1] // sem session_finish
+	for i := range open {
+		open[i].PerformedAt = open[i].PerformedAt.Add(45 * time.Minute)
+	}
+	if _, err := f.sessions.ApplyEvents(ctx, f.tenantID, f.studentID, open); err != nil {
+		t.Fatalf("sessão aberta: %v", err)
+	}
+
+	loads, err := f.sessions.PreviousLoads(ctx, f.tenantID, f.studentID, []string{f.exerciseID})
+	if err != nil {
+		t.Fatalf("carga anterior: %v", err)
+	}
+	prev := loads[f.exerciseID]
+	if len(prev.Sets) != 2 || *prev.Sets[0].LoadKg != 40 || *prev.Sets[1].LoadKg != 42.5 {
+		t.Fatalf("a anterior deveria ser a sessão concluída (40, 42.5), veio %+v", prev.Sets)
+	}
+}
+
 // TestSetRevisionHidesOriginal: corrigir um registro não edita o fato — o log
 // antigo continua na tabela e some das leituras (ADR-003 §5).
 func TestSetRevisionHidesOriginal(t *testing.T) {
