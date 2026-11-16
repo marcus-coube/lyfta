@@ -185,7 +185,7 @@ void main() {
 
       expect(
         tester.widget<Text>(find.byKey(const Key('media-error'))).data,
-        contains('21.0 MB'),
+        contains('21,0 MB'),
       );
       expect(find.byKey(const Key('media-picked')), findsNothing);
       expect(repo.uploads, 0);

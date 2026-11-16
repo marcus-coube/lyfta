@@ -107,7 +107,7 @@ void main() {
       expect(acks, [null]);
       expect(find.byKey(const Key('viewer-warning')), findsNothing);
       expect(find.byKey(const Key('viewer-deleted-on')), findsOneWidget);
-      expect(find.textContaining('Apagada em'), findsOneWidget);
+      expect(find.textContaining('Será apagada em'), findsOneWidget);
     });
 
     testWidgets('Responder envia o texto como feedback do ack', (tester) async {
@@ -244,7 +244,7 @@ void main() {
         tester.widget<Text>(
           find.byKey(const ValueKey('coach-media-status-seen')),
         ).data,
-        contains('Apagada em'),
+        contains('Será apagada em'),
       );
       expect(find.textContaining('Mídia expirada'), findsOneWidget);
       expect(

@@ -1231,7 +1231,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentPhotosBody =>
-      'I authorize storing my progress photos and showing them to my coach. Without this the app works normally, it just does not upload photos.';
+      'I authorize storing my progress photos and the exercise photos and videos I send during a workout, and showing them to my coach. Exercise media is deleted 7 days after my coach views it (or within 30 days). Without this the app works normally, it just does not upload photos or videos.';
 
   @override
   String get consentSubmit => 'Continue';
@@ -1262,7 +1262,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountPhotosSubtitle =>
-      'Lets us store your photos and show them to your coach. Turning it off blocks photo uploads and your coach stops seeing the ones you already sent.';
+      'Lets us store your photos and exercise videos and show them to your coach. Turning it off blocks uploads and your coach stops seeing the photos you already sent.';
 
   @override
   String get accountLegalSection => 'Documents';
@@ -2931,7 +2931,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String sessionMediaPicked(String kind, String size) {
-    return '$kind ready: $size MB';
+    return 'Ready to send: $kind, $size MB';
   }
 
   @override
@@ -3048,7 +3048,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String coachMediaDeletedOn(String date) {
-    return 'Deleted on $date';
+    return 'Will be deleted on $date';
   }
 
   @override

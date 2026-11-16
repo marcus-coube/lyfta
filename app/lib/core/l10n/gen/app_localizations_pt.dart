@@ -1232,7 +1232,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get consentPhotosBody =>
-      'Autorizo guardar minhas fotos de evolução e mostrá-las ao meu professor. Sem isso o app funciona normalmente, só não envia fotos.';
+      'Autorizo guardar minhas fotos de evolução e as fotos e vídeos de execução que eu enviar no treino, e mostrá-los ao meu professor. Os de execução são apagados 7 dias depois que ele vê (ou em 30 dias). Sem isso o app funciona normalmente, só não envia fotos nem vídeos.';
 
   @override
   String get consentSubmit => 'Continuar';
@@ -1264,7 +1264,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get accountPhotosSubtitle =>
-      'Permite guardar suas fotos e mostrá-las ao seu professor. Ao desligar, o envio de fotos é bloqueado e seu professor deixa de ver as que já enviou.';
+      'Permite guardar suas fotos e os vídeos de execução e mostrá-los ao seu professor. Ao desligar, o envio é bloqueado e seu professor deixa de ver as fotos que já enviou.';
 
   @override
   String get accountLegalSection => 'Documentos';
@@ -2933,7 +2933,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String sessionMediaPicked(String kind, String size) {
-    return '$kind pronto: $size MB';
+    return 'Pronto para enviar: $kind, $size MB';
   }
 
   @override
@@ -3049,7 +3049,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String coachMediaDeletedOn(String date) {
-    return 'Apagada em $date';
+    return 'Será apagada em $date';
   }
 
   @override
@@ -4308,7 +4308,7 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get consentPhotosBody =>
-      'Autorizo guardar as minhas fotografias de evolução e mostrá-las ao meu treinador. Sem isto a app funciona normalmente, apenas não envia fotografias.';
+      'Autorizo guardar as minhas fotografias de evolução e as fotografias e vídeos de execução que enviar no treino, e mostrá-los ao meu treinador. Os de execução são apagados 7 dias depois de ele os ver (ou em 30 dias). Sem isto a app funciona normalmente, apenas não envia fotografias nem vídeos.';
 
   @override
   String get consentSubmit => 'Continuar';
@@ -4340,7 +4340,7 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get accountPhotosSubtitle =>
-      'Permite guardar as suas fotografias e mostrá-las ao seu treinador. Ao desligar, o envio de fotografias fica bloqueado e o seu treinador deixa de ver as que já enviou.';
+      'Permite guardar as suas fotografias e os vídeos de execução e mostrá-los ao seu treinador. Ao desligar, o envio fica bloqueado e o seu treinador deixa de ver as fotografias que já enviou.';
 
   @override
   String get accountLegalSection => 'Documentos';
@@ -6009,7 +6009,7 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String sessionMediaPicked(String kind, String size) {
-    return '$kind pronto: $size MB';
+    return 'Pronto a enviar: $kind, $size MB';
   }
 
   @override
@@ -6125,7 +6125,7 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String coachMediaDeletedOn(String date) {
-    return 'Apagado em $date';
+    return 'Será apagado em $date';
   }
 
   @override

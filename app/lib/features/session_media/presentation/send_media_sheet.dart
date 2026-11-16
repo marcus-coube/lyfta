@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception.dart';
@@ -82,7 +83,7 @@ class _SendMediaSheetState extends ConsumerState<SendMediaSheet> {
         setState(() {
           _picked = null;
           _error = l10n.sessionMediaTooLarge(
-            _mb(media.sizeBytes),
+            _mb(media.sizeBytes, l10n.localeName),
             sessionMediaMaxBytes ~/ (1024 * 1024),
           );
         });
@@ -266,7 +267,7 @@ class _SendMediaSheetState extends ConsumerState<SendMediaSheet> {
             picked.isVideo
                 ? l10n.sessionMediaKindVideo
                 : l10n.sessionMediaKindPhoto,
-            _mb(picked.sizeBytes),
+            _mb(picked.sizeBytes, l10n.localeName),
           ),
           key: const Key('media-picked'),
           style: LyType.bodySm(c.textPrimary),
@@ -298,7 +299,9 @@ class _SendMediaSheetState extends ConsumerState<SendMediaSheet> {
   }
 }
 
-String _mb(int bytes) => (bytes / (1024 * 1024)).toStringAsFixed(1);
+/// Tamanho em MB com o separador decimal do locale (ADR-011 §4).
+String _mb(int bytes, String locale) =>
+    NumberFormat('#,##0.0', locale).format(bytes / (1024 * 1024));
 
 class _Notice extends StatelessWidget {
   const _Notice({super.key, required this.icon, required this.text});

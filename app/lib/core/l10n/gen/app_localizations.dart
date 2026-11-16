@@ -2304,7 +2304,7 @@ abstract class AppLocalizations {
   /// No description provided for @consentPhotosBody.
   ///
   /// In pt, this message translates to:
-  /// **'Autorizo guardar minhas fotos de evolução e mostrá-las ao meu professor. Sem isso o app funciona normalmente, só não envia fotos.'**
+  /// **'Autorizo guardar minhas fotos de evolução e as fotos e vídeos de execução que eu enviar no treino, e mostrá-los ao meu professor. Os de execução são apagados 7 dias depois que ele vê (ou em 30 dias). Sem isso o app funciona normalmente, só não envia fotos nem vídeos.'**
   String get consentPhotosBody;
 
   /// No description provided for @consentSubmit.
@@ -2364,7 +2364,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountPhotosSubtitle.
   ///
   /// In pt, this message translates to:
-  /// **'Permite guardar suas fotos e mostrá-las ao seu professor. Ao desligar, o envio de fotos é bloqueado e seu professor deixa de ver as que já enviou.'**
+  /// **'Permite guardar suas fotos e os vídeos de execução e mostrá-los ao seu professor. Ao desligar, o envio é bloqueado e seu professor deixa de ver as fotos que já enviou.'**
   String get accountPhotosSubtitle;
 
   /// No description provided for @accountLegalSection.
@@ -5118,7 +5118,7 @@ abstract class AppLocalizations {
   /// Arquivo escolhido: tipo e tamanho.
   ///
   /// In pt, this message translates to:
-  /// **'{kind} pronto: {size} MB'**
+  /// **'Pronto para enviar: {kind}, {size} MB'**
   String sessionMediaPicked(String kind, String size);
 
   /// No description provided for @sessionMediaSend.
@@ -5304,7 +5304,7 @@ abstract class AppLocalizations {
   /// Mídia de execução vista pelo professor.
   ///
   /// In pt, this message translates to:
-  /// **'Apagada em {date}'**
+  /// **'Será apagada em {date}'**
   String coachMediaDeletedOn(String date);
 
   /// No description provided for @coachMediaExpired.
