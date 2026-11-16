@@ -42,17 +42,16 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
   treino, mídia de execução. Progresso e decisões D1–D7 em `STATUS.md`.
 - `docs/guidelines/` — convenções de código (ex.: `flutter.md`).
 
-## Estado atual (2026-11-12)
-**MVP 2.5 em execução (11/12, P9, P10 e P11 fechadas; P12.1–P12.3 prontas, 2026-11-16)** — pacote intermediário com os ajustes
+## Estado atual (2026-11-16)
+**MVP 2.5 fechado (12/12, 2026-11-16)** — pacote intermediário com os ajustes
 da validação do 2.0 com o cliente: plano em [docs/plan/mvp25/](docs/plan/mvp25/README.md),
 ADR-019 (cluster, rótulo e variação por série) e ADR-020 (mídia de execução no
 `comms`, apagada 7 dias após a ciência do professor) aceitos; decisões D1–D7
-confirmadas no [STATUS](docs/plan/mvp25/STATUS.md). O `comms` já serve a mídia de execução (P12.1: presign 20 MB, ciência do professor, feedback pelo chat, expiração 7/30 dias, `TERMS_VERSION` 2026-11-v3). O app do aluno já anexa vídeo/foto no player (P12.2: `features/session_media`, `video_compress`, upload fora do caminho do treino, lista "Enviados neste treino"). O app do professor avalia a mídia (P12.3: seção "Para avaliar" na aba Check-ins, mídias no card e no detalhe, visualizador com aviso de 7 dias, Marcar como visto/Responder, `unacked_media` no dashboard, push `session_media.new`). P12.4 executada (roteiro [e2e-25](docs/plan/mvp25/e2e-25.md), artefatos `2.5.0+3`), aguardando aceite. Vem antes do 3.0.
+confirmadas no [STATUS](docs/plan/mvp25/STATUS.md). O `comms` serve a mídia de execução (P12.1: presign 20 MB, ciência do professor, feedback pelo chat, expiração 7/30 dias, `TERMS_VERSION` 2026-11-v3). O app do aluno anexa vídeo/foto no player (P12.2: `features/session_media`, `video_compress`, upload fora do caminho do treino, lista "Enviados neste treino"). O app do professor avalia a mídia (P12.3: seção "Para avaliar" na aba Check-ins, mídias no card e no detalhe, visualizador com aviso de 7 dias, Marcar como visto/Responder, `unacked_media` no dashboard, push `session_media.new`). P12.4 fechou por aceite do usuário: roteiro [e2e-25](docs/plan/mvp25/e2e-25.md) no Android (rede cortada) e Chrome, release `2.5.0+3` (APK release e build web, sem loja); pendências do 3.0 nas observações do roteiro. O próximo pacote (3.0) ainda **não tem plano de execução**: escrevê-lo é o próximo passo.
 **MVP 2.0 fechado (19/19, 2026-11-12)** — plano em [docs/plan/mvp2/](docs/plan/mvp2/),
 histórico em [STATUS.md](docs/plan/mvp2/STATUS.md); release `2.0.0+2` (APK
-release e build web, sem loja). O próximo pacote (3.0) ainda **não tem plano
-de execução**: escrevê-lo é o próximo passo (roadmap no doc 000; pendências
-"vão para o 3.0" nas Notas da [P8](docs/plan/mvp2/P8-dashboard.md)).
+release e build web, sem loja). Pendências "vão para o 3.0" nas Notas da
+[P8](docs/plan/mvp2/P8-dashboard.md) (roadmap no doc 000).
 **MVP 1.0 fechado: P0–P4 concluídas, 32/32 (2026-11-08):** `identity` completo (auth, convites,
 reset, lista de usuários do tenant), CI no GitHub Actions
 (`.github/workflows/ci.yml`) e o serviço `workout` completo do lado servidor —
@@ -141,7 +140,7 @@ funcionam em **todas** as plataformas (mobile e web).
    (instalado no Mac; pendente no Windows).
 5. Segredos são locais por máquina (`.env` de cada serviço, nunca no git);
    `backend/.env.example` documenta as variáveis.
-6. Continuar: MVP 2.5 em [docs/plan/mvp25/](docs/plan/mvp25/STATUS.md) (P12.4 aguardando aceite); o 3.0 ainda não tem plano.
+6. Continuar: 2.5 fechado ([STATUS](docs/plan/mvp25/STATUS.md)); próximo passo é escrever o plano do 3.0 (doc 000, Notas da P8 do 2.0 e observações do [e2e-25](docs/plan/mvp25/e2e-25.md)).
 
 ## Convenções inegociáveis
 - **Decisão estrutural nova → novo ADR**, nunca edição silenciosa de doc.

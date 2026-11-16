@@ -114,7 +114,7 @@ no chat e o estado "visto" no player/lista; após o ack o card mostra a data de
 exclusão; teste de widget do visualizador (aviso antes do ack) e da seção
 "Para avaliar".
 
-## - [ ] P12.4 E2E do 2.5 e release 2.5.0 (humano + agente)
+## - [x] P12.4 E2E do 2.5 e release 2.5.0 (humano + agente)
 
 **Objetivo:** fechar o pacote.
 **Passos:**
@@ -205,8 +205,8 @@ classificados (corrige agora / vai para o 3.0) nas Notas; artefatos gerados.
   (`CoachOf`), nunca ao owner; (4) sem teste automatizado de PUT real de 20 MB — o teto é
   garantido pela assinatura (conferido contra o MinIO no HEAD do round-trip de 14 bytes).
 
-**P12.4 (2026-11-16) — executada, aguardando aceite do usuário (checkbox aberto)**
+**P12.4 (2026-11-16) — fechada por aceite do usuário**
 - Roteiro [e2e-25.md](e2e-25.md): 11 passos ✅, expiração ⚠️ (só relógio falso, como pedido), "visto" na lista do aluno ⬜. Achados O1–O8 classificados lá; corrigidos no pacote: `139adca`, `9070974`, `4527c47`.
 - Varredura: `go vet`/`go test` verdes em workout, comms e identity; `flutter analyze` zero e 298 testes.
 - Versão `2.5.0+3` (pubspec, `APP_RELEASE`, README); `flutter build apk --release` (76,2 MB) e `flutter build web --release` com a configuração padrão, sem loja (ADR-015).
-- Pendente para fechar: aceite do usuário; vídeo real (câmera do emulador derrubou o AVD, O2); smoke completo do 1.0 e iOS não repetidos.
+- Aceita com ressalvas registradas: vídeo real (câmera do emulador derrubou o AVD, O2); smoke completo do 1.0 e iOS não repetidos.

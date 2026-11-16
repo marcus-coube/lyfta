@@ -3,15 +3,15 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** aceite da `P12.4` (roteiro [e2e-25.md](e2e-25.md) executado, artefatos `2.5.0+3` gerados). Decisões D1–D7 confirmadas; nenhuma tarefa travada.
+**MVP 2.5 fechado (12/12) em 2026-11-16** por aceite do usuário: roteiro [e2e-25.md](e2e-25.md) verde no Android (rede cortada) e no Chrome, artefatos `2.5.0+3` (APK release e build web), sem loja. Ressalvas (vídeo pela câmera, smoke do 1.0, iOS) e pendências do 3.0 nas observações do roteiro. Decisões D1–D7 confirmadas; nenhuma tarefa travada.
 
 | Fase | Progresso | Situação |
 |---|---|---|
 | P9 — Prescrição (cluster, rótulo, variações) | 4/4 | fechada (2026-11-13) |
 | P10 — Player do aluno | 2/2 | fechada (2026-11-13) |
 | P11 — Check-in do professor | 2/2 | fechada (2026-11-13) |
-| P12 — Mídia de execução e release | 3/4 | em andamento |
-| **Total** | **11/12** | |
+| P12 — Mídia de execução e release | 4/4 | fechada (2026-11-16) |
+| **Total** | **12/12** | fechado |
 
 ## Decisões (detalhe no [README](README.md#decisões-a-confirmar-antes-da-tarefa-indicada))
 
@@ -47,3 +47,4 @@ Nenhum banco novo. Migrations novas: workout `0021`, `0022`; comms `0008`.
 | 2026-11-16 | P12.2 pronta: `features/session_media` no app (folha com aviso de retenção/limite, câmera/galeria, compressão `video_compress` + foto JPEG, upload por presign com progresso/cancelar/retry fora do caminho do treino, lista "Enviados neste treino", consentimento e offline); permissões de câmera/microfone no Android, `Info.plist` documentado |
 | 2026-11-16 | P12.3 pronta: professor avalia a mídia no app (seção "Para avaliar" na aba Check-ins, mídias no card e no detalhe, visualizador com aviso de 7 dias, Marcar como visto/Responder, selo "Apagada em", card "Mídia expirada", `unacked_media` no dashboard, push `session_media.new` abre a aba Check-ins) |
 | 2026-11-16 | P12.4 executada (aguardando aceite): roteiro [e2e-25.md](e2e-25.md) no Android (rede cortada) e Chrome; achados corrigidos (`139adca`, `9070974`, `4527c47`) ou enviados ao 3.0; varredura verde; artefatos `2.5.0+3` (APK release 76,2 MB e web) |
+| 2026-11-16 | **MVP 2.5 fechado (12/12)** por aceite do usuário; release `2.5.0+3` |
