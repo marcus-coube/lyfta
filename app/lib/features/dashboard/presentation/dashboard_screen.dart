@@ -217,18 +217,26 @@ class _CheckinsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final c = context.ly;
-    return _DashCard<int>(
+    return _DashCard<CheckinStats>(
       cardKey: 'dashboard_card_checkins',
       title: l10n.dashboardCardCheckins,
       provider: dashboardCheckinsProvider,
-      builder: (context, unreviewed) => Column(
+      builder: (context, stats) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _BigNumber(
-            '$unreviewed',
-            color: unreviewed > 0 ? c.warning : null,
+            '${stats.unreviewed}',
+            color: stats.unreviewed > 0 ? c.warning : null,
           ),
-          if (unreviewed == 0) ...[
+          if (stats.unackedMedia > 0) ...[
+            const SizedBox(height: LySpace.x2),
+            Text(
+              l10n.dashboardMediaToEvaluate(stats.unackedMedia),
+              key: const Key('dashboard_unacked_media'),
+              style: LyType.bodySm(c.warning),
+            ),
+          ],
+          if (stats.unreviewed == 0 && stats.unackedMedia == 0) ...[
             const SizedBox(height: LySpace.x2),
             Text(
               l10n.dashboardCheckinsZero,

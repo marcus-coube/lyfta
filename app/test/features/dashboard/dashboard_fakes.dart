@@ -13,6 +13,7 @@ class FakeDashboardRepository extends DashboardRepository {
       newThisMonth: 4,
     ),
     this.unreviewed = 5,
+    this.unackedMedia = 0,
     CoachToday? today,
     BillingSummary? summary,
   })  : today = today ?? defaultToday(),
@@ -21,6 +22,7 @@ class FakeDashboardRepository extends DashboardRepository {
 
   final StudentStats stats;
   final int unreviewed;
+  final int unackedMedia;
   CoachToday today;
   BillingSummary summary;
 
@@ -85,7 +87,8 @@ class FakeDashboardRepository extends DashboardRepository {
   }
 
   @override
-  Future<int> unreviewedCheckins({String? coachId}) async => unreviewed;
+  Future<CheckinStats> checkinStats({String? coachId}) async =>
+      CheckinStats(unreviewed: unreviewed, unackedMedia: unackedMedia);
 
   @override
   Future<CoachToday> coachToday({String? coachId}) async {

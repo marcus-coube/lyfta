@@ -7,6 +7,7 @@ import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/l10n/plan_l10n.dart';
 import '../../../shared/widgets/ly_error_state.dart';
 import '../../../shared/widgets/ly_skeleton.dart';
+import '../../session_media/presentation/coach_media_widgets.dart';
 import '../../workout/presentation/prescription_format.dart';
 import '../../workout/presentation/widgets/session_summary_sheet.dart';
 import '../domain/checkin.dart';
@@ -62,6 +63,8 @@ class CoachSessionScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(coachSessionDetailProvider(key)),
         ),
         data: (data) => _Body(
+          studentId: studentId,
+          clientId: clientId,
           detail: data,
           checkin: checkin,
           onReview: checkin == null
@@ -77,11 +80,15 @@ class CoachSessionScreen extends ConsumerWidget {
 
 class _Body extends StatelessWidget {
   const _Body({
+    required this.studentId,
+    required this.clientId,
     required this.detail,
     required this.checkin,
     required this.onReview,
   });
 
+  final String studentId;
+  final String clientId;
   final CoachSessionDetail detail;
   final WorkoutCheckin? checkin;
   final VoidCallback? onReview;
@@ -141,6 +148,8 @@ class _Body extends StatelessWidget {
                       onPressed: onReview,
                     ),
                 ],
+                // Mídias do aluno nesta sessão (P12.3 §1).
+                CoachSessionMedia(studentId: studentId, sessionClientId: clientId),
                 for (final block in detail.blocks) ...[
                   const SizedBox(height: LySpace.x8),
                   Text(

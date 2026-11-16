@@ -12,6 +12,8 @@ class SessionMedia {
     required this.contentType,
     required this.createdAt,
     required this.deleteAfter,
+    this.studentId = '',
+    this.sessionClientId = '',
     this.exerciseName,
     this.note,
     this.ackedAt,
@@ -35,6 +37,8 @@ class SessionMedia {
       contentType: json['content_type'] as String? ?? '',
       createdAt: date('created_at') ?? DateTime.now(),
       deleteAfter: date('delete_after') ?? DateTime.now(),
+      studentId: json['student_id'] as String? ?? '',
+      sessionClientId: json['session_client_id'] as String? ?? '',
       exerciseName: text('exercise_name'),
       note: text('note'),
       ackedAt: date('acked_at'),
@@ -47,6 +51,8 @@ class SessionMedia {
   final String contentType;
   final DateTime createdAt;
   final DateTime deleteAfter;
+  final String studentId;
+  final String sessionClientId;
   final String? exerciseName;
   final String? note;
 
@@ -59,9 +65,35 @@ class SessionMedia {
   /// GET assinado de 15 min; ausente depois da expiração.
   final String? mediaUrl;
 
+  /// Mesma mídia com o estado de ciência de [other] (a URL assinada antiga
+  /// segue valendo por 15 min).
+  SessionMedia withAck(SessionMedia other) => SessionMedia(
+        id: id,
+        contentType: contentType,
+        createdAt: createdAt,
+        deleteAfter: other.deleteAfter,
+        studentId: studentId,
+        sessionClientId: sessionClientId,
+        exerciseName: exerciseName,
+        note: note,
+        ackedAt: other.ackedAt,
+        deletedAt: other.deletedAt,
+        mediaUrl: mediaUrl,
+      );
+
   bool get isVideo => contentType.startsWith('video/');
   bool get isSeen => ackedAt != null;
   bool get isExpired => deletedAt != null;
+}
+
+/// Página da listagem do professor (`GET /v1/session-media`).
+class SessionMediaPage {
+  const SessionMediaPage({required this.items, this.nextCursor});
+
+  final List<SessionMedia> items;
+  final String? nextCursor;
+
+  bool get hasMore => nextCursor != null;
 }
 
 /// Arquivo já escolhido e comprimido, pronto para o upload.

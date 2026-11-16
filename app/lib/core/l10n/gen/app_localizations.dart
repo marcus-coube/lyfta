@@ -5252,6 +5252,84 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Arquivo grande demais. O limite é {max} MB.'**
   String errorFileTooLargeMax(int max);
+
+  /// No description provided for @coachMediaToEvaluate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Para avaliar'**
+  String get coachMediaToEvaluate;
+
+  /// No description provided for @coachMediaViewerTitle.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mídia do aluno'**
+  String get coachMediaViewerTitle;
+
+  /// Mídia de execução vista pelo professor.
+  ///
+  /// In pt, this message translates to:
+  /// **'Observação do aluno: {note}'**
+  String coachMediaStudentNote(String note);
+
+  /// No description provided for @coachMediaRetentionWarning.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ao marcar como visto ou responder, a mídia será apagada em 7 dias.'**
+  String get coachMediaRetentionWarning;
+
+  /// No description provided for @coachMediaMarkSeen.
+  ///
+  /// In pt, this message translates to:
+  /// **'Marcar como visto'**
+  String get coachMediaMarkSeen;
+
+  /// No description provided for @coachMediaReply.
+  ///
+  /// In pt, this message translates to:
+  /// **'Responder'**
+  String get coachMediaReply;
+
+  /// No description provided for @coachMediaReplyHint.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sua resposta ao aluno (vai para o chat)'**
+  String get coachMediaReplyHint;
+
+  /// No description provided for @coachMediaReplySend.
+  ///
+  /// In pt, this message translates to:
+  /// **'Enviar resposta'**
+  String get coachMediaReplySend;
+
+  /// Mídia de execução vista pelo professor.
+  ///
+  /// In pt, this message translates to:
+  /// **'Apagada em {date}'**
+  String coachMediaDeletedOn(String date);
+
+  /// No description provided for @coachMediaExpired.
+  ///
+  /// In pt, this message translates to:
+  /// **'Mídia expirada'**
+  String get coachMediaExpired;
+
+  /// No description provided for @coachMediaNew.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova · aguardando avaliação'**
+  String get coachMediaNew;
+
+  /// No description provided for @coachMediaVideoFailed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Não foi possível abrir o vídeo.'**
+  String get coachMediaVideoFailed;
+
+  /// Mídia de execução vista pelo professor.
+  ///
+  /// In pt, this message translates to:
+  /// **'{count, plural, one{1 mídia para avaliar} other{{count} mídias para avaliar}}'**
+  String dashboardMediaToEvaluate(int count);
 }
 
 class _AppLocalizationsDelegate

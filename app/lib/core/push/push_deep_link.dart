@@ -21,6 +21,8 @@ class PushDeepLink {
           conversationId: conversationId,
         );
       case 'checkin.pain_strong':
+      // Mídia de execução nova (P12.3): mesma ficha, aba Check-ins.
+      case 'session_media.new':
         final studentId = data['student_id'] as String?;
         if (studentId == null || studentId.isEmpty) {
           return const PushDeepLink.none();

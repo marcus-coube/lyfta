@@ -3019,6 +3019,58 @@ class AppLocalizationsPt extends AppLocalizations {
   String errorFileTooLargeMax(int max) {
     return 'Arquivo grande demais. O limite é $max MB.';
   }
+
+  @override
+  String get coachMediaToEvaluate => 'Para avaliar';
+
+  @override
+  String get coachMediaViewerTitle => 'Mídia do aluno';
+
+  @override
+  String coachMediaStudentNote(String note) {
+    return 'Observação do aluno: $note';
+  }
+
+  @override
+  String get coachMediaRetentionWarning =>
+      'Ao marcar como visto ou responder, a mídia será apagada em 7 dias.';
+
+  @override
+  String get coachMediaMarkSeen => 'Marcar como visto';
+
+  @override
+  String get coachMediaReply => 'Responder';
+
+  @override
+  String get coachMediaReplyHint => 'Sua resposta ao aluno (vai para o chat)';
+
+  @override
+  String get coachMediaReplySend => 'Enviar resposta';
+
+  @override
+  String coachMediaDeletedOn(String date) {
+    return 'Apagada em $date';
+  }
+
+  @override
+  String get coachMediaExpired => 'Mídia expirada';
+
+  @override
+  String get coachMediaNew => 'Nova · aguardando avaliação';
+
+  @override
+  String get coachMediaVideoFailed => 'Não foi possível abrir o vídeo.';
+
+  @override
+  String dashboardMediaToEvaluate(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count mídias para avaliar',
+      one: '1 mídia para avaliar',
+    );
+    return '$_temp0';
+  }
 }
 
 /// The translations for Portuguese, as used in Portugal (`pt_PT`).
@@ -6042,5 +6094,57 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   @override
   String errorFileTooLargeMax(int max) {
     return 'Ficheiro demasiado grande. O limite é $max MB.';
+  }
+
+  @override
+  String get coachMediaToEvaluate => 'Para avaliar';
+
+  @override
+  String get coachMediaViewerTitle => 'Multimédia do aluno';
+
+  @override
+  String coachMediaStudentNote(String note) {
+    return 'Observação do aluno: $note';
+  }
+
+  @override
+  String get coachMediaRetentionWarning =>
+      'Ao marcar como visto ou responder, o ficheiro será apagado em 7 dias.';
+
+  @override
+  String get coachMediaMarkSeen => 'Marcar como visto';
+
+  @override
+  String get coachMediaReply => 'Responder';
+
+  @override
+  String get coachMediaReplyHint => 'A sua resposta ao aluno (vai para o chat)';
+
+  @override
+  String get coachMediaReplySend => 'Enviar resposta';
+
+  @override
+  String coachMediaDeletedOn(String date) {
+    return 'Apagado em $date';
+  }
+
+  @override
+  String get coachMediaExpired => 'Multimédia expirada';
+
+  @override
+  String get coachMediaNew => 'Nova · a aguardar avaliação';
+
+  @override
+  String get coachMediaVideoFailed => 'Não foi possível abrir o vídeo.';
+
+  @override
+  String dashboardMediaToEvaluate(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ficheiros para avaliar',
+      one: '1 ficheiro para avaliar',
+    );
+    return '$_temp0';
   }
 }

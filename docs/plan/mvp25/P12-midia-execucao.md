@@ -95,7 +95,7 @@ enviar e continuar registrando séries durante o upload; arquivo acima do limite
 é recusado com mensagem; com a rede cortada a ação informa e o treino segue;
 teste de widget da folha (aviso visível, limite, sem consentimento).
 
-## - [ ] P12.3 App — professor avalia a mídia (Flutter, coach)
+## - [x] P12.3 App — professor avalia a mídia (Flutter, coach)
 
 **Objetivo:** ver, dar ciência e responder.
 **Passos:**
@@ -136,6 +136,17 @@ classificados (corrige agora / vai para o 3.0) nas Notas; artefatos gerados.
 ---
 
 ## Notas de execução
+
+**P12.3 (2026-11-16)**
+
+- Código em `app/lib/features/session_media/`: `presentation/coach_media_controller.dart` (`coachMediaProvider(studentId)`), `coach_media_viewer.dart` (visualizador) e `coach_media_widgets.dart` ("Para avaliar", mídias da sessão, linha da mídia). Modelo `SessionMedia` ganhou `studentId`/`sessionClientId`/`withAck`; `SessionMediaRepository` ganhou `listForCoach` e `ack`.
+- Chamadas: ao abrir a aba Check-ins, o controller faz `GET /v1/session-media?student_id=&pending=true&limit=100` (seção "Para avaliar", com cursor próprio e botão "Carregar mais") e `GET /v1/session-media?student_id=&limit=100` seguindo `next_cursor` até 3 páginas (cards e detalhe agrupam por `session_client_id`, pois o servidor não filtra por sessão). Ack: `POST /v1/session-media/{id}/ack {feedback?}`; o controller tira o item de "Para avaliar" e atualiza card/detalhe sem recarregar. Puxar para atualizar recarrega as duas listas. O rótulo da aba soma não revisados + mídias sem ciência.
+- Visualizador: vídeo (`video_player` com play/pausa e barra) ou imagem, exercício, observação; o aviso "será apagada em 7 dias" fica visível antes de **Marcar como visto**/**Responder**; depois do ack vira "Apagada em DD/MM". Responder abre o campo e manda o texto como `feedback` do ack (vira mensagem no chat do aluno, D7); Responder segue disponível depois do ack (o prazo não renova). Erro no ack mostra a mensagem e mantém o aviso.
+- Expirada: card esmaecido "Mídia expirada" sem player. Dashboard: `GET /v1/checkins/stats` agora vira `CheckinStats` (`unreviewed` + `unacked_media`); o card mostra "N mídias para avaliar" abaixo do número.
+- Push: `session_media.new` mapeia para o mesmo deep link de `checkin.pain_strong` (`/students/{student_id}?tab=checkins`); o botão de back da ficha segue o roteamento existente.
+- Verificação: `flutter analyze` limpo, `flutter test` 298 verdes (novo `test/features/session_media/coach_media_test.dart`: aviso antes do ack, ack sem texto, resposta com feedback, erro, seção "Para avaliar" com ack, vista/expirada na sessão, deep link do push), `flutter build web` compila.
+- **Verificar manualmente (não feito aqui):** (1) coach no Chrome recebe a mídia do aluno do emulador, assiste ao vídeo (formato `video/mp4` do Android no player web) e vê a miniatura/URL assinada; (2) Marcar como visto: selo com a data = hoje + 7 dias e a mídia sai de "Para avaliar"; (3) Responder: o aluno vê a mensagem no chat e "Visto pelo professor" na lista do player; (4) push `session_media.new` em aparelho físico abre a aba Check-ins (depende do `google-services.json`); (5) mídia expirada pelo job aparece esmaecida.
+- Dívidas: (1) o card e o detalhe só conhecem as mídias das 300 mais recentes do aluno (sem filtro por sessão no servidor); (2) imagem usa `Image.network` simples, vídeo não tem miniatura na lista; (3) o aluno revogar `progress_photos` não esconde a mídia do coach (dívida 1 da P12.1).
 
 **P12.2 (2026-11-16)**
 

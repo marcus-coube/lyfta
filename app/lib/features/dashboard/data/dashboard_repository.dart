@@ -58,12 +58,15 @@ class DashboardRepository {
         return BillingSummary.fromJson(response.data!);
       });
 
-  Future<int> unreviewedCheckins({String? coachId}) => _call(() async {
+  Future<CheckinStats> checkinStats({String? coachId}) => _call(() async {
         final response = await _comms.get<Map<String, dynamic>>(
           '/v1/checkins/stats',
           queryParameters: {if (coachId != null) 'coach_id': coachId},
         );
-        return response.data!['unreviewed'] as int? ?? 0;
+        return CheckinStats(
+          unreviewed: response.data!['unreviewed'] as int? ?? 0,
+          unackedMedia: response.data!['unacked_media'] as int? ?? 0,
+        );
       });
 }
 

@@ -24,11 +24,9 @@ final dashboardStudentStatsProvider =
   return ref.watch(dashboardRepositoryProvider).studentStats(coachId: coach);
 });
 
-final dashboardCheckinsProvider = FutureProvider.autoDispose<int>((ref) {
+final dashboardCheckinsProvider = FutureProvider.autoDispose<CheckinStats>((ref) {
   final coach = ref.watch(dashboardCoachFilterProvider);
-  return ref
-      .watch(dashboardRepositoryProvider)
-      .unreviewedCheckins(coachId: coach);
+  return ref.watch(dashboardRepositoryProvider).checkinStats(coachId: coach);
 });
 
 final dashboardTodayProvider = FutureProvider.autoDispose<CoachToday>((ref) {

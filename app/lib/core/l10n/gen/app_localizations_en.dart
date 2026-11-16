@@ -3017,4 +3017,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String errorFileTooLargeMax(int max) {
     return 'File too large. The limit is $max MB.';
   }
+
+  @override
+  String get coachMediaToEvaluate => 'To review';
+
+  @override
+  String get coachMediaViewerTitle => 'Student media';
+
+  @override
+  String coachMediaStudentNote(String note) {
+    return 'Student\'s note: $note';
+  }
+
+  @override
+  String get coachMediaRetentionWarning =>
+      'Marking as seen or replying means the media will be deleted in 7 days.';
+
+  @override
+  String get coachMediaMarkSeen => 'Mark as seen';
+
+  @override
+  String get coachMediaReply => 'Reply';
+
+  @override
+  String get coachMediaReplyHint =>
+      'Your reply to the student (goes to the chat)';
+
+  @override
+  String get coachMediaReplySend => 'Send reply';
+
+  @override
+  String coachMediaDeletedOn(String date) {
+    return 'Deleted on $date';
+  }
+
+  @override
+  String get coachMediaExpired => 'Media expired';
+
+  @override
+  String get coachMediaNew => 'New · awaiting review';
+
+  @override
+  String get coachMediaVideoFailed => 'Couldn\'t open the video.';
+
+  @override
+  String dashboardMediaToEvaluate(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count files to review',
+      one: '1 file to review',
+    );
+    return '$_temp0';
+  }
 }

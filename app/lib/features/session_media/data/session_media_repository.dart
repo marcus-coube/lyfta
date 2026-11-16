@@ -29,6 +29,47 @@ class SessionMediaRepository {
         .toList();
   }
 
+  /// Lado do professor (P12.3): `GET /v1/session-media?student_id=&pending=`,
+  /// mais recentes primeiro, com cursor. `media_url` vem assinada e curta.
+  Future<SessionMediaPage> listForCoach({
+    required String studentId,
+    bool pendingOnly = false,
+    String? cursor,
+    int? limit,
+  }) async {
+    final json = await _send(
+      () => _dio.get<Map<String, dynamic>>(
+        '/v1/session-media',
+        queryParameters: {
+          'student_id': studentId,
+          if (pendingOnly) 'pending': 'true',
+          if (cursor != null) 'cursor': cursor,
+          if (limit != null) 'limit': limit,
+        },
+      ),
+    );
+    final next = json?['next_cursor'] as String?;
+    return SessionMediaPage(
+      items: (json?['items'] as List<dynamic>? ?? const [])
+          .map((raw) => SessionMedia.fromJson(raw as Map<String, dynamic>))
+          .toList(),
+      nextCursor: (next ?? '').isEmpty ? null : next,
+    );
+  }
+
+  /// Ciência do professor; idempotente. Com [feedback], o servidor também
+  /// manda a resposta ao chat do aluno (D7).
+  Future<SessionMedia> ack(String id, {String? feedback}) async {
+    final text = feedback?.trim() ?? '';
+    final json = await _send(
+      () => _dio.post<Map<String, dynamic>>(
+        '/v1/session-media/$id/ack',
+        data: {if (text.isNotEmpty) 'feedback': text},
+      ),
+    );
+    return SessionMedia.fromJson(json!);
+  }
+
   /// Presign → PUT com progresso → registro. Cancelar o [cancelToken] aborta o
   /// PUT (a exceção de cancelamento sobe como `DioException`).
   Future<SessionMedia> upload({

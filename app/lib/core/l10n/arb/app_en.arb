@@ -987,5 +987,18 @@
   "errorSessionMediaLimit": "Limit of {max} files per workout reached.",
   "errorInvalidMediaKey": "Couldn't register the file. Try sending it again.",
   "errorMediaNotUploaded": "The upload didn't finish. Try again.",
-  "errorFileTooLargeMax": "File too large. The limit is {max} MB."
+  "errorFileTooLargeMax": "File too large. The limit is {max} MB.",
+  "coachMediaToEvaluate": "To review",
+  "coachMediaViewerTitle": "Student media",
+  "coachMediaStudentNote": "Student's note: {note}",
+  "coachMediaRetentionWarning": "Marking as seen or replying means the media will be deleted in 7 days.",
+  "coachMediaMarkSeen": "Mark as seen",
+  "coachMediaReply": "Reply",
+  "coachMediaReplyHint": "Your reply to the student (goes to the chat)",
+  "coachMediaReplySend": "Send reply",
+  "coachMediaDeletedOn": "Deleted on {date}",
+  "coachMediaExpired": "Media expired",
+  "coachMediaNew": "New · awaiting review",
+  "coachMediaVideoFailed": "Couldn't open the video.",
+  "dashboardMediaToEvaluate": "{count, plural, one{1 file to review} other{{count} files to review}}"
 }

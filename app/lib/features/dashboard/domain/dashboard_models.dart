@@ -139,3 +139,12 @@ class BillingSummary {
   final int delinquentStudents;
   final List<MonthReceived> series;
 }
+
+/// `GET /v1/checkins/stats`: check-ins não revisados e mídias de execução sem
+/// ciência do professor (P12.3).
+class CheckinStats {
+  const CheckinStats({required this.unreviewed, this.unackedMedia = 0});
+
+  final int unreviewed;
+  final int unackedMedia;
+}

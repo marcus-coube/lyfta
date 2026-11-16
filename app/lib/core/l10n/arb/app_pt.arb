@@ -2575,5 +2575,21 @@
   "errorInvalidMediaKey": "Não foi possível registrar o arquivo. Tente enviar de novo.",
   "errorMediaNotUploaded": "O envio não terminou. Tente de novo.",
   "errorFileTooLargeMax": "Arquivo grande demais. O limite é {max} MB.",
-  "@errorFileTooLargeMax": {"description": "Arquivo acima do limite do servidor.", "placeholders": {"max": {"type": "int"}}}
+  "@errorFileTooLargeMax": {"description": "Arquivo acima do limite do servidor.", "placeholders": {"max": {"type": "int"}}},
+  "coachMediaToEvaluate": "Para avaliar",
+  "coachMediaViewerTitle": "Mídia do aluno",
+  "coachMediaStudentNote": "Observação do aluno: {note}",
+  "@coachMediaStudentNote": {"description": "Mídia de execução vista pelo professor.", "placeholders": {"note": {"type": "String"}}},
+  "coachMediaRetentionWarning": "Ao marcar como visto ou responder, a mídia será apagada em 7 dias.",
+  "coachMediaMarkSeen": "Marcar como visto",
+  "coachMediaReply": "Responder",
+  "coachMediaReplyHint": "Sua resposta ao aluno (vai para o chat)",
+  "coachMediaReplySend": "Enviar resposta",
+  "coachMediaDeletedOn": "Apagada em {date}",
+  "@coachMediaDeletedOn": {"description": "Mídia de execução vista pelo professor.", "placeholders": {"date": {"type": "String"}}},
+  "coachMediaExpired": "Mídia expirada",
+  "coachMediaNew": "Nova · aguardando avaliação",
+  "coachMediaVideoFailed": "Não foi possível abrir o vídeo.",
+  "dashboardMediaToEvaluate": "{count, plural, one{1 mídia para avaliar} other{{count} mídias para avaliar}}",
+  "@dashboardMediaToEvaluate": {"description": "Mídia de execução vista pelo professor.", "placeholders": {"count": {"type": "int"}}}
 }

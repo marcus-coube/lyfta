@@ -964,5 +964,18 @@
   "errorSessionMediaLimit": "Limite de {max} ficheiros por treino atingido.",
   "errorInvalidMediaKey": "Não foi possível registar o ficheiro. Tenta enviar de novo.",
   "errorMediaNotUploaded": "O envio não terminou. Tenta de novo.",
-  "errorFileTooLargeMax": "Ficheiro demasiado grande. O limite é {max} MB."
+  "errorFileTooLargeMax": "Ficheiro demasiado grande. O limite é {max} MB.",
+  "coachMediaToEvaluate": "Para avaliar",
+  "coachMediaViewerTitle": "Multimédia do aluno",
+  "coachMediaStudentNote": "Observação do aluno: {note}",
+  "coachMediaRetentionWarning": "Ao marcar como visto ou responder, o ficheiro será apagado em 7 dias.",
+  "coachMediaMarkSeen": "Marcar como visto",
+  "coachMediaReply": "Responder",
+  "coachMediaReplyHint": "A sua resposta ao aluno (vai para o chat)",
+  "coachMediaReplySend": "Enviar resposta",
+  "coachMediaDeletedOn": "Apagado em {date}",
+  "coachMediaExpired": "Multimédia expirada",
+  "coachMediaNew": "Nova · a aguardar avaliação",
+  "coachMediaVideoFailed": "Não foi possível abrir o vídeo.",
+  "dashboardMediaToEvaluate": "{count, plural, one{1 ficheiro para avaliar} other{{count} ficheiros para avaliar}}"
 }

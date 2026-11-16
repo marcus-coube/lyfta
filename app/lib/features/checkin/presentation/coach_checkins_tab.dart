@@ -9,6 +9,8 @@ import '../../../core/http/api_exception_l10n.dart';
 import '../../../core/l10n/gen/app_localizations.dart';
 import '../../../shared/widgets/ly_error_state.dart';
 import '../../../shared/widgets/ly_skeleton.dart';
+import '../../session_media/presentation/coach_media_controller.dart';
+import '../../session_media/presentation/coach_media_widgets.dart';
 import '../../workout/domain/session_metrics.dart';
 import '../../workout/presentation/prescription_format.dart';
 import '../domain/checkin.dart';
@@ -50,29 +52,42 @@ class CoachCheckinsTab extends ConsumerWidget {
         onRetry: () => ref.read(checkinsProvider(studentId).notifier).refresh(),
       ),
       data: (state) {
-        if (state.items.isEmpty) {
-          return Center(
-            child: Text(
-              l10n.checkinListEmpty,
-              style: LyType.body(c.textSecondary),
-            ),
-          );
-        }
+        final empty = state.items.isEmpty;
+        // Posição 0 é a seção "Para avaliar" (some sozinha sem mídia).
+        final count = 1 + (empty ? 1 : state.items.length + (state.hasMore ? 1 : 0));
         return RefreshIndicator(
-          onRefresh: () =>
-              ref.read(checkinsProvider(studentId).notifier).refresh(),
+          onRefresh: () async {
+            unawaited(ref.read(coachMediaProvider(studentId).notifier).refresh());
+            await ref.read(checkinsProvider(studentId).notifier).refresh();
+          },
           child: ListView.separated(
+            // Sempre rolável: o puxar para atualizar vale também sem itens.
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(
               LySpace.x4,
               LySpace.x4,
               LySpace.x4,
               LySpace.x16,
             ),
-            itemCount: state.items.length + (state.hasMore ? 1 : 0),
-            separatorBuilder: (_, __) => const SizedBox(height: LySpace.x3),
+            itemCount: count,
+            separatorBuilder: (_, index) =>
+                SizedBox(height: index == 0 ? 0 : LySpace.x3),
             itemBuilder: (context, index) {
+              if (index == 0) return CoachMediaToEvaluate(studentId: studentId);
+              final i = index - 1;
+              if (empty) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: LySpace.x8),
+                  child: Center(
+                    child: Text(
+                      l10n.checkinListEmpty,
+                      style: LyType.body(c.textSecondary),
+                    ),
+                  ),
+                );
+              }
               // Página seguinte (P8.3): a fila passa de 30 itens.
-              if (index == state.items.length) {
+              if (i == state.items.length) {
                 return Align(
                   child: LyButton(
                     key: const Key('checkins_load_more'),
@@ -87,10 +102,10 @@ class CoachCheckinsTab extends ConsumerWidget {
               }
               return _CheckinCard(
                 studentId: studentId,
-                checkin: state.items[index],
+                checkin: state.items[i],
                 onReview: () => ref
                     .read(checkinsProvider(studentId).notifier)
-                    .review(state.items[index].id),
+                    .review(state.items[i].id),
               );
             },
           ),
@@ -134,6 +149,10 @@ class _CheckinCard extends ConsumerWidget {
             onRetry: () => unawaited(
               ref.read(coachSessionsProvider(studentId).notifier).retry(),
             ),
+          ),
+          CoachSessionMedia(
+            studentId: studentId,
+            sessionClientId: checkin.sessionClientId,
           ),
           const SizedBox(height: LySpace.x3),
           if (checkin.isReviewed)
@@ -255,8 +274,13 @@ class CheckinsTabLabel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    // Não revisados + mídias sem ciência (P12.3).
     final pending =
-        ref.watch(checkinsProvider(studentId)).valueOrNull?.pendingCount ?? 0;
+        (ref.watch(checkinsProvider(studentId)).valueOrNull?.pendingCount ??
+                0) +
+            (ref.watch(coachMediaProvider(studentId)).valueOrNull?.pending
+                    .length ??
+                0);
 
     if (pending <= 0) return Text(l10n.evolutionTabCheckins);
     return Badge(
