@@ -3,7 +3,7 @@
 > Atualizado pelo agente ao concluir cada tarefa. Fonte de verdade do detalhe:
 > checkboxes nos arquivos de fase.
 
-**Próxima tarefa:** `P12.4`. Decisões D1–D7 confirmadas; nenhuma tarefa travada.
+**Próxima tarefa:** aceite da `P12.4` (roteiro [e2e-25.md](e2e-25.md) executado, artefatos `2.5.0+3` gerados). Decisões D1–D7 confirmadas; nenhuma tarefa travada.
 
 | Fase | Progresso | Situação |
 |---|---|---|
@@ -46,3 +46,4 @@ Nenhum banco novo. Migrations novas: workout `0021`, `0022`; comms `0008`.
 | 2026-11-16 | P12.1 pronta: migration comms `0008_session_media`, API da mídia de execução (presign 20 MB, registro com HEAD, limite de 3 por sessão, ciência do professor com 7 dias e feedback pelo chat), job de expiração com o advisory lock do comms e relógio injetável, exclusão de conta com objetos, `unacked_media` nas stats; `TERMS_VERSION` 2026-11-v3 |
 | 2026-11-16 | P12.2 pronta: `features/session_media` no app (folha com aviso de retenção/limite, câmera/galeria, compressão `video_compress` + foto JPEG, upload por presign com progresso/cancelar/retry fora do caminho do treino, lista "Enviados neste treino", consentimento e offline); permissões de câmera/microfone no Android, `Info.plist` documentado |
 | 2026-11-16 | P12.3 pronta: professor avalia a mídia no app (seção "Para avaliar" na aba Check-ins, mídias no card e no detalhe, visualizador com aviso de 7 dias, Marcar como visto/Responder, selo "Apagada em", card "Mídia expirada", `unacked_media` no dashboard, push `session_media.new` abre a aba Check-ins) |
+| 2026-11-16 | P12.4 executada (aguardando aceite): roteiro [e2e-25.md](e2e-25.md) no Android (rede cortada) e Chrome; achados corrigidos (`139adca`, `9070974`, `4527c47`) ou enviados ao 3.0; varredura verde; artefatos `2.5.0+3` (APK release 76,2 MB e web) |

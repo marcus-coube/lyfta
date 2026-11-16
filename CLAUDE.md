@@ -47,7 +47,7 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
 da validação do 2.0 com o cliente: plano em [docs/plan/mvp25/](docs/plan/mvp25/README.md),
 ADR-019 (cluster, rótulo e variação por série) e ADR-020 (mídia de execução no
 `comms`, apagada 7 dias após a ciência do professor) aceitos; decisões D1–D7
-confirmadas no [STATUS](docs/plan/mvp25/STATUS.md). O `comms` já serve a mídia de execução (P12.1: presign 20 MB, ciência do professor, feedback pelo chat, expiração 7/30 dias, `TERMS_VERSION` 2026-11-v3). O app do aluno já anexa vídeo/foto no player (P12.2: `features/session_media`, `video_compress`, upload fora do caminho do treino, lista "Enviados neste treino"). O app do professor avalia a mídia (P12.3: seção "Para avaliar" na aba Check-ins, mídias no card e no detalhe, visualizador com aviso de 7 dias, Marcar como visto/Responder, `unacked_media` no dashboard, push `session_media.new`). Próxima tarefa: P12.4 (E2E e release 2.5.0). Vem antes do 3.0.
+confirmadas no [STATUS](docs/plan/mvp25/STATUS.md). O `comms` já serve a mídia de execução (P12.1: presign 20 MB, ciência do professor, feedback pelo chat, expiração 7/30 dias, `TERMS_VERSION` 2026-11-v3). O app do aluno já anexa vídeo/foto no player (P12.2: `features/session_media`, `video_compress`, upload fora do caminho do treino, lista "Enviados neste treino"). O app do professor avalia a mídia (P12.3: seção "Para avaliar" na aba Check-ins, mídias no card e no detalhe, visualizador com aviso de 7 dias, Marcar como visto/Responder, `unacked_media` no dashboard, push `session_media.new`). P12.4 executada (roteiro [e2e-25](docs/plan/mvp25/e2e-25.md), artefatos `2.5.0+3`), aguardando aceite. Vem antes do 3.0.
 **MVP 2.0 fechado (19/19, 2026-11-12)** — plano em [docs/plan/mvp2/](docs/plan/mvp2/),
 histórico em [STATUS.md](docs/plan/mvp2/STATUS.md); release `2.0.0+2` (APK
 release e build web, sem loja). O próximo pacote (3.0) ainda **não tem plano
@@ -141,7 +141,7 @@ funcionam em **todas** as plataformas (mobile e web).
    (instalado no Mac; pendente no Windows).
 5. Segredos são locais por máquina (`.env` de cada serviço, nunca no git);
    `backend/.env.example` documenta as variáveis.
-6. Continuar: MVP 2.5 em [docs/plan/mvp25/](docs/plan/mvp25/STATUS.md) (próxima: P12.4); o 3.0 ainda não tem plano.
+6. Continuar: MVP 2.5 em [docs/plan/mvp25/](docs/plan/mvp25/STATUS.md) (P12.4 aguardando aceite); o 3.0 ainda não tem plano.
 
 ## Convenções inegociáveis
 - **Decisão estrutural nova → novo ADR**, nunca edição silenciosa de doc.
