@@ -1,4 +1,4 @@
-# Lyfta — Backend (microserviços Go)
+# DÜO — Backend (microserviços Go)
 
 Arquitetura: [ADR-013](../docs/adr/ADR-013-microservicos-db-por-servico.md) —
 6 serviços (o 6º, `billing`, é do 2.0), cada um com projeto Go e banco PostgreSQL próprios. Hoje vivem neste
@@ -9,11 +9,11 @@ de código entre serviços — só HTTP).
 
 | Serviço | Porta | Banco | Responsabilidade |
 |---|---|---|---|
-| `identity/` | 8081 | `lyfta_identity` | Tenants, usuários, papéis, JWT, convites (Resend), recuperação de senha |
-| `workout/` | 8082 | `lyfta_workout` | Biblioteca de exercícios, templates (ADR-004), execução, sync offline (ADR-003), mídia |
-| `assessment/` | 8083 | `lyfta_assessment` | Medidas, bioimpedância, fotos de evolução, anamnese e lesões |
-| `comms/` | 8084 | `lyfta_comms` | Chat (WS+REST), check-in de treino, push FCM, mídia de execução (ADR-020) |
-| `billing/` | 8085 | `lyfta_billing` | Financeiro (ADR-007/017): planos de mensalidade, assinaturas, faturas, baixa manual |
+| `identity/` | 8081 | `duo_identity` | Tenants, usuários, papéis, JWT, convites (Resend), recuperação de senha |
+| `workout/` | 8082 | `duo_workout` | Biblioteca de exercícios, templates (ADR-004), execução, sync offline (ADR-003), mídia |
+| `assessment/` | 8083 | `duo_assessment` | Medidas, bioimpedância, fotos de evolução, anamnese e lesões |
+| `comms/` | 8084 | `duo_comms` | Chat (WS+REST), check-in de treino, push FCM, mídia de execução (ADR-020) |
+| `billing/` | 8085 | `duo_billing` | Financeiro (ADR-007/017): planos de mensalidade, assinaturas, faturas, baixa manual |
 
 ## Stack pinada (não trocar sem ADR)
 
@@ -73,7 +73,7 @@ cd identity && migrate -path migrations -database "$DATABASE_URL" up
 # 3. Seed da biblioteca global de exercícios (só workout, 1ª vez na máquina).
 #    Não é migration: é conteúdo, e exige superusuário — exercício global é
 #    tenant_id NULL e nenhuma policy de escrita cobre isso (ADR-010 §3).
-psql -U postgres -d lyfta_workout -f workout/seed/exercises_seed.sql
+psql -U postgres -d duo_workout -f workout/seed/exercises_seed.sql
 
 # 4. Subir um serviço
 cd identity && go run ./cmd/api
@@ -97,4 +97,4 @@ modo de acesso do coach (`coach_billing_access`) lidos do identity.
 ## Bancos locais
 
 Criados no Postgres local da máquina de dev:
-`lyfta_identity`, `lyfta_workout`, `lyfta_assessment`, `lyfta_comms`, `lyfta_billing`.
+`duo_identity`, `duo_workout`, `duo_assessment`, `duo_comms`, `duo_billing`.

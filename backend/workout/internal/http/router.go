@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 
-	"github.com/marcus-coube/lyfta/workout/internal/security"
+	"github.com/marcus-coube/duo/workout/internal/security"
 )
 
 // NewRouter monta o roteador chi do serviço workout com os middlewares base

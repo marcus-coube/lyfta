@@ -1,5 +1,5 @@
 -- exercises: biblioteca em dois níveis (ADR-010 §3).
---   tenant_id NULL  = exercício global da Lyfta, somente leitura para tenants
+--   tenant_id NULL  = exercício global do DÜO, somente leitura para tenants
 --   tenant_id setado = exercício próprio do tenant (coach criou ou clonou)
 -- created_by referencia users.id do serviço identity: banco por serviço
 -- (ADR-013 §2), logo é UUID sem FK — nenhuma FK cruza bancos.

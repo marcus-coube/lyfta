@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:lyfta/core/http/api_exception.dart';
-import 'package:lyfta/features/dashboard/data/dashboard_repository.dart';
-import 'package:lyfta/features/dashboard/domain/dashboard_models.dart';
+import 'package:duo/core/http/api_exception.dart';
+import 'package:duo/features/dashboard/data/dashboard_repository.dart';
+import 'package:duo/features/dashboard/domain/dashboard_models.dart';
 
 /// Repositório do dashboard em memória: devolve o seed ou falha por serviço.
 class FakeDashboardRepository extends DashboardRepository {

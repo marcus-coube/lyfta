@@ -1,4 +1,4 @@
-module github.com/marcus-coube/lyfta/assessment
+module github.com/marcus-coube/duo/assessment
 
 go 1.26.4
 

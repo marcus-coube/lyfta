@@ -1,10 +1,10 @@
-Lyfta Privacy Policy
-Version 2026-11-v3
+DÜO Privacy Policy
+Version 2026-11-v4
 
-This policy explains which data Lyfta processes, why, and what your rights are.
+This policy explains which data DÜO processes, why, and what your rights are.
 
 1. Who processes your data
-Lyfta provides the platform, and the gym, studio or personal trainer that invited you uses it to follow your training. Privacy contact: privacidade@lyfta.app.
+DÜO provides the platform, and the gym, studio or personal trainer that invited you uses it to follow your training. Privacy contact: privacidade@duotraining.app.
 
 2. Which data we process
 - Identification: name, email and password (stored only as a hash).
@@ -30,7 +30,7 @@ Encrypted communication, photos and videos in private storage with temporary lin
 While your account exists, except workout media: it is erased 7 days after your coach views or replies to it and, even if nobody views it, 30 days after upload; you can remove it earlier at any time. When you delete the account: health data, photos and videos are permanently erased; completed workouts and messages are anonymized and no longer linked to you; the record of your consents is kept as proof, with no personal data. Financial records (membership fees and payments) keep your name and email after deletion, as required by law and for the regular exercise of rights (LGPD, art. 7, II and VI, and art. 16, I); only the organization that issued the invoices sees them. While a membership fee is open or overdue, the account cannot be deleted: settle with the organization first.
 
 8. Your rights
-Confirmation and access, correction, deletion, withdrawal of consent and information about sharing. Account deletion is under Account > Delete my account; for the rest, write to privacidade@lyfta.app.
+Confirmation and access, correction, deletion, withdrawal of consent and information about sharing. Account deletion is under Account > Delete my account; for the rest, write to privacidade@duotraining.app.
 
 9. Changes
 When this policy changes, the version above changes and we will ask for your acceptance again.

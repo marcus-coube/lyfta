@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/config/app_config.dart';
-import 'package:lyfta/core/legal/legal_document.dart';
+import 'package:duo/core/config/app_config.dart';
+import 'package:duo/core/legal/legal_document.dart';
 
 /// ADR-008 §6: os termos são versionados no repo, nos 3 idiomas, e a versão
 /// dentro de cada texto é a que o app manda ao backend (`TERMS_VERSION`).

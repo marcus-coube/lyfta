@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/marcus-coube/lyfta/workout/internal/domain"
+	"github.com/marcus-coube/duo/workout/internal/domain"
 )
 
 func TestMeasureSessionDuration(t *testing.T) {

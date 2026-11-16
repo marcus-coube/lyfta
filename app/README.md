@@ -1,4 +1,4 @@
-# Lyfta — App Flutter
+# DÜO — App Flutter
 
 App único (Android/iOS/Web) — ver `docs/000-product_description.md`.
 
@@ -10,7 +10,7 @@ pastas de plataforma são geradas localmente:
 
 ```bash
 cd app
-flutter create . --project-name lyfta --org br.com.lyfta --platforms=ios,web
+flutter create . --project-name duo --org br.com.duotraining --platforms=ios,web
 flutter pub get
 flutter run -d chrome   # ou -d <device>
 ```
@@ -31,8 +31,8 @@ yes | sdkmanager --sdk_root="$ANDROID_HOME" --licenses
 sdkmanager --sdk_root="$ANDROID_HOME" platform-tools "platforms;android-36" \
   "build-tools;36.0.0" emulator "system-images;android-36;google_apis;arm64-v8a"
 flutter config --android-sdk="$ANDROID_HOME" --jdk-dir=/opt/homebrew/opt/openjdk@21
-avdmanager create avd -n lyfta_pixel -k "system-images;android-36;google_apis;arm64-v8a" -d pixel_7
-emulator -avd lyfta_pixel &
+avdmanager create avd -n duo_pixel -k "system-images;android-36;google_apis;arm64-v8a" -d pixel_7
+emulator -avd duo_pixel &
 ```
 
 Imagem `google_apis` e não `google_apis_playstore`: só nela o `adb root`
@@ -47,7 +47,7 @@ flutter run -d emulator-5554 \
   --dart-define=WORKOUT_BASE_URL=http://10.0.2.2:8082
 ```
 
-`TERMS_VERSION` (`--dart-define=TERMS_VERSION=...`, padrão `2026-11-v3`) é a
+`TERMS_VERSION` (`--dart-define=TERMS_VERSION=...`, padrão `2026-11-v4`) é a
 versão dos termos de uso e da política de privacidade em `assets/legal/`
 (ADR-008 §6). Tem de ser a mesma do `TERMS_VERSION` do `identity` e a que consta
 dentro de cada texto (um teste confere); o backend recusa o aceite com outra
@@ -144,8 +144,10 @@ flutter run -d chrome \
 
 ## Firebase (push, P3.4/P3.5)
 
-Projeto de dev: **`lyfta-a3bd3`**. O app Android é registrado lá com o package
-`br.com.lyfta.lyfta` e o `google-services.json` fica **versionado** em
+Projeto de dev: **`lyfta-a3bd3`** (o ID do projeto Firebase não muda com a
+marca, ADR-021). O app Android precisa ser registrado lá com o package
+`br.com.duotraining.duo` — o registro antigo (`br.com.lyfta.lyfta`) não serve
+mais — e o `google-services.json` fica **versionado** em
 `android/app/` — junto do resto do `android/` (ADR-014). Ele não é segredo de
 servidor: traz a API key do Android, restrita por package + assinatura. O
 segredo de verdade é a service account do Admin SDK, que vive só no
@@ -163,7 +165,7 @@ aviso, e o app roda sem push (pós-MVP em emulador; baixar o arquivo é a
 pendência pré-loja L1 do STATUS). `minSdk` é 26 (Android 8.0), exigência do
 `sentry_flutter`.
 
-> **`applicationId` é provisório (ADR-015).** `br.com.lyfta.lyfta` só pode mudar
+> **`applicationId` é provisório (ADR-015).** `br.com.duotraining.duo` só pode mudar
 > **antes** do primeiro upload em loja: o Play Console reserva o package na conta para
 > sempre (mesmo apagando o rascunho) e o bundle ID no App Store Connect idem.
 > Validar APK/IPA com o cliente por fora da loja (link direto, Firebase App

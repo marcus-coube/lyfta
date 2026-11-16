@@ -7,10 +7,10 @@
 -- tenants (ADR-002 §2b/2c).
 --
 -- Mesma solução: funções SQL SECURITY DEFINER, de propriedade do dono das
--- tabelas (não de lyfta_app), com superfície mínima — devolvem a linha
+-- tabelas (não de duo_app), com superfície mínima — devolvem a linha
 -- completa do convite/reset (não há coluna sensível nessas tabelas, ao
 -- contrário de users.password_hash), mas só pelo hash exato do token, nunca
--- por listagem. lyfta_app recebe apenas EXECUTE, não SELECT direto fora do
+-- por listagem. duo_app recebe apenas EXECUTE, não SELECT direto fora do
 -- tenant setado (ADR-001 §4: RLS é rede de segurança, o filtro explícito
 -- continua obrigatório no restante do acesso a dados).
 CREATE FUNCTION find_invitation_by_token(p_token_hash TEXT)
@@ -28,7 +28,7 @@ AS $$
 $$;
 
 REVOKE ALL ON FUNCTION find_invitation_by_token(TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION find_invitation_by_token(TEXT) TO lyfta_app;
+GRANT EXECUTE ON FUNCTION find_invitation_by_token(TEXT) TO duo_app;
 
 CREATE FUNCTION find_password_reset_by_token(p_token_hash TEXT)
 RETURNS TABLE (
@@ -45,4 +45,4 @@ AS $$
 $$;
 
 REVOKE ALL ON FUNCTION find_password_reset_by_token(TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION find_password_reset_by_token(TEXT) TO lyfta_app;
+GRANT EXECUTE ON FUNCTION find_password_reset_by_token(TEXT) TO duo_app;

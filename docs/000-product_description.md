@@ -1,8 +1,8 @@
-# Lyfta --- Product Roadmap & Technical Planning
+# DÜO --- Product Roadmap & Technical Planning
 
 ## Vision
 
-Lyfta is a multi-tenant SaaS platform for gyms, personal trainers,
+DÜO is a multi-tenant SaaS platform for gyms, personal trainers,
 studios and, in the future, rehabilitation clinics. The same platform
 serves different business models through permissions and feature flags.
 

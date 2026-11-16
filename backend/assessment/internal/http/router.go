@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/security"
+	"github.com/marcus-coube/duo/assessment/internal/security"
 )
 
 // NewRouter monta o roteador chi do serviço assessment com os middlewares

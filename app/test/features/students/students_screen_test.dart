@@ -2,17 +2,17 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/auth/auth_controller.dart';
-import 'package:lyfta/core/auth/auth_state.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/billing/data/billing_repository.dart';
-import 'package:lyfta/features/students/data/student_overview_repository.dart';
-import 'package:lyfta/features/students/data/student_repository.dart';
-import 'package:lyfta/features/students/domain/student.dart';
-import 'package:lyfta/features/students/domain/student_overview.dart';
-import 'package:lyfta/features/students/presentation/students_controller.dart';
-import 'package:lyfta/features/students/presentation/students_screen.dart';
+import 'package:duo/core/auth/auth_controller.dart';
+import 'package:duo/core/auth/auth_state.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/features/billing/data/billing_repository.dart';
+import 'package:duo/features/students/data/student_overview_repository.dart';
+import 'package:duo/features/students/data/student_repository.dart';
+import 'package:duo/features/students/domain/student.dart';
+import 'package:duo/features/students/domain/student_overview.dart';
+import 'package:duo/features/students/presentation/students_controller.dart';
+import 'package:duo/features/students/presentation/students_screen.dart';
 
 import '../billing/billing_fakes.dart';
 

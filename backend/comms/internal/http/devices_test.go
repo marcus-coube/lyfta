@@ -12,9 +12,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	chttp "github.com/marcus-coube/lyfta/comms/internal/http"
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
-	"github.com/marcus-coube/lyfta/comms/internal/security"
+	chttp "github.com/marcus-coube/duo/comms/internal/http"
+	"github.com/marcus-coube/duo/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/security"
 )
 
 // Aceite do passo 1 da P3.4: POST /v1/devices registra (faz upsert) o token
@@ -25,7 +25,7 @@ func testDevicesPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		dsn = "postgres://lyfta_app:lyfta_app_dev@localhost:5432/lyfta_comms?sslmode=disable"
+		dsn = "postgres://duo_app:duo_app_dev@localhost:5432/duo_comms?sslmode=disable"
 	}
 	pool, err := repo.NewPool(context.Background(), dsn)
 	if err != nil {

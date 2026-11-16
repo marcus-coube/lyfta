@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/auth/auth_controller.dart';
-import 'package:lyfta/core/auth/auth_state.dart';
-import 'package:lyfta/features/account/data/tenant_repository.dart';
-import 'package:lyfta/features/billing/presentation/billing_providers.dart';
+import 'package:duo/core/auth/auth_controller.dart';
+import 'package:duo/core/auth/auth_state.dart';
+import 'package:duo/features/account/data/tenant_repository.dart';
+import 'package:duo/features/billing/presentation/billing_providers.dart';
 
 class _Auth extends AuthController {
   _Auth(this.roles, {this.isOwner = false});

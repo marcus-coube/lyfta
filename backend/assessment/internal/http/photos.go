@@ -11,9 +11,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/domain"
-	"github.com/marcus-coube/lyfta/assessment/internal/media"
-	"github.com/marcus-coube/lyfta/assessment/internal/repo"
+	"github.com/marcus-coube/duo/assessment/internal/domain"
+	"github.com/marcus-coube/duo/assessment/internal/media"
+	"github.com/marcus-coube/duo/assessment/internal/repo"
 )
 
 // PhotoHandler expõe as fotos de evolução (ADR-012 §2): aluno lança/lê/apaga

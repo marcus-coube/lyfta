@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/marcus-coube/lyfta/identity/internal/ratelimit"
+	"github.com/marcus-coube/duo/identity/internal/ratelimit"
 )
 
 // RateLimitCooldown é a janela de contagem e o tempo de bloqueio depois que

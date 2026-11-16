@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/workout/internal/domain"
+	"github.com/marcus-coube/duo/workout/internal/domain"
 )
 
 // zeroTime é "sem cursor": a primeira página do histórico.

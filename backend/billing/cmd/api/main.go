@@ -12,16 +12,16 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/marcus-coube/lyfta/billing/internal/coachlink"
-	"github.com/marcus-coube/lyfta/billing/internal/config"
-	ahttp "github.com/marcus-coube/lyfta/billing/internal/http"
-	"github.com/marcus-coube/lyfta/billing/internal/job"
-	"github.com/marcus-coube/lyfta/billing/internal/obs"
-	"github.com/marcus-coube/lyfta/billing/internal/repo"
-	"github.com/marcus-coube/lyfta/billing/internal/security"
-	"github.com/marcus-coube/lyfta/billing/internal/studentdir"
-	"github.com/marcus-coube/lyfta/billing/internal/tenantclient"
-	"github.com/marcus-coube/lyfta/billing/internal/tenantsettings"
+	"github.com/marcus-coube/duo/billing/internal/coachlink"
+	"github.com/marcus-coube/duo/billing/internal/config"
+	ahttp "github.com/marcus-coube/duo/billing/internal/http"
+	"github.com/marcus-coube/duo/billing/internal/job"
+	"github.com/marcus-coube/duo/billing/internal/obs"
+	"github.com/marcus-coube/duo/billing/internal/repo"
+	"github.com/marcus-coube/duo/billing/internal/security"
+	"github.com/marcus-coube/duo/billing/internal/studentdir"
+	"github.com/marcus-coube/duo/billing/internal/tenantclient"
+	"github.com/marcus-coube/duo/billing/internal/tenantsettings"
 )
 
 func main() {

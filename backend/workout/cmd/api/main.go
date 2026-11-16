@@ -12,13 +12,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/marcus-coube/lyfta/workout/internal/coachlink"
-	"github.com/marcus-coube/lyfta/workout/internal/config"
-	whttp "github.com/marcus-coube/lyfta/workout/internal/http"
-	"github.com/marcus-coube/lyfta/workout/internal/media"
-	"github.com/marcus-coube/lyfta/workout/internal/obs"
-	"github.com/marcus-coube/lyfta/workout/internal/repo"
-	"github.com/marcus-coube/lyfta/workout/internal/security"
+	"github.com/marcus-coube/duo/workout/internal/coachlink"
+	"github.com/marcus-coube/duo/workout/internal/config"
+	whttp "github.com/marcus-coube/duo/workout/internal/http"
+	"github.com/marcus-coube/duo/workout/internal/media"
+	"github.com/marcus-coube/duo/workout/internal/obs"
+	"github.com/marcus-coube/duo/workout/internal/repo"
+	"github.com/marcus-coube/duo/workout/internal/security"
 )
 
 func main() {

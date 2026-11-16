@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/design_system/tokens/ly_colors.dart';
+import 'package:duo/core/design_system/tokens/ly_colors.dart';
 
 /// Razão de contraste WCAG 2.x (luminância relativa).
 double contrast(Color a, Color b) {

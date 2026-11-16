@@ -13,11 +13,11 @@ Refs normativas: ADR-001, ADR-002, ADR-011, ADR-013, `backend/README.md`.
 **Objetivo:** ambiente de dev reprodutível nas duas máquinas (Windows/Mac).
 **Entregáveis:**
 - `backend/docker-compose.yml` com **Redis 7** (porta 6379) e **MinIO** (9000/9001,
-  bucket `lyfta-media` criado via job `mc` no próprio compose).
+  bucket `duo-media` criado via job `mc` no próprio compose).
 - `backend/.env.example` global documentando variáveis comuns; `.gitignore` cobrindo
   `.env` (raiz já tem — conferir padrões `backend/**/.env`).
-- Verificação de que os 4 bancos existem no Postgres local (`lyfta_identity`,
-  `lyfta_workout`, `lyfta_assessment`, `lyfta_comms`) — script idempotente
+- Verificação de que os 4 bancos existem no Postgres local (`duo_identity`,
+  `duo_workout`, `duo_assessment`, `duo_comms`) — script idempotente
   `backend/scripts/create-dbs.sql` (`CREATE DATABASE ... ;` com checagem).
 **Aceite:** `docker compose up -d` sobe Redis+MinIO; `psql -l` lista os 4 bancos;
 console MinIO acessível com o bucket criado.
@@ -26,7 +26,7 @@ console MinIO acessível com o bucket criado.
 
 **Objetivo:** projeto Go do identity de pé com schema inicial.
 **Passos:**
-1. `backend/identity/`: `go mod init github.com/marcus-coube/lyfta/identity`,
+1. `backend/identity/`: `go mod init github.com/marcus-coube/duo/identity`,
    layout padrão do `backend/README.md`, chi + pgxpool + config por env,
    `GET /healthz`.
 2. Migrations (golang-migrate, SQL):
@@ -111,7 +111,7 @@ do device reflete nos 3 locales; script de strings falha se inserirem literal.
    (mobile) / localStorage com cuidado (web — documentar tradeoff no código).
 2. Telas: login (existente, agora funcional, com estado de erro i18n), signup do
    professor (nome negócio/slug/email/senha), aceitar convite (lê token da URL —
-   funciona em web e via deep link `lyfta://` no mobile), esqueci/redefinir senha.
+   funciona em web e via deep link `duo://` no mobile), esqueci/redefinir senha.
    Caso `multiple_tenants`: bottom sheet para escolher o tenant.
 3. Shell do professor: navegação lateral (web) / bottom bar (mobile) com destinos
    Alunos · Treinos · Chat (placeholders). Shell do aluno: Hoje · Evolução · Chat ·
@@ -146,18 +146,18 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
   chaves top-level `services`/`volumes` presentes. Revisão manual do arquivo
   confirma Redis 7 (6379), MinIO (9000/9001) e job `minio-init` (baseado em
   `minio/mc`) que roda `mc alias set` + `mc mb` (idempotente, ignora erro se o
-  bucket já existir) + `mc anonymous set none` no bucket `lyfta-media`.
+  bucket já existir) + `mc anonymous set none` no bucket `duo-media`.
 - **Pendência:** rodar, na primeira vez em que o Docker estiver disponível nesta
   máquina (ou já está disponível no Mac):
   `cd backend && docker compose config` (sintaxe) e `docker compose up -d`
-  (sobe). Depois conferir: `docker exec -it lyfta-redis-1 redis-cli ping` →
+  (sobe). Depois conferir: `docker exec -it duo-redis-1 redis-cli ping` →
   `PONG`; console MinIO em `http://localhost:9001` (login `minioadmin`/
-  `minioadmin` por padrão) com o bucket `lyfta-media` listado.
+  `minioadmin` por padrão) com o bucket `duo-media` listado.
 - `redis-cli` também não está disponível localmente nesta máquina (fora do
   container) — não é bloqueante, a verificação do Redis é via
   `docker exec ... redis-cli ping` conforme acima.
-- Bancos Postgres (`lyfta_identity`, `lyfta_workout`, `lyfta_assessment`,
-  `lyfta_comms`) já confirmados existentes nesta máquina em sessão anterior —
+- Bancos Postgres (`duo_identity`, `duo_workout`, `duo_assessment`,
+  `duo_comms`) já confirmados existentes nesta máquina em sessão anterior —
   não re-verificado aqui (fora do escopo restante desta tarefa).
 
 ### P0.2 (2026-07-03, Mac)
@@ -169,9 +169,9 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
 - **RLS e superusuário:** o Postgres local (`postgres`, `marcus`) é superusuário e
   **sempre ignora RLS**, mesmo com `FORCE ROW LEVEL SECURITY` (isso só afeta o
   dono da tabela, não superusuários). Por isso a migration `0007_app_role` cria a
-  role `lyfta_app` (`LOGIN`, `NOBYPASSRLS`) e o serviço/testes devem conectar com
+  role `duo_app` (`LOGIN`, `NOBYPASSRLS`) e o serviço/testes devem conectar com
   ela (`DATABASE_URL` em `backend/identity/.env.example` já aponta para
-  `lyfta_app`) — conectar como `postgres` faz o teste de isolamento passar
+  `duo_app`) — conectar como `postgres` faz o teste de isolamento passar
   silenciosamente mesmo com RLS quebrada (foi o que aconteceu na primeira
   tentativa desta tarefa, corrigido antes do commit).
 - **Ordem das migrations:** a criação da role/grants (`app_role`) foi colocada
@@ -192,21 +192,21 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
   própria) para poder aplicar a policy diretamente, sem subquery a `users` a
   cada acesso. Desvio de detalhe, não de arquitetura — sinalizado aqui em vez
   de decidido silenciosamente.
-- Role de app usa senha fixa de dev (`lyfta_app_dev`) via `CREATE ROLE ...
+- Role de app usa senha fixa de dev (`duo_app_dev`) via `CREATE ROLE ...
   PASSWORD`, documentada só em `.env.example` (não é segredo real, é dev local).
   Em produção a criação da role/senha deve ser parametrizada — ver quando o
   deploy real for desenhado (fora do escopo do MVP local).
 - Verificado localmente (Mac): `migrate up` limpo (7 migrations), `migrate down
   -all` e `up` novamente limpo (reversibilidade confirmada), `go vet ./...`,
   `go build ./...`, `go test ./...` (teste de isolamento cross-tenant em
-  `internal/repo/repo_test.go`, conectando como `lyfta_app`) e `go run ./cmd/api`
+  `internal/repo/repo_test.go`, conectando como `duo_app`) e `go run ./cmd/api`
   respondendo `GET /healthz` com `200 {"status":"ok"}` — tudo verde.
 - **Pendência para o Windows:** repetir `brew`-equivalente lá (instalar Go 1.22+
   e golang-migrate), rodar `psql -U postgres -f backend/scripts/create-dbs.sql`
   se ainda não tiver os bancos, e então `cd backend/identity && migrate -path
   migrations -database "$DATABASE_URL" up` (com `DATABASE_URL` apontando para
-  `postgres` na primeira vez, para criar a role `lyfta_app`; depois trocar para
-  `lyfta_app` no `.env`).
+  `postgres` na primeira vez, para criar a role `duo_app`; depois trocar para
+  `duo_app` no `.env`).
 
 ### P0.3 (2026-07-03, Mac)
 
@@ -214,13 +214,13 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
   achar em quais tenants um e-mail existe **antes** de saber qual
   `app.tenant_id` setar. Validado manualmente que, sem esse `SET`, a policy
   `tenant_isolation` de `users` compara `tenant_id` a `current_setting(...)`
-  que é `NULL`, e `lyfta_app` vê **0 linhas** mesmo havendo dados — ou seja,
+  que é `NULL`, e `duo_app` vê **0 linhas** mesmo havendo dados — ou seja,
   RLS bloqueia por padrão o próprio caso de uso que o login precisa resolver.
   Solução adotada: migration `0008_email_lookup` cria a função SQL
   `find_tenants_by_email(email)`, `SECURITY DEFINER` (de propriedade do dono
-  das tabelas, não de `lyfta_app`), com superfície mínima — devolve só
+  das tabelas, não de `duo_app`), com superfície mínima — devolve só
   `(user_id, tenant_id, tenant_name)`, nunca `password_hash` ou qualquer outra
-  coluna. `lyfta_app` só recebe `EXECUTE` nela, não `SELECT` direto fora do
+  coluna. `duo_app` só recebe `EXECUTE` nela, não `SELECT` direto fora do
   tenant setado. É a única exceção documentada ao modelo de RLS; todo o resto
   do acesso a dados continua via `WithTenant` (ADR-001 §4: RLS é rede de
   segurança, filtro explícito continua obrigatório em todo o resto).
@@ -295,7 +295,7 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
   `find_password_reset_by_token`, `SECURITY DEFINER`, de superfície mínima
   (só a linha do convite/reset pelo hash exato, nunca por listagem; essas
   tabelas não têm coluna sensível como `password_hash`), `EXECUTE` só pra
-  `lyfta_app`. Segue o mesmo padrão documentado em `0008` — exceção contida,
+  `duo_app`. Segue o mesmo padrão documentado em `0008` — exceção contida,
   o resto do acesso continua via `WithTenant`.
 - **forgot-password sempre 200:** não distingue e-mail existente de
   inexistente (não vaza quais e-mails têm conta). Se o e-mail existir em N
@@ -470,7 +470,7 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
   auto-gerado do nome até o usuário editar manualmente, nome, e-mail, senha)
   e `/reset` (`ResetPasswordScreen`, token via query string, mesmo padrão de
   `/invite`). `/invite` ganhou comentário explicando que o deep link
-  `lyfta://invite?token=...` depende de configuração nas plataformas nativas
+  `duo://invite?token=...` depende de configuração nas plataformas nativas
   (`AndroidManifest.xml`/`Info.plist`, geradas por `flutter create .` e não
   versionadas neste repo — `app/README.md`) — **não implementado nem
   verificável nesta máquina** (sem Android SDK/Xcode configurados); o
@@ -513,7 +513,7 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
   aceitável dado que cada endpoint já tem teste de handler Go (P0.3/P0.4) e
   o cliente usa o mesmo contrato.
 - **Pendência (herdada, ainda aberta):** rodar em Android segue bloqueado
-  (sem SDK nesta máquina) — inclui verificar o deep link `lyfta://` de
+  (sem SDK nesta máquina) — inclui verificar o deep link `duo://` de
   convite, que só é testável com o app instalado num device/emulador
   Android ou simulador iOS. Rate limit no lookup de e-mail entre tenants e
   nos endpoints públicos por token (ADR-002 §2c) continua em aberto, fora do
@@ -528,11 +528,11 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
   `["identity"]`. Dispara em push na `main` e em qualquer PR, com
   `concurrency` cancelando runs antigas do mesmo ref.
 - **Job `backend`:** Postgres 17 como service container (mesma major do dev),
-  `CREATE DATABASE lyfta_<svc>` (nome derivado do serviço — a migration 0007
-  do identity referencia `lyfta_identity` explicitamente no `GRANT CONNECT`),
+  `CREATE DATABASE duo_<svc>` (nome derivado do serviço — a migration 0007
+  do identity referencia `duo_identity` explicitamente no `GRANT CONNECT`),
   `golang-migrate` **v4.19.1** (mesma versão do dev) baixado do release
   `migrate.linux-amd64.tar.gz`, migrations aplicadas como `postgres`, e então
-  `go vet ./...` + `go test ./...` conectando como **`lyfta_app`** — a role
+  `go vet ./...` + `go test ./...` conectando como **`duo_app`** — a role
   sem BYPASSRLS criada pelas próprias migrations. Conectar como superusuário
   aqui tornaria os testes de isolamento cross-tenant (ADR-001 §6) vazios.
   `go-version-file` aponta para o `go.mod` do serviço: a versão do Go nunca
@@ -552,7 +552,7 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
 - **Verificado localmente (Mac), reproduzindo o job passo a passo:** Postgres
   17 limpo em container (`docker run postgres:17`, porta 5433), banco criado
   do zero, as 9 migrations aplicadas em sequência pelo `migrate` e
-  `go test ./...` verde contra esse banco novo com a DSN de `lyfta_app` — ou
+  `go test ./...` verde contra esse banco novo com a DSN de `duo_app` — ou
   seja, o caminho do CI (banco vazio → migrations → testes) foi executado de
   fato, não presumido. O portão novo também foi exercitado nos dois sentidos:
   com `CI=true` e DSN inacessível o teste **falha** (`banco indisponível no
@@ -566,7 +566,7 @@ senha e cai no shell de aluno no Android; sessão sobrevive a restart do app
   exercitados pelos testes (os handlers usam `logMailer` e par de chaves
   efêmero), então não há `secrets` a configurar.
 - **Dívida herdada do P0 (continua aberta, fora do escopo desta tarefa):**
-  Android/iOS não configurados nesta máquina (deep link `lyfta://invite`
+  Android/iOS não configurados nesta máquina (deep link `duo://invite`
   nunca testado); verificação do `docker compose` (Redis+MinIO) pendente no
   Windows; rate limit no lookup de e-mail entre tenants (ADR-002 §2c) ainda
   sem ADR nem implementação.

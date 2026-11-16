@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/comms/internal/pubsub"
+	"github.com/marcus-coube/duo/comms/internal/pubsub"
 )
 
 // TestPresenceMarkAndUnmark cobre o registro de presença entre instâncias que

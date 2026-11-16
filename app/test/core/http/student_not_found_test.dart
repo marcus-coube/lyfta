@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/http/api_exception.dart';
-import 'package:lyfta/core/http/api_exception_l10n.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/shared/widgets/ly_error_state.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/http/api_exception.dart';
+import 'package:duo/core/http/api_exception_l10n.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/shared/widgets/ly_error_state.dart';
 
 void main() {
   const notFound = ApiException(code: 'student_not_found', statusCode: 404);

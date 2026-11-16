@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/marcus-coube/lyfta/identity/internal/domain"
-	"github.com/marcus-coube/lyfta/identity/internal/repo"
+	"github.com/marcus-coube/duo/identity/internal/domain"
+	"github.com/marcus-coube/duo/identity/internal/repo"
 )
 
 // TestStudentRepoTenantIsolationAndErasure: status e histórico de um tenant

@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/workout/internal/coachlink"
+	"github.com/marcus-coube/duo/workout/internal/coachlink"
 )
 
 // templateActors: dois coaches e um owner no mesmo tenant, com o vínculo

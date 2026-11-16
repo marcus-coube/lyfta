@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/marcus-coube/lyfta/identity/internal/erasure"
+	"github.com/marcus-coube/duo/identity/internal/erasure"
 )
 
 // TestEraseCallsEveryServiceAndReportsFailures: o cliente manda o token M2M e o

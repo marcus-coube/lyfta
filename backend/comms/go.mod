@@ -1,4 +1,4 @@
-module github.com/marcus-coube/lyfta/comms
+module github.com/marcus-coube/duo/comms
 
 go 1.26.4
 

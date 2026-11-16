@@ -19,11 +19,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/identity/internal/erasure"
-	ihttp "github.com/marcus-coube/lyfta/identity/internal/http"
-	"github.com/marcus-coube/lyfta/identity/internal/ratelimit"
-	"github.com/marcus-coube/lyfta/identity/internal/repo"
-	"github.com/marcus-coube/lyfta/identity/internal/security"
+	"github.com/marcus-coube/duo/identity/internal/erasure"
+	ihttp "github.com/marcus-coube/duo/identity/internal/http"
+	"github.com/marcus-coube/duo/identity/internal/ratelimit"
+	"github.com/marcus-coube/duo/identity/internal/repo"
+	"github.com/marcus-coube/duo/identity/internal/security"
 )
 
 // testPool abre um pool contra o Postgres de dev, igual ao usado em
@@ -33,7 +33,7 @@ func testPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		dsn = "postgres://lyfta_app:lyfta_app_dev@localhost:5432/lyfta_identity?sslmode=disable"
+		dsn = "postgres://duo_app:duo_app_dev@localhost:5432/duo_identity?sslmode=disable"
 	}
 	ctx := context.Background()
 	pool, err := repo.NewPool(ctx, dsn)

@@ -168,9 +168,9 @@ mesmos widgets renderizam nos dois shells sem duplicação de código.
   de `up` de novo, depois os testes rodando limpos — não só leitura visual
   das 4 migrations.
 - **CI não precisou de ajuste.** O job `discover` já lista serviços por
-  `backend/<svc>/go.mod`, cria `lyfta_assessment` a partir de
-  `DB_NAME: lyfta_${{ matrix.service }}` e roda migrations+testes como
-  `lyfta_app` — o mesmo mecanismo que pegou o workout automaticamente na
+  `backend/<svc>/go.mod`, cria `duo_assessment` a partir de
+  `DB_NAME: duo_${{ matrix.service }}` e roda migrations+testes como
+  `duo_app` — o mesmo mecanismo que pegou o workout automaticamente na
   P0.7 pegou o assessment sem editar o workflow.
 - **Verificado (Mac):** `go vet` limpo, `gofmt -l` limpo, **2 testes verdes**;
   smoke manual com `identity` e `assessment` no ar — signup real gerando

@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/workout/internal/domain"
+	"github.com/marcus-coube/duo/workout/internal/domain"
 )
 
 // PlanRepo grava e lê a árvore do template (ADR-004 §1):

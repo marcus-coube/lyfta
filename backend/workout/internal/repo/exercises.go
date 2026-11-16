@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/workout/internal/domain"
+	"github.com/marcus-coube/duo/workout/internal/domain"
 )
 
 // ExerciseRepo dá acesso à biblioteca de exercícios (ADR-010). Toda operação
@@ -195,7 +195,7 @@ func (r *ExerciseRepo) List(ctx context.Context, tenantID string, f domain.Exerc
 				       COALESCE(tr.name, e.name) AS display_name,
 				       COALESCE(tr.instructions, '') AS instructions,
 				       COALESCE(tr.locale, $2) AS name_locale,
-				       lyfta_search_norm(COALESCE(tr.name, e.name)) AS sort_key
+				       duo_search_norm(COALESCE(tr.name, e.name)) AS sort_key
 				FROM exercises e
 				LEFT JOIN LATERAL (
 					SELECT t.locale, t.name, t.instructions
@@ -210,8 +210,8 @@ func (r *ExerciseRepo) List(ctx context.Context, tenantID string, f domain.Exerc
 				  AND ($5 = '' OR e.level = $5)
 			)
 			SELECT * FROM resolved
-			WHERE ($6 = '' OR sort_key LIKE '%' || lyfta_search_norm($6) || '%'
-			              OR lyfta_search_norm(name) LIKE '%' || lyfta_search_norm($6) || '%')
+			WHERE ($6 = '' OR sort_key LIKE '%' || duo_search_norm($6) || '%'
+			              OR duo_search_norm(name) LIKE '%' || duo_search_norm($6) || '%')
 			  AND ($7 = '' OR (sort_key, id::text) > ($7, $8))
 			ORDER BY sort_key, id::text
 			LIMIT $9`

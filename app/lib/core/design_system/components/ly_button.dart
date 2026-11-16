@@ -9,7 +9,7 @@ import '../tokens/ly_typography.dart';
 
 enum LyButtonVariant { primary, secondary, ghost }
 
-/// Botão padrão da Lyfta.
+/// Botão padrão do DÜO.
 ///
 /// `primary` é o CTA (lime) — no máximo um por tela. `secondary` para ações
 /// alternativas e `ghost` para ações discretas/links.

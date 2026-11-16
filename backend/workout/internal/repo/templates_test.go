@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/workout/internal/domain"
-	"github.com/marcus-coube/lyfta/workout/internal/repo"
+	"github.com/marcus-coube/duo/workout/internal/domain"
+	"github.com/marcus-coube/duo/workout/internal/repo"
 )
 
 func publishedTemplate(t *testing.T, plans *repo.PlanRepo, tenantID, coachID, exerciseID string) domain.Plan {

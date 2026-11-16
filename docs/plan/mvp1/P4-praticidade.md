@@ -568,7 +568,7 @@ parciais (ver Registro em `e2e-final.md`). Achados:
 **Corrigidos** (commits `a565133`, `7f71c8b`):
 - Check-in feito sem rede nunca saía se o app reiniciasse offline (o
   controller só nascia no envio) — shell do aluno agora o mantém vivo.
-- E-mail de convite dizia "Lyfta te convidou": nome do tenant fixo.
+- E-mail de convite dizia "DÜO te convidou": nome do tenant fixo.
 - Chat do aluno sem o nome do professor: `GET /v1/users` dava 403 ao aluno;
   agora ele lê só a equipe (coach/owner), sem e-mail.
 - Versão do login fixa em "v0.1.0" e sobre o botão com teclado aberto.
@@ -772,10 +772,10 @@ LGPD mínima do ADR-008 (§1, §2, §6) ponta a ponta. Backend em
   estado vazio de fotos). Texto do estado vazio específico fica para depois.
 - **Revisão jurídica dos textos de `assets/legal/` pendente (humano):** o
   conteúdo é razoável para o MVP, mas foi escrito sem advogado; o contato
-  `privacidade@lyfta.app` e a identificação do controlador precisam ser
+  `privacidade@duotraining.app` e a identificação do controlador precisam ser
   confirmados antes do release.
 - Migrations só rodam com superusuário/dono: com `DATABASE_URL` da role
-  `lyfta_app` o `migrate` falha no `TRUNCATE schema_migrations`. Usei
+  `duo_app` o `migrate` falha no `TRUNCATE schema_migrations`. Usei
   `postgres://postgres@localhost:5432/<banco>` (trust local).
 - Nenhuma dependência nova (Go e Flutter); só `assets:` no `pubspec.yaml`.
 - `dart format` no repo inteiro **não** é o estilo do projeto (reformata ~70

@@ -20,10 +20,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	ahttp "github.com/marcus-coube/lyfta/assessment/internal/http"
-	"github.com/marcus-coube/lyfta/assessment/internal/media"
-	"github.com/marcus-coube/lyfta/assessment/internal/repo"
-	"github.com/marcus-coube/lyfta/assessment/internal/security"
+	ahttp "github.com/marcus-coube/duo/assessment/internal/http"
+	"github.com/marcus-coube/duo/assessment/internal/media"
+	"github.com/marcus-coube/duo/assessment/internal/repo"
+	"github.com/marcus-coube/duo/assessment/internal/security"
 )
 
 // testPool abre o pool contra o Postgres de dev, mesma regra do
@@ -32,7 +32,7 @@ func testPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		dsn = "postgres://lyfta_app:lyfta_app_dev@localhost:5432/lyfta_assessment?sslmode=disable"
+		dsn = "postgres://duo_app:duo_app_dev@localhost:5432/duo_assessment?sslmode=disable"
 	}
 	pool, err := repo.NewPool(context.Background(), dsn)
 	if err != nil {
@@ -168,7 +168,7 @@ func newTestRouterLinked(t *testing.T, publicPEM string, pool *pgxpool.Pool, con
 	// storage, então estes testes de handler não precisam de MinIO no ar
 	// (mesmo critério do workout, P1.2).
 	presigner, err := media.NewPresigner(media.Config{
-		Endpoint: "http://localhost:9000", Region: "us-east-1", Bucket: "lyfta-media",
+		Endpoint: "http://localhost:9000", Region: "us-east-1", Bucket: "duo-media",
 		AccessKey: "minioadmin", SecretKey: "minioadmin", UsePathStyle: true,
 	})
 	if err != nil {

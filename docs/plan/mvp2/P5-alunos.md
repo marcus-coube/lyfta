@@ -192,7 +192,7 @@ objetivo e o coach vê; teste de widget do formulário de lesão.
   o parâmetro `students`.
 - Exclusão de conta (ADR-008 §2): `Anonymize` apaga `user_status_events` do
   usuário (o `reason` é texto livre) e zera telefone/nascimento. Por isso a
-  tabela concede DELETE ao `lyfta_app`; fora isso a aplicação só insere.
+  tabela concede DELETE ao `duo_app`; fora isso a aplicação só insere.
 - Histórico registra inativar/reativar e também o aceite do convite
   (`invited -> active`, autor = o próprio usuário, em `ActivateWithPassword`).
 - Decisão: inativar não derruba o access token em circulação (até 15 min);

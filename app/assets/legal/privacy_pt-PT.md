@@ -1,10 +1,10 @@
-Política de Privacidade do Lyfta
-Versão 2026-11-v3
+Política de Privacidade do DÜO
+Versão 2026-11-v4
 
-Esta política explica que dados o Lyfta trata, para quê, e quais são os seus direitos.
+Esta política explica que dados o DÜO trata, para quê, e quais são os seus direitos.
 
 1. Quem trata os seus dados
-O Lyfta fornece a plataforma e o ginásio, estúdio ou personal trainer que o convidou utiliza-a para acompanhar o seu treino. Contacto para privacidade: privacidade@lyfta.app.
+O DÜO fornece a plataforma e o ginásio, estúdio ou personal trainer que o convidou utiliza-a para acompanhar o seu treino. Contacto para privacidade: privacidade@duotraining.app.
 
 2. Que dados tratamos
 - Identificação: nome, e-mail e palavra-passe (guardada apenas como hash).
@@ -30,7 +30,7 @@ Comunicação cifrada, fotografias e vídeos em armazenamento privado com ligaç
 Enquanto a sua conta existir, exceto a multimédia de execução: é apagada 7 dias depois de o seu treinador a visualizar ou responder e, mesmo que ninguém a veja, 30 dias depois do envio; pode retirá-la antes, a qualquer momento. Ao eliminar a conta: os dados de saúde, as fotografias e os vídeos são apagados definitivamente; os treinos executados e as mensagens são anonimizados e deixam de estar ligados a si; o registo dos seus consentimentos é mantido como prova, sem dados pessoais. Os registos financeiros (mensalidades e pagamentos) continuam a guardar o seu nome e e-mail após a eliminação, por obrigação legal de conservação e para o exercício regular de direitos (LGPD, art. 7.º, II e VI, e art. 16.º, I); só a organização que emitiu as faturas os vê. Enquanto existir mensalidade em aberto ou vencida, a conta não pode ser eliminada: é preciso regularizar com a organização antes.
 
 8. Os seus direitos
-Confirmação e acesso aos dados, retificação, eliminação, revogação do consentimento e informação sobre partilha. A eliminação da conta está em Conta > Eliminar a minha conta; para os restantes, escreva para privacidade@lyfta.app.
+Confirmação e acesso aos dados, retificação, eliminação, revogação do consentimento e informação sobre partilha. A eliminação da conta está em Conta > Eliminar a minha conta; para os restantes, escreva para privacidade@duotraining.app.
 
 9. Alterações
 Quando esta política mudar, a versão acima muda e pediremos novamente a sua aceitação.

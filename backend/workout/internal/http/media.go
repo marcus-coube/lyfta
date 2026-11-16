@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/marcus-coube/lyfta/workout/internal/media"
+	"github.com/marcus-coube/duo/workout/internal/media"
 )
 
 // MediaHandler assina uploads de mídia de exercício (P1.2). O serviço não

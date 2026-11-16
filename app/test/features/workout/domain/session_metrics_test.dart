@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/features/workout/domain/session_metrics.dart';
-import 'package:lyfta/features/workout/domain/workout_event.dart';
+import 'package:duo/features/workout/domain/session_metrics.dart';
+import 'package:duo/features/workout/domain/workout_event.dart';
 
 LocalSetLog _log(
   String id,

@@ -41,4 +41,4 @@ CREATE POLICY tenant_isolation ON session_media
     USING (tenant_id = current_setting('app.tenant_id', true)::uuid)
     WITH CHECK (tenant_id = current_setting('app.tenant_id', true)::uuid);
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON session_media TO lyfta_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON session_media TO duo_app;

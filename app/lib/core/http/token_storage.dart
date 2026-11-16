@@ -43,11 +43,11 @@ class TokenStorage {
   TokenStorage({FlutterSecureStorage? storage})
       : _storage = storage ?? const FlutterSecureStorage();
 
-  static const _accessKey = 'lyfta.access_token';
-  static const _refreshKey = 'lyfta.refresh_token';
-  static const _tenantIdKey = 'lyfta.tenant_id';
-  static const _userIdKey = 'lyfta.user_id';
-  static const _rolesKey = 'lyfta.roles';
+  static const _accessKey = 'duo.access_token';
+  static const _refreshKey = 'duo.refresh_token';
+  static const _tenantIdKey = 'duo.tenant_id';
+  static const _userIdKey = 'duo.user_id';
+  static const _rolesKey = 'duo.roles';
 
   final FlutterSecureStorage _storage;
 

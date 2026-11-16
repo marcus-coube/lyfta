@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/chat/presentation/widgets/chat_bubble.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/features/chat/presentation/widgets/chat_bubble.dart';
 
 Widget _host(Widget child) {
   return MaterialApp(

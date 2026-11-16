@@ -13,8 +13,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/workout/internal/domain"
-	"github.com/marcus-coube/lyfta/workout/internal/repo"
+	"github.com/marcus-coube/duo/workout/internal/domain"
+	"github.com/marcus-coube/duo/workout/internal/repo"
 )
 
 // Modelos de treino (ADR-018, P6.1). Ler e editar a árvore reusa as rotas de

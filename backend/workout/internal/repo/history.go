@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/marcus-coube/lyfta/workout/internal/domain"
+	"github.com/marcus-coube/duo/workout/internal/domain"
 )
 
 // maxHistoryPageSize é o teto de pontos por página do histórico. O gráfico do

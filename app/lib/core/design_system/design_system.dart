@@ -1,4 +1,4 @@
-/// Design system da Lyfta.
+/// Design system do DÜO.
 ///
 /// Regra de ouro: telas de feature importam APENAS este barrel —
 /// nunca hardcode de cor, fonte, raio ou espaçamento.

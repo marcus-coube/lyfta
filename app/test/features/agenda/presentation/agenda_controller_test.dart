@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/features/agenda/presentation/agenda_controller.dart';
+import 'package:duo/features/agenda/presentation/agenda_controller.dart';
 
 void main() {
   group('startOfWeek', () {

@@ -10,7 +10,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/repo"
 )
 
 // encodeCursor/decodeCursor empacotam o keyset (timestamp + id) do histórico

@@ -35,7 +35,7 @@ class RestTimerService {
   /// Id fixo: só existe um descanso por vez, e agendar outro substitui o
   /// anterior em vez de empilhar avisos velhos.
   static const int _notificationId = 1001;
-  static const String _channelId = 'lyfta_rest_timer';
+  static const String _channelId = 'duo_rest_timer';
 
   bool get _supportsNotifications =>
       !kIsWeb &&

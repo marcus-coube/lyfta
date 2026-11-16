@@ -13,7 +13,7 @@ class GoalPromptStorage {
   GoalPromptStorage({FlutterSecureStorage? storage})
       : _storage = storage ?? const FlutterSecureStorage();
 
-  static String _key(String userId) => 'lyfta.goal_prompt_shown.$userId';
+  static String _key(String userId) => 'duo.goal_prompt_shown.$userId';
 
   final FlutterSecureStorage _storage;
 

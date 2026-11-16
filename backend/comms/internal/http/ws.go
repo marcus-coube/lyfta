@@ -10,9 +10,9 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/marcus-coube/lyfta/comms/internal/pubsub"
-	"github.com/marcus-coube/lyfta/comms/internal/security"
-	"github.com/marcus-coube/lyfta/comms/internal/ws"
+	"github.com/marcus-coube/duo/comms/internal/pubsub"
+	"github.com/marcus-coube/duo/comms/internal/security"
+	"github.com/marcus-coube/duo/comms/internal/ws"
 )
 
 const (

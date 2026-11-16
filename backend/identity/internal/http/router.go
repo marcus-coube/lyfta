@@ -8,8 +8,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 
-	"github.com/marcus-coube/lyfta/identity/internal/domain"
-	"github.com/marcus-coube/lyfta/identity/internal/security"
+	"github.com/marcus-coube/duo/identity/internal/domain"
+	"github.com/marcus-coube/duo/identity/internal/security"
 )
 
 // NewRouter monta o roteador chi do serviço identity com os middlewares base

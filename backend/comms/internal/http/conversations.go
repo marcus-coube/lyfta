@@ -13,12 +13,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/marcus-coube/lyfta/comms/internal/domain"
-	"github.com/marcus-coube/lyfta/comms/internal/media"
-	"github.com/marcus-coube/lyfta/comms/internal/pubsub"
-	"github.com/marcus-coube/lyfta/comms/internal/push"
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
-	"github.com/marcus-coube/lyfta/comms/internal/security"
+	"github.com/marcus-coube/duo/comms/internal/domain"
+	"github.com/marcus-coube/duo/comms/internal/media"
+	"github.com/marcus-coube/duo/comms/internal/pubsub"
+	"github.com/marcus-coube/duo/comms/internal/push"
+	"github.com/marcus-coube/duo/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/security"
 )
 
 // maxMessageBodyLen é o teto de texto por mensagem — teto de payload, não

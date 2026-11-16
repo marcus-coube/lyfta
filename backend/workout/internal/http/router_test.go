@@ -18,10 +18,10 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	whttp "github.com/marcus-coube/lyfta/workout/internal/http"
-	"github.com/marcus-coube/lyfta/workout/internal/media"
-	"github.com/marcus-coube/lyfta/workout/internal/repo"
-	"github.com/marcus-coube/lyfta/workout/internal/security"
+	whttp "github.com/marcus-coube/duo/workout/internal/http"
+	"github.com/marcus-coube/duo/workout/internal/media"
+	"github.com/marcus-coube/duo/workout/internal/repo"
+	"github.com/marcus-coube/duo/workout/internal/security"
 )
 
 // newTestKeys gera um par ed25519 efêmero e devolve o PEM da pública (o
@@ -127,7 +127,7 @@ func newTestRouterWithLinker(t *testing.T, publicPEM string, pool *pgxpool.Pool,
 	// Assinar é operação offline: o presigner monta a URL sem falar com o
 	// storage, então estes testes de handler não precisam de MinIO no ar.
 	presigner, err := media.NewPresigner(media.Config{
-		Endpoint: "http://localhost:9000", Region: "us-east-1", Bucket: "lyfta-media",
+		Endpoint: "http://localhost:9000", Region: "us-east-1", Bucket: "duo-media",
 		AccessKey: "minioadmin", SecretKey: "minioadmin", UsePathStyle: true,
 	})
 	if err != nil {

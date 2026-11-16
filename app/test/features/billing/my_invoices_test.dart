@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/billing/data/billing_repository.dart';
-import 'package:lyfta/features/billing/presentation/my_invoices_screen.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/features/billing/data/billing_repository.dart';
+import 'package:duo/features/billing/presentation/my_invoices_screen.dart';
 
 import 'billing_fakes.dart';
 

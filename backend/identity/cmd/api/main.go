@@ -13,14 +13,14 @@ import (
 	"time"
 	_ "time/tzdata" // fuso IANA sem depender do tzdata do SO (P5.1)
 
-	"github.com/marcus-coube/lyfta/identity/internal/config"
-	"github.com/marcus-coube/lyfta/identity/internal/erasure"
-	ihttp "github.com/marcus-coube/lyfta/identity/internal/http"
-	"github.com/marcus-coube/lyfta/identity/internal/mail"
-	"github.com/marcus-coube/lyfta/identity/internal/obs"
-	"github.com/marcus-coube/lyfta/identity/internal/ratelimit"
-	"github.com/marcus-coube/lyfta/identity/internal/repo"
-	"github.com/marcus-coube/lyfta/identity/internal/security"
+	"github.com/marcus-coube/duo/identity/internal/config"
+	"github.com/marcus-coube/duo/identity/internal/erasure"
+	ihttp "github.com/marcus-coube/duo/identity/internal/http"
+	"github.com/marcus-coube/duo/identity/internal/mail"
+	"github.com/marcus-coube/duo/identity/internal/obs"
+	"github.com/marcus-coube/duo/identity/internal/ratelimit"
+	"github.com/marcus-coube/duo/identity/internal/repo"
+	"github.com/marcus-coube/duo/identity/internal/security"
 )
 
 func main() {

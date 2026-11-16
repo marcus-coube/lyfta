@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/workout/domain/block_runner.dart';
-import 'package:lyfta/features/workout/domain/today.dart';
-import 'package:lyfta/features/workout/domain/workout_event.dart';
-import 'package:lyfta/features/workout/presentation/exercise_fields.dart';
-import 'package:lyfta/features/workout/presentation/rest_timer_controller.dart';
-import 'package:lyfta/features/workout/presentation/session_controller.dart';
-import 'package:lyfta/features/workout/presentation/widgets/block_card.dart';
-import 'package:lyfta/features/workout/presentation/widgets/set_row.dart';
-import 'package:lyfta/shared/domain/plan.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/features/workout/domain/block_runner.dart';
+import 'package:duo/features/workout/domain/today.dart';
+import 'package:duo/features/workout/domain/workout_event.dart';
+import 'package:duo/features/workout/presentation/exercise_fields.dart';
+import 'package:duo/features/workout/presentation/rest_timer_controller.dart';
+import 'package:duo/features/workout/presentation/session_controller.dart';
+import 'package:duo/features/workout/presentation/widgets/block_card.dart';
+import 'package:duo/features/workout/presentation/widgets/set_row.dart';
+import 'package:duo/shared/domain/plan.dart';
 
 Widget _app(Widget child) => MaterialApp(
       theme: LyTheme.dark(),

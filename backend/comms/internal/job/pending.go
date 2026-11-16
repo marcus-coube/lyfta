@@ -17,17 +17,17 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/comms/internal/coachlink"
-	"github.com/marcus-coube/lyfta/comms/internal/push"
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
-	"github.com/marcus-coube/lyfta/comms/internal/tenantclient"
-	"github.com/marcus-coube/lyfta/comms/internal/workoutclient"
+	"github.com/marcus-coube/duo/comms/internal/coachlink"
+	"github.com/marcus-coube/duo/comms/internal/push"
+	"github.com/marcus-coube/duo/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/tenantclient"
+	"github.com/marcus-coube/duo/comms/internal/workoutclient"
 )
 
 // pendingLockKey é a chave do pg_advisory_lock — hashtext de um nome fixo,
 // não um id de negócio: só precisa ser única o bastante para não colidir com
 // outro uso de advisory lock no mesmo banco (não há nenhum outro hoje).
-const pendingLockKey = "lyfta_comms_pending_workout_job"
+const pendingLockKey = "duo_comms_pending_workout_job"
 
 // tickInterval: de quanto em quanto tempo o job confere se já passou do
 // horário de disparo e se ainda não varreu hoje. Não precisa ser fino — na

@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/comms/internal/domain"
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/domain"
+	"github.com/marcus-coube/duo/comms/internal/repo"
 )
 
 func newSessionMedia(tenantID, studentID, sessionClientID string) domain.SessionMedia {

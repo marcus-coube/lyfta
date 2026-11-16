@@ -8,6 +8,6 @@ import 'workout_local_store.dart';
 /// requisito real — treinar em modo avião e sincronizar depois.
 WorkoutLocalStore openWorkoutStore() {
   return DriftWorkoutStore(
-    WorkoutDatabase(driftDatabase(name: 'lyfta_workout')),
+    WorkoutDatabase(driftDatabase(name: 'duo_workout')),
   );
 }

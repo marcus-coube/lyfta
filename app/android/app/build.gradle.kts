@@ -15,7 +15,7 @@ if (file("google-services.json").exists()) {
 }
 
 android {
-    namespace = "br.com.lyfta.lyfta"
+    namespace = "br.com.duotraining.duo"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -29,7 +29,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "br.com.lyfta.lyfta"
+        applicationId = "br.com.duotraining.duo"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         // Android 8.0+: o sentry_flutter 10.3 (P4.6) declara minSdk 26 e o

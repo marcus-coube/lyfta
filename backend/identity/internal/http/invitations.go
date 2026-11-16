@@ -12,10 +12,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/identity/internal/domain"
-	"github.com/marcus-coube/lyfta/identity/internal/mail"
-	"github.com/marcus-coube/lyfta/identity/internal/repo"
-	"github.com/marcus-coube/lyfta/identity/internal/security"
+	"github.com/marcus-coube/duo/identity/internal/domain"
+	"github.com/marcus-coube/duo/identity/internal/mail"
+	"github.com/marcus-coube/duo/identity/internal/repo"
+	"github.com/marcus-coube/duo/identity/internal/security"
 )
 
 // InvitationHandler concentra as dependências dos endpoints de convite
@@ -210,7 +210,7 @@ func (h *InvitationHandler) createAndSendInvitation(ctx context.Context, tenantI
 
 	// O e-mail diz quem convidou: o nome da academia. Falha na busca não
 	// impede o convite — cai no nome do produto.
-	tenantName := "Lyfta"
+	tenantName := "DÜO"
 	if t, err := h.tenants.FindByID(ctx, tenantID); err == nil && t.Name != "" {
 		tenantName = t.Name
 	} else if err != nil {

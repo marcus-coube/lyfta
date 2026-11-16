@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/workout/internal/domain"
-	"github.com/marcus-coube/lyfta/workout/internal/repo"
+	"github.com/marcus-coube/duo/workout/internal/domain"
+	"github.com/marcus-coube/duo/workout/internal/repo"
 )
 
 // execFixture é um aluno com plano publicado e pronto para executar: o mínimo

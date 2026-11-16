@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/features/workout/domain/block_runner.dart';
-import 'package:lyfta/features/workout/domain/today.dart';
-import 'package:lyfta/shared/domain/plan.dart';
+import 'package:duo/features/workout/domain/block_runner.dart';
+import 'package:duo/features/workout/domain/today.dart';
+import 'package:duo/shared/domain/plan.dart';
 
 BlockExercise _ex(String id, int sets, {int? rest}) => BlockExercise(
       exerciseId: id,

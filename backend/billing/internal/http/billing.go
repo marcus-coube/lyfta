@@ -14,10 +14,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/billing/internal/repo"
-	"github.com/marcus-coube/lyfta/billing/internal/security"
-	"github.com/marcus-coube/lyfta/billing/internal/studentdir"
-	"github.com/marcus-coube/lyfta/billing/internal/tenantsettings"
+	"github.com/marcus-coube/duo/billing/internal/repo"
+	"github.com/marcus-coube/duo/billing/internal/security"
+	"github.com/marcus-coube/duo/billing/internal/studentdir"
+	"github.com/marcus-coube/duo/billing/internal/tenantsettings"
 )
 
 // TenantSettings lê fuso e modo de acesso do coach (ADR-017 §3/§4).

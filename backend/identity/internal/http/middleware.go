@@ -11,7 +11,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/identity/internal/security"
+	"github.com/marcus-coube/duo/identity/internal/security"
 )
 
 // ctxKeyRequestID identifica o valor do request-id no contexto da requisição.

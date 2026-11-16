@@ -13,12 +13,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/marcus-coube/lyfta/workout/internal/domain"
-	"github.com/marcus-coube/lyfta/workout/internal/media"
-	"github.com/marcus-coube/lyfta/workout/internal/repo"
+	"github.com/marcus-coube/duo/workout/internal/domain"
+	"github.com/marcus-coube/duo/workout/internal/media"
+	"github.com/marcus-coube/duo/workout/internal/repo"
 )
 
-// ExerciseHandler expõe a biblioteca de exercícios (P1.3): a global da Lyfta
+// ExerciseHandler expõe a biblioteca de exercícios (P1.3): a global do DÜO
 // e a do tenant no mesmo endpoint, resolvidas no locale do usuário (ADR-010,
 // ADR-011 §2).
 type ExerciseHandler struct {

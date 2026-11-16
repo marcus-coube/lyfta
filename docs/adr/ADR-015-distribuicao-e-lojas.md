@@ -7,7 +7,7 @@
 
 O cliente valida **APK e IPA** antes de qualquer publicação. Nessa janela o nome
 do produto ainda pode mudar, e com ele o identificador do app
-(`applicationId` Android / bundle ID iOS — hoje `br.com.lyfta.lyfta`).
+(`applicationId` Android / bundle ID iOS — hoje `br.com.duotraining.duo`).
 
 O identificador é de mão única depois do primeiro upload:
 
@@ -23,7 +23,7 @@ lugar nenhum.
 
 Some-se o alvo primeiro do produto: a web (ADR-005) e o app instalável cobrem o
 mesmo escopo, e o aluno chega ao produto sem depender de loja. Publicar não é
-pré-requisito de ninguém usar o Lyfta.
+pré-requisito de ninguém usar o DÜO.
 
 ## Decisão
 
@@ -35,7 +35,7 @@ pré-requisito de ninguém usar o Lyfta.
    pipeline de release e nunca automático no CI. O release padrão entrega a web
    no ar e os artefatos assinados (APK/AAB/IPA) — a loja é um destino a mais
    para esses mesmos artefatos, decidido caso a caso.
-3. **O identificador é provisório até o aceite.** `br.com.lyfta.lyfta` só
+3. **O identificador é provisório até o aceite.** `br.com.duotraining.duo` só
    congela no primeiro upload em loja; antes disso trocá-lo é trabalho de
    minutos e está documentado em `app/README.md` (§ Firebase).
 4. **Antes do primeiro upload**, e só então: nome/marca fechados, ícone e

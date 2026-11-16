@@ -94,7 +94,7 @@ bolha de mensagem e do form de check-in.
 
 (o agente anota aqui descobertas, dívidas e desvios aprovados)
 
-**P3.1:** quinto microserviço, `comms` (8084, banco `lyfta_comms`) — bootstrap
+**P3.1:** quinto microserviço, `comms` (8084, banco `duo_comms`) — bootstrap
 idêntico ao assessment (chi+pgxpool+slog, JWT EdDSA validado com a chave pública
 do identity, `/healthz` + `/v1/whoami`, `internal/security`/`internal/repo`
 duplicados, nenhum import entre serviços, ADR-013 §2). 6 migrations com as 5
@@ -333,7 +333,7 @@ checando se já passou da hora de disparo (18h, `time.Location` de
 memória — evita bater no workout a cada tick pelo resto do dia depois do
 primeiro sweep bem-sucedido). Duas camadas de proteção contra duplicata,
 cada uma cobrindo um cenário diferente: `pg_try_advisory_lock` (não
-bloqueante, `hashtext('lyfta_comms_pending_workout_job')::bigint`) evita
+bloqueante, `hashtext('duo_comms_pending_workout_job')::bigint`) evita
 que duas instâncias do comms varram ao mesmo tempo; dedupe por
 `notification_log` (`NotificationLogRepo.ExistsInRange`, filtro por faixa
 `[since, until)` sobre o índice simples da P3.1 — o mesmo motivo de não dar
@@ -490,7 +490,7 @@ Flutter desde a versão pinada deste projeto.
 
 **Push** (`core/push/`, P3.5 §4): `PushService` (permissão, token, upsert em
 `POST /v1/devices`, exibição em primeiro plano via `flutter_local_notifications`
-— canal `lyfta_push`, separado do `lyfta_rest_timer` do P1.7 — e deep link de
+— canal `duo_push`, separado do `duo_rest_timer` do P1.7 — e deep link de
 quem tocou a notificação) e `PushProvider` (nasce lendo o `GoRouter` para
 saber aonde navegar, se registra sozinho a cada sessão autenticada, mesmo
 padrão de autogestão do `commsSocketProvider`). `device_locale.dart` resolve

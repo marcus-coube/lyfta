@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/identity/internal/domain"
+	"github.com/marcus-coube/duo/identity/internal/domain"
 )
 
 // StudentRepo cuida do que é só do aluno no identity (P5.2): a ficha de

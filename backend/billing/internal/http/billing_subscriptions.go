@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/billing/internal/repo"
-	"github.com/marcus-coube/lyfta/billing/internal/studentdir"
+	"github.com/marcus-coube/duo/billing/internal/repo"
+	"github.com/marcus-coube/duo/billing/internal/studentdir"
 )
 
 func subscriptionError(err error) (APIError, bool) {

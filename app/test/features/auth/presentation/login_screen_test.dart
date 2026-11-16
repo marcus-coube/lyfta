@@ -5,12 +5,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_secure_storage_platform_interface/flutter_secure_storage_platform_interface.dart'
     hide Options;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/auth/auth_controller.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/http/token_storage.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/core/router/app_router.dart';
-import 'package:lyfta/features/dashboard/data/dashboard_repository.dart';
+import 'package:duo/core/auth/auth_controller.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/http/token_storage.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/core/router/app_router.dart';
+import 'package:duo/features/dashboard/data/dashboard_repository.dart';
 
 import '../../dashboard/dashboard_fakes.dart';
 
@@ -59,7 +59,7 @@ class _FakeSecureStoragePlatform extends FlutterSecureStoragePlatform {
 }
 
 /// Adapter fake do `identity`: `/v1/auth/login` aceita
-/// `test@lyfta.app` / `senha-correta`, qualquer outra credencial responde
+/// `test@duotraining.app` / `senha-correta`, qualquer outra credencial responde
 /// `401 invalid_credentials`.
 class _FakeIdentityAdapter implements HttpClientAdapter {
   @override
@@ -73,7 +73,7 @@ class _FakeIdentityAdapter implements HttpClientAdapter {
   ) async {
     if (options.path.contains('/v1/auth/login')) {
       final data = options.data as Map<dynamic, dynamic>;
-      if (data['email'] == 'test@lyfta.app' && data['password'] == 'senha-correta') {
+      if (data['email'] == 'test@duotraining.app' && data['password'] == 'senha-correta') {
         return ResponseBody.fromString(
           '{"access_token":"access","refresh_token":"refresh",'
           '"tenant_id":"tenant-1","user_id":"user-1","roles":["coach"]}',
@@ -136,7 +136,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final l10n = lookupAppLocalizations(const Locale('pt'));
-    await tester.enterText(find.byType(TextField).at(0), 'test@lyfta.app');
+    await tester.enterText(find.byType(TextField).at(0), 'test@duotraining.app');
     await tester.enterText(find.byType(TextField).at(1), 'senha-correta');
     await tester.tap(find.text(l10n.loginSubmit));
     await tester.pumpAndSettle();
@@ -149,7 +149,7 @@ void main() {
     await tester.pumpWidget(_app(container));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField).at(0), 'test@lyfta.app');
+    await tester.enterText(find.byType(TextField).at(0), 'test@duotraining.app');
     await tester.enterText(find.byType(TextField).at(1), 'senha-errada');
     final l10n = lookupAppLocalizations(const Locale('pt'));
     await tester.tap(find.text(l10n.loginSubmit));

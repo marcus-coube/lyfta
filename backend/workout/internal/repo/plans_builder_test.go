@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/marcus-coube/lyfta/workout/internal/domain"
-	"github.com/marcus-coube/lyfta/workout/internal/repo"
+	"github.com/marcus-coube/duo/workout/internal/domain"
+	"github.com/marcus-coube/duo/workout/internal/repo"
 )
 
 // draftDays monta uma árvore mínima porém completa (dia → bloco → exercício →

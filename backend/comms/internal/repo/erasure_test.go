@@ -6,7 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/repo"
 )
 
 // TestEraseUserAnonymizesMessagesAndCheckins cobre a exclusão de conta

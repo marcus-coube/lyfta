@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/comms/internal/domain"
+	"github.com/marcus-coube/duo/comms/internal/domain"
 )
 
 // Retenção da mídia de execução (ADR-020 §3).

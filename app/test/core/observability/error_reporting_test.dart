@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/config/app_config.dart';
-import 'package:lyfta/core/observability/error_reporting.dart';
+import 'package:duo/core/config/app_config.dart';
+import 'package:duo/core/observability/error_reporting.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 void main() {

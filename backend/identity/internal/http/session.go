@@ -7,9 +7,9 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/marcus-coube/lyfta/identity/internal/domain"
-	"github.com/marcus-coube/lyfta/identity/internal/repo"
-	"github.com/marcus-coube/lyfta/identity/internal/security"
+	"github.com/marcus-coube/duo/identity/internal/domain"
+	"github.com/marcus-coube/duo/identity/internal/repo"
+	"github.com/marcus-coube/duo/identity/internal/security"
 )
 
 // tokenResponse é o corpo devolvido por signup/login/refresh/accept

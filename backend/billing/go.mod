@@ -1,4 +1,4 @@
-module github.com/marcus-coube/lyfta/billing
+module github.com/marcus-coube/duo/billing
 
 go 1.26.4
 

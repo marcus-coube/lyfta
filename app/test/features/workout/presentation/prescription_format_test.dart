@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/workout/presentation/prescription_format.dart';
-import 'package:lyfta/shared/domain/plan.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/features/workout/presentation/prescription_format.dart';
+import 'package:duo/shared/domain/plan.dart';
 
 void main() {
   final l10n = lookupAppLocalizations(const Locale('pt'));

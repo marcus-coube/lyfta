@@ -16,10 +16,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 
-	"github.com/marcus-coube/lyfta/workout/internal/media"
+	"github.com/marcus-coube/duo/workout/internal/media"
 )
 
-const testBucket = "lyfta-media"
+const testBucket = "duo-media"
 
 // storageConfig aponta para o MinIO do docker-compose (backend/docker-compose.yml).
 // As credenciais são as de dev do próprio compose.
@@ -184,7 +184,7 @@ func TestPresignPutRejectsBeforeSigning(t *testing.T) {
 // em vez de um GET assinado que expira.
 func TestReadURLUsesPublicBaseWhenConfigured(t *testing.T) {
 	cfg := storageConfig()
-	cfg.PublicBaseURL = "https://media.lyfta.app/"
+	cfg.PublicBaseURL = "https://media.duotraining.app/"
 	presigner, err := media.NewPresigner(cfg)
 	if err != nil {
 		t.Fatalf("criar presigner: %v", err)
@@ -194,7 +194,7 @@ func TestReadURLUsesPublicBaseWhenConfigured(t *testing.T) {
 	if err != nil {
 		t.Fatalf("montar url pública: %v", err)
 	}
-	if url != "https://media.lyfta.app/tenants/t1/exercises/abc.gif" {
+	if url != "https://media.duotraining.app/tenants/t1/exercises/abc.gif" {
 		t.Fatalf("url pública veio errada: %q", url)
 	}
 	if strings.Contains(url, "X-Amz-Signature") {

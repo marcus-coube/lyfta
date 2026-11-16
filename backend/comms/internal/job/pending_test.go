@@ -13,23 +13,23 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/comms/internal/coachlink"
-	"github.com/marcus-coube/lyfta/comms/internal/domain"
-	"github.com/marcus-coube/lyfta/comms/internal/fcm"
-	"github.com/marcus-coube/lyfta/comms/internal/job"
-	"github.com/marcus-coube/lyfta/comms/internal/push"
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
-	"github.com/marcus-coube/lyfta/comms/internal/tenantclient"
-	"github.com/marcus-coube/lyfta/comms/internal/workoutclient"
+	"github.com/marcus-coube/duo/comms/internal/coachlink"
+	"github.com/marcus-coube/duo/comms/internal/domain"
+	"github.com/marcus-coube/duo/comms/internal/fcm"
+	"github.com/marcus-coube/duo/comms/internal/job"
+	"github.com/marcus-coube/duo/comms/internal/push"
+	"github.com/marcus-coube/duo/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/tenantclient"
+	"github.com/marcus-coube/duo/comms/internal/workoutclient"
 )
 
-// testPool abre um pool contra o Postgres de dev (lyfta_comms) — mesmo
+// testPool abre um pool contra o Postgres de dev (duo_comms) — mesmo
 // padrão dos demais testes de integração do serviço.
 func testPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		dsn = "postgres://lyfta_app:lyfta_app_dev@localhost:5432/lyfta_comms?sslmode=disable"
+		dsn = "postgres://duo_app:duo_app_dev@localhost:5432/duo_comms?sslmode=disable"
 	}
 	ctx := context.Background()
 	pool, err := repo.NewPool(ctx, dsn)

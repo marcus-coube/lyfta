@@ -1,4 +1,4 @@
-module github.com/marcus-coube/lyfta/identity
+module github.com/marcus-coube/duo/identity
 
 go 1.26.4
 

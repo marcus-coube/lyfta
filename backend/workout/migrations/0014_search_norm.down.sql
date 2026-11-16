@@ -1,1 +1,1 @@
-DROP FUNCTION IF EXISTS lyfta_search_norm(TEXT);
+DROP FUNCTION IF EXISTS duo_search_norm(TEXT);

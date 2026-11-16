@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/domain"
+	"github.com/marcus-coube/duo/assessment/internal/domain"
 )
 
 // ProfileRepo dá acesso à anamnese do aluno (P5.3). Toda operação passa por

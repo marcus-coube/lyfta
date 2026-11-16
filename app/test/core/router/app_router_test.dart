@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/auth/auth_controller.dart';
-import 'package:lyfta/core/auth/auth_state.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/core/router/app_router.dart';
-import 'package:lyfta/features/auth/presentation/login_screen.dart';
-import 'package:lyfta/features/auth/presentation/splash_screen.dart';
-import 'package:lyfta/features/dashboard/data/dashboard_repository.dart';
-import 'package:lyfta/features/students/presentation/students_controller.dart';
-import 'package:lyfta/features/workout/data/sync_worker.dart';
-import 'package:lyfta/features/workout/data/workout_repository.dart';
-import 'package:lyfta/features/workout/domain/today.dart';
-import 'package:lyfta/features/workout/presentation/session_controller.dart';
-import 'package:lyfta/features/workout/presentation/today_controller.dart';
+import 'package:duo/core/auth/auth_controller.dart';
+import 'package:duo/core/auth/auth_state.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/core/router/app_router.dart';
+import 'package:duo/features/auth/presentation/login_screen.dart';
+import 'package:duo/features/auth/presentation/splash_screen.dart';
+import 'package:duo/features/dashboard/data/dashboard_repository.dart';
+import 'package:duo/features/students/presentation/students_controller.dart';
+import 'package:duo/features/workout/data/sync_worker.dart';
+import 'package:duo/features/workout/data/workout_repository.dart';
+import 'package:duo/features/workout/domain/today.dart';
+import 'package:duo/features/workout/presentation/session_controller.dart';
+import 'package:duo/features/workout/presentation/today_controller.dart';
 
 import '../../features/dashboard/dashboard_fakes.dart';
 

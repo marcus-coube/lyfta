@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/billing/internal/repo"
+	"github.com/marcus-coube/duo/billing/internal/repo"
 )
 
 func invoiceError(err error) (APIError, bool) {

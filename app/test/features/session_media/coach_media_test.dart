@@ -2,13 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/core/push/push_deep_link.dart';
-import 'package:lyfta/features/session_media/data/session_media_repository.dart';
-import 'package:lyfta/features/session_media/domain/session_media.dart';
-import 'package:lyfta/features/session_media/presentation/coach_media_viewer.dart';
-import 'package:lyfta/features/session_media/presentation/coach_media_widgets.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/core/push/push_deep_link.dart';
+import 'package:duo/features/session_media/data/session_media_repository.dart';
+import 'package:duo/features/session_media/domain/session_media.dart';
+import 'package:duo/features/session_media/presentation/coach_media_viewer.dart';
+import 'package:duo/features/session_media/presentation/coach_media_widgets.dart';
 
 SessionMedia _m(
   String id, {

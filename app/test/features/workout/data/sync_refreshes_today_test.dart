@@ -1,14 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/auth/auth_controller.dart';
-import 'package:lyfta/core/auth/auth_state.dart';
-import 'package:lyfta/features/workout/data/local/memory_workout_store.dart';
-import 'package:lyfta/features/workout/data/sync_worker.dart';
-import 'package:lyfta/features/workout/data/workout_api.dart';
-import 'package:lyfta/features/workout/data/workout_repository.dart';
-import 'package:lyfta/features/workout/domain/today.dart';
-import 'package:lyfta/features/workout/presentation/today_controller.dart';
+import 'package:duo/core/auth/auth_controller.dart';
+import 'package:duo/core/auth/auth_state.dart';
+import 'package:duo/features/workout/data/local/memory_workout_store.dart';
+import 'package:duo/features/workout/data/sync_worker.dart';
+import 'package:duo/features/workout/data/workout_api.dart';
+import 'package:duo/features/workout/data/workout_repository.dart';
+import 'package:duo/features/workout/domain/today.dart';
+import 'package:duo/features/workout/presentation/today_controller.dart';
 
 /// Payload de `/v1/me/today` com o dia [label] — só o que a tela lê.
 Map<String, dynamic> _todayPayload(String label) => {

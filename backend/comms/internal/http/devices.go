@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/marcus-coube/lyfta/comms/internal/domain"
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/domain"
+	"github.com/marcus-coube/duo/comms/internal/repo"
 )
 
 // DeviceHandler expõe o registro de token de push (P3.4, passo 1): o app

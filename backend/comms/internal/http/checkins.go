@@ -12,10 +12,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 
-	"github.com/marcus-coube/lyfta/comms/internal/domain"
-	"github.com/marcus-coube/lyfta/comms/internal/pubsub"
-	"github.com/marcus-coube/lyfta/comms/internal/push"
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/domain"
+	"github.com/marcus-coube/duo/comms/internal/pubsub"
+	"github.com/marcus-coube/duo/comms/internal/push"
+	"github.com/marcus-coube/duo/comms/internal/repo"
 )
 
 // maxCheckinNoteLen é o teto de `pain_notes`/`comment` — mesmo critério do

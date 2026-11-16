@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/features/workout/domain/today.dart';
+import 'package:duo/features/workout/domain/today.dart';
 
 /// Payload mínimo de `/v1/me/today` com o rodízio (P1.8).
 Map<String, dynamic> _payload({

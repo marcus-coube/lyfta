@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/identity/internal/domain"
+	"github.com/marcus-coube/duo/identity/internal/domain"
 )
 
 // TenantRepo dá acesso à tabela global tenants (sem RLS — ADR-001 §5).

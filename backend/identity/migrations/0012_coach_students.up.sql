@@ -19,7 +19,7 @@ CREATE POLICY tenant_isolation ON coach_students
     USING (tenant_id = current_setting('app.tenant_id', true)::uuid)
     WITH CHECK (tenant_id = current_setting('app.tenant_id', true)::uuid);
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON coach_students TO lyfta_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON coach_students TO duo_app;
 
 -- Backfill (roda como superusuário, então ignora RLS): todo aluno existente
 -- ganha o coach que o convidou, se ainda for um usuário ativo coach|owner;

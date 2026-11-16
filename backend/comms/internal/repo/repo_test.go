@@ -9,10 +9,10 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/repo"
 )
 
-// testPool abre um pool contra o Postgres de dev (lyfta_comms, migrations já
+// testPool abre um pool contra o Postgres de dev (duo_comms, migrations já
 // aplicadas). Sem DATABASE_URL configurada explicitamente, usa o mesmo
 // default documentado em backend/comms/.env.example. Fora do CI, pula o
 // teste se o banco não estiver acessível — mantém `go test ./...` rodável
@@ -21,9 +21,9 @@ func testPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		// lyfta_app: role sem BYPASSRLS (migration 0006_app_role) — RLS não
+		// duo_app: role sem BYPASSRLS (migration 0006_app_role) — RLS não
 		// tem efeito nenhum se o teste conectar como superusuário (postgres).
-		dsn = "postgres://lyfta_app:lyfta_app_dev@localhost:5432/lyfta_comms?sslmode=disable"
+		dsn = "postgres://duo_app:duo_app_dev@localhost:5432/duo_comms?sslmode=disable"
 	}
 	ctx := context.Background()
 	pool, err := repo.NewPool(ctx, dsn)

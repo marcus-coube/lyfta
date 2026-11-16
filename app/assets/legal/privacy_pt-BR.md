@@ -1,10 +1,10 @@
-Política de Privacidade do Lyfta
-Versão 2026-11-v3
+Política de Privacidade do DÜO
+Versão 2026-11-v4
 
-Esta política explica quais dados o Lyfta trata, para quê, e quais são os seus direitos conforme a Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018).
+Esta política explica quais dados o DÜO trata, para quê, e quais são os seus direitos conforme a Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018).
 
 1. Quem trata seus dados
-O Lyfta fornece a plataforma e a academia, estúdio ou personal que convidou você usa a plataforma para acompanhar seu treino. Para contato sobre privacidade: privacidade@lyfta.app.
+O DÜO fornece a plataforma e a academia, estúdio ou personal que convidou você usa a plataforma para acompanhar seu treino. Para contato sobre privacidade: privacidade@duotraining.app.
 
 2. Quais dados tratamos
 - Identificação: nome, e-mail e senha (guardada apenas como hash).
@@ -30,7 +30,7 @@ Comunicação criptografada, fotos e vídeos em armazenamento privado com links 
 Enquanto sua conta existir, exceto a mídia de execução: ela é apagada 7 dias depois que seu professor a visualiza ou responde e, mesmo que ninguém a veja, 30 dias depois do envio; você pode retirá-la antes, a qualquer momento. Ao excluir a conta: dados de saúde, fotos e vídeos são apagados definitivamente; treinos executados e mensagens são anonimizados e deixam de se ligar a você; o registro dos seus consentimentos é mantido como prova, sem dados pessoais. Os registros financeiros (mensalidades e pagamentos) continuam guardando o seu nome e e-mail após a exclusão, por obrigação legal de guarda e para o exercício regular de direitos (LGPD, art. 7º, II e VI, e art. 16, I); só a organização que emitiu as faturas os vê. Enquanto houver mensalidade em aberto ou vencida, a conta não pode ser excluída: é preciso quitar com a organização antes.
 
 8. Seus direitos (LGPD, art. 18)
-Confirmação e acesso aos dados, correção, eliminação, revogação do consentimento e informação sobre compartilhamento. A exclusão da conta está em Conta > Excluir minha conta; para os demais, escreva para privacidade@lyfta.app.
+Confirmação e acesso aos dados, correção, eliminação, revogação do consentimento e informação sobre compartilhamento. A exclusão da conta está em Conta > Excluir minha conta; para os demais, escreva para privacidade@duotraining.app.
 
 9. Alterações
 Quando esta política mudar, a versão acima muda e pediremos seu aceite novamente.

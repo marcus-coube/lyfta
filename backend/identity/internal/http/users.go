@@ -13,9 +13,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/identity/internal/domain"
-	"github.com/marcus-coube/lyfta/identity/internal/repo"
-	"github.com/marcus-coube/lyfta/identity/internal/security"
+	"github.com/marcus-coube/duo/identity/internal/domain"
+	"github.com/marcus-coube/duo/identity/internal/repo"
+	"github.com/marcus-coube/duo/identity/internal/security"
 )
 
 // UserHandler expõe a listagem de usuários do tenant (P1.6): é dela que a

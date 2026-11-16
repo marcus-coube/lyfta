@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/agenda/domain/agenda_day.dart';
-import 'package:lyfta/features/agenda/presentation/widgets/agenda_day_cell.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/features/agenda/domain/agenda_day.dart';
+import 'package:duo/features/agenda/presentation/widgets/agenda_day_cell.dart';
 
 Widget _host(Widget child) {
   return MaterialApp(

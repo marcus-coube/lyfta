@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:lyfta/features/billing/data/billing_repository.dart';
-import 'package:lyfta/features/billing/domain/billing_models.dart';
+import 'package:duo/features/billing/data/billing_repository.dart';
+import 'package:duo/features/billing/domain/billing_models.dart';
 
 /// `billing` em memória para os testes de widget: guarda o que o app mandou e
 /// devolve o que o teste configurou. Sem rede.

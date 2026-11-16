@@ -2,14 +2,14 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/auth/auth_controller.dart';
-import 'package:lyfta/core/auth/auth_state.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/http/api_exception.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/account/data/account_repository.dart';
-import 'package:lyfta/features/account/data/tenant_repository.dart';
-import 'package:lyfta/features/account/presentation/account_screen.dart';
+import 'package:duo/core/auth/auth_controller.dart';
+import 'package:duo/core/auth/auth_state.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/http/api_exception.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/features/account/data/account_repository.dart';
+import 'package:duo/features/account/data/tenant_repository.dart';
+import 'package:duo/features/account/presentation/account_screen.dart';
 
 class _OwnerAuth extends AuthController {
   _OwnerAuth({this.owner = true});

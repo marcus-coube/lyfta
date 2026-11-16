@@ -6,10 +6,10 @@ Regras de uso: `docs/guidelines/flutter.md`.
 ## Identidade
 
 - **Voz**: atlética, direta, alto contraste. Dark é o tema de assinatura; light existe para o contexto web/administrativo.
-- **Cor**: grafite profundo (escala *ink*) + um único destaque — **Lyfta Lime `#C8F135`**. Sem segunda cor de marca; semânticas (success/warning/danger/info) só para estado.
-- **Tipografia**: Manrope. Títulos w700–800 com tracking negativo; corpo w500. Números de treino (carga/séries/timer) com algarismos tabulares (`LyType.numeric`).
+- **Cor**: grafite profundo (escala *ink*, fundo `#0B0D0F`, elevada `#1F2327`, texto `#F2F4F0`) + um único destaque — **verde-limão DÜO `#C8F135`**. Sem segunda cor de marca; semânticas (success/warning/danger/info) só para estado.
+- **Tipografia**: Manrope 800 nos títulos (tracking negativo), 400 no texto; JetBrains Mono nos rótulos pequenos (`LyType.caption`/`LyType.mono`: chips, legendas, metadados). Números de treino (carga/séries/timer) com algarismos tabulares (`LyType.numeric`).
 - **Forma**: cantos suaves (inputs/botões 12, cards 16), sombras discretas; no dark, elevação = cor de superfície, não sombra. CTA primário pode ter glow lime.
-- **Logo**: símbolo "anilha" (3 traços ink sobre quadrado lime arredondado) + wordmark `lyfta` minúsculo (`LyLogo`).
+- **Marca** (ADR-021): letreiro "DÜO" com o Ü em verde-limão e pontos quadrados (`LyLogo`, `tagline: true` acrescenta "TRAINING"); ícone do app = Ü escuro sobre quadrado verde-limão (`LyAppIcon`, `LyLogo(wordmark: false)`).
 
 ## Temas
 
@@ -28,6 +28,6 @@ Light e Dark (`LyTheme.light()` / `LyTheme.dark()`), tokens via `ThemeExtension`
 
 ## Componentes
 
-Prontos: `LyButton` (primary/secondary/ghost, loading), `LyTextField` (label + toggle senha), `LyCard`, `LyLogo`.
+Prontos: `LyChip`, `LyButton` (primary/secondary/ghost, loading), `LyTextField` (label + toggle senha), `LyCard`, `LyLogo`.
 
 Planejados: Charts, Dialogs, WorkoutCard, ExerciseTile, RestTimer.

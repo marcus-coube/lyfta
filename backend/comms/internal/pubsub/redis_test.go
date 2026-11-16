@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/marcus-coube/lyfta/comms/internal/pubsub"
+	"github.com/marcus-coube/duo/comms/internal/pubsub"
 )
 
 // testRedisURL usa o mesmo default documentado em backend/.env.example. Fora

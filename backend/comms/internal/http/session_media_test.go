@@ -17,15 +17,15 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/comms/internal/domain"
-	"github.com/marcus-coube/lyfta/comms/internal/fcm"
-	chttp "github.com/marcus-coube/lyfta/comms/internal/http"
-	"github.com/marcus-coube/lyfta/comms/internal/media"
-	"github.com/marcus-coube/lyfta/comms/internal/pubsub"
-	"github.com/marcus-coube/lyfta/comms/internal/push"
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
-	"github.com/marcus-coube/lyfta/comms/internal/security"
-	"github.com/marcus-coube/lyfta/comms/internal/ws"
+	"github.com/marcus-coube/duo/comms/internal/domain"
+	"github.com/marcus-coube/duo/comms/internal/fcm"
+	chttp "github.com/marcus-coube/duo/comms/internal/http"
+	"github.com/marcus-coube/duo/comms/internal/media"
+	"github.com/marcus-coube/duo/comms/internal/pubsub"
+	"github.com/marcus-coube/duo/comms/internal/push"
+	"github.com/marcus-coube/duo/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/security"
+	"github.com/marcus-coube/duo/comms/internal/ws"
 )
 
 // Aceite do P12.1 pela API: sobe o roteador real (Postgres + Redis de dev) com

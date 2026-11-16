@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/http/api_exception.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/core/realtime/comms_socket.dart';
-import 'package:lyfta/core/realtime/comms_socket_provider.dart';
-import 'package:lyfta/features/checkin/data/checkin_repository.dart';
-import 'package:lyfta/features/checkin/data/coach_session_repository.dart';
-import 'package:lyfta/features/checkin/domain/checkin.dart';
-import 'package:lyfta/features/checkin/domain/coach_session.dart';
-import 'package:lyfta/features/checkin/presentation/coach_checkins_tab.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/http/api_exception.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/core/realtime/comms_socket.dart';
+import 'package:duo/core/realtime/comms_socket_provider.dart';
+import 'package:duo/features/checkin/data/checkin_repository.dart';
+import 'package:duo/features/checkin/data/coach_session_repository.dart';
+import 'package:duo/features/checkin/domain/checkin.dart';
+import 'package:duo/features/checkin/domain/coach_session.dart';
+import 'package:duo/features/checkin/presentation/coach_checkins_tab.dart';
 
 WorkoutCheckin _checkin(int n) => WorkoutCheckin(
       id: 'c$n',

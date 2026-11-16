@@ -23,4 +23,4 @@ CREATE POLICY tenant_isolation ON consents
     USING (tenant_id = current_setting('app.tenant_id', true)::uuid)
     WITH CHECK (tenant_id = current_setting('app.tenant_id', true)::uuid);
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON consents TO lyfta_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON consents TO duo_app;

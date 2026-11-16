@@ -1,6 +1,6 @@
 {
   "@@locale": "pt",
-  "appTitle": "Lyfta",
+  "appTitle": "DÜO",
   "@appTitle": {
     "description": "Nome do app, exibido no título da janela/aba."
   },
@@ -95,15 +95,15 @@
   "libraryFilterMuscle": "Músculo",
   "libraryFilterEquipment": "Equipamento",
   "libraryFilterAll": "Todos",
-  "libraryGlobalBadge": "Lyfta",
+  "libraryGlobalBadge": "DÜO",
   "@libraryGlobalBadge": {
-    "description": "Selo do exercício da biblioteca global da Lyfta."
+    "description": "Selo do exercício da biblioteca global do DÜO."
   },
   "libraryEmpty": "Nenhum exercício encontrado.",
   "exerciseFormNewTitle": "Novo exercício",
   "exerciseFormEditTitle": "Editar exercício",
   "exerciseFormDuplicateTitle": "Duplicar exercício",
-  "exerciseFormDuplicateHint": "Exercícios da Lyfta não podem ser editados. Salvar cria uma cópia na biblioteca da sua academia.",
+  "exerciseFormDuplicateHint": "Exercícios do DÜO não podem ser editados. Salvar cria uma cópia na biblioteca da sua academia.",
   "exerciseFormNameLabel": "Nome",
   "exerciseFormNameHint": "Supino reto com barra",
   "exerciseFormNameRequired": "Informe o nome do exercício.",
@@ -177,7 +177,7 @@
   },
   "errorNotFound": "Não encontramos o que você procurava.",
   "errorInvalidCursor": "A lista mudou. Recarregue a página.",
-  "errorExerciseIsGlobal": "Exercícios da Lyfta não podem ser editados. Duplique para criar o seu.",
+  "errorExerciseIsGlobal": "Exercícios do DÜO não podem ser editados. Duplique para criar o seu.",
   "errorUnsupportedMedia": "Formato não aceito. Use GIF, MP4 ou WebM.",
   "errorFileTooLarge": "Arquivo grande demais. O limite é 50 MB.",
   "errorPlanNoDays": "Adicione ao menos um dia antes de publicar.",
@@ -800,7 +800,7 @@
   "agendaRestTitle": "Dia de descanso",
   "agendaRestHint": "Nenhum treino registrado neste dia.",
   "consentTitle": "Antes de continuar",
-  "consentSubtitle": "Para usar o Lyfta precisamos do seu consentimento. Você decide sobre cada item e pode mudar de ideia depois, em Conta.",
+  "consentSubtitle": "Para usar o DÜO precisamos do seu consentimento. Você decide sobre cada item e pode mudar de ideia depois, em Conta.",
   "consentTermsAccept": "Li e aceito os Termos de Uso e a Política de Privacidade",
   "consentReadTerms": "Ler os Termos de Uso",
   "consentReadPrivacy": "Ler a Política de Privacidade",

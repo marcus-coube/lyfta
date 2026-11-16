@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/identity/internal/domain"
+	"github.com/marcus-coube/duo/identity/internal/domain"
 )
 
 // InvitationTTL é a validade do token de convite (plano P0.4: 7 dias).
@@ -76,7 +76,7 @@ func (r *InvitationRepo) FindByID(ctx context.Context, tenantID, id string) (dom
 
 // FindValidByTokenHash busca um convite válido (não expirado, não aceito)
 // pelo hash do token — usado no accept, que é público e ainda não sabe o
-// tenant_id, então a busca roda como lyfta_app sem app.tenant_id setado.
+// tenant_id, então a busca roda como duo_app sem app.tenant_id setado.
 // invitations não tem policy que permita isso sob RLS comum; por isso usamos
 // a mesma estratégia de find_tenants_by_email: uma função SECURITY DEFINER
 // (migration 0009), de superfície mínima (só pelo hash exato do token).

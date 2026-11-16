@@ -67,7 +67,7 @@
 
 - Planos por nº de clientes: entrada **US$9/mês**, intermediário **US$23/mês**, topo ~**US$248/mês**; recursos AI e automações só nos pagos. Trial 30 dias.
 
-## Ideias para o Lyfta
+## Ideias para o DÜO
 
 1. **Dashboard por exceção + auto-tags** ("quem precisa de atenção hoje") em vez de só listas — encaixa no nosso Dashboard MVP (ativos/inadimplentes/treinos de hoje).
 2. **Funil Prospect → Pending → Coaching** — CRM leve embutido; nosso cadastro de aluno pode nascer com estados.

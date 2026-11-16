@@ -23,7 +23,7 @@ Future<void> main() async {
 
 Future<void> _start() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: LyftaApp()));
+  runApp(const ProviderScope(child: DuoApp()));
   // Push (P3.4/P3.5 §4): só mobile — web fica com o badge in-app da aba Chat
   // no MVP (ADR-012 §2, web push é 3.0). Adiado para depois do primeiro
   // frame (P4.2 §1, "app leve"): `Firebase.initializeApp()` faz I/O nativo
@@ -51,8 +51,8 @@ Future<void> _initFirebase() async {
   }
 }
 
-class LyftaApp extends ConsumerWidget {
-  const LyftaApp({super.key});
+class DuoApp extends ConsumerWidget {
+  const DuoApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

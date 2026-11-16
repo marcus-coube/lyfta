@@ -8,8 +8,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/identity/internal/domain"
-	"github.com/marcus-coube/lyfta/identity/internal/repo"
+	"github.com/marcus-coube/duo/identity/internal/domain"
+	"github.com/marcus-coube/duo/identity/internal/repo"
 )
 
 func newTenantWithOwner(t *testing.T, pool *pgxpool.Pool, label string) (tenantID, ownerID string) {
@@ -79,7 +79,7 @@ func TestBackfillCoachLinks(t *testing.T) {
 
 	dsn := os.Getenv("SUPERUSER_DATABASE_URL")
 	if dsn == "" {
-		dsn = "postgres://postgres@localhost:5432/lyfta_identity?sslmode=disable"
+		dsn = "postgres://postgres@localhost:5432/duo_identity?sslmode=disable"
 	}
 	super, err := repo.NewPool(ctx, dsn)
 	if err != nil {

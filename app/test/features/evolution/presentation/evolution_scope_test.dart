@@ -2,22 +2,22 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/http/api_exception.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/core/realtime/comms_socket.dart';
-import 'package:lyfta/core/realtime/comms_socket_provider.dart';
-import 'package:lyfta/features/checkin/data/checkin_repository.dart';
-import 'package:lyfta/features/checkin/domain/checkin.dart';
-import 'package:lyfta/features/evolution/data/evolution_repository.dart';
-import 'package:lyfta/features/evolution/domain/bioimpedance.dart';
-import 'package:lyfta/features/evolution/domain/evolution_scope.dart';
-import 'package:lyfta/features/evolution/domain/evolution_summary.dart';
-import 'package:lyfta/features/evolution/domain/exercise_history.dart';
-import 'package:lyfta/features/evolution/domain/measurement.dart';
-import 'package:lyfta/features/evolution/domain/progress_photo.dart';
-import 'package:lyfta/features/evolution/presentation/evolution_screen.dart';
-import 'package:lyfta/features/evolution/widgets/summary_card.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/http/api_exception.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/core/realtime/comms_socket.dart';
+import 'package:duo/core/realtime/comms_socket_provider.dart';
+import 'package:duo/features/checkin/data/checkin_repository.dart';
+import 'package:duo/features/checkin/domain/checkin.dart';
+import 'package:duo/features/evolution/data/evolution_repository.dart';
+import 'package:duo/features/evolution/domain/bioimpedance.dart';
+import 'package:duo/features/evolution/domain/evolution_scope.dart';
+import 'package:duo/features/evolution/domain/evolution_summary.dart';
+import 'package:duo/features/evolution/domain/exercise_history.dart';
+import 'package:duo/features/evolution/domain/measurement.dart';
+import 'package:duo/features/evolution/domain/progress_photo.dart';
+import 'package:duo/features/evolution/presentation/evolution_screen.dart';
+import 'package:duo/features/evolution/widgets/summary_card.dart';
 
 /// Repositório de mentira que anota o escopo de cada chamada — é o que o
 /// teste precisa afirmar: a mesma tela, montada com escopos diferentes,

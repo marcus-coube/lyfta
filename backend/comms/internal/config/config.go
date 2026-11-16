@@ -58,7 +58,7 @@ func Load() (Config, error) {
 		RedisURL:      getEnv("REDIS_URL", "redis://localhost:6379/0"),
 		S3Endpoint:    os.Getenv("S3_ENDPOINT"),
 		S3Region:      getEnv("S3_REGION", "us-east-1"),
-		S3Bucket:      getEnv("S3_BUCKET", "lyfta-media"),
+		S3Bucket:      getEnv("S3_BUCKET", "duo-media"),
 		S3AccessKey:   os.Getenv("S3_ACCESS_KEY"),
 		S3SecretKey:   os.Getenv("S3_SECRET_KEY"),
 		// MinIO e o endpoint de conta do R2 servem bucket por caminho; um S3

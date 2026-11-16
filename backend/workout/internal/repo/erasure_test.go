@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/marcus-coube/lyfta/workout/internal/repo"
+	"github.com/marcus-coube/duo/workout/internal/repo"
 )
 
 // TestEraseUserAnonymizesExecutionsAndUnassignsPlans cobre a exclusão de conta

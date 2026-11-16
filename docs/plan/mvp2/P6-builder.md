@@ -158,7 +158,7 @@ de widget do cartão de superset; treino straight continua idêntico ao 1.0.
   `student_not_found` (vínculo), `not_found`. Como publicar sempre ativa o
   plano, reaplicar num plano só-rascunho o põe na rotação.
 - **Listagem** `GET /v1/templates?q=&status=&cursor=&limit=`: busca sem acento
-  (`lyfta_search_norm`), keyset `(updated_at, id)`, default só ativos
+  (`duo_search_norm`), keyset `(updated_at, id)`, default só ativos
   (`status=archived|all` amplia), com `days_count`/`exercises_count` da última
   versão publicada e `assigned_count`. `recipients` devolve também
   `template_version_no` (o app compara com `source_version_no`) e filtra pelo

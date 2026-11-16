@@ -12,7 +12,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/security"
+	"github.com/marcus-coube/duo/assessment/internal/security"
 )
 
 type ctxKey string

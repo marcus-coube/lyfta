@@ -8,7 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/marcus-coube/lyfta/workout/internal/domain"
+	"github.com/marcus-coube/duo/workout/internal/domain"
 )
 
 // Modelos de treino (ADR-018, P6.1). Um modelo é um workout_plan com
@@ -82,7 +82,7 @@ func (r *PlanRepo) ListTemplates(ctx context.Context, tenantID string, f Templat
 			WHERE p.kind = 'template'
 			  AND ($1 = 'all' OR ($1 = 'archived' AND p.status = 'archived')
 			       OR ($1 = '' AND p.status <> 'archived'))
-			  AND ($2 = '' OR lyfta_search_norm(p.title) LIKE '%' || lyfta_search_norm($2) || '%')
+			  AND ($2 = '' OR duo_search_norm(p.title) LIKE '%' || duo_search_norm($2) || '%')
 			  AND ($3::timestamptz IS NULL OR (p.updated_at, p.id) < ($3::timestamptz, $4::uuid))
 			ORDER BY p.updated_at DESC, p.id DESC
 			LIMIT $5`

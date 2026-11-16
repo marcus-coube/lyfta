@@ -5,7 +5,7 @@
 
 ## Contexto
 
-O Lyfta atende muitos tenants pequenos (personals, studios, academias). As opções eram:
+O DÜO atende muitos tenants pequenos (personals, studios, academias). As opções eram:
 banco por tenant, schema por tenant, ou banco único com discriminador de tenant.
 
 ## Decisão

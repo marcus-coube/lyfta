@@ -10,9 +10,9 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/workout/internal/domain"
-	"github.com/marcus-coube/lyfta/workout/internal/repo"
-	"github.com/marcus-coube/lyfta/workout/internal/security"
+	"github.com/marcus-coube/duo/workout/internal/domain"
+	"github.com/marcus-coube/duo/workout/internal/repo"
+	"github.com/marcus-coube/duo/workout/internal/security"
 )
 
 // Ciclo de vida dos planos do aluno (P6.2): duplicar, arquivar, ativar,

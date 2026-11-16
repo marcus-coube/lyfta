@@ -134,7 +134,7 @@ class _SignupFormState extends ConsumerState<_SignupForm> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const LyLogo(size: 44),
+        const LyLogo(size: 30),
         const SizedBox(height: LySpace.x8),
         Text(l10n.signupTitle, style: LyType.display(c.textPrimary)),
         const SizedBox(height: LySpace.x2),

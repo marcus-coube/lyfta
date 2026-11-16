@@ -3,15 +3,15 @@
 -- entre tenants; N matches -> tela de escolha). Com RLS forçada (ADR-001) e a
 -- policy tenant_isolation de `users`, uma query sem app.tenant_id setado casa
 -- contra current_setting(...) = NULL e não retorna nenhuma linha (validado
--- manualmente: `lyfta_app` sem tenant setado vê 0 linhas mesmo com dados
+-- manualmente: `duo_app` sem tenant setado vê 0 linhas mesmo com dados
 -- existentes) — ou seja, RLS bloqueia o próprio caso de uso que o login
 -- precisa resolver antes da autenticação.
 --
 -- Solução adotada: uma única função SQL, de propriedade do dono das tabelas
--- (não de `lyfta_app`), com SECURITY DEFINER — roda com os privilégios do
+-- (não de `duo_app`), com SECURITY DEFINER — roda com os privilégios do
 -- dono e portanto ignora RLS, mas está estritamente limitada a devolver
 -- (user_id, tenant_id, tenant_name) para um e-mail exato. Nunca expõe
--- password_hash nem qualquer outra coluna. `lyfta_app` recebe apenas EXECUTE
+-- password_hash nem qualquer outra coluna. `duo_app` recebe apenas EXECUTE
 -- nesta função, não SELECT direto sobre `users` fora do tenant setado — o
 -- resto do modelo de RLS continua intacto (ADR-001 §4: RLS é rede de
 -- segurança, o filtro explícito nas demais queries continua obrigatório).
@@ -28,4 +28,4 @@ AS $$
 $$;
 
 REVOKE ALL ON FUNCTION find_tenants_by_email(TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION find_tenants_by_email(TEXT) TO lyfta_app;
+GRANT EXECUTE ON FUNCTION find_tenants_by_email(TEXT) TO duo_app;

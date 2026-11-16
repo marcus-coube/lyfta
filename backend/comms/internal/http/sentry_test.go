@@ -12,7 +12,7 @@ import (
 	"github.com/getsentry/sentry-go"
 	"github.com/go-chi/chi/v5"
 
-	whttp "github.com/marcus-coube/lyfta/comms/internal/http"
+	whttp "github.com/marcus-coube/duo/comms/internal/http"
 )
 
 type captureTransport struct{ events []*sentry.Event }

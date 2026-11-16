@@ -10,7 +10,7 @@
   2. **Automations**: seleciona um **Onboarding Flow** disparado na compra.
   3. **Benefits**: bullets que aparecem na pricing page.
 - No perfil do cliente: card Payments com "All Subscriptions" + "Past Payments".
-- ≠ Lyfta: nosso MVP é conciliação manual de mensalidade (Brasil/PIX); Hubfit não tem controle manual de inadimplência visível — tudo via assinatura Stripe. **O modelo deles não cobre o caso "personal cobra por fora e só registra"** — que é justamente nosso nicho inicial.
+- ≠ DÜO: nosso MVP é conciliação manual de mensalidade (Brasil/PIX); Hubfit não tem controle manual de inadimplência visível — tudo via assinatura Stripe. **O modelo deles não cobre o caso "personal cobra por fora e só registra"** — que é justamente nosso nicho inicial.
 
 ## Automations
 
@@ -41,7 +41,7 @@
 
 - Checklist de ativação "1/5 completed" com progressbar na sidebar: Create account → Install app → **Review a check-in** → **Automate client onboarding** → **Assign a program**.
 - Demo video + Academy + Help articles na mesma página; toda página do app tem link "Learn more" contextual para o help center.
-- 💡 Activation checklist orientada aos "aha moments" do produto — vale copiar no Lyfta (tenant novo: cadastrar aluno → montar treino → atribuir → primeiro treino executado).
+- 💡 Activation checklist orientada aos "aha moments" do produto — vale copiar no DÜO (tenant novo: cadastrar aluno → montar treino → atribuir → primeiro treino executado).
 
 ## Observações gerais de UX
 

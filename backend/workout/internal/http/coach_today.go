@@ -10,7 +10,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/workout/internal/repo"
+	"github.com/marcus-coube/duo/workout/internal/repo"
 )
 
 // StaleAfter é o "sem treinar há 7+ dias" do dashboard (P8.1).

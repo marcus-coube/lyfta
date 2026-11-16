@@ -15,10 +15,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/media"
+	"github.com/marcus-coube/duo/assessment/internal/media"
 )
 
-const testBucket = "lyfta-media"
+const testBucket = "duo-media"
 
 // storageConfig aponta para o MinIO do docker-compose (backend/docker-compose.yml).
 func storageConfig() media.Config {

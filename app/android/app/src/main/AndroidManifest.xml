@@ -12,7 +12,7 @@
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <uses-feature android:name="android.hardware.microphone" android:required="false"/>
     <application
-        android:label="lyfta"
+        android:label="DÜO"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

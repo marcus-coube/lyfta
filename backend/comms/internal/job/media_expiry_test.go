@@ -10,10 +10,10 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/comms/internal/domain"
-	"github.com/marcus-coube/lyfta/comms/internal/job"
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
-	"github.com/marcus-coube/lyfta/comms/internal/tenantclient"
+	"github.com/marcus-coube/duo/comms/internal/domain"
+	"github.com/marcus-coube/duo/comms/internal/job"
+	"github.com/marcus-coube/duo/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/tenantclient"
 )
 
 // fakeStore registra os objetos apagados e pode falhar sob demanda.
@@ -159,11 +159,11 @@ func TestMediaExpiryJobSkipsWhenLockHeld(t *testing.T) {
 	}
 	defer holder.Release()
 	var locked bool
-	if err := holder.QueryRow(ctx, "SELECT pg_try_advisory_lock(hashtext($1)::bigint)", "lyfta_comms_pending_workout_job").Scan(&locked); err != nil || !locked {
+	if err := holder.QueryRow(ctx, "SELECT pg_try_advisory_lock(hashtext($1)::bigint)", "duo_comms_pending_workout_job").Scan(&locked); err != nil || !locked {
 		t.Fatalf("não consegui o lock de teste: %v locked=%v", err, locked)
 	}
 	defer func() {
-		_, _ = holder.Exec(ctx, "SELECT pg_advisory_unlock(hashtext($1)::bigint)", "lyfta_comms_pending_workout_job")
+		_, _ = holder.Exec(ctx, "SELECT pg_advisory_unlock(hashtext($1)::bigint)", "duo_comms_pending_workout_job")
 	}()
 
 	j.Tick(ctx)

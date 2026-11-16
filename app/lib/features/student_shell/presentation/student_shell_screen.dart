@@ -69,7 +69,7 @@ class _StudentShellScreenState extends ConsumerState<StudentShellScreen> {
     ];
 
     return LyShellScaffold(
-      // O título segue a aba, como no shell do professor: "Lyfta" em cima da
+      // O título segue a aba, como no shell do professor: "DÜO" em cima da
       // tela Hoje não diz nada ao aluno.
       title: destinations[_index].label,
       destinations: destinations,

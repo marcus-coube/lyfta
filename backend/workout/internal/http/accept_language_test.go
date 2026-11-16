@@ -3,7 +3,7 @@ package http
 import (
 	"testing"
 
-	"github.com/marcus-coube/lyfta/workout/internal/domain"
+	"github.com/marcus-coube/duo/workout/internal/domain"
 )
 
 func TestAcceptLanguageLocale(t *testing.T) {

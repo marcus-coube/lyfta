@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/features/workout/domain/set_input.dart';
+import 'package:duo/features/workout/domain/set_input.dart';
 
 void main() {
   group('SetInput.parse', () {

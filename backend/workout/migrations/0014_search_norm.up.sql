@@ -5,7 +5,7 @@
 -- exige superusuário para instalar (dev, CI e produção gerenciada), e
 -- unaccent() é STABLE — não indexável sem wrapper. Esta é IMMUTABLE, roda em
 -- qualquer Postgres e cobre o acento que o português usa.
-CREATE OR REPLACE FUNCTION lyfta_search_norm(input TEXT)
+CREATE OR REPLACE FUNCTION duo_search_norm(input TEXT)
 RETURNS TEXT
 LANGUAGE sql
 IMMUTABLE
@@ -21,4 +21,4 @@ $$;
 
 -- A 0013 concedeu EXECUTE nas funções que existiam até ela; esta nasceu
 -- depois.
-GRANT EXECUTE ON FUNCTION lyfta_search_norm(TEXT) TO lyfta_app;
+GRANT EXECUTE ON FUNCTION duo_search_norm(TEXT) TO duo_app;

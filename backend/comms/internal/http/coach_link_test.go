@@ -13,7 +13,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/comms/internal/coachlink"
+	"github.com/marcus-coube/duo/comms/internal/coachlink"
 )
 
 // fakeIdentity serve o M2M de vínculo (ADR-016 §3) a partir de um mapa

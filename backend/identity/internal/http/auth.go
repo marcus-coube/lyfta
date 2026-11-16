@@ -8,9 +8,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/marcus-coube/lyfta/identity/internal/domain"
-	"github.com/marcus-coube/lyfta/identity/internal/repo"
-	"github.com/marcus-coube/lyfta/identity/internal/security"
+	"github.com/marcus-coube/duo/identity/internal/domain"
+	"github.com/marcus-coube/duo/identity/internal/repo"
+	"github.com/marcus-coube/duo/identity/internal/security"
 )
 
 // AuthHandler concentra as dependências dos endpoints de tenants/auth
@@ -241,7 +241,7 @@ var (
 // hash descartável.
 func burnPasswordCheck(password string) {
 	dummyHashOnce.Do(func() {
-		dummyHash, _ = security.HashPassword("lyfta-dummy-password")
+		dummyHash, _ = security.HashPassword("duo-dummy-password")
 	})
 	if dummyHash != "" {
 		_, _ = security.VerifyPassword(password, dummyHash)

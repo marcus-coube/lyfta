@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/domain"
-	"github.com/marcus-coube/lyfta/assessment/internal/repo"
+	"github.com/marcus-coube/duo/assessment/internal/domain"
+	"github.com/marcus-coube/duo/assessment/internal/repo"
 )
 
 func ptr[T any](v T) *T { return &v }

@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/marcus-coube/lyfta/comms/internal/domain"
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/domain"
+	"github.com/marcus-coube/duo/comms/internal/repo"
 )
 
 // TestDeviceTokenUpsertReplacesTokenAndLocale cobre o Aceite do passo 1 da

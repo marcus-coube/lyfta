@@ -20,7 +20,7 @@ licenciar base comercial tem custo recorrente.
    percentual de esforço (`exercise_muscles (exercise_id, muscle_id, effort_pct, role: primary|secondary)`)
    — este mapeamento é o insumo do muscle map e é curado manualmente.
 3. **Dois níveis de biblioteca:**
-   - **Global (Lyfta):** somente leitura para tenants, mantida por nós.
+   - **Global (DÜO):** somente leitura para tenants, mantida por nós.
    - **Do tenant:** coach cria exercícios próprios (com upload de mídia), visíveis só
      no tenant; pode "clonar e ajustar" um exercício global.
 4. Taxonomia mínima: grupo muscular, equipamento, padrão de movimento, nível.

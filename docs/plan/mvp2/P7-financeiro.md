@@ -13,7 +13,7 @@ Depende de: P5.1 (fuso do tenant), P5.2 (status do aluno).
 
 ## - [x] P7.1 Serviço `billing`: bootstrap e schema (Go)
 
-**Objetivo:** sexto serviço (8085, `lyfta_billing`) com o modelo inteiro do ADR-007.
+**Objetivo:** sexto serviço (8085, `duo_billing`) com o modelo inteiro do ADR-007.
 **Passos:**
 1. Bootstrap idêntico ao `assessment` (chi + pgxpool + slog, `security`, `repo`,
    `coachlink`, Sentry, Recover — duplicados, ADR-013 §2), `/healthz`,
@@ -178,7 +178,7 @@ identity (pendente + billing fora do ar) e no billing (idempotência do DELETE).
   `coachlink` já vem no pacote, sem ser ligado ao router (a API é a P7.2).
 - Migrations 0001–0004 (up/down/up verificado): customers+plans, subscriptions
   +invoices (trigger de fatura paga imutável), payments (trigger append-only)
-  +`payment_provider_events`, role `lyfta_app`. RLS forçada, `tenant_id` e
+  +`payment_provider_events`, role `duo_app`. RLS forçada, `tenant_id` e
   `UNIQUE (tenant_id, id)` nas tabelas pai; FKs compostas `(tenant_id, id)`
   entre tabelas filhas garantem pai do mesmo tenant.
 - `billing_customers` tem PK `(tenant_id, student_id)` e a assinatura tem FK
@@ -196,7 +196,7 @@ identity (pendente + billing fora do ar) e no billing (idempotência do DELETE).
 - Dívida: `billing/.env` local não foi criado pelo agente (precisa da
   `JWT_PUBLIC_KEY` do identity): copiar `.env.example` e colar a pública antes
   de subir o serviço pela launch config `billing`. O CI não precisa: descobre o
-  serviço por `backend/billing/go.mod`, cria `lyfta_billing` e roda as migrations.
+  serviço por `backend/billing/go.mod`, cria `duo_billing` e roda as migrations.
 
 **P7.2 (Mac, 2026-11-10)**
 - Rotas sob `/v1/billing` (matriz por middleware: `requireOwner`,

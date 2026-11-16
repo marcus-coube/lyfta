@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/auth/auth_controller.dart';
-import 'package:lyfta/core/auth/auth_state.dart';
-import 'package:lyfta/features/chat/data/participant_directory.dart';
-import 'package:lyfta/features/chat/domain/conversation.dart';
-import 'package:lyfta/features/chat/presentation/conversations_controller.dart';
+import 'package:duo/core/auth/auth_controller.dart';
+import 'package:duo/core/auth/auth_state.dart';
+import 'package:duo/features/chat/data/participant_directory.dart';
+import 'package:duo/features/chat/domain/conversation.dart';
+import 'package:duo/features/chat/presentation/conversations_controller.dart';
 
 class _FakeAuth extends AuthController {
   @override

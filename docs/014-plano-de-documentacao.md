@@ -33,6 +33,7 @@ onde densidade vale mais que volume.
 | [ADR-018](adr/ADR-018-modelos-de-treino-por-copia.md) | Modelos de treino aplicados por cópia, sem vínculo vivo |
 | [ADR-019](adr/ADR-019-prescricao-cluster-rotulo-variacao.md) | Cluster set, rótulo e variação por série |
 | [ADR-020](adr/ADR-020-midia-de-execucao-retencao.md) | Mídia de execução no `comms`, com retenção |
+| [ADR-021](adr/ADR-021-marca-duo-training.md) | Marca DÜO Training (substitui Lyfta): nome, identificadores e identidade visual |
 
 Novas decisões estruturais → novo ADR, nunca edição silenciosa de docs.
 

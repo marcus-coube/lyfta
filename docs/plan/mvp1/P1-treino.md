@@ -47,7 +47,7 @@ bloco→sets e lê de volta; RLS impede leitura cross-tenant em teste.
 
 **Objetivo:** upload de GIF/vídeo de exercício sem passar bytes pelo serviço.
 **Passos:** endpoint `POST /v1/media/presign` (auth coach) → URL presigned PUT no
-MinIO/S3 (`S3_ENDPOINT`, `S3_BUCKET=lyfta-media`, key
+MinIO/S3 (`S3_ENDPOINT`, `S3_BUCKET=duo-media`, key
 `tenants/{tenant_id}/exercises/{uuid}.{ext}`, contenttype whitelist gif|mp4|webm,
 limite 50 MB) + URL pública/presigned GET para exibição.
 **Aceite:** teste sobe arquivo pequeno no MinIO local via URL presignada e lê de volta.
@@ -166,7 +166,7 @@ mínimo); bugs achados viram tarefas na seção Notas.
 
 ### P1.1 (2026-08-27, Mac)
 
-- **Serviço `workout`** (`backend/workout`, porta 8082, banco `lyfta_workout`)
+- **Serviço `workout`** (`backend/workout`, porta 8082, banco `duo_workout`)
   com o mesmo bootstrap do identity: chi + pgxpool + slog, `/healthz`,
   middlewares (request-id, logging estruturado, recover, CORS) e 13 migrations.
   `go.mod` próprio com a stack pinada do `backend/README.md` — nada importado
@@ -219,7 +219,7 @@ mínimo); bugs achados viram tarefas na seção Notas.
 - **Verificado (Mac):** `migrate up` → `down -all` → `up` limpos (schema volta
   a ter só `schema_migrations`, nenhuma função órfã) — o `down` do
   `0013_app_role` revoga privilégios mas **não** dropa a role, diferente do
-  identity, porque `lyfta_app` é compartilhada entre os bancos e dropá-la
+  identity, porque `duo_app` é compartilhada entre os bancos e dropá-la
   quebraria o identity. `go vet` limpo e 8 testes verdes (5 de repo: árvore
   plano→versão→dia→bloco→exercício→sets com round-trip campo a campo,
   isolamento cross-tenant nos dois sentidos, recusa de exercício global,
@@ -318,7 +318,7 @@ mínimo); bugs achados viram tarefas na seção Notas.
   o custom que o coach cria em dois campos — nunca aparece sem nome. A resposta
   devolve `locale`, o idioma que **de fato** saiu, para o cliente saber que
   caiu no fallback.
-- **Busca ignora acento e caixa** (migration 0014, `lyfta_search_norm`): quem
+- **Busca ignora acento e caixa** (migration 0014, `duo_search_norm`): quem
   digita "triceps" tem de achar "Tríceps testa". Feita com `translate()`
   IMMUTABLE em vez da extensão `unaccent` — extensão exige superusuário para
   instalar (dev, CI e Postgres gerenciado) e `unaccent()` é STABLE, logo não
@@ -349,7 +349,7 @@ mínimo); bugs achados viram tarefas na seção Notas.
   os básicos de academia (peito/costas/ombro/braço/perna/panturrilha/abdômen).
   **Não é migration** — é conteúdo, não schema — e roda como superusuário,
   porque nenhuma policy de escrita cobre `tenant_id NULL` (decisão do P1.1):
-  `psql -U postgres -d lyfta_workout -f backend/workout/seed/exercises_seed.sql`.
+  `psql -U postgres -d duo_workout -f backend/workout/seed/exercises_seed.sql`.
   Id determinístico (`md5(slug)`) + `ON CONFLICT DO UPDATE` deixam o arquivo
   reexecutável a cada correção de texto, com o mesmo UUID em toda máquina. O CI
   ganhou o step de seed no job do workout (os testes de biblioteca dependem
@@ -608,7 +608,7 @@ mínimo); bugs achados viram tarefas na seção Notas.
   removida: exercício sem série não publica (`plan_incomplete`), e é melhor
   bloquear no editor do que devolver 422 no publish.
 - **Global é somente leitura, e a UI diz isso sem falar em erro:** abrir um
-  exercício da biblioteca da Lyfta abre o formulário em modo **duplicar**, com
+  exercício da biblioteca do DÜO abre o formulário em modo **duplicar**, com
   a explicação no topo. O `403 exercise_is_global` continua traduzido para o
   caso de corrida, mas o caminho normal nunca chega nele. Não foi preciso o
   `POST /exercises/{id}/clone` que o P1.3 cogitou: ler + criar no cliente
@@ -792,7 +792,7 @@ mínimo); bugs achados viram tarefas na seção Notas.
 
 O código do P1.8 entrou no commit anterior; esta sessão executou os passos
 **17–22** que faltavam e fechou a tarefa. Coach no Chrome (app servido em
-`web-server`), aluno no emulador Android `lyfta_pixel`, `identity` e `workout`
+`web-server`), aluno no emulador Android `duo_pixel`, `identity` e `workout`
 locais contra o Postgres da máquina — a mesma conta E2E do dia 01, que estava
 parada no passo 16 (treino B na tela, A já executado com 1020 kg).
 
@@ -807,7 +807,7 @@ parada no passo 16 (treino B na tela, A já executado com 1020 kg).
   mudar uma carga e republicar, a versão virou **2** e o aluno **continuou no
   B** (22): republicar reancora a rotação pelo rótulo, não zera para o A.
   Registro na tabela de [e2e-p1.md](e2e-p1.md).
-- **`source .env` não sobe os serviços nesta máquina.** `MAIL_FROM=Lyfta
+- **`source .env` não sobe os serviços nesta máquina.** `MAIL_FROM=DÜO
   <no-reply@…>` tem `<` e o shell trata como redireção: o `source` morre na
   linha e tudo abaixo dela (`APP_ENV`, chaves) fica de fora, com o serviço
   subindo pela metade ou nem subindo. Carregar o arquivo linha a linha

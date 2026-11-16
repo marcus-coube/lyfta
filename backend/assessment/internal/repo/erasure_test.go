@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/domain"
-	"github.com/marcus-coube/lyfta/assessment/internal/repo"
+	"github.com/marcus-coube/duo/assessment/internal/domain"
+	"github.com/marcus-coube/duo/assessment/internal/repo"
 )
 
 // TestEraseUserIsPhysicalAndScoped cobre a exclusão física da exclusão de

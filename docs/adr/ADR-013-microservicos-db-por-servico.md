@@ -17,10 +17,10 @@ para permitir a separação futura em repositórios independentes. Por ora tudo 
 
    | Serviço | Responsabilidade | Banco | Porta dev |
    |---|---|---|---|
-   | `identity` | Tenants, usuários, papéis, auth JWT, convites (Resend), recuperação de senha | `lyfta_identity` | 8081 |
-   | `workout` | Biblioteca de exercícios, templates/prescrição (ADR-004), execução/logs, sync offline (ADR-003), mídia de exercício | `lyfta_workout` | 8082 |
-   | `assessment` | Medidas corporais, bioimpedância (digitada), fotos de evolução | `lyfta_assessment` | 8083 |
-   | `comms` | Chat (WS + REST), check-in/avaliação de treino, push (FCM), device tokens | `lyfta_comms` | 8084 |
+   | `identity` | Tenants, usuários, papéis, auth JWT, convites (Resend), recuperação de senha | `duo_identity` | 8081 |
+   | `workout` | Biblioteca de exercícios, templates/prescrição (ADR-004), execução/logs, sync offline (ADR-003), mídia de exercício | `duo_workout` | 8082 |
+   | `assessment` | Medidas corporais, bioimpedância (digitada), fotos de evolução | `duo_assessment` | 8083 |
+   | `comms` | Chat (WS + REST), check-in/avaliação de treino, push (FCM), device tokens | `duo_comms` | 8084 |
 
 2. **Projeto Go independente por serviço** (`backend/<svc>` com `go.mod` próprio),
    migrations próprias, deploy próprio. **Nenhuma FK entre bancos**; referência

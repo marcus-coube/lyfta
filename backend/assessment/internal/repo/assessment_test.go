@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/domain"
-	"github.com/marcus-coube/lyfta/assessment/internal/repo"
+	"github.com/marcus-coube/duo/assessment/internal/domain"
+	"github.com/marcus-coube/duo/assessment/internal/repo"
 )
 
 func f(v float64) *float64 { return &v }

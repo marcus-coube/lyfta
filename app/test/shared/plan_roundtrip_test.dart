@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/shared/domain/plan.dart';
+import 'package:duo/shared/domain/plan.dart';
 
 void main() {
   test('cluster, rótulo, variação e tempo fazem o round-trip do rascunho', () {

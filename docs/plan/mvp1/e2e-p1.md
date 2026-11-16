@@ -14,7 +14,7 @@ dois clientes reais, duas plataformas e a rede caindo no meio.
 |---|---|
 | Postgres com os 4 bancos | `psql -U postgres -f backend/scripts/create-dbs.sql` |
 | Redis + MinIO | `cd backend && docker compose up -d` |
-| Seed da biblioteca | `psql -U postgres -d lyfta_workout -f backend/workout/seed/exercises_seed.sql` |
+| Seed da biblioteca | `psql -U postgres -d duo_workout -f backend/workout/seed/exercises_seed.sql` |
 | `identity` no ar (8081) | `cd backend/identity && go run ./cmd/api` |
 | `workout` no ar (8082) | `cd backend/workout && go run ./cmd/api` |
 | Coach na web | `cd app && flutter run -d chrome` |
@@ -96,5 +96,5 @@ interrompe o roteiro: anotar como bug nas "Notas de execução" do P1.
 
 | Data | Máquina | Coach | Aluno | Resultado |
 |---|---|---|---|---|
-| 2026-09-01 | Mac | Chrome | emulador `lyfta_pixel` | passos 1–16 (execução offline com rede cortada, fila drenada sem duplicata, volume igual ao do resumo) |
-| 2026-09-02 | Mac | Chrome | emulador `lyfta_pixel` | passos 17–22 na mesma conta: troca de treino, recusa offline, volta circular C→A e republicação para v2 mantendo o aluno no B |
+| 2026-09-01 | Mac | Chrome | emulador `duo_pixel` | passos 1–16 (execução offline com rede cortada, fila drenada sem duplicata, volume igual ao do resumo) |
+| 2026-09-02 | Mac | Chrome | emulador `duo_pixel` | passos 17–22 na mesma conta: troca de treino, recusa offline, volta circular C→A e republicação para v2 mantendo o aluno no B |

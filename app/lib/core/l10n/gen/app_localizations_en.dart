@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Lyfta';
+  String get appTitle => 'DÜO';
 
   @override
   String appVersion(String version) {
@@ -253,7 +253,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryFilterAll => 'All';
 
   @override
-  String get libraryGlobalBadge => 'Lyfta';
+  String get libraryGlobalBadge => 'DÜO';
 
   @override
   String get libraryEmpty => 'No exercise found.';
@@ -269,7 +269,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exerciseFormDuplicateHint =>
-      'Lyfta exercises can\'t be edited. Saving creates a copy in your gym\'s library.';
+      'DÜO exercises can\'t be edited. Saving creates a copy in your gym\'s library.';
 
   @override
   String get exerciseFormNameLabel => 'Name';
@@ -456,7 +456,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorExerciseIsGlobal =>
-      'Lyfta exercises can\'t be edited. Duplicate it to make your own.';
+      'DÜO exercises can\'t be edited. Duplicate it to make your own.';
 
   @override
   String get errorUnsupportedMedia =>
@@ -1207,7 +1207,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentSubtitle =>
-      'To use Lyfta we need your consent. You decide on each item and can change your mind later, under Account.';
+      'To use DÜO we need your consent. You decide on each item and can change your mind later, under Account.';
 
   @override
   String get consentTermsAccept =>

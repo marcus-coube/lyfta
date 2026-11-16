@@ -14,8 +14,8 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/marcus-coube/lyfta/comms/internal/fcm"
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/fcm"
+	"github.com/marcus-coube/duo/comms/internal/repo"
 )
 
 // Kind identifica o tipo de notificação — vira o `kind` gravado em

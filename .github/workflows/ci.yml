@@ -61,7 +61,7 @@ jobs:
       PGPORT: 5432
       PGUSER: postgres
       PGPASSWORD: postgres
-      DB_NAME: lyfta_${{ matrix.service }}
+      DB_NAME: duo_${{ matrix.service }}
     steps:
       - uses: actions/checkout@v4
 
@@ -98,7 +98,7 @@ jobs:
           cache-dependency-path: backend/${{ matrix.service }}/go.sum
 
       # Banco do serviço (ADR-013: um por serviço), com o mesmo nome do dev
-      # local — a migration de role do identity referencia lyfta_identity.
+      # local — a migration de role do identity referencia duo_identity.
       - name: Criar banco
         run: psql -v ON_ERROR_STOP=1 -c "CREATE DATABASE ${DB_NAME}"
 
@@ -127,12 +127,12 @@ jobs:
         working-directory: backend/${{ matrix.service }}
         run: go vet ./...
 
-      # Conecta como lyfta_app (sem BYPASSRLS, criada pelas migrations): é o
+      # Conecta como duo_app (sem BYPASSRLS, criada pelas migrations): é o
       # que faz as policies de RLS valerem nos testes de isolamento (ADR-001).
       - name: go test
         working-directory: backend/${{ matrix.service }}
         env:
-          DATABASE_URL: postgres://lyfta_app:lyfta_app_dev@localhost:5432/lyfta_${{ matrix.service }}?sslmode=disable
+          DATABASE_URL: postgres://duo_app:duo_app_dev@localhost:5432/duo_${{ matrix.service }}?sslmode=disable
           # Storage da mídia (workout/assessment). Ignorado pelos serviços que
           # não usam S3.
           S3_ENDPOINT: http://localhost:9000
@@ -143,7 +143,7 @@ jobs:
           REDIS_URL: redis://localhost:6379/0
           # Backfill da migration 0012 do identity (P4.7): roda como
           # superusuário, que ignora RLS. Ignorado pelos demais serviços.
-          SUPERUSER_DATABASE_URL: postgres://postgres:postgres@localhost:5432/lyfta_identity?sslmode=disable
+          SUPERUSER_DATABASE_URL: postgres://postgres:postgres@localhost:5432/duo_identity?sslmode=disable
         run: go test ./...
 
   app:

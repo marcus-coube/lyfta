@@ -128,7 +128,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         // Token chega como query string (`/invite?token=...`). O link do
         // e-mail é web (APP_URL), então no celular ele abre o navegador: o
         // aluno aceita ali e depois entra no app com e-mail e senha. O
-        // esquema `lyfta://` NÃO está registrado no AndroidManifest nem no
+        // esquema `duo://` NÃO está registrado no AndroidManifest nem no
         // Info.plist — abrir o app direto pelo convite pede App Links /
         // Universal Links com domínio próprio (pendência pré-loja).
         // Chave pelo token: trocar de convite não reaproveita o formulário.

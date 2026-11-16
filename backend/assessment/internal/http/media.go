@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/media"
+	"github.com/marcus-coube/duo/assessment/internal/media"
 )
 
 // MediaHandler assina uploads de foto de evolução (P2.3). O serviço não

@@ -9,7 +9,7 @@ class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
   @override
-  String get appTitle => 'Lyfta';
+  String get appTitle => 'DÜO';
 
   @override
   String appVersion(String version) {
@@ -253,7 +253,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get libraryFilterAll => 'Todos';
 
   @override
-  String get libraryGlobalBadge => 'Lyfta';
+  String get libraryGlobalBadge => 'DÜO';
 
   @override
   String get libraryEmpty => 'Nenhum exercício encontrado.';
@@ -269,7 +269,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get exerciseFormDuplicateHint =>
-      'Exercícios da Lyfta não podem ser editados. Salvar cria uma cópia na biblioteca da sua academia.';
+      'Exercícios do DÜO não podem ser editados. Salvar cria uma cópia na biblioteca da sua academia.';
 
   @override
   String get exerciseFormNameLabel => 'Nome';
@@ -456,7 +456,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get errorExerciseIsGlobal =>
-      'Exercícios da Lyfta não podem ser editados. Duplique para criar o seu.';
+      'Exercícios do DÜO não podem ser editados. Duplique para criar o seu.';
 
   @override
   String get errorUnsupportedMedia =>
@@ -1208,7 +1208,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get consentSubtitle =>
-      'Para usar o Lyfta precisamos do seu consentimento. Você decide sobre cada item e pode mudar de ideia depois, em Conta.';
+      'Para usar o DÜO precisamos do seu consentimento. Você decide sobre cada item e pode mudar de ideia depois, em Conta.';
 
   @override
   String get consentTermsAccept =>
@@ -3078,7 +3078,7 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   AppLocalizationsPtPt() : super('pt_PT');
 
   @override
-  String get appTitle => 'Lyfta';
+  String get appTitle => 'DÜO';
 
   @override
   String appVersion(String version) {
@@ -3324,7 +3324,7 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
   String get libraryFilterAll => 'Todos';
 
   @override
-  String get libraryGlobalBadge => 'Lyfta';
+  String get libraryGlobalBadge => 'DÜO';
 
   @override
   String get libraryEmpty => 'Nenhum exercício encontrado.';
@@ -3340,7 +3340,7 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get exerciseFormDuplicateHint =>
-      'Os exercícios da Lyfta não podem ser editados. Guardar cria uma cópia na biblioteca do teu ginásio.';
+      'Os exercícios do DÜO não podem ser editados. Guardar cria uma cópia na biblioteca do teu ginásio.';
 
   @override
   String get exerciseFormNameLabel => 'Nome';
@@ -3527,7 +3527,7 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get errorExerciseIsGlobal =>
-      'Os exercícios da Lyfta não podem ser editados. Duplica para criares o teu.';
+      'Os exercícios do DÜO não podem ser editados. Duplica para criares o teu.';
 
   @override
   String get errorUnsupportedMedia =>
@@ -4284,7 +4284,7 @@ class AppLocalizationsPtPt extends AppLocalizationsPt {
 
   @override
   String get consentSubtitle =>
-      'Para utilizar o Lyfta precisamos do seu consentimento. Decide sobre cada item e pode mudar de ideias mais tarde, em Conta.';
+      'Para utilizar o DÜO precisamos do seu consentimento. Decide sobre cada item e pode mudar de ideias mais tarde, em Conta.';
 
   @override
   String get consentTermsAccept =>

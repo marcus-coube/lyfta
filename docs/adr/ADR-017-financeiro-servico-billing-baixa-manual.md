@@ -16,7 +16,7 @@ para depois; o 2.0 entrega só a baixa manual.
 
 ## Decisão
 
-1. **Sexto serviço, `billing`** (porta 8085, banco `lyfta_billing`), no mesmo
+1. **Sexto serviço, `billing`** (porta 8085, banco `duo_billing`), no mesmo
    molde dos outros (chi + pgxpool + slog, `security`/`repo` duplicados, nenhum
    import entre serviços). Dono de `billing_plans`, `subscriptions`, `invoices`,
    `payments` e `payment_provider_events`.

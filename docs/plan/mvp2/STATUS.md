@@ -17,7 +17,7 @@
 
 | Banco | Criado (Windows) | Criado (Mac) |
 |---|---|---|
-| lyfta_billing (P7.1) | ⬜ | ✅ |
+| duo_billing (P7.1) | ⬜ | ✅ |
 
 Os quatro bancos do 1.0 seguem na tabela do [STATUS do 1.0](../mvp1/STATUS.md).
 
@@ -48,7 +48,7 @@ Os quatro bancos do 1.0 seguem na tabela do [STATUS do 1.0](../mvp1/STATUS.md).
 | 2026-11-10 | **P6.3 concluída:** app — aba Modelos no shell do coach (busca, criar, arquivar/desarquivar), builder em modo modelo (título + descrição), aplicar a vários alunos com resultado por aluno, reaplicar a quem recebeu (aviso e destaque do editado), "Salvar como modelo" e aba Treino da ficha com Aplicar modelo/Duplicar/Arquivar/Ativar; plano ou modelo arquivado abre em leitura e o 409 `plan_archived` vira mensagem i18n |
 | 2026-11-10 | **P6.4 concluída:** app — reordenar dias/blocos/exercícios por alça, duplicar dia e bloco, copiar série para as próximas, histórico de versões em leitura, banners de rascunho não publicado e de lesões ativas, override do próximo dia na ficha; modo leitura esconde de fato os controles de estrutura |
 | 2026-11-10 | **P6.5 concluída — fase P6 fechada (5/5):** app — `BlockRunner` puro e cartão de bloco no player: bi-set/circuito por rodada (descanso do bloco só ao fechar a rodada), dropset/rest-pause encadeados com explicação do método (i18n); straight idêntico ao 1.0, contrato offline inalterado |
-| 2026-11-10 | **P7.1 concluída:** sexto serviço `billing` (8085, `lyfta_billing`) no molde do assessment — `/healthz`, `/v1/whoami`, `security`/`obs`/`coachlink`/`repo` duplicados; migrations 0001–0004 com o modelo do ADR-007 (customers, plans, subscriptions, invoices com trigger de fatura paga imutável, payments append-only, provider_events), RLS forçada e teste de isolamento; teste varre o schema contra coluna monetária não-inteira. Índice de assinatura única vale para active+paused |
+| 2026-11-10 | **P7.1 concluída:** sexto serviço `billing` (8085, `duo_billing`) no molde do assessment — `/healthz`, `/v1/whoami`, `security`/`obs`/`coachlink`/`repo` duplicados; migrations 0001–0004 com o modelo do ADR-007 (customers, plans, subscriptions, invoices com trigger de fatura paga imutável, payments append-only, provider_events), RLS forçada e teste de isolamento; teste varre o schema contra coluna monetária não-inteira. Índice de assinatura única vale para active+paused |
 | 2026-11-10 | **P7.2 concluída:** API do financeiro no `billing` — planos, assinaturas (pausar/retomar/cancelar), faturas, baixa manual idempotente (`Idempotency-Key`, migration 0005), estorno, status derivado `ok|delinquent|none`, `/me/invoices` e a matriz owner / coach `own_students` / `status_only` (cache de 30 s do modo); M2M novo `GET /internal/v1/students/{id}` no identity |
 | 2026-11-10 | **P7.3 concluída:** job do `billing` (tick de 15 min, `pg_try_advisory_lock`, tenants do identity com cache de 10 min) gera a fatura do mês corrente das assinaturas `active` e vence as `open` no fuso de cada tenant; idempotente, relógio injetável, teste de virada de mês SP × Lisboa e do lock |
 | 2026-11-10 | **P7.4 concluída:** app — aba Financeiro no shell do owner e do coach `own_students` (faturas com filtros/tabela, baixa idempotente, estorno com motivo, planos só owner), aba Financeiro na ficha (assinatura criar/editar/pausar/cancelar + histórico), selo "inadimplente" na lista e na ficha, toggle `coach_billing_access` na Organização, aviso ao inativar com assinatura ativa e "Minhas mensalidades" do aluno; dinheiro em centavos com máscara pt/en sem `double` |

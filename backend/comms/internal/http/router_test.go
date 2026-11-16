@@ -15,8 +15,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
-	chttp "github.com/marcus-coube/lyfta/comms/internal/http"
-	"github.com/marcus-coube/lyfta/comms/internal/security"
+	chttp "github.com/marcus-coube/duo/comms/internal/http"
+	"github.com/marcus-coube/duo/comms/internal/security"
 )
 
 // signToken emite um access token com as mesmas claims do identity

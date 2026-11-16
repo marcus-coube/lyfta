@@ -1,4 +1,4 @@
-module github.com/marcus-coube/lyfta/workout
+module github.com/marcus-coube/duo/workout
 
 go 1.26.4
 

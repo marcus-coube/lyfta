@@ -10,8 +10,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/marcus-coube/lyfta/identity/internal/erasure"
-	"github.com/marcus-coube/lyfta/identity/internal/repo"
+	"github.com/marcus-coube/duo/identity/internal/erasure"
+	"github.com/marcus-coube/duo/identity/internal/repo"
 )
 
 // doJSONAuth faz uma requisição com corpo JSON e Bearer opcional.

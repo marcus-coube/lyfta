@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/http/accept_language_interceptor.dart';
+import 'package:duo/core/http/accept_language_interceptor.dart';
 
 void main() {
   test('manda Accept-Language com o idioma da tela a cada chamada', () async {

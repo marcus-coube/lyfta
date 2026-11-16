@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/domain"
+	"github.com/marcus-coube/duo/assessment/internal/domain"
 )
 
 // maxAssessmentPageSize é o teto de itens por página nas três listagens do

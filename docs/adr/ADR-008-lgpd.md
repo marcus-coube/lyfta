@@ -5,7 +5,7 @@
 
 ## Contexto
 
-O Lyfta armazena lesões, avaliações físicas (peso, % de gordura, circunferências),
+O DÜO armazena lesões, avaliações físicas (peso, % de gordura, circunferências),
 fotos de progresso e, no running, dados de frequência cardíaca e localização.
 Sob a LGPD (art. 5º, II), dados referentes à saúde são **dados pessoais sensíveis** e
 exigem base legal específica — na prática, consentimento explícito e destacado.

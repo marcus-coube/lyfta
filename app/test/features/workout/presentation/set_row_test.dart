@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/workout/domain/today.dart';
-import 'package:lyfta/features/workout/domain/workout_event.dart';
-import 'package:lyfta/features/workout/presentation/widgets/set_row.dart';
-import 'package:lyfta/shared/domain/plan.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/features/workout/domain/today.dart';
+import 'package:duo/features/workout/domain/workout_event.dart';
+import 'package:duo/features/workout/presentation/widgets/set_row.dart';
+import 'package:duo/shared/domain/plan.dart';
 
 /// O que o `onLog` recebeu — é o contrato entre a linha e o controller.
 class _Captured {

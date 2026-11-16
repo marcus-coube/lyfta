@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/evolution/domain/progress_photo.dart';
-import 'package:lyfta/features/evolution/widgets/photo_compare.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/features/evolution/domain/progress_photo.dart';
+import 'package:duo/features/evolution/widgets/photo_compare.dart';
 
 ProgressPhoto _photo(String id) => ProgressPhoto(
   id: id,

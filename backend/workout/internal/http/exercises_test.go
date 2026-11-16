@@ -15,7 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/workout/internal/repo"
+	"github.com/marcus-coube/duo/workout/internal/repo"
 )
 
 // testPool abre o pool contra o Postgres de dev, com a mesma regra do
@@ -26,7 +26,7 @@ func testPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		dsn = "postgres://lyfta_app:lyfta_app_dev@localhost:5432/lyfta_workout?sslmode=disable"
+		dsn = "postgres://duo_app:duo_app_dev@localhost:5432/duo_workout?sslmode=disable"
 	}
 	pool, err := repo.NewPool(context.Background(), dsn)
 	if err != nil {
@@ -140,7 +140,7 @@ func requireSeededLibrary(t *testing.T, handler http.Handler, token string) apiE
 	if os.Getenv("CI") != "" {
 		t.Fatal("biblioteca global ausente no CI: seed/exercises_seed.sql não foi aplicado")
 	}
-	t.Skip("biblioteca global ausente; rode: psql -U postgres -d lyfta_workout -f seed/exercises_seed.sql")
+	t.Skip("biblioteca global ausente; rode: psql -U postgres -d duo_workout -f seed/exercises_seed.sql")
 	return apiExercise{}
 }
 
@@ -155,7 +155,7 @@ func TestExerciseLibraryEndToEnd(t *testing.T) {
 	}
 
 	custom := map[string]any{
-		"name":           "Remada Lyfta " + strings.ToUpper(uuid.NewString()[:8]),
+		"name":           "Remada DÜO " + strings.ToUpper(uuid.NewString()[:8]),
 		"primary_muscle": "back",
 		"equipment":      "machine",
 		"level":          "intermediate",
@@ -280,9 +280,9 @@ func TestCreateExerciseValidation(t *testing.T) {
 		{"equipamento fora da taxonomia", map[string]any{"name": "X", "primary_muscle": "chest", "equipment": "barra"}, "equipment"},
 		{"nível inválido", map[string]any{"name": "X", "primary_muscle": "chest", "equipment": "barbell", "level": "deus"}, "level"},
 		{"mídia sem tipo", map[string]any{"name": "X", "primary_muscle": "chest", "equipment": "barbell",
-			"media_url": "http://localhost:9000/lyfta-media/tenants/" + tenantA + "/exercises/a.gif"}, "media_url"},
+			"media_url": "http://localhost:9000/duo-media/tenants/" + tenantA + "/exercises/a.gif"}, "media_url"},
 		{"mídia de outro tenant", map[string]any{"name": "X", "primary_muscle": "chest", "equipment": "barbell",
-			"media_url":  "http://localhost:9000/lyfta-media/tenants/" + uuid.NewString() + "/exercises/a.gif",
+			"media_url":  "http://localhost:9000/duo-media/tenants/" + uuid.NewString() + "/exercises/a.gif",
 			"media_type": "gif"}, "media_url"},
 		{"tradução em locale desconhecido", map[string]any{"name": "X", "primary_muscle": "chest", "equipment": "barbell",
 			"translations": []map[string]string{{"locale": "fr", "name": "X"}}}, "translations.locale"},

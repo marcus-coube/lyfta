@@ -12,8 +12,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/domain"
-	"github.com/marcus-coube/lyfta/assessment/internal/repo"
+	"github.com/marcus-coube/duo/assessment/internal/domain"
+	"github.com/marcus-coube/duo/assessment/internal/repo"
 )
 
 // MeasurementHandler expõe as medidas corporais digitadas (P2.3): o aluno

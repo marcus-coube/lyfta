@@ -2,13 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/auth/auth_controller.dart';
-import 'package:lyfta/core/auth/auth_state.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/chat/data/participant_directory.dart';
-import 'package:lyfta/features/dashboard/data/dashboard_repository.dart';
-import 'package:lyfta/features/dashboard/presentation/dashboard_screen.dart';
+import 'package:duo/core/auth/auth_controller.dart';
+import 'package:duo/core/auth/auth_state.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/features/chat/data/participant_directory.dart';
+import 'package:duo/features/dashboard/data/dashboard_repository.dart';
+import 'package:duo/features/dashboard/presentation/dashboard_screen.dart';
 
 import 'dashboard_fakes.dart';
 

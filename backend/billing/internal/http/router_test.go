@@ -15,8 +15,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
-	bhttp "github.com/marcus-coube/lyfta/billing/internal/http"
-	"github.com/marcus-coube/lyfta/billing/internal/security"
+	bhttp "github.com/marcus-coube/duo/billing/internal/http"
+	"github.com/marcus-coube/duo/billing/internal/security"
 )
 
 func newTestRouter(t *testing.T) (http.Handler, ed25519.PrivateKey) {

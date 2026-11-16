@@ -6,17 +6,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/http/api_exception.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/account/data/account_repository.dart';
-import 'package:lyfta/features/account/presentation/account_controller.dart';
-import 'package:lyfta/features/session_media/data/media_preparer.dart';
-import 'package:lyfta/features/session_media/data/session_media_repository.dart';
-import 'package:lyfta/features/session_media/domain/session_media.dart';
-import 'package:lyfta/features/session_media/presentation/send_media_sheet.dart';
-import 'package:lyfta/features/session_media/presentation/session_media_controller.dart';
-import 'package:lyfta/features/session_media/presentation/session_media_section.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/http/api_exception.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/features/account/data/account_repository.dart';
+import 'package:duo/features/account/presentation/account_controller.dart';
+import 'package:duo/features/session_media/data/media_preparer.dart';
+import 'package:duo/features/session_media/data/session_media_repository.dart';
+import 'package:duo/features/session_media/domain/session_media.dart';
+import 'package:duo/features/session_media/presentation/send_media_sheet.dart';
+import 'package:duo/features/session_media/presentation/session_media_controller.dart';
+import 'package:duo/features/session_media/presentation/session_media_section.dart';
 
 const _session = 'session-abc';
 

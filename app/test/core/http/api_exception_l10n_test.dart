@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/http/api_exception.dart';
-import 'package:lyfta/core/http/api_exception_l10n.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
+import 'package:duo/core/http/api_exception.dart';
+import 'package:duo/core/http/api_exception_l10n.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
 
 ApiException _tooMany(Object? seconds) => ApiException(
       code: 'too_many_requests',

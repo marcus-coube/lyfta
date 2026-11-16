@@ -28,7 +28,7 @@ class PushService {
   FirebaseMessaging? _messaging;
   final _localPlugin = FlutterLocalNotificationsPlugin();
 
-  static const String _channelId = 'lyfta_push';
+  static const String _channelId = 'duo_push';
   static const int _foregroundNotificationId = 2001;
 
   StreamSubscription<String>? _tokenRefreshSub;
@@ -110,7 +110,7 @@ class PushService {
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             _channelId,
-            'Lyfta',
+            'DÜO',
             importance: Importance.high,
             priority: Priority.high,
           ),

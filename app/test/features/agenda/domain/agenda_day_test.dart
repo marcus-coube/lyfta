@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/features/agenda/domain/agenda_day.dart';
-import 'package:lyfta/features/agenda/domain/agenda_session.dart';
-import 'package:lyfta/features/agenda/domain/rotation_pointer.dart';
+import 'package:duo/features/agenda/domain/agenda_day.dart';
+import 'package:duo/features/agenda/domain/agenda_session.dart';
+import 'package:duo/features/agenda/domain/rotation_pointer.dart';
 
 RotationPointer _pointer({required String currentDayId}) {
   return RotationPointer(

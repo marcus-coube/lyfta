@@ -15,7 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 
-	"github.com/marcus-coube/lyfta/comms/internal/media"
+	"github.com/marcus-coube/duo/comms/internal/media"
 )
 
 func storageConfig() media.Config {
@@ -24,7 +24,7 @@ func storageConfig() media.Config {
 		endpoint = "http://localhost:9000"
 	}
 	return media.Config{
-		Endpoint: endpoint, Region: "us-east-1", Bucket: "lyfta-media",
+		Endpoint: endpoint, Region: "us-east-1", Bucket: "duo-media",
 		AccessKey: getEnv("S3_ACCESS_KEY", "minioadmin"), SecretKey: getEnv("S3_SECRET_KEY", "minioadmin"),
 		UsePathStyle: true,
 	}

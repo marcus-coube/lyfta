@@ -2,12 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/http/api_exception.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/builder/data/plan_repository.dart';
-import 'package:lyfta/features/builder/presentation/plan_builder_screen.dart';
-import 'package:lyfta/shared/domain/plan.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/http/api_exception.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/features/builder/data/plan_repository.dart';
+import 'package:duo/features/builder/presentation/plan_builder_screen.dart';
+import 'package:duo/shared/domain/plan.dart';
 
 class _FakePlans extends PlanRepository {
   _FakePlans(this.plan) : super(Dio());

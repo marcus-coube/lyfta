@@ -3,7 +3,7 @@
 /// Cada serviço (ADR-013) é resolvido via `--dart-define` com fallback para
 /// `localhost` nas portas do `backend/README.md`. Exemplo de uso:
 /// ```
-/// flutter run -d chrome --dart-define=IDENTITY_BASE_URL=https://identity.lyfta.app
+/// flutter run -d chrome --dart-define=IDENTITY_BASE_URL=https://identity.duotraining.app
 /// ```
 class AppConfig {
   const AppConfig._();
@@ -39,7 +39,7 @@ class AppConfig {
   /// outra versão (`terms_version_mismatch`).
   static const String termsVersion = String.fromEnvironment(
     'TERMS_VERSION',
-    defaultValue: '2026-11-v3',
+    defaultValue: '2026-11-v4',
   );
 
   /// DSN do Sentry/GlitchTip (ADR-009 §5, P4.6). Vazio = desligado: dev e CI

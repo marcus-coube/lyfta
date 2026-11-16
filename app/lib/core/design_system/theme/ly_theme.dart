@@ -58,7 +58,7 @@ abstract final class LyTheme {
           borderRadius: LyRadius.md,
           borderSide: BorderSide(color: c.danger, width: 1.5),
         ),
-        errorStyle: LyType.caption(c.danger),
+        errorStyle: LyType.bodySm(c.danger).copyWith(fontSize: 12),
       ),
       extensions: [c],
     );

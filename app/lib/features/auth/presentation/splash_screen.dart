@@ -16,7 +16,7 @@ class SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            LyLogo(size: 44),
+            LyLogo(size: 48, tagline: true),
             SizedBox(height: LySpace.x6),
             SizedBox.square(
               dimension: 24,

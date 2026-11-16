@@ -4,11 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage_platform_interface/flutter_secure_storage_platform_interface.dart'
     hide Options;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/checkin/data/checkin_repository.dart';
-import 'package:lyfta/features/checkin/domain/checkin.dart';
-import 'package:lyfta/features/checkin/presentation/checkin_sheet.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/features/checkin/data/checkin_repository.dart';
+import 'package:duo/features/checkin/domain/checkin.dart';
+import 'package:duo/features/checkin/presentation/checkin_sheet.dart';
 
 /// Fake in-memory do plugin de secure storage — mesmo padrão do
 /// `login_screen_test.dart`: o rascunho offline do check-in (P3.5 §2) usa

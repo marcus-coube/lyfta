@@ -5,10 +5,10 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/marcus-coube/lyfta/workout/internal/domain"
-	"github.com/marcus-coube/lyfta/workout/internal/media"
-	"github.com/marcus-coube/lyfta/workout/internal/repo"
-	"github.com/marcus-coube/lyfta/workout/internal/security"
+	"github.com/marcus-coube/duo/workout/internal/domain"
+	"github.com/marcus-coube/duo/workout/internal/media"
+	"github.com/marcus-coube/duo/workout/internal/repo"
+	"github.com/marcus-coube/duo/workout/internal/security"
 )
 
 // planView é a leitura de um plano: a árvore do domínio virando o JSON que o

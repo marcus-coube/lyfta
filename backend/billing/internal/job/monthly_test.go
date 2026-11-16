@@ -13,16 +13,16 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/billing/internal/job"
-	"github.com/marcus-coube/lyfta/billing/internal/repo"
-	"github.com/marcus-coube/lyfta/billing/internal/tenantclient"
+	"github.com/marcus-coube/duo/billing/internal/job"
+	"github.com/marcus-coube/duo/billing/internal/repo"
+	"github.com/marcus-coube/duo/billing/internal/tenantclient"
 )
 
 func testPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		dsn = "postgres://lyfta_app:lyfta_app_dev@localhost:5432/lyfta_billing?sslmode=disable"
+		dsn = "postgres://duo_app:duo_app_dev@localhost:5432/duo_billing?sslmode=disable"
 	}
 	pool, err := repo.NewPool(context.Background(), dsn)
 	if err != nil {
@@ -276,14 +276,14 @@ func TestAdvisoryLock(t *testing.T) {
 		t.Fatal(err)
 	}
 	var ok bool
-	if err := holder.QueryRow(ctx, `SELECT pg_try_advisory_lock(hashtext('lyfta_billing_monthly_job'))`).Scan(&ok); err != nil || !ok {
+	if err := holder.QueryRow(ctx, `SELECT pg_try_advisory_lock(hashtext('duo_billing_monthly_job'))`).Scan(&ok); err != nil || !ok {
 		t.Fatalf("lock de teste: %v %v", ok, err)
 	}
 	j.Tick(ctx)
 	if got := invoices(t, pool, tn, sub); len(got) != 0 {
 		t.Fatalf("tick rodou com o lock tomado: %+v", got)
 	}
-	if _, err := holder.Exec(ctx, `SELECT pg_advisory_unlock(hashtext('lyfta_billing_monthly_job'))`); err != nil {
+	if _, err := holder.Exec(ctx, `SELECT pg_advisory_unlock(hashtext('duo_billing_monthly_job'))`); err != nil {
 		t.Fatal(err)
 	}
 	holder.Release()

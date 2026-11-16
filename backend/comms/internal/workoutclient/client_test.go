@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/marcus-coube/lyfta/comms/internal/workoutclient"
+	"github.com/marcus-coube/duo/comms/internal/workoutclient"
 )
 
 func TestPendingStudentsHappyPath(t *testing.T) {

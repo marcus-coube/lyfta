@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/http/api_exception.dart';
-import 'package:lyfta/features/workout/data/local/workout_database.dart';
-import 'package:lyfta/features/workout/data/workout_api.dart';
-import 'package:lyfta/features/workout/data/workout_repository.dart';
+import 'package:duo/core/http/api_exception.dart';
+import 'package:duo/features/workout/data/local/workout_database.dart';
+import 'package:duo/features/workout/data/workout_api.dart';
+import 'package:duo/features/workout/data/workout_repository.dart';
 
 /// Servidor que serve o treino A e depois cai (modo avião).
 class _FakeApi extends WorkoutApi {

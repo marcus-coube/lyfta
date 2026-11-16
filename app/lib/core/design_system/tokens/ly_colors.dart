@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
 
-/// Paleta bruta da marca Lyfta.
+/// Paleta bruta da marca DÜO.
 ///
 /// Nunca use estas constantes direto em widgets de feature — consuma via
 /// [LyTheme]/`context.ly`, que resolve o token certo para o tema ativo.
 abstract final class LyPalette {
   // Marca
-  static const Color lime = Color(0xFFC8F135); // Lyfta Lime — única cor de destaque
+  static const Color lime = Color(0xFFC8F135); // verde-limão DÜO — única cor de destaque (o Ü)
   static const Color limeBright = Color(0xFFD9FF4B);
   static const Color limeDim = Color(0xFF9DBF23);
 
   // Escala de grafite (dark-first)
-  static const Color ink950 = Color(0xFF07090C);
-  static const Color ink900 = Color(0xFF0B0E12); // fundo dark
-  static const Color ink800 = Color(0xFF12161C); // superfície dark
-  static const Color ink700 = Color(0xFF1A2028); // superfície elevada dark
-  static const Color ink600 = Color(0xFF242C36); // bordas dark
-  static const Color ink500 = Color(0xFF3A4450);
+  static const Color ink950 = Color(0xFF060708);
+  static const Color ink900 = Color(0xFF0B0D0F); // fundo dark (#0B0D0F)
+  static const Color ink800 = Color(0xFF15181B); // superfície dark (cards)
+  static const Color ink700 = Color(0xFF1F2327); // superfície elevada dark (#1F2327)
+  static const Color ink600 = Color(0xFF2B3035); // bordas dark
+  static const Color ink500 = Color(0xFF454B51);
 
   // Neutros claros
-  static const Color gray400 = Color(0xFF9AA5B1); // texto secundário dark
-  static const Color gray200 = Color(0xFFD7DDE3);
-  static const Color gray100 = Color(0xFFE8ECF1); // texto primário dark
-  static const Color gray50 = Color(0xFFF6F8FA); // fundo light
+  static const Color gray400 = Color(0xFF9DA39C); // texto secundário dark
+  static const Color gray200 = Color(0xFFD9DDD6);
+  static const Color gray100 = Color(0xFFF2F4F0); // texto primário dark (#F2F4F0, off-white)
+  static const Color gray50 = Color(0xFFF2F4F0); // fundo light
   static const Color white = Color(0xFFFFFFFF);
 
   // Semânticas

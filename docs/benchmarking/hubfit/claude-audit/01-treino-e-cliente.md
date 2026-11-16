@@ -81,7 +81,7 @@ Colunas: Client, **Tag** (In-Person / Online), **Last Check-In**, **Last Active*
 - Exercícios default são read-only; custom são criados pelo coach ("New")
 - Sem mapa muscular visual nem % de esforço por músculo → nosso Muscle Map segue sendo diferencial
 
-## Ideias para o Lyfta
+## Ideias para o DÜO
 
 1. **Duration "Week X of Y" na listagem de alunos** — barato e dá contexto imediato de onde o aluno está no programa.
 2. **Colunas configuráveis por exercício** (Weight/Reps/Rest/Time/RPE…) em vez de campos fixos — resolve strength + cardio + mobilidade com um único schema.

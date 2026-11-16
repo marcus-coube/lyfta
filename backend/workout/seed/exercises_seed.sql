@@ -5,7 +5,7 @@
 -- tenant, editável por nenhum. As policies de escrita da tabela **não cobrem**
 -- tenant_id NULL de propósito, então este arquivo só roda como superusuário:
 --
---     psql -U postgres -d lyfta_workout -f backend/workout/seed/exercises_seed.sql
+--     psql -U postgres -d duo_workout -f backend/workout/seed/exercises_seed.sql
 --
 -- Não é migration: dado de conteúdo, não de schema. Roda depois das migrations
 -- e é idempotente (id determinístico por slug + ON CONFLICT), então pode ser

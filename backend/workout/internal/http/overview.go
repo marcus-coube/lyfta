@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/workout/internal/repo"
+	"github.com/marcus-coube/duo/workout/internal/repo"
 )
 
 // maxOverviewStudents é o teto de ids por chamada: o tamanho de página da

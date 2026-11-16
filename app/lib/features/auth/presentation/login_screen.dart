@@ -185,7 +185,7 @@ class _LoginFormState extends ConsumerState<_LoginForm> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const LyLogo(size: 44),
+        const LyLogo(size: 30),
         const SizedBox(height: LySpace.x10),
         Text(l10n.loginWelcomeBack, style: LyType.display(c.textPrimary)),
         const SizedBox(height: LySpace.x2),

@@ -8,9 +8,9 @@ import (
 
 	"github.com/google/uuid"
 
-	chttp "github.com/marcus-coube/lyfta/comms/internal/http"
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
-	"github.com/marcus-coube/lyfta/comms/internal/security"
+	chttp "github.com/marcus-coube/duo/comms/internal/http"
+	"github.com/marcus-coube/duo/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/security"
 )
 
 const erasureTestToken = "token-m2m-de-teste"

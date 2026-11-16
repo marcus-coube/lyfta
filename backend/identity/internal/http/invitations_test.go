@@ -10,7 +10,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/marcus-coube/lyfta/identity/internal/mail"
+	"github.com/marcus-coube/duo/identity/internal/mail"
 )
 
 // captureMailer implementa mail.Mailer guardando as mensagens enviadas, para

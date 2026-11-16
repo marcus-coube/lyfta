@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:lyfta/core/http/api_exception.dart';
-import 'package:lyfta/features/variations/data/variation_repository.dart';
-import 'package:lyfta/features/variations/domain/variation_status.dart';
-import 'package:lyfta/shared/domain/plan.dart';
+import 'package:duo/core/http/api_exception.dart';
+import 'package:duo/features/variations/data/variation_repository.dart';
+import 'package:duo/features/variations/domain/variation_status.dart';
+import 'package:duo/shared/domain/plan.dart';
 
 /// Repositório em memória: nome repetido entre as ativas = 409.
 class FakeVariations extends VariationRepository {

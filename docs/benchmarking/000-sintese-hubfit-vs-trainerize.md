@@ -1,11 +1,11 @@
-# Síntese comparativa — Hubfit × Trainerize × Lyfta
+# Síntese comparativa — Hubfit × Trainerize × DÜO
 
 > Auditoria feita por Claude via Playwright em 2026-07-02, contas trial de coach.
 > Notas detalhadas: `hubfit/claude-audit/` e `trainerize/claude-audit/` (screenshots em `img/`).
 
 ## Posicionamento
 
-| | Hubfit | Trainerize (ABC) | Lyfta (nós) |
+| | Hubfit | Trainerize (ABC) | DÜO (nós) |
 |---|---|---|---|
 | Público | Coach online (1:N remoto) | Personal/estúdio, forte em negócio & escala | Academias + personais + estúdios BR, multi-tenant |
 | Monetização do coach | Stripe subscriptions + packages page | Stripe + bootcamps/upsells/checkout embutido | **Conciliação manual / PIX primeiro**, gateway depois |
@@ -14,7 +14,7 @@
 
 ## Modelo de treino (o core pra gente)
 
-| Conceito | Hubfit | Trainerize | Lição p/ Lyfta |
+| Conceito | Hubfit | Trainerize | Lição p/ DÜO |
 |---|---|---|---|
 | Hierarquia | Program (Calendar ou Fixed) → Week×Day → Workout → Sections → Exercises | Program (datado) → Phases (Week 1-4) → Workouts + Calendar | Suportar **blocos/fases** e os dois modos de entrega (agenda vs sequência fixa) — já é a direção do ADR-004 |
 | Prescrição | **4 colunas configuráveis** por exercício (Weight/Reps/Rest/Time/…), reps por série "12, 12, 12^" | Alvo em **texto livre** ("reps, tempo, etc" — time ou text) | Hubfit >> Trainerize aqui. Prescrição estruturada permite gráfico de carga, PRs e pré-preenchimento na execução. Copiar Hubfit. |
@@ -48,7 +48,7 @@
 5. Estado vazio sempre com CTA ("Create your first...").
 6. Features premium visíveis mas bloqueadas (Autoflow/AI) — upsell dentro do produto; casa com nossa arquitetura de feature flags.
 
-## Top 10 recomendações acionáveis para o Lyfta
+## Top 10 recomendações acionáveis para o DÜO
 
 1. Prescrição estruturada por exercício com colunas configuráveis (Weight/Reps/Rest/Time/RPE) e reps por série — modelo Hubfit (impacta modelo de dados do workout engine JÁ).
 2. Página de histórico por exercício: PRs (max weight, 1RM estimado, best volume), gráfico e tabela por sessão.

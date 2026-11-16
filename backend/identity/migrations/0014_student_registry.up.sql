@@ -34,4 +34,4 @@ CREATE POLICY tenant_isolation ON user_status_events
     USING (tenant_id = current_setting('app.tenant_id', true)::uuid)
     WITH CHECK (tenant_id = current_setting('app.tenant_id', true)::uuid);
 
-GRANT SELECT, INSERT, DELETE ON user_status_events TO lyfta_app;
+GRANT SELECT, INSERT, DELETE ON user_status_events TO duo_app;

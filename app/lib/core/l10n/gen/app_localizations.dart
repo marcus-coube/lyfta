@@ -102,7 +102,7 @@ abstract class AppLocalizations {
   /// Nome do app, exibido no título da janela/aba.
   ///
   /// In pt, this message translates to:
-  /// **'Lyfta'**
+  /// **'DÜO'**
   String get appTitle;
 
   /// Rótulo de versão exibido na tela de login. `version` vem de AppConfig.appRelease, sem o número de build.
@@ -561,10 +561,10 @@ abstract class AppLocalizations {
   /// **'Todos'**
   String get libraryFilterAll;
 
-  /// Selo do exercício da biblioteca global da Lyfta.
+  /// Selo do exercício da biblioteca global do DÜO.
   ///
   /// In pt, this message translates to:
-  /// **'Lyfta'**
+  /// **'DÜO'**
   String get libraryGlobalBadge;
 
   /// No description provided for @libraryEmpty.
@@ -594,7 +594,7 @@ abstract class AppLocalizations {
   /// No description provided for @exerciseFormDuplicateHint.
   ///
   /// In pt, this message translates to:
-  /// **'Exercícios da Lyfta não podem ser editados. Salvar cria uma cópia na biblioteca da sua academia.'**
+  /// **'Exercícios do DÜO não podem ser editados. Salvar cria uma cópia na biblioteca da sua academia.'**
   String get exerciseFormDuplicateHint;
 
   /// No description provided for @exerciseFormNameLabel.
@@ -960,7 +960,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorExerciseIsGlobal.
   ///
   /// In pt, this message translates to:
-  /// **'Exercícios da Lyfta não podem ser editados. Duplique para criar o seu.'**
+  /// **'Exercícios do DÜO não podem ser editados. Duplique para criar o seu.'**
   String get errorExerciseIsGlobal;
 
   /// No description provided for @errorUnsupportedMedia.
@@ -2262,7 +2262,7 @@ abstract class AppLocalizations {
   /// No description provided for @consentSubtitle.
   ///
   /// In pt, this message translates to:
-  /// **'Para usar o Lyfta precisamos do seu consentimento. Você decide sobre cada item e pode mudar de ideia depois, em Conta.'**
+  /// **'Para usar o DÜO precisamos do seu consentimento. Você decide sobre cada item e pode mudar de ideia depois, em Conta.'**
   String get consentSubtitle;
 
   /// No description provided for @consentTermsAccept.

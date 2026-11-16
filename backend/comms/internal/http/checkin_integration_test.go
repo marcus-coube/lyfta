@@ -13,12 +13,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 
-	chttp "github.com/marcus-coube/lyfta/comms/internal/http"
-	"github.com/marcus-coube/lyfta/comms/internal/media"
-	"github.com/marcus-coube/lyfta/comms/internal/pubsub"
-	"github.com/marcus-coube/lyfta/comms/internal/repo"
-	"github.com/marcus-coube/lyfta/comms/internal/security"
-	"github.com/marcus-coube/lyfta/comms/internal/ws"
+	chttp "github.com/marcus-coube/duo/comms/internal/http"
+	"github.com/marcus-coube/duo/comms/internal/media"
+	"github.com/marcus-coube/duo/comms/internal/pubsub"
+	"github.com/marcus-coube/duo/comms/internal/repo"
+	"github.com/marcus-coube/duo/comms/internal/security"
+	"github.com/marcus-coube/duo/comms/internal/ws"
 )
 
 // Aceite do P3.3: duplicata de check-in não cria segundo registro; listagem
@@ -89,7 +89,7 @@ func newServerWithLinker(t *testing.T, linker chttp.StudentLinker) (*httptest.Se
 	// Assinar é operação offline: o presigner monta a URL sem falar com o
 	// storage (mesmo critério do workout/assessment).
 	presigner, err := media.NewPresigner(media.Config{
-		Endpoint: "http://localhost:9000", Region: "us-east-1", Bucket: "lyfta-media",
+		Endpoint: "http://localhost:9000", Region: "us-east-1", Bucket: "duo-media",
 		AccessKey: "minioadmin", SecretKey: "minioadmin", UsePathStyle: true,
 	})
 	if err != nil {

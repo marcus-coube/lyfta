@@ -22,24 +22,24 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/billing/internal/coachlink"
-	bhttp "github.com/marcus-coube/lyfta/billing/internal/http"
-	"github.com/marcus-coube/lyfta/billing/internal/repo"
-	"github.com/marcus-coube/lyfta/billing/internal/security"
-	"github.com/marcus-coube/lyfta/billing/internal/studentdir"
-	"github.com/marcus-coube/lyfta/billing/internal/tenantsettings"
+	"github.com/marcus-coube/duo/billing/internal/coachlink"
+	bhttp "github.com/marcus-coube/duo/billing/internal/http"
+	"github.com/marcus-coube/duo/billing/internal/repo"
+	"github.com/marcus-coube/duo/billing/internal/security"
+	"github.com/marcus-coube/duo/billing/internal/studentdir"
+	"github.com/marcus-coube/duo/billing/internal/tenantsettings"
 )
 
 const testInternalToken = "test-internal-token"
 
-// testPool abre o pool contra o Postgres de dev (lyfta_billing, migrations já
-// aplicadas) como lyfta_app. Fora do CI pula se o banco não estiver
+// testPool abre o pool contra o Postgres de dev (duo_billing, migrations já
+// aplicadas) como duo_app. Fora do CI pula se o banco não estiver
 // acessível; no CI o ambiente é obrigatório.
 func testPool(t *testing.T) *pgxpool.Pool {
 	t.Helper()
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		dsn = "postgres://lyfta_app:lyfta_app_dev@localhost:5432/lyfta_billing?sslmode=disable"
+		dsn = "postgres://duo_app:duo_app_dev@localhost:5432/duo_billing?sslmode=disable"
 	}
 	pool, err := repo.NewPool(context.Background(), dsn)
 	if err != nil {

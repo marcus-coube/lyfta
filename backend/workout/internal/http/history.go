@@ -10,8 +10,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/workout/internal/media"
-	"github.com/marcus-coube/lyfta/workout/internal/repo"
+	"github.com/marcus-coube/duo/workout/internal/media"
+	"github.com/marcus-coube/duo/workout/internal/repo"
 )
 
 // HistoryHandler é a leitura do progresso por exercício (P2.1): a série

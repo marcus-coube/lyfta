@@ -97,7 +97,7 @@ class Exercise {
   final String equipment;
   final String level;
 
-  /// Exercício da biblioteca global da Lyfta: legível por todo tenant,
+  /// Exercício da biblioteca global do DÜO: legível por todo tenant,
   /// editável por nenhum (ADR-010 §3) — a UI oferece "duplicar" no lugar de
   /// "editar".
   final bool isGlobal;

@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/consent"
+	"github.com/marcus-coube/duo/assessment/internal/consent"
 )
 
 func TestHasPurpose(t *testing.T) {

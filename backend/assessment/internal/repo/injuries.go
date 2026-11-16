@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/domain"
+	"github.com/marcus-coube/duo/assessment/internal/domain"
 )
 
 const injuryColumns = `id, student_id, body_region, description, since, resolved_at, created_by, created_at`

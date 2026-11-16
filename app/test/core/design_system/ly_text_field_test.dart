@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
+import 'package:duo/core/design_system/design_system.dart';
 
 /// `autofocus` existe por causa de um caso concreto: diálogo com o valor de
 /// fábrica já no campo (título do novo plano). Sem foco na abertura, a seleção

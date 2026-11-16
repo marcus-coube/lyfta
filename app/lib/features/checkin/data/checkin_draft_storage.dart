@@ -28,7 +28,7 @@ class CheckinDraftStorage {
   CheckinDraftStorage({FlutterSecureStorage? storage})
       : _storage = storage ?? const FlutterSecureStorage();
 
-  static const _keyPrefix = 'lyfta.checkin_drafts';
+  static const _keyPrefix = 'duo.checkin_drafts';
 
   static String _key(String userId) => '$_keyPrefix.$userId';
 

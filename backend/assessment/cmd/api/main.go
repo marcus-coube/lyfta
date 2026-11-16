@@ -12,14 +12,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/coachlink"
-	"github.com/marcus-coube/lyfta/assessment/internal/config"
-	"github.com/marcus-coube/lyfta/assessment/internal/consent"
-	ahttp "github.com/marcus-coube/lyfta/assessment/internal/http"
-	"github.com/marcus-coube/lyfta/assessment/internal/media"
-	"github.com/marcus-coube/lyfta/assessment/internal/obs"
-	"github.com/marcus-coube/lyfta/assessment/internal/repo"
-	"github.com/marcus-coube/lyfta/assessment/internal/security"
+	"github.com/marcus-coube/duo/assessment/internal/coachlink"
+	"github.com/marcus-coube/duo/assessment/internal/config"
+	"github.com/marcus-coube/duo/assessment/internal/consent"
+	ahttp "github.com/marcus-coube/duo/assessment/internal/http"
+	"github.com/marcus-coube/duo/assessment/internal/media"
+	"github.com/marcus-coube/duo/assessment/internal/obs"
+	"github.com/marcus-coube/duo/assessment/internal/repo"
+	"github.com/marcus-coube/duo/assessment/internal/security"
 )
 
 func main() {

@@ -11,7 +11,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/marcus-coube/lyfta/workout/internal/coachlink"
+	"github.com/marcus-coube/duo/workout/internal/coachlink"
 )
 
 // fakeIdentity serve o M2M do identity a partir de um mapa coach → alunos que

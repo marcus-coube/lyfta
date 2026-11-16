@@ -12,12 +12,12 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/billing/internal/tenantclient"
-	"github.com/marcus-coube/lyfta/billing/internal/tenantsettings"
+	"github.com/marcus-coube/duo/billing/internal/tenantclient"
+	"github.com/marcus-coube/duo/billing/internal/tenantsettings"
 )
 
 // lockKey é o nome hasheado (hashtext) do advisory lock; não é id de negócio.
-const lockKey = "lyfta_billing_monthly_job"
+const lockKey = "duo_billing_monthly_job"
 
 // TickInterval é o intervalo entre varreduras.
 const TickInterval = 15 * time.Minute

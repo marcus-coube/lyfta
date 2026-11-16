@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/media"
+	"github.com/marcus-coube/duo/assessment/internal/media"
 )
 
 type apiPresign struct {

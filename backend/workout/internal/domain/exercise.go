@@ -30,7 +30,7 @@ const (
 )
 
 // Exercise é um item da biblioteca. TenantID vazio significa exercício
-// **global** da Lyfta (ADR-010 §3): legível por qualquer tenant, editável por
+// **global** do DÜO (ADR-010 §3): legível por qualquer tenant, editável por
 // nenhum — os globais entram por seed administrativo, não pela API.
 type Exercise struct {
 	ID            string

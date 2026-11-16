@@ -111,6 +111,6 @@ type ExerciseListItem struct {
 	SortKey string
 }
 
-// IsGlobal diz se o exercício é da biblioteca global da Lyfta (ADR-010 §3):
+// IsGlobal diz se o exercício é da biblioteca global do DÜO (ADR-010 §3):
 // legível por todo tenant, editável por nenhum.
 func (e Exercise) IsGlobal() bool { return e.TenantID == "" }

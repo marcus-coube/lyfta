@@ -9,7 +9,7 @@ import (
 
 	"github.com/getsentry/sentry-go"
 
-	"github.com/marcus-coube/lyfta/assessment/internal/obs"
+	"github.com/marcus-coube/duo/assessment/internal/obs"
 )
 
 type fakeTransport struct{ events []*sentry.Event }

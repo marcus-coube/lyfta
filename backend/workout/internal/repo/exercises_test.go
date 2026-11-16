@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/marcus-coube/lyfta/workout/internal/domain"
-	"github.com/marcus-coube/lyfta/workout/internal/repo"
+	"github.com/marcus-coube/duo/workout/internal/domain"
+	"github.com/marcus-coube/duo/workout/internal/repo"
 )
 
 // requireSeed garante que a biblioteca global (seed/exercises_seed.sql) está
@@ -28,7 +28,7 @@ func requireSeed(t *testing.T, pool *pgxpool.Pool) {
 			return
 		}
 	}
-	skipOrFail(t, "biblioteca global ausente; rode: psql -U postgres -d lyfta_workout -f seed/exercises_seed.sql")
+	skipOrFail(t, "biblioteca global ausente; rode: psql -U postgres -d duo_workout -f seed/exercises_seed.sql")
 }
 
 // TestSearchFindsSeededGlobalExercise cobre a primeira metade do Aceite do

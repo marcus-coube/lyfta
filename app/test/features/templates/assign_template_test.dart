@@ -2,17 +2,17 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/http/api_exception.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/chat/data/participant_directory.dart';
-import 'package:lyfta/features/students/data/student_repository.dart';
-import 'package:lyfta/features/students/domain/student.dart';
-import 'package:lyfta/features/students/presentation/students_controller.dart';
-import 'package:lyfta/features/templates/data/template_repository.dart';
-import 'package:lyfta/features/templates/domain/template.dart';
-import 'package:lyfta/features/templates/presentation/assign_template_screen.dart';
-import 'package:lyfta/features/templates/presentation/template_recipients_screen.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/http/api_exception.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/features/chat/data/participant_directory.dart';
+import 'package:duo/features/students/data/student_repository.dart';
+import 'package:duo/features/students/domain/student.dart';
+import 'package:duo/features/students/presentation/students_controller.dart';
+import 'package:duo/features/templates/data/template_repository.dart';
+import 'package:duo/features/templates/domain/template.dart';
+import 'package:duo/features/templates/presentation/assign_template_screen.dart';
+import 'package:duo/features/templates/presentation/template_recipients_screen.dart';
 
 class _FakeStudents extends StudentRepository {
   _FakeStudents(this.all) : super(Dio());

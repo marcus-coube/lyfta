@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lyfta/core/design_system/design_system.dart';
-import 'package:lyfta/core/l10n/gen/app_localizations.dart';
-import 'package:lyfta/features/evolution/domain/evolution_summary.dart';
-import 'package:lyfta/features/evolution/widgets/summary_card.dart';
+import 'package:duo/core/design_system/design_system.dart';
+import 'package:duo/core/l10n/gen/app_localizations.dart';
+import 'package:duo/features/evolution/domain/evolution_summary.dart';
+import 'package:duo/features/evolution/widgets/summary_card.dart';
 
 Future<void> _pump(WidgetTester tester, EvolutionSummary summary) async {
   await tester.pumpWidget(
