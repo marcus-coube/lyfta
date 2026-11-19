@@ -101,20 +101,22 @@ Antes do 1º `up`: `free -h` e `docker stats --no-stream` na VPS; se sobrar
   CORS do MinIO ok); hairpin do comms para `media.`; `/ws` com 101; login no
   app web e aba Início carregando dos 4 serviços, sem erro no console.
 
-### S4 — Pipeline (GitHub Actions)
-- `.github/workflows/deploy-staging.yml`, gatilho `push` na branch `staging`
-  + `workflow_dispatch`. Secrets num **GitHub Environment `duo-staging`**
-  (`VM_HOST`, `VM_USER`, `VM_SSH_KEY`) — jobs declaram `environment:`.
-- Jobs: matrix build das 5 imagens + gateway → GHCR
-  `ghcr.io/marcus-coube/duo-<svc>:staging` e `:<sha>` (gateway: `build-web.sh`
-  com `DUO_BASE` de uma variável do Environment); depois SSH →
-  `/opt/duo-staging/deploy.sh` (já faz pull, migrations, seed e `up --wait`;
-  falha em migrate aborta antes de trocar os serviços) → `curl` nos `/healthz`
-  pelos hosts públicos.
-- O compose e o Caddyfile do gateway viajam no deploy (`scp` de
-  `deploy/duo-staging/` exceto `.env`), para a VPS nunca divergir do git.
+### S4 — Pipeline (GitHub Actions) ✍️ escrito (2026-11-19), não executado
+- [`.github/workflows/deploy-staging.yml`](../../../.github/workflows/deploy-staging.yml)
+  (actionlint ok). **Promover = `git push origin main:staging`** ou rodar à mão.
+- GitHub Environment **`duo-staging`**: secrets `VM_HOST`, `VM_USER`,
+  `VM_SSH_KEY`, `VM_KNOWN_HOSTS` (`ssh-keyscan <host>` — sem TOFU no runner) e
+  var `DUO_BASE`. Jobs que leem isso declaram `environment:`.
+- Jobs: 5 imagens Go em matrix + gateway (Flutter 3.44.4, `build-web.sh` com
+  `DUO_BASE`) → GHCR com `:staging` e `:sha-<commit>`, label
+  `duo.stack=duo-staging`; depois SSH: envia `docker-compose.yml`,
+  `deploy.sh`, `initdb/` e `README.md` por `tar` (o `.env` da VPS não é
+  tocado) → `TAG=sha-<commit> ./deploy.sh` → `curl` nos `/healthz` pelos
+  hosts públicos → prune **só** das imagens com a label e > 7 dias (nada de
+  prune global no host compartilhado).
+- Sem action de terceiros para SSH: `ssh`/`tar` do runner.
 - **Pronto quando:** um push em `staging` sem mudança de código redeploya
-  verde de ponta a ponta.
+  verde de ponta a ponta (depende do S5).
 
 ### S5 — Bootstrap na VPS (manual, uma vez — depende de D1–D3)
 1. DNS: 7 registros A DNS-only (cinza) → IP da VPS.
@@ -122,7 +124,9 @@ Antes do 1º `up`: `free -h` e `docker stats --no-stream` na VPS; se sobrar
 3. Gerar chaves JWT (`backend/scripts/gen-keys.sh`), `INTERNAL_TOKEN` e
    senhas com `openssl rand -hex 32`; preencher `.env` (modelo
    `.env.example`), `chmod 600`.
-4. `docker login ghcr.io` com o usuário do deploy (PAT `read:packages`).
+4. `docker login ghcr.io` com o usuário do deploy (PAT `read:packages`) e
+   o Environment `duo-staging` no GitHub (S4) com a chave pública do CI no
+   `authorized_keys` desse usuário.
 5. Copiar `deploy/duo-staging/` (sem `.env.local`) para a pasta e rodar
    `./deploy.sh` (1º boot cria os bancos pelo `initdb`, troca a senha de dev
    da `duo_app` e aplica o seed).

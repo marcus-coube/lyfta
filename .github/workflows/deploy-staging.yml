@@ -1,0 +1,150 @@
+# Deploy do duo-staging (ADR-022, plano docs/plan/staging S4).
+#
+# Promover = `git push origin main:staging` (ou rodar manualmente). Builda as 5
+# imagens Go + o gateway (Flutter web embutido) no GHCR e roda o deploy.sh na
+# VPS com a tag deste commit — a VPS só faz pull, nunca build.
+#
+# Pré-requisitos (S5): GitHub Environment `duo-staging` com
+#   secrets: VM_HOST, VM_USER, VM_SSH_KEY, VM_KNOWN_HOSTS (ssh-keyscan do host)
+#   vars:    DUO_BASE (ex. duo-staging.exemplo.com.br)
+# e, na VPS, /opt/duo-staging/.env preenchido + `docker login ghcr.io` do
+# usuário de deploy (PAT read:packages).
+
+name: Deploy duo-staging
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-duo-staging
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io/marcus-coube
+  TAG: sha-${{ github.sha }}
+
+jobs:
+  services:
+    name: imagem (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        service: [identity, workout, assessment, comms, billing]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          build-args: SERVICE=${{ matrix.service }}
+          push: true
+          labels: duo.stack=duo-staging
+          tags: |
+            ${{ env.REGISTRY }}/duo-${{ matrix.service }}:staging
+            ${{ env.REGISTRY }}/duo-${{ matrix.service }}:${{ env.TAG }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+  gateway:
+    name: imagem (gateway + web)
+    runs-on: ubuntu-latest
+    # Só para ler vars.DUO_BASE — o domínio entra no build do Flutter.
+    environment: duo-staging
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.4
+          channel: stable
+          cache: true
+      - name: flutter pub get
+        working-directory: app
+        run: flutter pub get
+      - name: flutter build web
+        env:
+          DUO_BASE: ${{ vars.DUO_BASE }}
+        run: |
+          test -n "$DUO_BASE" || { echo "::error::vars.DUO_BASE vazio no Environment duo-staging"; exit 1; }
+          deploy/duo-staging/build-web.sh
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./deploy/duo-staging/gateway
+          build-contexts: web=./app/build/web
+          push: true
+          labels: duo.stack=duo-staging
+          tags: |
+            ${{ env.REGISTRY }}/duo-gateway:staging
+            ${{ env.REGISTRY }}/duo-gateway:${{ env.TAG }}
+
+  deploy:
+    needs: [services, gateway]
+    runs-on: ubuntu-latest
+    environment:
+      name: duo-staging
+      url: https://app.${{ vars.DUO_BASE }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Chave SSH
+        env:
+          VM_SSH_KEY: ${{ secrets.VM_SSH_KEY }}
+          VM_KNOWN_HOSTS: ${{ secrets.VM_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$VM_SSH_KEY" > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "$VM_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      # Os artefatos do stack viajam a cada deploy: a VPS nunca diverge do git.
+      # O .env da VPS não é tocado (não está no tar).
+      - name: Enviar compose e deploy.sh
+        env:
+          TARGET: ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}
+        run: |
+          tar -C deploy/duo-staging -czf - docker-compose.yml deploy.sh initdb README.md \
+            | ssh -i ~/.ssh/id_deploy "$TARGET" 'tar -xzf - -C /opt/duo-staging'
+
+      - name: deploy.sh na VPS
+        env:
+          TARGET: ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}
+        run: |
+          ssh -i ~/.ssh/id_deploy "$TARGET" "cd /opt/duo-staging && TAG=$TAG ./deploy.sh"
+
+      - name: Healthcheck pelos hosts públicos
+        env:
+          DUO_BASE: ${{ vars.DUO_BASE }}
+        run: |
+          for h in identity workout assessment comms billing; do
+            curl -fsS --retry 5 --retry-delay 3 --retry-all-errors "https://$h.$DUO_BASE/healthz" >/dev/null
+            echo "$h ok"
+          done
+          curl -fsS -o /dev/null "https://app.$DUO_BASE/" && echo "app ok"
+
+      # Só imagens DESTE stack (label), com mais de 7 dias: o rollback por
+      # TAG=<sha> cobre a última semana. Nada de prune global no host.
+      - name: Limpar imagens antigas
+        env:
+          TARGET: ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}
+        run: |
+          ssh -i ~/.ssh/id_deploy "$TARGET" \
+            'docker image prune -af --filter label=duo.stack=duo-staging --filter until=168h'
