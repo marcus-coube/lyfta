@@ -371,7 +371,12 @@ class _Counter extends StatelessWidget {
   Widget build(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$value', style: LyType.numeric(color, size: 28)),
+          Text(
+            NumberFormat.decimalPattern(
+              Localizations.localeOf(context).toString(),
+            ).format(value),
+            style: LyType.numeric(color, size: 28),
+          ),
           Text(label, style: LyType.bodySm(context.ly.textSecondary)),
         ],
       );

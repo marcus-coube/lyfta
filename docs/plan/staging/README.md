@@ -91,9 +91,9 @@ Antes do 1º `up`: `free -h` e `docker stats --no-stream` na VPS; se sobrar
   servem mais `minio/minio`). O stack usa a build da Chainguard
   (`chainguard/minio` + `chainguard/minio-client`, recompiladas do fonte AGPL),
   **fixadas por digest**. Sem shell utilitário: healthcheck por `/dev/tcp` do
-  bash e bucket via `MC_HOST_local`. ⚠️ O `backend/docker-compose.yml` de dev
-  ainda usa `minio/minio:latest` — só funciona em máquina que já tem a imagem
-  (o Windows não tem).
+  bash e bucket via `MC_HOST_local`. O `backend/docker-compose.yml` de dev e o
+  CI usam as mesmas imagens (no dev, MinIO como root para abrir os volumes
+  criados pela imagem antiga).
 - **Verificado no Mac** com `DUO_BASE=duo-staging.localhost`: 9 contêineres
   healthy; 5 migrations e seed (41 exercícios); redeploy sem mudança
   ("no change"); cadastro de owner com CORS; preflight e GET nas APIs;
