@@ -37,3 +37,8 @@ app/*.g.dart.bak
 # Ferramentas de IA de terceiros (Codex) — locais, não versionadas
 .codex/
 AGENTS.md
+
+# Segredos dos ambientes de deploy (deploy/duo-staging/.env.example fica versionado)
+deploy/**/.env
+deploy/**/.env.*
+!deploy/**/.env.example

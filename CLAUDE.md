@@ -40,6 +40,9 @@ E-mail transacional via **Resend**. Idiomas pt-BR / pt-PT / en desde o lançamen
   ajustes da validação com o cliente — cluster set, rótulo e variações por série,
   player (replicar carga, cronômetro, conclusão), check-in do professor com o
   treino, mídia de execução. Progresso e decisões D1–D7 em `STATUS.md`.
+- **[docs/plan/staging/](docs/plan/staging/README.md)** — plano de deploy do
+  `duo-staging` (web para testadores, antes das lojas) na VPS compartilhada,
+  isolado em `/opt/duo-staging` ([ADR-022](docs/adr/ADR-022-ambiente-duo-staging-isolado.md), proposto).
 - `docs/guidelines/` — convenções de código (ex.: `flutter.md`).
 
 ## Estado atual (2026-11-16)

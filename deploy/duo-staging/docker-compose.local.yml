@@ -1,0 +1,21 @@
+# Override SÓ para testar o stack na máquina de dev (nunca na VPS):
+#
+#   docker network create edge   # 1ª vez: na VPS ela já existe
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml --env-file .env.local up -d
+#
+# Com DUO_BASE=duo-staging.localhost e PUBLIC_PORT=:8080, o app abre em
+# http://app.duo-staging.localhost:8080 (o navegador resolve *.localhost).
+# Dentro dos contêineres *.localhost não aponta para o host — extra_hosts
+# simula o hairpin da VPS (media.<base> → gateway publicado no host).
+
+x-hairpin: &hairpin
+  extra_hosts:
+    - "media.${DUO_BASE}:host-gateway"
+
+services:
+  gateway:
+    ports:
+      - "8080:8080"
+  workout: *hairpin
+  assessment: *hairpin
+  comms: *hairpin

@@ -1,0 +1,87 @@
+# Gateway interno do duo-staging (ADR-022). Único contêiner do stack na rede
+# `edge`: o Caddy compartilhado (/opt/edge) termina o TLS e manda todos os
+# hosts do ambiente para cá (duo-staging-gateway:8080); aqui o roteamento é
+# por Host. Mudar rota é mudar ESTE arquivo — nunca o Caddyfile compartilhado.
+#
+# DUO_BASE (env do contêiner) é o domínio base, ex. duo-staging.exemplo.com.br.
+# Local: DUO_BASE=duo-staging.localhost (o navegador resolve *.localhost).
+
+{
+	auto_https off
+	admin off
+	servers {
+		# O Caddy da `edge` chega por IP privado: confiar nele faz {client_ip}
+		# ser o IP real do usuário (X-Forwarded-For), e não o do proxy.
+		trusted_proxies static private_ranges
+	}
+}
+
+# APIs: o identity (TRUST_PROXY=true) lê o ÚLTIMO X-Forwarded-For para o
+# limite de tentativas — reescrever com o IP real evita que seja o da edge.
+#
+# /internal/* é M2M (X-Internal-Token) entre serviços pela rede do stack —
+# de fora, não existe.
+(api) {
+	respond /internal/* 404
+	reverse_proxy {args[0]} {
+		header_up X-Forwarded-For {client_ip}
+	}
+}
+
+(logs) {
+	log {
+		output stdout
+		format console
+	}
+}
+
+# Flutter web. no-cache = revalida por ETag: testador nunca fica preso numa
+# versão velha depois de um deploy.
+http://app.{$DUO_BASE}:8080 {
+	import logs
+	root * /srv/web
+	header Cache-Control "no-cache"
+	try_files {path} /index.html
+	file_server
+}
+
+http://identity.{$DUO_BASE}:8080 {
+	import logs
+	import api identity:8081
+}
+
+http://workout.{$DUO_BASE}:8080 {
+	import logs
+	import api workout:8082
+}
+
+http://assessment.{$DUO_BASE}:8080 {
+	import logs
+	import api assessment:8083
+}
+
+# REST + WebSocket (/ws): o Caddy faz o upgrade sozinho.
+http://comms.{$DUO_BASE}:8080 {
+	import logs
+	import api comms:8084
+}
+
+http://billing.{$DUO_BASE}:8080 {
+	import logs
+	import api billing:8085
+}
+
+# MinIO (URLs presignadas). O Host original é preservado: a assinatura S3
+# foi feita para media.<base> e o MinIO a valida contra ele.
+http://media.{$DUO_BASE}:8080 {
+	import logs
+	request_body {
+		max_size 25MB
+	}
+	reverse_proxy minio:9000
+}
+
+# Healthcheck do contêiner (não exposto: a edge só manda os hosts acima).
+http://:8081 {
+	respond /healthz "ok" 200
+}

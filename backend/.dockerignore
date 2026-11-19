@@ -1,0 +1,10 @@
+# Contexto do backend/Dockerfile: só código, migrations e seed.
+**/.env
+**/.env.*
+**/*_test.go
+**/testdata
+**/coverage.out
+**/bin
+docker-compose.yml
+scripts
+README.md

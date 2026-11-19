@@ -1,0 +1,258 @@
+# =============================================================================
+#  DÜO — STAGING (ADR-022, plano docs/plan/staging)
+# -----------------------------------------------------------------------------
+#  Destino na VPS: /opt/duo-staging/  (project name "duo-staging").
+#  Isolado: Postgres, Redis e MinIO são DESTE stack (nada de /opt/data).
+#  Só o `gateway` entra na rede compartilhada `edge` (alias
+#  duo-staging-gateway); nenhum contêiner publica porta.
+#
+#  Segredos e domínio: ./.env (modelo em .env.example, nunca no git).
+#  Imagens: GHCR, buildadas no GitHub Actions — a VPS só faz pull.
+#  Ordem de deploy (migrations, role, seed): ./deploy.sh
+# =============================================================================
+
+name: duo-staging
+
+x-public: &public
+  # URLs públicas derivadas do domínio (PUBLIC_PORT vazio na VPS).
+  APP_URL: ${PUBLIC_SCHEME:-https}://app.${DUO_BASE:?defina DUO_BASE}${PUBLIC_PORT:-}
+  CORS_ORIGINS: ${PUBLIC_SCHEME:-https}://app.${DUO_BASE}${PUBLIC_PORT:-}
+  APP_ENV: staging
+  SENTRY_DSN: ${SENTRY_DSN:-}
+  SENTRY_RELEASE: ${SENTRY_RELEASE:-}
+  JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:?defina JWT_PUBLIC_KEY}
+  INTERNAL_TOKEN: ${INTERNAL_TOKEN:?defina INTERNAL_TOKEN}
+  # M2M sempre pela rede interna, nunca pelo host público.
+  IDENTITY_URL: http://identity:8081
+  COACH_LINK_CACHE_TTL: 30s
+
+x-s3: &s3
+  # O presign assina com este host — tem de ser o público (o navegador sobe
+  # direto no MinIO). Operações do servidor (ex.: apagar mídia no comms)
+  # saem e voltam pela edge (hairpin).
+  S3_ENDPOINT: ${PUBLIC_SCHEME:-https}://media.${DUO_BASE}${PUBLIC_PORT:-}
+  S3_REGION: us-east-1
+  S3_BUCKET: duo-media
+  S3_ACCESS_KEY: ${MINIO_ROOT_USER:?defina MINIO_ROOT_USER}
+  S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?defina MINIO_ROOT_PASSWORD}
+  S3_USE_PATH_STYLE: "true"
+  S3_PUBLIC_BASE_URL: ""
+
+x-svc: &svc
+  restart: unless-stopped
+  networks: [duo-staging]
+  mem_limit: 96m
+  cpus: 0.25
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+x-migrate: &migrate
+  networks: [duo-staging]
+  profiles: [tools]
+  restart: "no"
+  entrypoint: ["/bin/sh", "-c"]
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  # ------------------------------------------------------------ porta de entrada
+  gateway:
+    image: ghcr.io/marcus-coube/duo-gateway:${TAG:-staging}
+    restart: unless-stopped
+    environment:
+      DUO_BASE: ${DUO_BASE}
+    networks:
+      duo-staging: {}
+      edge:
+        aliases: [duo-staging-gateway]
+    # ~50 MB em repouso servindo o build web; 64m ficava no limite.
+    mem_limit: 128m
+    cpus: 0.25
+
+  # ------------------------------------------------------------ serviços Go
+  identity:
+    <<: *svc
+    image: ghcr.io/marcus-coube/duo-identity:${TAG:-staging}
+    environment:
+      <<: *public
+      PORT: "8081"
+      DATABASE_URL: postgres://duo_app:${DUO_APP_PASSWORD:?defina DUO_APP_PASSWORD}@postgres:5432/duo_identity?sslmode=disable
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:?defina JWT_PRIVATE_KEY}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      MAIL_FROM: ${MAIL_FROM:-DÜO <no-reply@duotraining.app>}
+      REDIS_URL: redis://:${REDIS_PASSWORD:?defina REDIS_PASSWORD}@redis:6379/0
+      TRUST_PROXY: "true"
+      TERMS_VERSION: ${TERMS_VERSION:-2026-11-v4}
+      WORKOUT_URL: http://workout:8082
+      ASSESSMENT_URL: http://assessment:8083
+      COMMS_URL: http://comms:8084
+      BILLING_URL: http://billing:8085
+    healthcheck: &health
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:$${PORT}/healthz >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  workout:
+    <<: *svc
+    image: ghcr.io/marcus-coube/duo-workout:${TAG:-staging}
+    environment:
+      <<: [*public, *s3]
+      PORT: "8082"
+      DATABASE_URL: postgres://duo_app:${DUO_APP_PASSWORD}@postgres:5432/duo_workout?sslmode=disable
+    healthcheck: *health
+
+  assessment:
+    <<: *svc
+    image: ghcr.io/marcus-coube/duo-assessment:${TAG:-staging}
+    environment:
+      <<: [*public, *s3]
+      PORT: "8083"
+      DATABASE_URL: postgres://duo_app:${DUO_APP_PASSWORD}@postgres:5432/duo_assessment?sslmode=disable
+    healthcheck: *health
+
+  comms:
+    <<: *svc
+    image: ghcr.io/marcus-coube/duo-comms:${TAG:-staging}
+    environment:
+      <<: [*public, *s3]
+      PORT: "8084"
+      DATABASE_URL: postgres://duo_app:${DUO_APP_PASSWORD}@postgres:5432/duo_comms?sslmode=disable
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+      WORKOUT_BASE_URL: http://workout:8082
+      # Push desligado no staging (D5): web não usa FCM no MVP.
+      FCM_CREDENTIALS_JSON: ""
+    healthcheck: *health
+
+  billing:
+    <<: *svc
+    image: ghcr.io/marcus-coube/duo-billing:${TAG:-staging}
+    environment:
+      <<: *public
+      PORT: "8085"
+      DATABASE_URL: postgres://duo_app:${DUO_APP_PASSWORD}@postgres:5432/duo_billing?sslmode=disable
+      TENANT_SETTINGS_CACHE_TTL: 30s
+    healthcheck: *health
+
+  # ------------------------------------------------------------ dados (do stack)
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    networks: [duo-staging]
+    mem_limit: 384m
+    cpus: 0.5
+    command: ["postgres", "-c", "shared_buffers=96MB", "-c", "max_connections=60"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d duo_billing"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes", "--maxmemory", "48mb", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis-data:/data
+    networks: [duo-staging]
+    mem_limit: 64m
+    cpus: 0.25
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" --no-auth-warning ping | grep -q PONG"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+  # O MinIO parou de publicar imagens (Docker Hub/Quay); a build da Chainguard
+  # é recompilada do fonte AGPL e mantida. Fixada por digest — atualizar de
+  # propósito (docker pull chainguard/minio:latest → novo digest).
+  minio:
+    image: chainguard/minio@sha256:16b824a0016ffad3dfa8b059755f83800aa42ca68fe86f1782cabd0c5a16d322
+    restart: unless-stopped
+    command: ["server", "/data"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      # PUT presignado vem do navegador, a partir do app.
+      MINIO_API_CORS_ALLOW_ORIGIN: ${PUBLIC_SCHEME:-https}://app.${DUO_BASE}${PUBLIC_PORT:-}
+      MINIO_BROWSER: "off"
+    volumes:
+      - minio-data:/data
+    networks: [duo-staging]
+    mem_limit: 256m
+    cpus: 0.25
+    healthcheck:
+      # Imagem sem curl/wget/mc/grep: HTTP cru pelo /dev/tcp do bash.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /minio/health/live HTTP/1.1\\r\\nHost: minio\\r\\nConnection: close\\r\\n\\r\\n' >&3 && read -r l <&3 && [[ $$l == *' 200 '* ]]"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  # ------------------------------------------------------------ one-shots (deploy.sh)
+  # Cria o bucket (privado por padrão). Imagem só com o binário `mc`: o alias
+  # vem por MC_HOST_<nome>.
+  minio-init:
+    image: chainguard/minio-client@sha256:47e7c343d1e0f0ae23ebd23d3ed095dffaa0ac397ec75a871829a6f9e075134c
+    profiles: [tools]
+    restart: "no"
+    networks: [duo-staging]
+    environment:
+      MC_HOST_local: http://${MINIO_ROOT_USER}:${MINIO_ROOT_PASSWORD}@minio:9000
+    command: ["mb", "--ignore-existing", "local/duo-media"]
+    depends_on:
+      minio:
+        condition: service_healthy
+
+  # Migrations como superusuário do stack. identity PRIMEIRO: cria a role
+  # duo_app (com a senha de dev — o deploy.sh troca logo em seguida).
+  migrate-identity:
+    <<: *migrate
+    image: ghcr.io/marcus-coube/duo-identity:${TAG:-staging}
+    command: ['migrate -path /migrations -database "postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/duo_identity?sslmode=disable" up']
+  migrate-workout:
+    <<: *migrate
+    image: ghcr.io/marcus-coube/duo-workout:${TAG:-staging}
+    command: ['migrate -path /migrations -database "postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/duo_workout?sslmode=disable" up']
+  migrate-assessment:
+    <<: *migrate
+    image: ghcr.io/marcus-coube/duo-assessment:${TAG:-staging}
+    command: ['migrate -path /migrations -database "postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/duo_assessment?sslmode=disable" up']
+  migrate-comms:
+    <<: *migrate
+    image: ghcr.io/marcus-coube/duo-comms:${TAG:-staging}
+    command: ['migrate -path /migrations -database "postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/duo_comms?sslmode=disable" up']
+  migrate-billing:
+    <<: *migrate
+    image: ghcr.io/marcus-coube/duo-billing:${TAG:-staging}
+    command: ['migrate -path /migrations -database "postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/duo_billing?sslmode=disable" up']
+
+  # Senha real da role duo_app (idempotente) e seed da biblioteca global
+  # (idempotente, ADR-010 §3 — exige superusuário).
+  db-setup:
+    <<: *migrate
+    image: ghcr.io/marcus-coube/duo-workout:${TAG:-staging}
+    command:
+      - psql "postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/duo_identity?sslmode=disable" -v ON_ERROR_STOP=1
+        -c "ALTER ROLE duo_app PASSWORD '${DUO_APP_PASSWORD}'"
+        && psql "postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/duo_workout?sslmode=disable" -v ON_ERROR_STOP=1 -q
+        -f /seed/exercises_seed.sql
+
+networks:
+  duo-staging: {}
+  edge:
+    external: true
+
+volumes:
+  pg-data: {}
+  redis-data: {}
+  minio-data: {}
