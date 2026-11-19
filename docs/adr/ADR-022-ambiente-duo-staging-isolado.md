@@ -39,9 +39,9 @@ total: nada das outras aplicações pode ser tocado, **exceto** o
 6. **Imagens no GHCR, buildadas no GitHub Actions;** a VPS só faz `pull`
    (2 vCPU não comportam build). Migrations rodam **one-shot** antes do `up`
    (o código não migra no boot).
-7. **Teto de recursos:** `mem_limit` e `cpus` em todo contêiner; soma ≤ 1,3 GB
-   de RAM e o stack nunca disputa CPU com produção (`cpus` ≤ 0,5 por
-   contêiner).
+7. **Teto de recursos:** `mem_limit` e `cpus` em todo contêiner; os
+   residentes somam ≤ 1,5 GB de RAM e ≤ 1,2 CPU (a VPS tem 2 vCPU para três
+   projetos) — o staging nunca disputa CPU com produção.
 
 ## Consequências
 

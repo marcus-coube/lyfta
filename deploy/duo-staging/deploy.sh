@@ -3,7 +3,7 @@
 # usuário de deploy. Idempotente: serve para o 1º boot e para cada release.
 #
 #   ./deploy.sh            # usa TAG do .env (padrão: staging)
-#   TAG=<sha> ./deploy.sh  # rollback para uma imagem anterior
+#   TAG=sha-<commit> ./deploy.sh  # rollback para uma imagem anterior
 #
 # Ordem: dados → bucket → migrations (identity primeiro: cria duo_app) →
 # senha real da duo_app + seed → serviços. Qualquer falha aborta antes de

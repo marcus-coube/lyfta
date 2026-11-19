@@ -38,11 +38,14 @@ x-s3: &s3
   S3_USE_PATH_STYLE: "true"
   S3_PUBLIC_BASE_URL: ""
 
+# CPU: a VPS tem 2 vCPU para TRÊS projetos. Os residentes deste stack somam
+# 1,2 CPU de teto (Go/gateway/Redis/MinIO 0,1, identity e Postgres 0,25); em
+# repouso o uso é ~0. Staging nunca pode disputar CPU com a produção.
 x-svc: &svc
   restart: unless-stopped
   networks: [duo-staging]
   mem_limit: 96m
-  cpus: 0.25
+  cpus: 0.1
   depends_on:
     postgres:
       condition: service_healthy
@@ -51,6 +54,7 @@ x-migrate: &migrate
   networks: [duo-staging]
   profiles: [tools]
   restart: "no"
+  cpus: 0.25
   entrypoint: ["/bin/sh", "-c"]
   depends_on:
     postgres:
@@ -69,14 +73,21 @@ services:
         aliases: [duo-staging-gateway]
     # ~50 MB em repouso servindo o build web; 64m ficava no limite.
     mem_limit: 128m
-    cpus: 0.25
+    cpus: 0.1
 
   # ------------------------------------------------------------ serviços Go
   identity:
     <<: *svc
     image: ghcr.io/marcus-coube/duo-identity:${TAG:-staging}
+    # argon2id do login/cadastro aloca 64 MiB por hash (security/password.go):
+    # com 96m, dois logins simultâneos matavam o contêiner por OOM. 256m cabe
+    # ~3 hashes em paralelo; GOMEMLIMIT faz o GC devolver memória antes do teto.
+    # 0,25 CPU: em 0,1 cada login levava ~2 s.
+    mem_limit: 256m
+    cpus: 0.25
     environment:
       <<: *public
+      GOMEMLIMIT: 200MiB
       PORT: "8081"
       DATABASE_URL: postgres://duo_app:${DUO_APP_PASSWORD:?defina DUO_APP_PASSWORD}@postgres:5432/duo_identity?sslmode=disable
       JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:?defina JWT_PRIVATE_KEY}
@@ -148,7 +159,7 @@ services:
       - ./initdb:/docker-entrypoint-initdb.d:ro
     networks: [duo-staging]
     mem_limit: 384m
-    cpus: 0.5
+    cpus: 0.25
     command: ["postgres", "-c", "shared_buffers=96MB", "-c", "max_connections=60"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d duo_billing"]
@@ -164,7 +175,7 @@ services:
       - redis-data:/data
     networks: [duo-staging]
     mem_limit: 64m
-    cpus: 0.25
+    cpus: 0.1
     healthcheck:
       test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" --no-auth-warning ping | grep -q PONG"]
       interval: 10s
@@ -190,7 +201,7 @@ services:
       - minio-data:/data
     networks: [duo-staging]
     mem_limit: 256m
-    cpus: 0.25
+    cpus: 0.1
     healthcheck:
       # Imagem sem curl/wget/mc/grep: HTTP cru pelo /dev/tcp do bash.
       test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /minio/health/live HTTP/1.1\\r\\nHost: minio\\r\\nConnection: close\\r\\n\\r\\n' >&3 && read -r l <&3 && [[ $$l == *' 200 '* ]]"]
@@ -209,6 +220,7 @@ services:
     environment:
       MC_HOST_local: http://${MINIO_ROOT_USER}:${MINIO_ROOT_PASSWORD}@minio:9000
     command: ["mb", "--ignore-existing", "local/duo-media"]
+    cpus: 0.1
     depends_on:
       minio:
         condition: service_healthy

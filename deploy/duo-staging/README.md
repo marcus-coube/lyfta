@@ -7,6 +7,7 @@ plano: [docs/plan/staging](../../docs/plan/staging/README.md).
 |---|---|
 | `docker-compose.yml` | Stack inteiro (gateway, 5 serviços, Postgres, Redis, MinIO, one-shots). Vai para `/opt/duo-staging/`. |
 | `.env.example` | Modelo do `.env` (domínio, senhas, JWT, Resend). O real fica só na VPS, `chmod 600`. |
+| `bootstrap-vps.sh` | Preparação única da VPS (root): usuário `duo-deploy`, pasta, `.env` com segredos gerados lá, bloco do Caddyfile. |
 | `deploy.sh` | Ordem do deploy: dados → bucket → migrations (identity 1º) → senha da `duo_app` + seed → serviços. Idempotente. |
 | `initdb/01-create-dbs.sql` | Cópia de `backend/scripts/create-dbs.sql` (1º boot do volume do Postgres). |
 | `gateway/` | Caddy interno + build web. Roteia por Host; bloqueia `/internal/*`. |
@@ -37,5 +38,5 @@ App em `http://app.duo-staging.localhost:8080`. Derrubar:
 
 ## Na VPS
 
-`cd /opt/duo-staging && ./deploy.sh` (rollback: `TAG=<sha> ./deploy.sh`).
-Primeira vez: plano S5.
+`cd /opt/duo-staging && ./deploy.sh` (rollback: `TAG=sha-<commit> ./deploy.sh`).
+Primeira vez: `bootstrap-vps.sh` e o roteiro do plano S5.

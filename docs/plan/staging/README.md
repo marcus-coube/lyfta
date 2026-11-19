@@ -29,32 +29,41 @@ Hosts (`<base>` = domínio a decidir, D1): `app.<base>`, `identity.<base>`,
 `workout.<base>`, `assessment.<base>`, `comms.<base>`, `billing.<base>`,
 `media.<base>`. Ex.: `<base>` = `duo-staging.<seudominio>`.
 
-## Decisões pendentes (bloqueiam S5)
+## Decisões (2026-11-19)
 
-| # | Decisão | Recomendação |
+| # | Decisão | Resultado |
 |---|---|---|
-| D1 | Domínio base | Subdomínio de um domínio já seu no Cloudflare (`duotraining.app` é placeholder, não registrado). 7 registros A **DNS-only** → IP da VPS. |
-| D2 | E-mail (convite/reset) | Resend com o domínio de D1 verificado. Sem isso o identity usa o `log_mailer` e convite só sai pelo log — inviável para testador. |
-| D3 | Como o CI entra na VPS | Usuário **novo** `duo-deploy` (grupo docker, `authorized_keys` e login GHCR próprios). Não toca o `deploy` dos outros projetos. Alternativa: deploy manual por script (sem CI) na fase 1. |
-| D4 | Backup | Dados de testador são reais (LGPD, ADR-008): serviço `backup` **dentro** do stack, `pg_dump` diário em volume + cópia opcional para bucket próprio. |
-| D5 | Push | Desligado (`FCM_CREDENTIALS_JSON` vazio); web não usa push no MVP. |
+| D1 | Domínio base | **`duotraining.app`** registrado (Cloudflare). `DUO_BASE=staging.duotraining.app` → `app.staging.duotraining.app`, `identity.staging...` etc. DNS-only + Let's Encrypt (o Universal SSL não cobre dois níveis). |
+| D2 | E-mail (convite/reset) | **Resend** com `duotraining.app` verificado; `MAIL_FROM=DÜO <no-reply@duotraining.app>`. |
+| D3 | Acesso do CI à VPS | Usuário **`duo-deploy`** próprio (grupo docker, `authorized_keys` e login GHCR dele), criado pelo `bootstrap-vps.sh`. |
+| D4 | Backup | Pendente (S7): `pg_dump` diário dentro do stack. |
+| D5 | Push | Desligado (`FCM_CREDENTIALS_JSON` vazio). |
 
 ## Orçamento de recursos
 
+A VPS tem 2 vCPU / 8 GB / 100 GB para **três** projetos: o staging tem teto
+somado bem abaixo disso e nunca disputa com produção.
+
 | Contêiner | mem_limit | cpus |
 |---|---|---|
-| postgres | 384m | 0.5 |
-| redis | 64m | 0.25 |
-| minio | 256m | 0.25 |
-| identity, workout, assessment, comms, billing | 96m cada (480m) | 0.25 cada |
-| gateway | 128m | 0.25 |
-| **Total** | **~1,3 GB** de teto | — |
+| identity | 256m | 0.25 |
+| workout, assessment, comms, billing | 96m cada (384m) | 0.1 cada |
+| gateway | 128m | 0.1 |
+| postgres | 384m | 0.25 |
+| redis | 64m | 0.1 |
+| minio | 256m | 0.1 |
+| **Residentes** | **~1,5 GB** de teto | **1,2 CPU** de teto |
+| one-shots do deploy (um por vez) | — | 0.25 |
 
-Medido no Mac (S3, em repouso): serviços Go 5–7 MB cada, Postgres ~85 MB,
-MinIO ~75 MB, gateway ~50 MB — uso real < 300 MB.
-
-Antes do 1º `up`: `free -h` e `docker stats --no-stream` na VPS; se sobrar
-< 2 GB livres, parar e rever (staging não pode empurrar produção para o swap).
+- **identity:** o argon2id aloca 64 MiB por hash de senha. Com o limite
+  antigo de 96m, **dois logins simultâneos mataram o contêiner por OOM**
+  (reproduzido no Mac, 2026-11-19). Com 256m + `GOMEMLIMIT=200MiB`, quatro
+  logins simultâneos passam (~2 s cada); um isolado leva ~0,4 s.
+- Medido no Mac em repouso: Go 5–7 MB, Postgres ~85 MB, MinIO ~75 MB,
+  gateway ~50 MB. Deploy completo ~50 s.
+- **Disco** é o risco compartilhado: mídia de execução (até 20 MB cada) cresce
+  no volume do MinIO até expirar (7/30 dias, ADR-020). Alerta no S7.
+- Antes do 1º `up`: o `bootstrap-vps.sh` aborta com < 2 GB de RAM livre.
 
 ## Tarefas
 
@@ -81,7 +90,7 @@ Antes do 1º `up`: `free -h` e `docker stats --no-stream` na VPS; se sobrar
 ### S3 — Compose do ambiente ✅ (2026-11-19)
 - `deploy/duo-staging/docker-compose.yml` + `deploy.sh` (ordem: dados →
   bucket → migrations com identity 1º → senha real da `duo_app` + seed →
-  serviços; idempotente, `TAG=<sha>` para rollback) + `.env.example` +
+  serviços; idempotente, `TAG=sha-<commit>` para rollback) + `.env.example` +
   `initdb/01-create-dbs.sql` + `docker-compose.local.yml` (teste no Mac).
   Como usar: [deploy/duo-staging/README.md](../../../deploy/duo-staging/README.md).
 - **Um `.env` só** (em vez de um por serviço): o compose injeta em cada
@@ -118,26 +127,46 @@ Antes do 1º `up`: `free -h` e `docker stats --no-stream` na VPS; se sobrar
 - **Pronto quando:** um push em `staging` sem mudança de código redeploya
   verde de ponta a ponta (depende do S5).
 
-### S5 — Bootstrap na VPS (manual, uma vez — depende de D1–D3)
-1. DNS: 7 registros A DNS-only (cinza) → IP da VPS.
-2. `free -h`; criar `/opt/duo-staging/` (e usuário `duo-deploy`, se D3).
-3. Gerar chaves JWT (`backend/scripts/gen-keys.sh`), `INTERNAL_TOKEN` e
-   senhas com `openssl rand -hex 32`; preencher `.env` (modelo
-   `.env.example`), `chmod 600`.
-4. `docker login ghcr.io` com o usuário do deploy (PAT `read:packages`) e
-   o Environment `duo-staging` no GitHub (S4) com a chave pública do CI no
-   `authorized_keys` desse usuário.
-5. Copiar `deploy/duo-staging/` (sem `.env.local`) para a pasta e rodar
-   `./deploy.sh` (1º boot cria os bancos pelo `initdb`, troca a senha de dev
-   da `duo_app` e aplica o seed).
-6. Conferir `docker compose ps` todo `healthy` e o hairpin:
-   `docker compose exec comms wget -qO- https://media.<base>/minio/health/live`.
-7. Caddyfile compartilhado: `cp Caddyfile Caddyfile.bak.<data>`, colar o
-   bloco abaixo **no fim**, `caddy validate` e `caddy reload` (gracioso:
-   config inválida não aplica e não derruba ninguém).
-8. Registrar a mudança no `vps-infra.md` (§5, §7, §14) do repo onde ele vive.
-- **Pronto quando:** `https://app.<base>` abre o login, e mh-blog/ecoprobe
-  respondem normalmente antes e depois do reload.
+### S5 — Bootstrap na VPS (manual, uma vez)
+Ordem importa: DNS antes do Caddy (o Let's Encrypt valida por HTTP), Caddy
+antes do 1º deploy (o healthcheck do workflow usa os hosts públicos).
+
+1. **DNS (Cloudflare `duotraining.app`):** um registro `A`
+   `*.staging` → IP da VPS, **DNS-only (nuvem cinza)**. Conferir:
+   `dig +short app.staging.duotraining.app`.
+2. **Resend:** criar a conta, adicionar o domínio `duotraining.app`, criar no
+   Cloudflare os registros que ele pedir (DKIM/SPF/MX do subdomínio de envio,
+   todos DNS-only) e esperar "Verified". Gerar uma API key **só de envio,
+   restrita ao domínio**.
+3. **Chave do CI** (na máquina de dev, sem passphrase — só o CI usa):
+   `ssh-keygen -t ed25519 -N '' -C duo-staging-ci -f ~/.ssh/duo-staging-ci`.
+4. **Na VPS, como root:** copiar
+   [`deploy/duo-staging/bootstrap-vps.sh`](../../../deploy/duo-staging/bootstrap-vps.sh)
+   e rodar `./bootstrap-vps.sh staging.duotraining.app "$(cat ~/.ssh/duo-staging-ci.pub)"`
+   (conteúdo da `.pub`). Ele confere a memória livre (aborta < 2 GB), cria o
+   `duo-deploy` com a chave do CI, cria `/opt/duo-staging` e gera o `.env`
+   com senhas e o par JWT feitos ali (testado num Ubuntu 24.04 descartável;
+   rodar de novo não troca segredos). Depois, colar a `RESEND_API_KEY` no
+   `/opt/duo-staging/.env`.
+5. **GHCR:** `su - duo-deploy -c 'docker login ghcr.io -u marcus-coube'` com
+   um PAT clássico só com `read:packages`.
+6. **Caddyfile compartilhado:** o script imprime o bloco já com os hosts
+   (validado com `caddy validate`). `cp Caddyfile Caddyfile.bak.<data>`, colar
+   **no fim**, `caddy validate` e `caddy reload` (gracioso). Até o 1º deploy
+   os hosts do DÜO dão 502; nada muda para os outros sites.
+7. **GitHub:** Environment `duo-staging` com secrets `VM_HOST` (IP),
+   `VM_USER=duo-deploy`, `VM_SSH_KEY` (a chave privada do passo 3),
+   `VM_KNOWN_HOSTS` (`ssh-keyscan -t ed25519 <IP>`) e var
+   `DUO_BASE=staging.duotraining.app`.
+8. **1º deploy:** rodar o workflow "Deploy duo-staging" (ou
+   `git push origin main:staging`). O `initdb` cria os bancos no 1º boot.
+9. Conferir o hairpin:
+   `su - duo-deploy -c 'cd /opt/duo-staging && docker compose exec comms wget -qO- https://media.staging.duotraining.app/minio/health/live'`.
+10. Registrar a mudança no `vps-infra.md` (§5, §7, §9, §14) do repo onde ele
+    vive, incluindo o usuário `duo-deploy`.
+- **Pronto quando:** `https://app.staging.duotraining.app` abre o login, o
+  convite chega por e-mail, e mh-blog/ecoprobe respondem normalmente antes e
+  depois do reload.
 
 ### S6 — Smoke e liberação para testadores
 - Rodar o roteiro [e2e-25](../mvp25/e2e-25.md) **no Chrome** contra o staging
@@ -154,9 +183,12 @@ Antes do 1º `up`: `free -h` e `docker stats --no-stream` na VPS; se sobrar
   em volume; restore ensaiado uma vez.
 - Uptime externo (UptimeRobot) em `https://identity.<base>/healthz` e
   `https://app.<base>`.
+- **Disco:** alerta quando o `/` passar de 80% e relatório do tamanho dos
+  volumes do stack (`docker system df -v | grep duo-staging`) — disco cheio
+  derruba os três projetos. Se a mídia crescer demais, cota no bucket.
 - Runbook em `deploy/duo-staging/README.md`: logs
   (`docker compose logs -f <svc>`), rollback (`docker compose` com
-  `TAG=<sha>` anterior), reset total (`down -v`, só com aviso aos
+  `TAG=sha-<commit>` anterior), reset total (`down -v`, só com aviso aos
   testadores), rotação de segredos.
 - **Pronto quando:** runbook escrito e restore testado.
 
