@@ -69,12 +69,16 @@ jobs:
       # assessment (P2.3 — foto de evolução) e do comms (P3.2 — imagem de
       # chat). Como `services:` não aceita condicional nem comando
       # customizado, sobe como step — o bucket é criado pelo próprio teste.
+      # O MinIO parou de publicar imagens (Docker Hub/Quay): build da
+      # Chainguard fixada por digest, a mesma do deploy/duo-staging. Entrypoint
+      # é /usr/bin/minio; a imagem não tem curl, o healthcheck usa o do runner.
       - name: Subir MinIO
         if: matrix.service == 'workout' || matrix.service == 'assessment' || matrix.service == 'comms'
         run: |
           docker run -d --name minio -p 9000:9000 \
             -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
-            minio/minio:latest server /data
+            chainguard/minio@sha256:16b824a0016ffad3dfa8b059755f83800aa42ca68fe86f1782cabd0c5a16d322 \
+            server /data
           for i in $(seq 1 30); do
             curl -fsS http://localhost:9000/minio/health/live && break
             sleep 2

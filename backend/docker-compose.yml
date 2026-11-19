@@ -16,9 +16,15 @@ services:
       timeout: 3s
       retries: 5
 
+  # O MinIO parou de publicar imagens (Docker Hub/Quay): builds da Chainguard,
+  # as mesmas do deploy/duo-staging, fixadas por digest — atualizar de
+  # propósito (docker pull chainguard/minio:latest → novo digest).
   minio:
-    image: minio/minio:latest
-    command: server /data --console-address ":9001"
+    image: chainguard/minio@sha256:16b824a0016ffad3dfa8b059755f83800aa42ca68fe86f1782cabd0c5a16d322
+    command: ["server", "/data", "--console-address", ":9001"]
+    # A imagem roda como nonroot, mas os volumes de dev já existentes foram
+    # criados como root pela minio/minio antiga. Root aqui é só dev.
+    user: "0:0"
     ports:
       - "9000:9000" # API S3
       - "9001:9001" # Console web
@@ -28,26 +34,23 @@ services:
     volumes:
       - minio-data:/data
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      # Imagem sem curl/wget/mc/grep: HTTP cru pelo /dev/tcp do bash.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /minio/health/live HTTP/1.1\\r\\nHost: minio\\r\\nConnection: close\\r\\n\\r\\n' >&3 && read -r l <&3 && [[ $$l == *' 200 '* ]]"]
       interval: 5s
       timeout: 3s
-      retries: 5
+      retries: 10
 
   # Job idempotente: cria o bucket duo-media e sai. Não fica residente.
+  # A imagem do mc não tem shell: o alias vai pela env MC_HOST_<alias>.
+  # Bucket nasce privado (padrão do MinIO), sem precisar de `anonymous set none`.
   minio-init:
-    image: minio/mc:latest
+    image: chainguard/minio-client@sha256:47e7c343d1e0f0ae23ebd23d3ed095dffaa0ac397ec75a871829a6f9e075134c
     depends_on:
       minio:
         condition: service_healthy
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
-    entrypoint: >
-      /bin/sh -c "
-      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
-      (mc mb local/duo-media || true) &&
-      mc anonymous set none local/duo-media
-      "
+      MC_HOST_local: http://${MINIO_ROOT_USER:-minioadmin}:${MINIO_ROOT_PASSWORD:-minioadmin}@minio:9000
+    command: ["mb", "--ignore-existing", "local/duo-media"]
 
 volumes:
   redis-data:

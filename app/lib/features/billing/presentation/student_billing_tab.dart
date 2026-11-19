@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../core/design_system/design_system.dart';
 import '../../../core/http/api_exception_l10n.dart';
@@ -458,7 +459,12 @@ class _SubscriptionDialogState extends ConsumerState<SubscriptionDialog> {
               onChanged: (d) => setState(() => _dueDay = d ?? _dueDay),
               items: [
                 for (var d = 1; d <= 28; d++)
-                  DropdownMenuItem(value: d, child: Text('$d')),
+                  DropdownMenuItem(
+                    value: d,
+                    child: Text(
+                      NumberFormat.decimalPattern(l10n.localeName).format(d),
+                    ),
+                  ),
               ],
             ),
             if (!_editing) ...[
