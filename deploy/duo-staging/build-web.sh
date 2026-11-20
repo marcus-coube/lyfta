@@ -12,6 +12,8 @@ port="${PUBLIC_PORT:-}"
 url() { echo "$scheme://$1.$DUO_BASE$port"; }
 
 cd "$(dirname "$0")/../../app"
+# web/ não é versionado (ADR-014: só android/); no CI gera o scaffold padrão.
+[ -d web ] || flutter create . --platforms web --org br.com.duotraining
 version=$(sed -n 's/^version: *//p' pubspec.yaml)
 
 flutter build web --release \

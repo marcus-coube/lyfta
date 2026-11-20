@@ -32,7 +32,7 @@ fi
 
 echo "==> usuário $USER_NAME"
 if ! id "$USER_NAME" >/dev/null 2>&1; then
-  adduser --disabled-password --gecos "DÜO staging deploy (CI)" "$USER_NAME"
+  adduser --disabled-password --gecos "DUO staging deploy (CI)" "$USER_NAME"
 fi
 usermod -aG docker "$USER_NAME"
 home=$(getent passwd "$USER_NAME" | cut -d: -f6)

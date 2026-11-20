@@ -154,6 +154,14 @@ antes do 1º deploy (o healthcheck do workflow usa os hosts públicos).
    (validado com `caddy validate`). `cp Caddyfile Caddyfile.bak.<data>`, colar
    **no fim**, `caddy validate` e `caddy reload` (gracioso). Até o 1º deploy
    os hosts do DÜO dão 502; nada muda para os outros sites.
+   **Armadilha (2026-11-20):** o Caddyfile é montado como arquivo único e
+   `:ro`. Se um editor o salvou trocando o inode, o contêiner segue lendo a
+   cópia antiga (apagada) e `reload` não vê a edição — conferir com
+   `docker exec edge-caddy-1 grep -c duotraining /etc/caddy/Caddyfile`. Saída
+   usada: validar o arquivo do host num `caddy:2-alpine` descartável e
+   `docker restart edge-caddy-1` (segundos de queda para todos). Nessa
+   ocasião entrou junto um bloco pendente do ecoprobe
+   (`whatsapp.staging.ecoprobe.com.br`) que nunca tinha ido ao ar.
 7. **GitHub:** Environment `duo-staging` com secrets `VM_HOST` (IP),
    `VM_USER=duo-deploy`, `VM_SSH_KEY` (a chave privada do passo 3),
    `VM_KNOWN_HOSTS` (`ssh-keyscan -t ed25519 <IP>`) e var
