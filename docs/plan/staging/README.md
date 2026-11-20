@@ -110,7 +110,7 @@ somado bem abaixo disso e nunca disputa com produção.
   CORS do MinIO ok); hairpin do comms para `media.`; `/ws` com 101; login no
   app web e aba Início carregando dos 4 serviços, sem erro no console.
 
-### S4 — Pipeline (GitHub Actions) ✍️ escrito (2026-11-19), não executado
+### S4 — Pipeline (GitHub Actions) ✅ (2026-11-20)
 - [`.github/workflows/deploy-staging.yml`](../../../.github/workflows/deploy-staging.yml)
   (actionlint ok). **Promover = `git push origin main:staging`** ou rodar à mão.
 - GitHub Environment **`duo-staging`**: secrets `VM_HOST`, `VM_USER`,
@@ -127,7 +127,7 @@ somado bem abaixo disso e nunca disputa com produção.
 - **Pronto quando:** um push em `staging` sem mudança de código redeploya
   verde de ponta a ponta (depende do S5).
 
-### S5 — Bootstrap na VPS (manual, uma vez)
+### S5 — Bootstrap na VPS (manual, uma vez) ✅ (2026-11-20, falta o e-mail)
 Ordem importa: DNS antes do Caddy (o Let's Encrypt valida por HTTP), Caddy
 antes do 1º deploy (o healthcheck do workflow usa os hosts públicos).
 
@@ -172,6 +172,11 @@ antes do 1º deploy (o healthcheck do workflow usa os hosts públicos).
    `su - duo-deploy -c 'cd /opt/duo-staging && docker compose exec comms wget -qO- https://media.staging.duotraining.app/minio/health/live'`.
 10. Registrar a mudança no `vps-infra.md` (§5, §7, §9, §14) do repo onde ele
     vive, incluindo o usuário `duo-deploy`.
+- **Execução (2026-11-20):** passos 1–9 feitos; 1º deploy verde no 2º run
+  (o 1º falhou por `web/` não versionado — `build-web.sh` agora gera o
+  scaffold); 5 `/healthz` e mídia 200 com Let's Encrypt, `/internal/*` 404,
+  hairpin ok, mh-blog/ecoprobe 200 após o restart do edge. Falta: convite por
+  e-mail no 1º cadastro (S6) e o passo 10.
 - **Pronto quando:** `https://app.staging.duotraining.app` abre o login, o
   convite chega por e-mail, e mh-blog/ecoprobe respondem normalmente antes e
   depois do reload.
